@@ -2546,6 +2546,29 @@ def assert_site_bundle_handoff_json_smoke(
             "executeInTargetRepo": True,
             "recordEvidence": True,
         }
+        or not isinstance(operator_runbook.get("stageActionEvidenceRequirementsByKey"), dict)
+        or operator_runbook["stageActionEvidenceRequirementsByKey"].get("verifySourceBundle")
+        != ["Strict bundle-check command output or JSON status.", "Bundle digest and zero drift counts."]
+        or operator_runbook["stageActionEvidenceRequirementsByKey"].get("executeInTargetRepo")
+        != [
+            "Target repo changed file list.",
+            "Target repo verification command results.",
+            "Viewport and accessibility check notes for affected pages.",
+        ]
+        or operator_runbook.get("stageActionEvidenceRequirementCountByKey") != {
+            "verifySourceBundle": 2,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 2,
+            "executeInTargetRepo": 3,
+            "recordEvidence": 1,
+        }
+        or operator_runbook.get("stageActionRequiresEvidenceByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": True,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": True,
+            "recordEvidence": True,
+        }
         or not isinstance(operator_runbook.get("stageActionInstructionsByKey"), dict)
         or operator_runbook["stageActionInstructionsByKey"].get("verifySourceBundle")
         != "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff."
@@ -2568,6 +2591,9 @@ def assert_site_bundle_handoff_json_smoke(
             "actionWithCompletionCriteriaCount": 5,
             "totalActionCompletionCriteriaCount": 8,
             "maxActionCompletionCriteriaCount": 2,
+            "actionRequiringEvidenceCount": 5,
+            "totalActionEvidenceRequirementCount": 9,
+            "maxActionEvidenceRequirementCount": 3,
             "requiredActionCount": 4,
             "optionalActionCount": 1,
             "readOnlyActionCount": 2,
@@ -2602,6 +2628,12 @@ def assert_site_bundle_handoff_json_smoke(
             ],
             "nextActionCompletionCriteriaCount": 2,
             "nextActionHasCompletionCriteria": True,
+            "nextActionEvidenceRequirements": [
+                "Strict bundle-check command output or JSON status.",
+                "Bundle digest and zero drift counts.",
+            ],
+            "nextActionEvidenceRequirementCount": 2,
+            "nextActionRequiresEvidence": True,
             "nextActionRunPolicy": "read-only",
             "nextActionSafetyLevel": "local-read-only",
             "firstRequiredCommandStageKey": "verifySourceBundle",
@@ -2616,6 +2648,9 @@ def assert_site_bundle_handoff_json_smoke(
             "firstActionBlockingOtherActionKey": "verifySourceBundle",
             "firstActionWithCompletionCriteriaKey": "verifySourceBundle",
             "firstManualActionWithCompletionCriteriaKey": "executeInTargetRepo",
+            "firstActionRequiringEvidenceKey": "verifySourceBundle",
+            "firstManualActionRequiringEvidenceKey": "executeInTargetRepo",
+            "firstEvidenceRecordingActionKey": "recordEvidence",
             "requiresTargetRepoWork": True,
             "requiresEvidenceReturn": True,
             "externalCalls": False,
@@ -2694,6 +2729,10 @@ def assert_site_bundle_handoff_json_smoke(
         != ["Strict bundle check status is pass.", "Checksum and generated-file drift counts are zero."]
         or operator_runbook.get("nextStageActionCompletionCriteriaCount") != 2
         or operator_runbook.get("nextStageActionHasCompletionCriteria") is not True
+        or operator_runbook.get("nextStageActionEvidenceRequirements")
+        != ["Strict bundle-check command output or JSON status.", "Bundle digest and zero drift counts."]
+        or operator_runbook.get("nextStageActionEvidenceRequirementCount") != 2
+        or operator_runbook.get("nextStageActionRequiresEvidence") is not True
         or operator_runbook.get("nextStageKind") != "read-only-gate"
         or operator_runbook.get("nextStageRequired") is not True
         or operator_runbook.get("nextStageRunPolicy") != "read-only"
@@ -2745,6 +2784,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[0].get("actionBlocksStages") is not True
         or action_rows[0].get("actionCompletionCriteriaCount") != 2
         or action_rows[0].get("actionHasCompletionCriteria") is not True
+        or action_rows[0].get("actionEvidenceRequirementCount") != 2
+        or action_rows[0].get("actionRequiresEvidence") is not True
         or action_rows[0].get("commandKeys") != verify_stage.get("commandKeys")
         or action_rows[0].get("manual") is not False
         or action_rows[2].get("actionType") != "write-local-output"
@@ -2760,6 +2801,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[2].get("actionBlocksStages") is not True
         or action_rows[2].get("actionCompletionCriteriaCount") != 2
         or action_rows[2].get("actionHasCompletionCriteria") is not True
+        or action_rows[2].get("actionEvidenceRequirementCount") != 2
+        or action_rows[2].get("actionRequiresEvidence") is not True
         or action_rows[2].get("outputFiles") != task_prompt_stage.get("outputFiles")
         or action_rows[2].get("writesLocalFile") != task_prompt_stage.get("writesLocalFile")
         or action_rows[3].get("actionType") != "manual-target-repo"
@@ -2776,6 +2819,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[3].get("actionBlocksStages") is not True
         or action_rows[3].get("actionCompletionCriteriaCount") != 2
         or action_rows[3].get("actionHasCompletionCriteria") is not True
+        or action_rows[3].get("actionEvidenceRequirementCount") != 3
+        or action_rows[3].get("actionRequiresEvidence") is not True
         or action_rows[3].get("manual") is not True
         or operator_runbook.get("nextStage") != verify_stage
         or operator_runbook.get("nextStageSummary") != verify_stage.get("reason")

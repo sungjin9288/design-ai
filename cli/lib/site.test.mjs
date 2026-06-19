@@ -1919,6 +1919,29 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: true,
     recordEvidence: true,
   });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceRequirementsByKey.verifySourceBundle, [
+    "Strict bundle-check command output or JSON status.",
+    "Bundle digest and zero drift counts.",
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceRequirementsByKey.executeInTargetRepo, [
+    "Target repo changed file list.",
+    "Target repo verification command results.",
+    "Viewport and accessibility check notes for affected pages.",
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceRequirementCountByKey, {
+    verifySourceBundle: 2,
+    refreshHandoffSnapshot: 1,
+    writeEffectiveTaskPrompt: 2,
+    executeInTargetRepo: 3,
+    recordEvidence: 1,
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionRequiresEvidenceByKey, {
+    verifySourceBundle: true,
+    refreshHandoffSnapshot: true,
+    writeEffectiveTaskPrompt: true,
+    executeInTargetRepo: true,
+    recordEvidence: true,
+  });
   assert.equal(
     report.operatorRunbook.stageActionInstructionsByKey.verifySourceBundle,
     "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff.",
@@ -1951,6 +1974,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionBlocksStages: stage.actionBlocksStages,
     actionCompletionCriteriaCount: stage.actionCompletionCriteriaCount,
     actionHasCompletionCriteria: stage.actionHasCompletionCriteria,
+    actionEvidenceRequirementCount: stage.actionEvidenceRequirementCount,
+    actionRequiresEvidence: stage.actionRequiresEvidence,
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -1981,6 +2006,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionBlocksStages: true,
       actionCompletionCriteriaCount: 2,
       actionHasCompletionCriteria: true,
+      actionEvidenceRequirementCount: 2,
+      actionRequiresEvidence: true,
       required: true,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -2011,6 +2038,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionBlocksStages: false,
       actionCompletionCriteriaCount: 1,
       actionHasCompletionCriteria: true,
+      actionEvidenceRequirementCount: 1,
+      actionRequiresEvidence: true,
       required: false,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -2041,6 +2070,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionBlocksStages: true,
       actionCompletionCriteriaCount: 2,
       actionHasCompletionCriteria: true,
+      actionEvidenceRequirementCount: 2,
+      actionRequiresEvidence: true,
       required: true,
       runPolicy: "writes-local-file",
       safetyLevel: "local-output-file",
@@ -2071,6 +2102,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionBlocksStages: true,
       actionCompletionCriteriaCount: 2,
       actionHasCompletionCriteria: true,
+      actionEvidenceRequirementCount: 3,
+      actionRequiresEvidence: true,
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -2101,6 +2134,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionBlocksStages: false,
       actionCompletionCriteriaCount: 1,
       actionHasCompletionCriteria: true,
+      actionEvidenceRequirementCount: 1,
+      actionRequiresEvidence: true,
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -2127,6 +2162,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionWithCompletionCriteriaCount: 5,
     totalActionCompletionCriteriaCount: 8,
     maxActionCompletionCriteriaCount: 2,
+    actionRequiringEvidenceCount: 5,
+    totalActionEvidenceRequirementCount: 9,
+    maxActionEvidenceRequirementCount: 3,
     requiredActionCount: 4,
     optionalActionCount: 1,
     readOnlyActionCount: 2,
@@ -2158,6 +2196,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     ],
     nextActionCompletionCriteriaCount: 2,
     nextActionHasCompletionCriteria: true,
+    nextActionEvidenceRequirements: [
+      "Strict bundle-check command output or JSON status.",
+      "Bundle digest and zero drift counts.",
+    ],
+    nextActionEvidenceRequirementCount: 2,
+    nextActionRequiresEvidence: true,
     nextActionRunPolicy: "read-only",
     nextActionSafetyLevel: "local-read-only",
     firstRequiredCommandStageKey: "verifySourceBundle",
@@ -2172,6 +2216,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     firstActionBlockingOtherActionKey: "verifySourceBundle",
     firstActionWithCompletionCriteriaKey: "verifySourceBundle",
     firstManualActionWithCompletionCriteriaKey: "executeInTargetRepo",
+    firstActionRequiringEvidenceKey: "verifySourceBundle",
+    firstManualActionRequiringEvidenceKey: "executeInTargetRepo",
+    firstEvidenceRecordingActionKey: "recordEvidence",
     requiresTargetRepoWork: true,
     requiresEvidenceReturn: true,
     externalCalls: false,
@@ -2341,6 +2388,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   ]);
   assert.equal(report.operatorRunbook.nextStageActionCompletionCriteriaCount, 2);
   assert.equal(report.operatorRunbook.nextStageActionHasCompletionCriteria, true);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceRequirements, [
+    "Strict bundle-check command output or JSON status.",
+    "Bundle digest and zero drift counts.",
+  ]);
+  assert.equal(report.operatorRunbook.nextStageActionEvidenceRequirementCount, 2);
+  assert.equal(report.operatorRunbook.nextStageActionRequiresEvidence, true);
   assert.equal(report.operatorRunbook.nextStageKind, "read-only-gate");
   assert.equal(report.operatorRunbook.nextStageRequired, true);
   assert.equal(report.operatorRunbook.nextStageRunPolicy, "read-only");

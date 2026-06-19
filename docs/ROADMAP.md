@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 595 — Website Bundle Handoff Runbook Action Evidence Requirements (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action evidence requirement metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render exactly what evidence should be captured after bundle validation, prompt output, target-repo implementation, and evidence recording without hard-coded company handoff rules.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceRequirementsByKey` so wrappers can render per-action evidence capture requirements from stable stage keys.
+- Added `operatorRunbook.stageActionEvidenceRequirementCountByKey` and `stageActionRequiresEvidenceByKey` so compact dashboards can show evidence counts and conditional evidence UI without counting arrays.
+- Added `actionEvidenceRequirements`, `actionEvidenceRequirementCount`, and `actionRequiresEvidence` to each `stageActionRows[]` item.
+- Added `nextStageActionEvidenceRequirements`, `nextStageActionEvidenceRequirementCount`, and `nextStageActionRequiresEvidence` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.actionRequiringEvidenceCount`, `totalActionEvidenceRequirementCount`, `maxActionEvidenceRequirementCount`, `firstActionRequiringEvidenceKey`, `firstManualActionRequiringEvidenceKey`, and `firstEvidenceRecordingActionKey` for evidence dashboards and manual-step summaries.
+- Added unit and packed-tarball smoke assertions for evidence requirement lookup maps, row-level evidence metadata, summary fields, and next-stage mirrors.
+
+### Impact
+- Wrappers can show what evidence must be captured for each handoff action before a company website pilot moves into target-repo work.
+- Target-repo implementation steps now carry explicit changed-file, verification-result, viewport, and accessibility evidence expectations.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 594 — Website Bundle Handoff Runbook Action Completion Criteria (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes action completion criteria metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render deterministic done-checklists for bundle verification, prompt output, target-repo implementation, and evidence capture without hard-coded handoff rules.

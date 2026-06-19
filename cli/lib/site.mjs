@@ -5010,6 +5010,27 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
       "Changed files, verification commands, viewport checks, accessibility checks, remaining risks, and bundle digest are recorded.",
     ],
   }[stage.key] || []);
+  const getStageActionEvidenceRequirements = (stage) => ({
+    verifySourceBundle: [
+      "Strict bundle-check command output or JSON status.",
+      "Bundle digest and zero drift counts.",
+    ],
+    refreshHandoffSnapshot: [
+      "Refreshed strict handoff JSON snapshot when a wrapper consumes the latest contract.",
+    ],
+    writeEffectiveTaskPrompt: [
+      "Generated prompt output file path.",
+      "Selected task id and output filename.",
+    ],
+    executeInTargetRepo: [
+      "Target repo changed file list.",
+      "Target repo verification command results.",
+      "Viewport and accessibility check notes for affected pages.",
+    ],
+    recordEvidence: [
+      "Final evidence record includes changed files, verification, viewport/accessibility checks, risks, and bundle digest.",
+    ],
+  }[stage.key] || []);
   const stageActionRows = stages.map((stage) => ({
     step: stage.step,
     key: stage.key,
@@ -5038,6 +5059,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionCompletionCriteria: getStageActionCompletionCriteria(stage),
     actionCompletionCriteriaCount: getStageActionCompletionCriteria(stage).length,
     actionHasCompletionCriteria: getStageActionCompletionCriteria(stage).length > 0,
+    actionEvidenceRequirements: getStageActionEvidenceRequirements(stage),
+    actionEvidenceRequirementCount: getStageActionEvidenceRequirements(stage).length,
+    actionRequiresEvidence: getStageActionEvidenceRequirements(stage).length > 0,
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -5077,6 +5101,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionCompletionCriteriaByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionCompletionCriteria]));
   const stageActionCompletionCriteriaCountByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionCompletionCriteriaCount]));
   const stageActionHasCompletionCriteriaByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionHasCompletionCriteria]));
+  const stageActionEvidenceRequirementsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceRequirements]));
+  const stageActionEvidenceRequirementCountByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceRequirementCount]));
+  const stageActionRequiresEvidenceByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionRequiresEvidence]));
   const stageKindByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.kind]));
   const stageRequiredByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.required]));
   const stageRunPolicyByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.runPolicy]));
@@ -5118,6 +5145,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionWithCompletionCriteriaCount: stageActionRows.filter((stage) => stage.actionHasCompletionCriteria).length,
     totalActionCompletionCriteriaCount: stageActionRows.reduce((sum, stage) => sum + stage.actionCompletionCriteriaCount, 0),
     maxActionCompletionCriteriaCount: Math.max(0, ...stageActionRows.map((stage) => stage.actionCompletionCriteriaCount)),
+    actionRequiringEvidenceCount: stageActionRows.filter((stage) => stage.actionRequiresEvidence).length,
+    totalActionEvidenceRequirementCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceRequirementCount, 0),
+    maxActionEvidenceRequirementCount: Math.max(0, ...stageActionRows.map((stage) => stage.actionEvidenceRequirementCount)),
     requiredActionCount: countBy((stage) => stage.required),
     optionalActionCount: countBy((stage) => !stage.required),
     readOnlyActionCount: countBy((stage) => stage.runPolicy === "read-only"),
@@ -5146,6 +5176,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionCompletionCriteria: nextStageActionRow?.actionCompletionCriteria || [],
     nextActionCompletionCriteriaCount: nextStageActionRow?.actionCompletionCriteriaCount || 0,
     nextActionHasCompletionCriteria: nextStageActionRow?.actionHasCompletionCriteria === true,
+    nextActionEvidenceRequirements: nextStageActionRow?.actionEvidenceRequirements || [],
+    nextActionEvidenceRequirementCount: nextStageActionRow?.actionEvidenceRequirementCount || 0,
+    nextActionRequiresEvidence: nextStageActionRow?.actionRequiresEvidence === true,
     nextActionRunPolicy: nextStage?.runPolicy || "",
     nextActionSafetyLevel: nextStage?.safetyLevel || "",
     firstRequiredCommandStageKey: firstStageKey((stage) => stage.required && stage.commandCount > 0),
@@ -5160,6 +5193,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstActionBlockingOtherActionKey: stageActionRows.find((stage) => stage.actionBlocksStages)?.key || "",
     firstActionWithCompletionCriteriaKey: stageActionRows.find((stage) => stage.actionHasCompletionCriteria)?.key || "",
     firstManualActionWithCompletionCriteriaKey: stageActionRows.find((stage) => stage.manual && stage.actionHasCompletionCriteria)?.key || "",
+    firstActionRequiringEvidenceKey: stageActionRows.find((stage) => stage.actionRequiresEvidence)?.key || "",
+    firstManualActionRequiringEvidenceKey: stageActionRows.find((stage) => stage.manual && stage.actionRequiresEvidence)?.key || "",
+    firstEvidenceRecordingActionKey: stageActionRows.find((stage) => stage.actionType === "manual-evidence" && stage.actionRequiresEvidence)?.key || "",
     requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
     requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
     externalCalls: stages.some((stage) => stage.externalCalls),
@@ -5208,6 +5244,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionCompletionCriteriaByKey,
     stageActionCompletionCriteriaCountByKey,
     stageActionHasCompletionCriteriaByKey,
+    stageActionEvidenceRequirementsByKey,
+    stageActionEvidenceRequirementCountByKey,
+    stageActionRequiresEvidenceByKey,
     actionSummary,
     stageKindByKey,
     stageRequiredByKey,
@@ -5256,6 +5295,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionCompletionCriteria: nextStageActionRow?.actionCompletionCriteria || [],
     nextStageActionCompletionCriteriaCount: nextStageActionRow?.actionCompletionCriteriaCount || 0,
     nextStageActionHasCompletionCriteria: nextStageActionRow?.actionHasCompletionCriteria === true,
+    nextStageActionEvidenceRequirements: nextStageActionRow?.actionEvidenceRequirements || [],
+    nextStageActionEvidenceRequirementCount: nextStageActionRow?.actionEvidenceRequirementCount || 0,
+    nextStageActionRequiresEvidence: nextStageActionRow?.actionRequiresEvidence === true,
     nextStageKind: nextStage?.kind || "",
     nextStageRequired: nextStage?.required === true,
     nextStageRunPolicy: nextStage?.runPolicy || "",

@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 595 (unreleased)** — Added action evidence requirement metadata to the Website Console bundle handoff operator runbook.
 - **Phase 594 (unreleased)** — Added action completion criteria metadata to the Website Console bundle handoff operator runbook.
 - **Phase 593 (unreleased)** — Added action dependency reason metadata to the Website Console bundle handoff operator runbook.
 - **Phase 592 (unreleased)** — Added action prerequisite metadata to the Website Console bundle handoff operator runbook.
