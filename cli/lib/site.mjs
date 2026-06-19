@@ -5031,6 +5031,20 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
       "Final evidence record includes changed files, verification, viewport/accessibility checks, risks, and bundle digest.",
     ],
   }[stage.key] || []);
+  const getStageActionEvidenceTarget = (stage) => ({
+    verifySourceBundle: "local-command-output",
+    refreshHandoffSnapshot: "local-command-output",
+    writeEffectiveTaskPrompt: "local-output-file",
+    executeInTargetRepo: "target-repo-working-tree",
+    recordEvidence: "handoff-evidence-record",
+  }[stage.key] || "not-applicable");
+  const getStageActionEvidenceTargetLabel = (stage) => ({
+    "local-command-output": "Local command output",
+    "local-output-file": "Local output file",
+    "target-repo-working-tree": "Target repo working tree",
+    "handoff-evidence-record": "Handoff evidence record",
+    "not-applicable": "Not applicable",
+  }[getStageActionEvidenceTarget(stage)]);
   const stageActionRows = stages.map((stage) => ({
     step: stage.step,
     key: stage.key,
@@ -5062,6 +5076,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionEvidenceRequirements: getStageActionEvidenceRequirements(stage),
     actionEvidenceRequirementCount: getStageActionEvidenceRequirements(stage).length,
     actionRequiresEvidence: getStageActionEvidenceRequirements(stage).length > 0,
+    actionEvidenceTarget: getStageActionEvidenceTarget(stage),
+    actionEvidenceTargetLabel: getStageActionEvidenceTargetLabel(stage),
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -5104,6 +5120,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionEvidenceRequirementsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceRequirements]));
   const stageActionEvidenceRequirementCountByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceRequirementCount]));
   const stageActionRequiresEvidenceByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionRequiresEvidence]));
+  const stageActionEvidenceTargetByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceTarget]));
+  const stageActionEvidenceTargetLabelByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceTargetLabel]));
   const stageKindByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.kind]));
   const stageRequiredByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.required]));
   const stageRunPolicyByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.runPolicy]));
@@ -5148,6 +5166,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionRequiringEvidenceCount: stageActionRows.filter((stage) => stage.actionRequiresEvidence).length,
     totalActionEvidenceRequirementCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceRequirementCount, 0),
     maxActionEvidenceRequirementCount: Math.max(0, ...stageActionRows.map((stage) => stage.actionEvidenceRequirementCount)),
+    localCommandEvidenceActionCount: stageActionRows.filter((stage) => stage.actionEvidenceTarget === "local-command-output").length,
+    localOutputEvidenceActionCount: stageActionRows.filter((stage) => stage.actionEvidenceTarget === "local-output-file").length,
+    targetRepoEvidenceActionCount: stageActionRows.filter((stage) => stage.actionEvidenceTarget === "target-repo-working-tree").length,
+    handoffRecordEvidenceActionCount: stageActionRows.filter((stage) => stage.actionEvidenceTarget === "handoff-evidence-record").length,
     requiredActionCount: countBy((stage) => stage.required),
     optionalActionCount: countBy((stage) => !stage.required),
     readOnlyActionCount: countBy((stage) => stage.runPolicy === "read-only"),
@@ -5179,6 +5201,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionEvidenceRequirements: nextStageActionRow?.actionEvidenceRequirements || [],
     nextActionEvidenceRequirementCount: nextStageActionRow?.actionEvidenceRequirementCount || 0,
     nextActionRequiresEvidence: nextStageActionRow?.actionRequiresEvidence === true,
+    nextActionEvidenceTarget: nextStageActionRow?.actionEvidenceTarget || "",
+    nextActionEvidenceTargetLabel: nextStageActionRow?.actionEvidenceTargetLabel || "",
     nextActionRunPolicy: nextStage?.runPolicy || "",
     nextActionSafetyLevel: nextStage?.safetyLevel || "",
     firstRequiredCommandStageKey: firstStageKey((stage) => stage.required && stage.commandCount > 0),
@@ -5196,6 +5220,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstActionRequiringEvidenceKey: stageActionRows.find((stage) => stage.actionRequiresEvidence)?.key || "",
     firstManualActionRequiringEvidenceKey: stageActionRows.find((stage) => stage.manual && stage.actionRequiresEvidence)?.key || "",
     firstEvidenceRecordingActionKey: stageActionRows.find((stage) => stage.actionType === "manual-evidence" && stage.actionRequiresEvidence)?.key || "",
+    firstTargetRepoEvidenceActionKey: stageActionRows.find((stage) => stage.actionEvidenceTarget === "target-repo-working-tree")?.key || "",
+    firstLocalOutputEvidenceActionKey: stageActionRows.find((stage) => stage.actionEvidenceTarget === "local-output-file")?.key || "",
     requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
     requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
     externalCalls: stages.some((stage) => stage.externalCalls),
@@ -5247,6 +5273,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionEvidenceRequirementsByKey,
     stageActionEvidenceRequirementCountByKey,
     stageActionRequiresEvidenceByKey,
+    stageActionEvidenceTargetByKey,
+    stageActionEvidenceTargetLabelByKey,
     actionSummary,
     stageKindByKey,
     stageRequiredByKey,
@@ -5298,6 +5326,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceRequirements: nextStageActionRow?.actionEvidenceRequirements || [],
     nextStageActionEvidenceRequirementCount: nextStageActionRow?.actionEvidenceRequirementCount || 0,
     nextStageActionRequiresEvidence: nextStageActionRow?.actionRequiresEvidence === true,
+    nextStageActionEvidenceTarget: nextStageActionRow?.actionEvidenceTarget || "",
+    nextStageActionEvidenceTargetLabel: nextStageActionRow?.actionEvidenceTargetLabel || "",
     nextStageKind: nextStage?.kind || "",
     nextStageRequired: nextStage?.required === true,
     nextStageRunPolicy: nextStage?.runPolicy || "",

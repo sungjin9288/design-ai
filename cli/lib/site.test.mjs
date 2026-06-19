@@ -1942,6 +1942,20 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: true,
     recordEvidence: true,
   });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceTargetByKey, {
+    verifySourceBundle: "local-command-output",
+    refreshHandoffSnapshot: "local-command-output",
+    writeEffectiveTaskPrompt: "local-output-file",
+    executeInTargetRepo: "target-repo-working-tree",
+    recordEvidence: "handoff-evidence-record",
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceTargetLabelByKey, {
+    verifySourceBundle: "Local command output",
+    refreshHandoffSnapshot: "Local command output",
+    writeEffectiveTaskPrompt: "Local output file",
+    executeInTargetRepo: "Target repo working tree",
+    recordEvidence: "Handoff evidence record",
+  });
   assert.equal(
     report.operatorRunbook.stageActionInstructionsByKey.verifySourceBundle,
     "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff.",
@@ -1976,6 +1990,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionHasCompletionCriteria: stage.actionHasCompletionCriteria,
     actionEvidenceRequirementCount: stage.actionEvidenceRequirementCount,
     actionRequiresEvidence: stage.actionRequiresEvidence,
+    actionEvidenceTarget: stage.actionEvidenceTarget,
+    actionEvidenceTargetLabel: stage.actionEvidenceTargetLabel,
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -2008,6 +2024,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionHasCompletionCriteria: true,
       actionEvidenceRequirementCount: 2,
       actionRequiresEvidence: true,
+      actionEvidenceTarget: "local-command-output",
+      actionEvidenceTargetLabel: "Local command output",
       required: true,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -2040,6 +2058,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionHasCompletionCriteria: true,
       actionEvidenceRequirementCount: 1,
       actionRequiresEvidence: true,
+      actionEvidenceTarget: "local-command-output",
+      actionEvidenceTargetLabel: "Local command output",
       required: false,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -2072,6 +2092,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionHasCompletionCriteria: true,
       actionEvidenceRequirementCount: 2,
       actionRequiresEvidence: true,
+      actionEvidenceTarget: "local-output-file",
+      actionEvidenceTargetLabel: "Local output file",
       required: true,
       runPolicy: "writes-local-file",
       safetyLevel: "local-output-file",
@@ -2104,6 +2126,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionHasCompletionCriteria: true,
       actionEvidenceRequirementCount: 3,
       actionRequiresEvidence: true,
+      actionEvidenceTarget: "target-repo-working-tree",
+      actionEvidenceTargetLabel: "Target repo working tree",
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -2136,6 +2160,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionHasCompletionCriteria: true,
       actionEvidenceRequirementCount: 1,
       actionRequiresEvidence: true,
+      actionEvidenceTarget: "handoff-evidence-record",
+      actionEvidenceTargetLabel: "Handoff evidence record",
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -2165,6 +2191,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionRequiringEvidenceCount: 5,
     totalActionEvidenceRequirementCount: 9,
     maxActionEvidenceRequirementCount: 3,
+    localCommandEvidenceActionCount: 2,
+    localOutputEvidenceActionCount: 1,
+    targetRepoEvidenceActionCount: 1,
+    handoffRecordEvidenceActionCount: 1,
     requiredActionCount: 4,
     optionalActionCount: 1,
     readOnlyActionCount: 2,
@@ -2202,6 +2232,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     ],
     nextActionEvidenceRequirementCount: 2,
     nextActionRequiresEvidence: true,
+    nextActionEvidenceTarget: "local-command-output",
+    nextActionEvidenceTargetLabel: "Local command output",
     nextActionRunPolicy: "read-only",
     nextActionSafetyLevel: "local-read-only",
     firstRequiredCommandStageKey: "verifySourceBundle",
@@ -2219,6 +2251,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     firstActionRequiringEvidenceKey: "verifySourceBundle",
     firstManualActionRequiringEvidenceKey: "executeInTargetRepo",
     firstEvidenceRecordingActionKey: "recordEvidence",
+    firstTargetRepoEvidenceActionKey: "executeInTargetRepo",
+    firstLocalOutputEvidenceActionKey: "writeEffectiveTaskPrompt",
     requiresTargetRepoWork: true,
     requiresEvidenceReturn: true,
     externalCalls: false,
@@ -2394,6 +2428,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   ]);
   assert.equal(report.operatorRunbook.nextStageActionEvidenceRequirementCount, 2);
   assert.equal(report.operatorRunbook.nextStageActionRequiresEvidence, true);
+  assert.equal(report.operatorRunbook.nextStageActionEvidenceTarget, "local-command-output");
+  assert.equal(report.operatorRunbook.nextStageActionEvidenceTargetLabel, "Local command output");
   assert.equal(report.operatorRunbook.nextStageKind, "read-only-gate");
   assert.equal(report.operatorRunbook.nextStageRequired, true);
   assert.equal(report.operatorRunbook.nextStageRunPolicy, "read-only");

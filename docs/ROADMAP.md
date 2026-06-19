@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 596 — Website Bundle Handoff Runbook Action Evidence Targets (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action evidence target metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can distinguish local command output, local output files, target-repo working-tree evidence, and final handoff evidence records without hard-coded evidence source rules.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceTargetByKey` so wrappers can route each handoff action to the correct evidence source.
+- Added `operatorRunbook.stageActionEvidenceTargetLabelByKey` so compact dashboards can render source labels without local string maps.
+- Added `actionEvidenceTarget` and `actionEvidenceTargetLabel` to each `stageActionRows[]` item.
+- Added `nextStageActionEvidenceTarget` and `nextStageActionEvidenceTargetLabel` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.localCommandEvidenceActionCount`, `localOutputEvidenceActionCount`, `targetRepoEvidenceActionCount`, `handoffRecordEvidenceActionCount`, `firstTargetRepoEvidenceActionKey`, and `firstLocalOutputEvidenceActionKey` for evidence capture dashboards.
+- Added unit and packed-tarball smoke assertions for evidence target lookup maps, row-level evidence target metadata, summary fields, and next-stage mirrors.
+
+### Impact
+- Wrappers can render different evidence capture affordances for command output, local prompt files, target-repo implementation proof, and final handoff evidence records.
+- Company website pilots get clearer separation between design-ai repo evidence and target website repo evidence before implementation starts.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 595 — Website Bundle Handoff Runbook Action Evidence Requirements (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes action evidence requirement metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render exactly what evidence should be captured after bundle validation, prompt output, target-repo implementation, and evidence recording without hard-coded company handoff rules.

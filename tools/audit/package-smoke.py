@@ -2569,6 +2569,20 @@ def assert_site_bundle_handoff_json_smoke(
             "executeInTargetRepo": True,
             "recordEvidence": True,
         }
+        or operator_runbook.get("stageActionEvidenceTargetByKey") != {
+            "verifySourceBundle": "local-command-output",
+            "refreshHandoffSnapshot": "local-command-output",
+            "writeEffectiveTaskPrompt": "local-output-file",
+            "executeInTargetRepo": "target-repo-working-tree",
+            "recordEvidence": "handoff-evidence-record",
+        }
+        or operator_runbook.get("stageActionEvidenceTargetLabelByKey") != {
+            "verifySourceBundle": "Local command output",
+            "refreshHandoffSnapshot": "Local command output",
+            "writeEffectiveTaskPrompt": "Local output file",
+            "executeInTargetRepo": "Target repo working tree",
+            "recordEvidence": "Handoff evidence record",
+        }
         or not isinstance(operator_runbook.get("stageActionInstructionsByKey"), dict)
         or operator_runbook["stageActionInstructionsByKey"].get("verifySourceBundle")
         != "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff."
@@ -2594,6 +2608,10 @@ def assert_site_bundle_handoff_json_smoke(
             "actionRequiringEvidenceCount": 5,
             "totalActionEvidenceRequirementCount": 9,
             "maxActionEvidenceRequirementCount": 3,
+            "localCommandEvidenceActionCount": 2,
+            "localOutputEvidenceActionCount": 1,
+            "targetRepoEvidenceActionCount": 1,
+            "handoffRecordEvidenceActionCount": 1,
             "requiredActionCount": 4,
             "optionalActionCount": 1,
             "readOnlyActionCount": 2,
@@ -2634,6 +2652,8 @@ def assert_site_bundle_handoff_json_smoke(
             ],
             "nextActionEvidenceRequirementCount": 2,
             "nextActionRequiresEvidence": True,
+            "nextActionEvidenceTarget": "local-command-output",
+            "nextActionEvidenceTargetLabel": "Local command output",
             "nextActionRunPolicy": "read-only",
             "nextActionSafetyLevel": "local-read-only",
             "firstRequiredCommandStageKey": "verifySourceBundle",
@@ -2651,6 +2671,8 @@ def assert_site_bundle_handoff_json_smoke(
             "firstActionRequiringEvidenceKey": "verifySourceBundle",
             "firstManualActionRequiringEvidenceKey": "executeInTargetRepo",
             "firstEvidenceRecordingActionKey": "recordEvidence",
+            "firstTargetRepoEvidenceActionKey": "executeInTargetRepo",
+            "firstLocalOutputEvidenceActionKey": "writeEffectiveTaskPrompt",
             "requiresTargetRepoWork": True,
             "requiresEvidenceReturn": True,
             "externalCalls": False,
@@ -2733,6 +2755,8 @@ def assert_site_bundle_handoff_json_smoke(
         != ["Strict bundle-check command output or JSON status.", "Bundle digest and zero drift counts."]
         or operator_runbook.get("nextStageActionEvidenceRequirementCount") != 2
         or operator_runbook.get("nextStageActionRequiresEvidence") is not True
+        or operator_runbook.get("nextStageActionEvidenceTarget") != "local-command-output"
+        or operator_runbook.get("nextStageActionEvidenceTargetLabel") != "Local command output"
         or operator_runbook.get("nextStageKind") != "read-only-gate"
         or operator_runbook.get("nextStageRequired") is not True
         or operator_runbook.get("nextStageRunPolicy") != "read-only"
@@ -2786,6 +2810,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[0].get("actionHasCompletionCriteria") is not True
         or action_rows[0].get("actionEvidenceRequirementCount") != 2
         or action_rows[0].get("actionRequiresEvidence") is not True
+        or action_rows[0].get("actionEvidenceTarget") != "local-command-output"
+        or action_rows[0].get("actionEvidenceTargetLabel") != "Local command output"
         or action_rows[0].get("commandKeys") != verify_stage.get("commandKeys")
         or action_rows[0].get("manual") is not False
         or action_rows[2].get("actionType") != "write-local-output"
@@ -2803,6 +2829,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[2].get("actionHasCompletionCriteria") is not True
         or action_rows[2].get("actionEvidenceRequirementCount") != 2
         or action_rows[2].get("actionRequiresEvidence") is not True
+        or action_rows[2].get("actionEvidenceTarget") != "local-output-file"
+        or action_rows[2].get("actionEvidenceTargetLabel") != "Local output file"
         or action_rows[2].get("outputFiles") != task_prompt_stage.get("outputFiles")
         or action_rows[2].get("writesLocalFile") != task_prompt_stage.get("writesLocalFile")
         or action_rows[3].get("actionType") != "manual-target-repo"
@@ -2821,6 +2849,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[3].get("actionHasCompletionCriteria") is not True
         or action_rows[3].get("actionEvidenceRequirementCount") != 3
         or action_rows[3].get("actionRequiresEvidence") is not True
+        or action_rows[3].get("actionEvidenceTarget") != "target-repo-working-tree"
+        or action_rows[3].get("actionEvidenceTargetLabel") != "Target repo working tree"
         or action_rows[3].get("manual") is not True
         or operator_runbook.get("nextStage") != verify_stage
         or operator_runbook.get("nextStageSummary") != verify_stage.get("reason")
