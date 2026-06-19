@@ -4913,6 +4913,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageSafetyLevelByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.safetyLevel]));
   const stageCommandCountByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commandCount]));
   const stageOutputFilesByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.outputFiles]));
+  const stageHasCommandsByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commandCount > 0]));
+  const stageManualByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commandCount === 0]));
+  const stageWritesLocalFileByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.writesLocalFile]));
+  const stageExternalCallsByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.externalCalls]));
+  const stageTargetRepoMutationByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.targetRepoMutation]));
   const commandStageKeys = commandStages.map((stage) => stage.key);
   const manualStageKeys = stages.filter((stage) => stage.commandCount === 0).map((stage) => stage.key);
   const nextStageKey = "verifySourceBundle";
@@ -4944,6 +4949,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageSafetyLevelByKey,
     stageCommandCountByKey,
     stageOutputFilesByKey,
+    stageHasCommandsByKey,
+    stageManualByKey,
+    stageWritesLocalFileByKey,
+    stageExternalCallsByKey,
+    stageTargetRepoMutationByKey,
     commandStageKeys,
     manualStageKeys,
     nextStageKey,
@@ -4956,6 +4966,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageSafetyLevel: nextStage?.safetyLevel || "",
     nextStageCommandCount: nextStage?.commandCount || 0,
     nextStageOutputFiles: nextStage?.outputFiles || [],
+    nextStageHasCommands: (nextStage?.commandCount || 0) > 0,
+    nextStageManual: (nextStage?.commandCount || 0) === 0,
+    nextStageWritesLocalFile: nextStage?.writesLocalFile === true,
+    nextStageExternalCalls: nextStage?.externalCalls === true,
+    nextStageTargetRepoMutation: nextStage?.targetRepoMutation === true,
     nextStageCommandKeys: nextStage?.commandKeys || [],
     nextCommandKey,
     nextCommand: nextCommandEntry?.command || "",

@@ -2370,6 +2370,41 @@ def assert_site_bundle_handoff_json_smoke(
             "executeInTargetRepo": 0,
             "recordEvidence": 0,
         }
+        or operator_runbook.get("stageHasCommandsByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": True,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": False,
+            "recordEvidence": False,
+        }
+        or operator_runbook.get("stageManualByKey") != {
+            "verifySourceBundle": False,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": False,
+            "executeInTargetRepo": True,
+            "recordEvidence": True,
+        }
+        or operator_runbook.get("stageWritesLocalFileByKey") != {
+            "verifySourceBundle": False,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": False,
+            "recordEvidence": False,
+        }
+        or operator_runbook.get("stageExternalCallsByKey") != {
+            "verifySourceBundle": False,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": False,
+            "executeInTargetRepo": False,
+            "recordEvidence": False,
+        }
+        or operator_runbook.get("stageTargetRepoMutationByKey") != {
+            "verifySourceBundle": False,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": False,
+            "executeInTargetRepo": False,
+            "recordEvidence": False,
+        }
         or operator_runbook.get("commandStageKeys") != [
             "verifySourceBundle",
             "refreshHandoffSnapshot",
@@ -2387,6 +2422,11 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("nextStageSafetyLevel") != "local-read-only"
         or operator_runbook.get("nextStageCommandCount") != 1
         or operator_runbook.get("nextStageOutputFiles") != []
+        or operator_runbook.get("nextStageHasCommands") is not True
+        or operator_runbook.get("nextStageManual") is not False
+        or operator_runbook.get("nextStageWritesLocalFile") is not False
+        or operator_runbook.get("nextStageExternalCalls") is not False
+        or operator_runbook.get("nextStageTargetRepoMutation") is not False
         or operator_runbook.get("nextStageCommandKeys") != ["source.bundleCheck.strict"]
         or operator_runbook.get("nextCommandKey") != "source.bundleCheck.strict"
         or not isinstance(operator_runbook.get("stageByKey"), dict)
@@ -2409,6 +2449,12 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook["stageSummaryByKey"].get("writeEffectiveTaskPrompt") != task_prompt_stage.get("reason")
         or operator_runbook["stageOutputFilesByKey"].get("writeEffectiveTaskPrompt") != task_prompt_stage.get("outputFiles")
         or operator_runbook["stageOutputFilesByKey"].get("verifySourceBundle") != []
+        or operator_runbook["stageHasCommandsByKey"].get("verifySourceBundle") != (verify_stage.get("commandCount") > 0)
+        or operator_runbook["stageHasCommandsByKey"].get("executeInTargetRepo") != (manual_stage.get("commandCount") > 0)
+        or operator_runbook["stageManualByKey"].get("executeInTargetRepo") != (manual_stage.get("commandCount") == 0)
+        or operator_runbook["stageWritesLocalFileByKey"].get("writeEffectiveTaskPrompt") != task_prompt_stage.get("writesLocalFile")
+        or operator_runbook["stageExternalCallsByKey"].get("verifySourceBundle") != verify_stage.get("externalCalls")
+        or operator_runbook["stageTargetRepoMutationByKey"].get("executeInTargetRepo") != manual_stage.get("targetRepoMutation")
         or not isinstance(operator_runbook.get("nextCommandEntry"), dict)
         or operator_runbook["nextCommandEntry"].get("key") != "source.bundleCheck.strict"
         or operator_runbook.get("nextCommand") != operator_runbook["nextCommandEntry"].get("command")

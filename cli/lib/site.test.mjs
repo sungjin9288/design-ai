@@ -1802,6 +1802,41 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: [],
     recordEvidence: [],
   });
+  assert.deepEqual(report.operatorRunbook.stageHasCommandsByKey, {
+    verifySourceBundle: true,
+    refreshHandoffSnapshot: true,
+    writeEffectiveTaskPrompt: true,
+    executeInTargetRepo: false,
+    recordEvidence: false,
+  });
+  assert.deepEqual(report.operatorRunbook.stageManualByKey, {
+    verifySourceBundle: false,
+    refreshHandoffSnapshot: false,
+    writeEffectiveTaskPrompt: false,
+    executeInTargetRepo: true,
+    recordEvidence: true,
+  });
+  assert.deepEqual(report.operatorRunbook.stageWritesLocalFileByKey, {
+    verifySourceBundle: false,
+    refreshHandoffSnapshot: false,
+    writeEffectiveTaskPrompt: true,
+    executeInTargetRepo: false,
+    recordEvidence: false,
+  });
+  assert.deepEqual(report.operatorRunbook.stageExternalCallsByKey, {
+    verifySourceBundle: false,
+    refreshHandoffSnapshot: false,
+    writeEffectiveTaskPrompt: false,
+    executeInTargetRepo: false,
+    recordEvidence: false,
+  });
+  assert.deepEqual(report.operatorRunbook.stageTargetRepoMutationByKey, {
+    verifySourceBundle: false,
+    refreshHandoffSnapshot: false,
+    writeEffectiveTaskPrompt: false,
+    executeInTargetRepo: false,
+    recordEvidence: false,
+  });
   assert.deepEqual(report.operatorRunbook.commandStageKeys, [
     "verifySourceBundle",
     "refreshHandoffSnapshot",
@@ -1820,6 +1855,11 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.operatorRunbook.nextStageSafetyLevel, "local-read-only");
   assert.equal(report.operatorRunbook.nextStageCommandCount, 1);
   assert.deepEqual(report.operatorRunbook.nextStageOutputFiles, []);
+  assert.equal(report.operatorRunbook.nextStageHasCommands, true);
+  assert.equal(report.operatorRunbook.nextStageManual, false);
+  assert.equal(report.operatorRunbook.nextStageWritesLocalFile, false);
+  assert.equal(report.operatorRunbook.nextStageExternalCalls, false);
+  assert.equal(report.operatorRunbook.nextStageTargetRepoMutation, false);
   assert.deepEqual(report.operatorRunbook.nextStageCommandKeys, ["source.bundleCheck.strict"]);
   assert.equal(report.operatorRunbook.nextCommand, report.commandManifest.commands[1].command);
   assert.deepEqual(report.operatorRunbook.nextCommandArgs, ["design-ai", "site", dir, "--bundle-check", "--strict", "--json"]);

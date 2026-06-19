@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 587 — Website Bundle Handoff Runbook Stage Capability Flags (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes stage capability flags as stable lookup maps, so wrappers and GUI surfaces can distinguish command-bearing stages, manual target-repo stages, local output writes, external calls, and target-repo mutation boundaries without scanning ordered stage arrays.
+
+### Added
+- Added `operatorRunbook.stageHasCommandsByKey` for stable stage-key to command-bearing boolean lookup.
+- Added `operatorRunbook.stageManualByKey` so wrappers can mark target-repo/manual stages without reducing `stages[]`.
+- Added `operatorRunbook.stageWritesLocalFileByKey`, `stageExternalCallsByKey`, and `stageTargetRepoMutationByKey` so wrappers can gate local output, external-call, and target-repo mutation affordances from compact maps.
+- Added `nextStageHasCommands`, `nextStageManual`, `nextStageWritesLocalFile`, `nextStageExternalCalls`, and `nextStageTargetRepoMutation` as top-level mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for stage capability lookup parity and next-stage capability metadata.
+
+### Impact
+- Wrappers can render action buttons, manual badges, local-output warnings, and mutation boundary chips without scanning `operatorRunbook.stages`.
+- Company website pilots get clearer stage capability metadata before moving a Website bundle task into the target repo.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 586 — Website Bundle Handoff Runbook Stage Gating Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes stage gating fields as stable lookup maps, so wrappers and GUI surfaces can render stage status, run policy, safety, command counts, and output targets without scanning ordered stage arrays.
