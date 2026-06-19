@@ -2631,6 +2631,44 @@ def assert_site_bundle_handoff_json_smoke(
             "payloadPath": "sourceBundle.verification.bundleDigest",
         },
     ]
+    binding_keys = [
+        "key",
+        "label",
+        "payloadNamespace",
+        "payloadPath",
+        "inputType",
+        "valueShape",
+        "acceptsMultiple",
+        "required",
+        "requirementLabel",
+        "emptyValue",
+        "validationRule",
+        "minLength",
+        "sectionKey",
+        "sectionLabel",
+        "ariaLabel",
+    ]
+    expected_next_capture_payload_bindings = [
+        {key: field[key] for key in binding_keys}
+        for field in expected_next_capture_fields
+    ]
+    expected_target_repo_changed_files_binding = {
+        "key": "targetRepoChangedFiles",
+        "label": "Target repo changed files",
+        "payloadNamespace": "targetRepo",
+        "payloadPath": "targetRepo.changedFiles",
+        "inputType": "list",
+        "valueShape": "string-list",
+        "acceptsMultiple": True,
+        "required": True,
+        "requirementLabel": "Required",
+        "emptyValue": [],
+        "validationRule": "non-empty-file-list",
+        "minLength": 1,
+        "sectionKey": "target-repo-changes",
+        "sectionLabel": "Target repo changes",
+        "ariaLabel": "Target repo changed files evidence (required)",
+    }
     if (
         operator_runbook.get("version") != 1
         or operator_runbook.get("source") != "bundle-handoff"
@@ -2942,6 +2980,11 @@ def assert_site_bundle_handoff_json_smoke(
         != expected_capture_payload_templates
         or operator_runbook.get("stageActionEvidenceCapturePayloadFlatTemplateByKey")
         != expected_capture_payload_flat_templates
+        or operator_runbook.get("stageActionEvidenceCapturePayloadBindingsByKey", {}).get("verifySourceBundle")
+        != expected_next_capture_payload_bindings
+        or operator_runbook.get("stageActionEvidenceCapturePayloadBindingsByKey", {})
+        .get("executeInTargetRepo", [{}])[0]
+        != expected_target_repo_changed_files_binding
         or operator_runbook.get("stageActionEvidenceCaptureFieldValidationRulesByKey") != expected_capture_field_validation_rules
         or operator_runbook.get("stageActionEvidenceCaptureFieldMinLengthsByKey") != expected_capture_field_min_lengths
         or operator_runbook.get("stageActionEvidenceCaptureFieldExamplesByKey", {}).get("verifySourceBundle")
@@ -3050,6 +3093,11 @@ def assert_site_bundle_handoff_json_smoke(
             "actionWithEvidenceCapturePayloadTemplateCount": 5,
             "evidenceCapturePayloadTemplatePathCount": 10,
             "maxActionEvidenceCapturePayloadTemplatePathCount": 3,
+            "actionWithEvidenceCapturePayloadBindingCount": 5,
+            "evidenceCapturePayloadBindingCount": 10,
+            "requiredEvidenceCapturePayloadBindingCount": 9,
+            "optionalEvidenceCapturePayloadBindingCount": 1,
+            "multiValueEvidenceCapturePayloadBindingCount": 1,
             "validatedEvidenceCaptureFieldCount": 10,
             "requiredValidatedEvidenceCaptureFieldCount": 9,
             "optionalValidatedEvidenceCaptureFieldCount": 1,
@@ -3133,6 +3181,7 @@ def assert_site_bundle_handoff_json_smoke(
             "nextActionEvidenceCapturePayloadNamespaceCount": 1,
             "nextActionEvidenceCapturePayloadTemplate": expected_capture_payload_templates["verifySourceBundle"],
             "nextActionEvidenceCapturePayloadFlatTemplate": expected_capture_payload_flat_templates["verifySourceBundle"],
+            "nextActionEvidenceCapturePayloadBindings": expected_next_capture_payload_bindings,
             "nextActionEvidenceCaptureFieldInputTypes": ["textarea", "text"],
             "nextActionEvidenceCaptureFieldValueShapes": ["long-text", "short-text"],
             "nextActionEvidenceCaptureFieldAcceptsMultiple": [False, False],
@@ -3302,6 +3351,8 @@ def assert_site_bundle_handoff_json_smoke(
         != expected_capture_payload_templates["verifySourceBundle"]
         or operator_runbook.get("nextStageActionEvidenceCapturePayloadFlatTemplate")
         != expected_capture_payload_flat_templates["verifySourceBundle"]
+        or operator_runbook.get("nextStageActionEvidenceCapturePayloadBindings")
+        != expected_next_capture_payload_bindings
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
@@ -3399,6 +3450,8 @@ def assert_site_bundle_handoff_json_smoke(
         != expected_capture_payload_templates["verifySourceBundle"]
         or action_rows[0].get("actionEvidenceCapturePayloadFlatTemplate")
         != expected_capture_payload_flat_templates["verifySourceBundle"]
+        or action_rows[0].get("actionEvidenceCapturePayloadBindings")
+        != expected_next_capture_payload_bindings
         or action_rows[0].get("actionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
         or action_rows[0].get("actionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
         or action_rows[0].get("actionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
@@ -3497,6 +3550,8 @@ def assert_site_bundle_handoff_json_smoke(
         != expected_capture_payload_templates["executeInTargetRepo"]
         or action_rows[3].get("actionEvidenceCapturePayloadFlatTemplate")
         != expected_capture_payload_flat_templates["executeInTargetRepo"]
+        or action_rows[3].get("actionEvidenceCapturePayloadBindings", [{}])[0]
+        != expected_target_repo_changed_files_binding
         or action_rows[3].get("actionEvidenceCaptureFieldInputTypes") != ["list", "textarea", "textarea"]
         or action_rows[3].get("actionEvidenceCaptureFieldValueShapes") != ["string-list", "long-text", "long-text"]
         or action_rows[3].get("actionEvidenceCaptureFieldAcceptsMultiple") != [True, False, False]
