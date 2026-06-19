@@ -5172,29 +5172,75 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     message: field.validationHint,
     failureMessage: getEvidenceCaptureValidationFailureMessage(field),
   }));
-  const buildEvidenceCaptureInitialValidationStates = (fields) => fields.map((field) => ({
-    key: field.key,
-    label: field.label,
-    rule: field.validationRule,
-    status: field.required ? "missing-required" : "optional-empty",
-    valid: !field.required,
-    blocking: field.required,
-    severity: field.required ? "error" : "info",
-    required: field.required,
-    allowsEmpty: !field.required,
-    touched: false,
-    dirty: false,
-    valuePresent: false,
-    valueLength: 0,
-    minLength: field.minLength,
-    valueShape: field.valueShape,
-    acceptsMultiple: field.acceptsMultiple,
-    emptyValue: cloneEvidenceCaptureValue(field.emptyValue),
-    payloadPath: field.payloadPath,
-    message: field.required
-      ? getEvidenceCaptureValidationFailureMessage(field)
-      : field.validationHint,
-  }));
+  const getEvidenceCaptureInitialValidationDisplay = (status) => ({
+    "missing-required": {
+      statusLabel: "Missing required",
+      statusTone: "danger",
+      iconName: "alert-circle",
+      actionLabel: "Provide evidence",
+      helperText: "Required before completion",
+    },
+    "optional-empty": {
+      statusLabel: "Optional empty",
+      statusTone: "info",
+      iconName: "info",
+      actionLabel: "Add optional evidence",
+      helperText: "Can remain empty",
+    },
+  }[status] || {
+    statusLabel: "Unknown",
+    statusTone: "neutral",
+    iconName: "circle",
+    actionLabel: "Review",
+    helperText: "Review this field",
+  });
+  const buildEvidenceCaptureInitialValidationStates = (fields) => fields.map((field) => {
+    const status = field.required ? "missing-required" : "optional-empty";
+    const display = getEvidenceCaptureInitialValidationDisplay(status);
+    return {
+      key: field.key,
+      label: field.label,
+      rule: field.validationRule,
+      status,
+      statusLabel: display.statusLabel,
+      statusTone: display.statusTone,
+      iconName: display.iconName,
+      actionLabel: display.actionLabel,
+      helperText: display.helperText,
+      valid: !field.required,
+      blocking: field.required,
+      severity: field.required ? "error" : "info",
+      required: field.required,
+      allowsEmpty: !field.required,
+      touched: false,
+      dirty: false,
+      valuePresent: false,
+      valueLength: 0,
+      minLength: field.minLength,
+      valueShape: field.valueShape,
+      acceptsMultiple: field.acceptsMultiple,
+      emptyValue: cloneEvidenceCaptureValue(field.emptyValue),
+      payloadPath: field.payloadPath,
+      message: field.required
+        ? getEvidenceCaptureValidationFailureMessage(field)
+        : field.validationHint,
+    };
+  });
+  const buildEvidenceCaptureInitialValidationDisplayMetadata = (fields) => (
+    buildEvidenceCaptureInitialValidationStates(fields).map((state) => ({
+      key: state.key,
+      label: state.label,
+      status: state.status,
+      statusLabel: state.statusLabel,
+      statusTone: state.statusTone,
+      iconName: state.iconName,
+      actionLabel: state.actionLabel,
+      helperText: state.helperText,
+      blocking: state.blocking,
+      required: state.required,
+      message: state.message,
+    }))
+  );
   const getStageActionEvidenceCaptureFields = (stage) => ({
     verifySourceBundle: [
       {
@@ -5394,6 +5440,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionEvidenceCapturePayloadBindings: buildEvidenceCapturePayloadBindings(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureValidationSpecs: buildEvidenceCaptureValidationSpecs(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureInitialValidationStates: buildEvidenceCaptureInitialValidationStates(getStageActionEvidenceCaptureFields(stage)),
+    actionEvidenceCaptureInitialValidationDisplayMetadata: buildEvidenceCaptureInitialValidationDisplayMetadata(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureFieldInputTypes: getStageActionEvidenceCaptureFields(stage).map((field) => field.inputType),
     actionEvidenceCaptureFieldValueShapes: getStageActionEvidenceCaptureFields(stage).map((field) => field.valueShape),
     actionEvidenceCaptureFieldAcceptsMultiple: getStageActionEvidenceCaptureFields(stage).map((field) => field.acceptsMultiple),
@@ -5474,6 +5521,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionEvidenceCapturePayloadBindingsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCapturePayloadBindings]));
   const stageActionEvidenceCaptureValidationSpecsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureValidationSpecs]));
   const stageActionEvidenceCaptureInitialValidationStatesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationStates]));
+  const stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationDisplayMetadata]));
   const stageActionEvidenceCaptureFieldInputTypesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldInputTypes]));
   const stageActionEvidenceCaptureFieldValueShapesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldValueShapes]));
   const stageActionEvidenceCaptureFieldAcceptsMultipleByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldAcceptsMultiple]));
@@ -5590,6 +5638,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     optionalEmptyInitialEvidenceCaptureStateCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationStates.filter((state) => state.status === "optional-empty").length, 0),
     missingRequiredInitialEvidenceCaptureStateCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationStates.filter((state) => state.status === "missing-required").length, 0),
     pristineInitialEvidenceCaptureStateCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationStates.filter((state) => !state.dirty && !state.touched).length, 0),
+    actionWithEvidenceCaptureInitialValidationDisplayMetadataCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationDisplayMetadata.length > 0).length,
+    evidenceCaptureInitialValidationDisplayMetadataCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationDisplayMetadata.length, 0),
+    dangerInitialEvidenceCaptureDisplayMetadataCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationDisplayMetadata.filter((display) => display.statusTone === "danger").length, 0),
+    infoInitialEvidenceCaptureDisplayMetadataCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationDisplayMetadata.filter((display) => display.statusTone === "info").length, 0),
+    blockingInitialEvidenceCaptureDisplayMetadataCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationDisplayMetadata.filter((display) => display.blocking).length, 0),
+    nonBlockingInitialEvidenceCaptureDisplayMetadataCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationDisplayMetadata.filter((display) => !display.blocking).length, 0),
     validatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.validationRule).length, 0),
     requiredValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.required && field.validationRule).length, 0),
     optionalValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => !field.required && field.validationRule).length, 0),
@@ -5649,6 +5703,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionEvidenceCapturePayloadBindings: nextStageActionRow?.actionEvidenceCapturePayloadBindings || [],
     nextActionEvidenceCaptureValidationSpecs: nextStageActionRow?.actionEvidenceCaptureValidationSpecs || [],
     nextActionEvidenceCaptureInitialValidationStates: nextStageActionRow?.actionEvidenceCaptureInitialValidationStates || [],
+    nextActionEvidenceCaptureInitialValidationDisplayMetadata: nextStageActionRow?.actionEvidenceCaptureInitialValidationDisplayMetadata || [],
     nextActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
     nextActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],
     nextActionEvidenceCaptureFieldAcceptsMultiple: nextStageActionRow?.actionEvidenceCaptureFieldAcceptsMultiple || [],
@@ -5763,6 +5818,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionEvidenceCapturePayloadBindingsByKey,
     stageActionEvidenceCaptureValidationSpecsByKey,
     stageActionEvidenceCaptureInitialValidationStatesByKey,
+    stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey,
     stageActionEvidenceCaptureFieldInputTypesByKey,
     stageActionEvidenceCaptureFieldValueShapesByKey,
     stageActionEvidenceCaptureFieldAcceptsMultipleByKey,
@@ -5852,6 +5908,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceCapturePayloadBindings: nextStageActionRow?.actionEvidenceCapturePayloadBindings || [],
     nextStageActionEvidenceCaptureValidationSpecs: nextStageActionRow?.actionEvidenceCaptureValidationSpecs || [],
     nextStageActionEvidenceCaptureInitialValidationStates: nextStageActionRow?.actionEvidenceCaptureInitialValidationStates || [],
+    nextStageActionEvidenceCaptureInitialValidationDisplayMetadata: nextStageActionRow?.actionEvidenceCaptureInitialValidationDisplayMetadata || [],
     nextStageActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
     nextStageActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],
     nextStageActionEvidenceCaptureFieldAcceptsMultiple: nextStageActionRow?.actionEvidenceCaptureFieldAcceptsMultiple || [],

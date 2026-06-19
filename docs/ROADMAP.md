@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 609 — Website Bundle Handoff Runbook Action Evidence Capture Initial Validation Display Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes display metadata for action evidence capture initial validation states in the Website bundle operator runbook, so wrappers and GUI surfaces can render first-load required/optional evidence states without maintaining a separate status-to-label or status-to-tone map.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey` so wrappers can consume per-action display rows with field key, label, status, status label, status tone, icon name, action label, helper text, blocking state, required state, and message.
+- Added row-level `actionEvidenceCaptureInitialValidationDisplayMetadata` to every `stageActionRows[]` item.
+- Added display metadata fields directly to each `actionEvidenceCaptureInitialValidationStates[]` row so full state consumers do not need to join a parallel display array.
+- Added `actionSummary` totals for initial validation display metadata actions, total display rows, danger/info tones, blocking rows, and non-blocking rows.
+- Added matching `nextActionEvidenceCaptureInitialValidationDisplayMetadata` and `nextStageActionEvidenceCaptureInitialValidationDisplayMetadata` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for display metadata maps, optional/required status display semantics, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render Website bundle handoff evidence forms with stable badges, icons, helper text, and CTA labels for `missing-required` and `optional-empty` states from the CLI JSON contract alone.
+- Company website pilots get consistent first-render evidence form copy for required strict bundle output, bundle digest, prompt output, selected task id, changed files, verification results, viewport/accessibility notes, final evidence, and remaining risks while optional handoff JSON remains visibly non-blocking.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 608 — Website Bundle Handoff Runbook Action Evidence Capture Initial Validation States (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes initial validation state objects for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can initialize form validity, blocking status, and empty-state messages without running a separate validator before first render.
