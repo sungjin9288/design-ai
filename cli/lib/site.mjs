@@ -5153,6 +5153,22 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     sectionLabel: field.sectionLabel,
     ariaLabel: field.ariaLabel,
   }));
+  const buildEvidenceCaptureValidationSpecs = (fields) => fields.map((field) => ({
+    key: field.key,
+    label: field.label,
+    rule: field.validationRule,
+    severity: field.required ? "error" : "info",
+    required: field.required,
+    allowsEmpty: !field.required,
+    minLength: field.minLength,
+    valueShape: field.valueShape,
+    acceptsMultiple: field.acceptsMultiple,
+    emptyValue: cloneEvidenceCaptureValue(field.emptyValue),
+    message: field.validationHint,
+    failureMessage: field.required
+      ? `Provide ${field.label.toLowerCase()} before marking this action complete.`
+      : `Optional: provide ${field.label.toLowerCase()} when available.`,
+  }));
   const getStageActionEvidenceCaptureFields = (stage) => ({
     verifySourceBundle: [
       {
@@ -5350,6 +5366,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionEvidenceCapturePayloadTemplate: buildEvidenceCapturePayloadTemplate(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCapturePayloadFlatTemplate: buildEvidenceCapturePayloadFlatTemplate(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCapturePayloadBindings: buildEvidenceCapturePayloadBindings(getStageActionEvidenceCaptureFields(stage)),
+    actionEvidenceCaptureValidationSpecs: buildEvidenceCaptureValidationSpecs(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureFieldInputTypes: getStageActionEvidenceCaptureFields(stage).map((field) => field.inputType),
     actionEvidenceCaptureFieldValueShapes: getStageActionEvidenceCaptureFields(stage).map((field) => field.valueShape),
     actionEvidenceCaptureFieldAcceptsMultiple: getStageActionEvidenceCaptureFields(stage).map((field) => field.acceptsMultiple),
@@ -5428,6 +5445,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionEvidenceCapturePayloadTemplateByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCapturePayloadTemplate]));
   const stageActionEvidenceCapturePayloadFlatTemplateByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCapturePayloadFlatTemplate]));
   const stageActionEvidenceCapturePayloadBindingsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCapturePayloadBindings]));
+  const stageActionEvidenceCaptureValidationSpecsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureValidationSpecs]));
   const stageActionEvidenceCaptureFieldInputTypesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldInputTypes]));
   const stageActionEvidenceCaptureFieldValueShapesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldValueShapes]));
   const stageActionEvidenceCaptureFieldAcceptsMultipleByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldAcceptsMultiple]));
@@ -5529,6 +5547,13 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     requiredEvidenceCapturePayloadBindingCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCapturePayloadBindings.filter((binding) => binding.required).length, 0),
     optionalEvidenceCapturePayloadBindingCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCapturePayloadBindings.filter((binding) => !binding.required).length, 0),
     multiValueEvidenceCapturePayloadBindingCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCapturePayloadBindings.filter((binding) => binding.acceptsMultiple).length, 0),
+    actionWithEvidenceCaptureValidationSpecCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureValidationSpecs.length > 0).length,
+    evidenceCaptureValidationSpecCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureValidationSpecs.length, 0),
+    requiredEvidenceCaptureValidationSpecCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureValidationSpecs.filter((spec) => spec.required).length, 0),
+    optionalEvidenceCaptureValidationSpecCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureValidationSpecs.filter((spec) => !spec.required).length, 0),
+    errorEvidenceCaptureValidationSpecCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureValidationSpecs.filter((spec) => spec.severity === "error").length, 0),
+    infoEvidenceCaptureValidationSpecCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureValidationSpecs.filter((spec) => spec.severity === "info").length, 0),
+    multiValueEvidenceCaptureValidationSpecCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureValidationSpecs.filter((spec) => spec.acceptsMultiple).length, 0),
     validatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.validationRule).length, 0),
     requiredValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.required && field.validationRule).length, 0),
     optionalValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => !field.required && field.validationRule).length, 0),
@@ -5586,6 +5611,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionEvidenceCapturePayloadTemplate: nextStageActionRow?.actionEvidenceCapturePayloadTemplate || {},
     nextActionEvidenceCapturePayloadFlatTemplate: nextStageActionRow?.actionEvidenceCapturePayloadFlatTemplate || {},
     nextActionEvidenceCapturePayloadBindings: nextStageActionRow?.actionEvidenceCapturePayloadBindings || [],
+    nextActionEvidenceCaptureValidationSpecs: nextStageActionRow?.actionEvidenceCaptureValidationSpecs || [],
     nextActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
     nextActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],
     nextActionEvidenceCaptureFieldAcceptsMultiple: nextStageActionRow?.actionEvidenceCaptureFieldAcceptsMultiple || [],
@@ -5698,6 +5724,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionEvidenceCapturePayloadTemplateByKey,
     stageActionEvidenceCapturePayloadFlatTemplateByKey,
     stageActionEvidenceCapturePayloadBindingsByKey,
+    stageActionEvidenceCaptureValidationSpecsByKey,
     stageActionEvidenceCaptureFieldInputTypesByKey,
     stageActionEvidenceCaptureFieldValueShapesByKey,
     stageActionEvidenceCaptureFieldAcceptsMultipleByKey,
@@ -5785,6 +5812,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceCapturePayloadTemplate: nextStageActionRow?.actionEvidenceCapturePayloadTemplate || {},
     nextStageActionEvidenceCapturePayloadFlatTemplate: nextStageActionRow?.actionEvidenceCapturePayloadFlatTemplate || {},
     nextStageActionEvidenceCapturePayloadBindings: nextStageActionRow?.actionEvidenceCapturePayloadBindings || [],
+    nextStageActionEvidenceCaptureValidationSpecs: nextStageActionRow?.actionEvidenceCaptureValidationSpecs || [],
     nextStageActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
     nextStageActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],
     nextStageActionEvidenceCaptureFieldAcceptsMultiple: nextStageActionRow?.actionEvidenceCaptureFieldAcceptsMultiple || [],

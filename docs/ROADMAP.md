@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 607 — Website Bundle Handoff Runbook Action Evidence Capture Validation Specs (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact validation spec objects for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can validate required and optional evidence values without maintaining a separate rule schema.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureValidationSpecsByKey` so wrappers can consume per-action validation rows with field key, label, rule id, severity, required state, empty-value policy, min length, value shape, multiplicity, user-facing message, and failure message.
+- Added row-level `actionEvidenceCaptureValidationSpecs` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for validation-spec actions, total specs, required specs, optional specs, error/info specs, and multi-value specs.
+- Added matching `nextActionEvidenceCaptureValidationSpecs` and `nextStageActionEvidenceCaptureValidationSpecs` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for validation spec maps, optional spec severity, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can validate Website bundle handoff evidence forms from the CLI JSON contract without translating validation rule ids into separate local schema objects.
+- Company website pilots get deterministic form checks for strict bundle output, bundle digest, optional handoff JSON, prompt output, selected task id, changed files, verification results, viewport/accessibility notes, final evidence, and remaining risks.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 606 — Website Bundle Handoff Runbook Action Evidence Capture Payload Bindings (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact payload binding objects for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can bind controls to payload paths, value shapes, validation, sections, and accessible labels without zipping parallel arrays.
