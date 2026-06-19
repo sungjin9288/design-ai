@@ -2327,8 +2327,20 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("targetRepoMutationCommandStageCount") != 0
         or operator_runbook.get("effectiveTaskId") != expected_effective_task_id
         or operator_runbook.get("effectiveStrictTaskCommandKey") != f"task.{expected_effective_task_id}.handoff.strict"
+        or operator_runbook.get("stageKeys") != expected_stage_keys
+        or operator_runbook.get("commandStageKeys") != [
+            "verifySourceBundle",
+            "refreshHandoffSnapshot",
+            "writeEffectiveTaskPrompt",
+        ]
+        or operator_runbook.get("manualStageKeys") != [
+            "executeInTargetRepo",
+            "recordEvidence",
+        ]
         or operator_runbook.get("nextStageKey") != "verifySourceBundle"
+        or operator_runbook.get("nextStageCommandKeys") != ["source.bundleCheck.strict"]
         or operator_runbook.get("nextCommandKey") != "source.bundleCheck.strict"
+        or not isinstance(operator_runbook.get("stageByKey"), dict)
         or not isinstance(runbook_stages, list)
         or [stage.get("key") for stage in runbook_stages] != expected_stage_keys
     ):
@@ -2336,6 +2348,20 @@ def assert_site_bundle_handoff_json_smoke(
     verify_stage = runbook_stages[0]
     task_prompt_stage = runbook_stages[2]
     manual_stage = runbook_stages[3]
+    stage_by_key = operator_runbook["stageByKey"]
+    if (
+        stage_by_key.get("verifySourceBundle") != verify_stage
+        or stage_by_key.get("writeEffectiveTaskPrompt") != task_prompt_stage
+        or operator_runbook.get("nextStage") != verify_stage
+        or not isinstance(operator_runbook.get("nextCommandEntry"), dict)
+        or operator_runbook["nextCommandEntry"].get("key") != "source.bundleCheck.strict"
+        or operator_runbook.get("nextCommand") != operator_runbook["nextCommandEntry"].get("command")
+        or operator_runbook.get("nextCommandArgs") != operator_runbook["nextCommandEntry"].get("commandArgs")
+        or operator_runbook.get("nextCommandRunPolicy") != "read-only"
+        or operator_runbook.get("nextCommandSafetyLevel") != "local-read-only"
+        or operator_runbook.get("nextCommandSafety") != operator_runbook["nextCommandEntry"].get("safety")
+    ):
+        raise SystemExit(f"site bundle handoff after {context} operator runbook lookup fields changed: {operator_runbook!r}")
     if (
         verify_stage.get("commandKeys") != ["source.bundleCheck.strict"]
         or verify_stage.get("runPolicy") != "read-only"

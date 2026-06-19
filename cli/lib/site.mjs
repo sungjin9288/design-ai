@@ -4903,6 +4903,14 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     }),
   ];
   const commandStages = stages.filter((stage) => stage.commandCount > 0);
+  const stageKeys = stages.map((stage) => stage.key);
+  const stageByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage]));
+  const commandStageKeys = commandStages.map((stage) => stage.key);
+  const manualStageKeys = stages.filter((stage) => stage.commandCount === 0).map((stage) => stage.key);
+  const nextStageKey = "verifySourceBundle";
+  const nextCommandKey = "source.bundleCheck.strict";
+  const nextStage = stageByKey[nextStageKey] || null;
+  const nextCommandEntry = commandByKey.get(nextCommandKey) || null;
   const countBy = (predicate) => stages.filter(predicate).length;
   return {
     version: 1,
@@ -4918,8 +4926,20 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     targetRepoMutationCommandStageCount: countBy((stage) => stage.targetRepoMutation),
     effectiveTaskId: commandManifest?.effectiveTaskId || "",
     effectiveStrictTaskCommandKey,
-    nextStageKey: "verifySourceBundle",
-    nextCommandKey: "source.bundleCheck.strict",
+    stageKeys,
+    stageByKey,
+    commandStageKeys,
+    manualStageKeys,
+    nextStageKey,
+    nextStage,
+    nextStageCommandKeys: nextStage?.commandKeys || [],
+    nextCommandKey,
+    nextCommand: nextCommandEntry?.command || "",
+    nextCommandArgs: nextCommandEntry?.commandArgs || [],
+    nextCommandRunPolicy: nextCommandEntry?.runPolicy || "",
+    nextCommandSafetyLevel: nextCommandEntry?.safety?.safetyLevel || "",
+    nextCommandSafety: nextCommandEntry?.safety || null,
+    nextCommandEntry,
     stages,
   };
 }

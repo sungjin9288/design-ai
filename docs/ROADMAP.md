@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 584 — Website Bundle Handoff Runbook Lookup Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now makes the Website bundle operator runbook easier for wrappers and GUI surfaces to consume without scanning ordered arrays.
+
+### Added
+- Added `operatorRunbook.stageKeys` to preserve the validated stage order as a compact top-level list.
+- Added `operatorRunbook.stageByKey` so each runbook stage is addressable by stable key.
+- Added `operatorRunbook.commandStageKeys` and `operatorRunbook.manualStageKeys` so wrappers can separate executable local commands from manual target-repo stages.
+- Added `operatorRunbook.nextStage`, `nextStageCommandKeys`, `nextCommand`, `nextCommandArgs`, `nextCommandRunPolicy`, `nextCommandSafetyLevel`, `nextCommandSafety`, and `nextCommandEntry` for the first strict source-bundle gate.
+- Kept `operatorRunbook.stages`, `nextStageKey`, and `nextCommandKey` intact for backward compatibility.
+- Added unit and packed-tarball smoke assertions for lookup parity, next-command metadata, active task prompt stage lookup, and mirrored bundle JSON.
+
+### Impact
+- Wrappers can render or execute the first local read-only gate from one self-contained command object.
+- Company website pilots can distinguish stage-order display, command-bearing stages, and manual target-repo stages without rebuilding maps client-side.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 583 — Website Bundle Handoff Operator Runbook (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now includes an operator runbook derived from the unified command manifest, so wrappers and company website pilots can follow one staged handoff sequence.
