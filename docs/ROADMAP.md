@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 589 — Website Bundle Handoff Runbook Action Summary (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact action metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render the local run gate, optional refresh, local prompt output, manual target-repo implementation, and evidence return actions without scanning ordered stage arrays.
+
+### Added
+- Added `operatorRunbook.stageActionRows`, a compact per-stage action list with action type, action label, required state, run policy, safety level, command keys, output files, and mutation boundary flags.
+- Added `operatorRunbook.stageActionTypeByKey` and `stageActionLabelByKey` for stable stage-key lookups covering `run-local-gate`, `refresh-local-preview`, `write-local-output`, `manual-target-repo`, and `manual-evidence`.
+- Added `operatorRunbook.actionSummary` with action counts, next action metadata, first local-output/manual/evidence stage keys, and target-repo/evidence-return requirements.
+- Added `nextStageActionType` and `nextStageActionLabel` as top-level mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for action row ordering, action summary counts, and next-stage action metadata.
+
+### Impact
+- Wrappers can render run buttons, refresh previews, output-file actions, manual target-repo steps, and evidence return affordances from one compact contract.
+- Company website pilots get clearer handoff UI state before moving from local bundle validation into the target repo.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 588 — Website Bundle Handoff Runbook Stage Command Lookups (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes stage command lookup maps, so wrappers and GUI surfaces can render copy-ready commands, execution argv, run policies, and command safety levels for each runbook stage without scanning ordered stage arrays.

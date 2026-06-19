@@ -2398,6 +2398,46 @@ def assert_site_bundle_handoff_json_smoke(
             "executeInTargetRepo": [],
             "recordEvidence": [],
         }
+        or operator_runbook.get("stageActionTypeByKey") != {
+            "verifySourceBundle": "run-local-gate",
+            "refreshHandoffSnapshot": "refresh-local-preview",
+            "writeEffectiveTaskPrompt": "write-local-output",
+            "executeInTargetRepo": "manual-target-repo",
+            "recordEvidence": "manual-evidence",
+        }
+        or operator_runbook.get("stageActionLabelByKey") != {
+            "verifySourceBundle": "Run strict bundle check",
+            "refreshHandoffSnapshot": "Refresh strict handoff JSON",
+            "writeEffectiveTaskPrompt": "Write selected task prompt",
+            "executeInTargetRepo": "Implement in target repo",
+            "recordEvidence": "Record verification evidence",
+        }
+        or operator_runbook.get("actionSummary") != {
+            "totalActionCount": 5,
+            "commandActionCount": 3,
+            "manualActionCount": 2,
+            "requiredActionCount": 4,
+            "optionalActionCount": 1,
+            "readOnlyActionCount": 2,
+            "localOutputActionCount": 1,
+            "outputFileActionCount": 1,
+            "externalCallActionCount": 0,
+            "targetRepoMutationActionCount": 0,
+            "nextActionKey": "verifySourceBundle",
+            "nextActionType": "run-local-gate",
+            "nextActionLabel": "Run strict bundle check",
+            "nextActionRunPolicy": "read-only",
+            "nextActionSafetyLevel": "local-read-only",
+            "firstRequiredCommandStageKey": "verifySourceBundle",
+            "firstLocalOutputStageKey": "writeEffectiveTaskPrompt",
+            "firstManualStageKey": "executeInTargetRepo",
+            "firstRequiredManualStageKey": "executeInTargetRepo",
+            "firstEvidenceStageKey": "recordEvidence",
+            "requiresTargetRepoWork": True,
+            "requiresEvidenceReturn": True,
+            "externalCalls": False,
+            "targetRepoMutation": False,
+        }
         or operator_runbook.get("stageHasCommandsByKey") != {
             "verifySourceBundle": True,
             "refreshHandoffSnapshot": True,
@@ -2444,6 +2484,8 @@ def assert_site_bundle_handoff_json_smoke(
         ]
         or operator_runbook.get("nextStageKey") != "verifySourceBundle"
         or operator_runbook.get("nextStageLabel") != "Verify source bundle integrity"
+        or operator_runbook.get("nextStageActionType") != "run-local-gate"
+        or operator_runbook.get("nextStageActionLabel") != "Run strict bundle check"
         or operator_runbook.get("nextStageKind") != "read-only-gate"
         or operator_runbook.get("nextStageRequired") is not True
         or operator_runbook.get("nextStageRunPolicy") != "read-only"
@@ -2464,6 +2506,7 @@ def assert_site_bundle_handoff_json_smoke(
         or not isinstance(operator_runbook.get("stageSummaryByKey"), dict)
         or not isinstance(operator_runbook.get("stageCommandStringsByKey"), dict)
         or not isinstance(operator_runbook.get("stageCommandArgsByKey"), dict)
+        or not isinstance(operator_runbook.get("stageActionRows"), list)
         or not isinstance(operator_runbook.get("stageOutputFilesByKey"), dict)
         or not isinstance(runbook_stages, list)
         or [stage.get("key") for stage in runbook_stages] != expected_stage_keys
@@ -2472,10 +2515,21 @@ def assert_site_bundle_handoff_json_smoke(
     verify_stage = runbook_stages[0]
     task_prompt_stage = runbook_stages[2]
     manual_stage = runbook_stages[3]
+    action_rows = operator_runbook["stageActionRows"]
     stage_by_key = operator_runbook["stageByKey"]
     if (
         stage_by_key.get("verifySourceBundle") != verify_stage
         or stage_by_key.get("writeEffectiveTaskPrompt") != task_prompt_stage
+        or [stage.get("key") for stage in action_rows] != expected_stage_keys
+        or action_rows[0].get("actionType") != "run-local-gate"
+        or action_rows[0].get("actionLabel") != "Run strict bundle check"
+        or action_rows[0].get("commandKeys") != verify_stage.get("commandKeys")
+        or action_rows[0].get("manual") is not False
+        or action_rows[2].get("actionType") != "write-local-output"
+        or action_rows[2].get("outputFiles") != task_prompt_stage.get("outputFiles")
+        or action_rows[2].get("writesLocalFile") != task_prompt_stage.get("writesLocalFile")
+        or action_rows[3].get("actionType") != "manual-target-repo"
+        or action_rows[3].get("manual") is not True
         or operator_runbook.get("nextStage") != verify_stage
         or operator_runbook.get("nextStageSummary") != verify_stage.get("reason")
         or operator_runbook["stageSummaryByKey"].get("verifySourceBundle") != verify_stage.get("reason")

@@ -4903,10 +4903,44 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     }),
   ];
   const commandStages = stages.filter((stage) => stage.commandCount > 0);
+  const getStageActionType = (stage) => {
+    if (stage.commandCount > 0 && stage.writesLocalFile) return "write-local-output";
+    if (stage.commandCount > 0 && stage.required) return "run-local-gate";
+    if (stage.commandCount > 0) return "refresh-local-preview";
+    if (stage.kind === "manual-target-repo") return "manual-target-repo";
+    if (stage.kind === "manual-reporting") return "manual-evidence";
+    return "review-stage";
+  };
+  const getStageActionLabel = (stage) => ({
+    verifySourceBundle: "Run strict bundle check",
+    refreshHandoffSnapshot: "Refresh strict handoff JSON",
+    writeEffectiveTaskPrompt: "Write selected task prompt",
+    executeInTargetRepo: "Implement in target repo",
+    recordEvidence: "Record verification evidence",
+  }[stage.key] || stage.label);
+  const stageActionRows = stages.map((stage) => ({
+    step: stage.step,
+    key: stage.key,
+    label: stage.label,
+    actionType: getStageActionType(stage),
+    actionLabel: getStageActionLabel(stage),
+    required: stage.required,
+    runPolicy: stage.runPolicy,
+    safetyLevel: stage.safetyLevel,
+    commandKeys: stage.commandKeys,
+    commandCount: stage.commandCount,
+    outputFiles: stage.outputFiles,
+    manual: stage.commandCount === 0,
+    writesLocalFile: stage.writesLocalFile,
+    externalCalls: stage.externalCalls,
+    targetRepoMutation: stage.targetRepoMutation,
+  }));
   const stageKeys = stages.map((stage) => stage.key);
   const stageByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage]));
   const stageLabelByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.label]));
   const stageSummaryByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.reason]));
+  const stageActionTypeByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionType]));
+  const stageActionLabelByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionLabel]));
   const stageKindByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.kind]));
   const stageRequiredByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.required]));
   const stageRunPolicyByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.runPolicy]));
@@ -4929,8 +4963,36 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const nextStageKey = "verifySourceBundle";
   const nextCommandKey = "source.bundleCheck.strict";
   const nextStage = stageByKey[nextStageKey] || null;
+  const nextStageActionRow = stageActionRows.find((stage) => stage.key === nextStageKey) || null;
   const nextCommandEntry = commandByKey.get(nextCommandKey) || null;
   const countBy = (predicate) => stages.filter(predicate).length;
+  const firstStageKey = (predicate) => stages.find(predicate)?.key || "";
+  const actionSummary = {
+    totalActionCount: stages.length,
+    commandActionCount: commandStages.length,
+    manualActionCount: countBy((stage) => stage.commandCount === 0),
+    requiredActionCount: countBy((stage) => stage.required),
+    optionalActionCount: countBy((stage) => !stage.required),
+    readOnlyActionCount: countBy((stage) => stage.runPolicy === "read-only"),
+    localOutputActionCount: countBy((stage) => stage.runPolicy === "writes-local-file"),
+    outputFileActionCount: countBy((stage) => stage.outputFiles.length > 0),
+    externalCallActionCount: countBy((stage) => stage.externalCalls),
+    targetRepoMutationActionCount: countBy((stage) => stage.targetRepoMutation),
+    nextActionKey: nextStageKey,
+    nextActionType: nextStageActionRow?.actionType || "",
+    nextActionLabel: nextStageActionRow?.actionLabel || "",
+    nextActionRunPolicy: nextStage?.runPolicy || "",
+    nextActionSafetyLevel: nextStage?.safetyLevel || "",
+    firstRequiredCommandStageKey: firstStageKey((stage) => stage.required && stage.commandCount > 0),
+    firstLocalOutputStageKey: firstStageKey((stage) => stage.writesLocalFile),
+    firstManualStageKey: firstStageKey((stage) => stage.commandCount === 0),
+    firstRequiredManualStageKey: firstStageKey((stage) => stage.required && stage.commandCount === 0),
+    firstEvidenceStageKey: firstStageKey((stage) => stage.kind === "manual-reporting"),
+    requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
+    requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
+    externalCalls: stages.some((stage) => stage.externalCalls),
+    targetRepoMutation: stages.some((stage) => stage.targetRepoMutation),
+  };
   return {
     version: 1,
     source: "bundle-handoff",
@@ -4949,6 +5011,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageByKey,
     stageLabelByKey,
     stageSummaryByKey,
+    stageActionRows,
+    stageActionTypeByKey,
+    stageActionLabelByKey,
+    actionSummary,
     stageKindByKey,
     stageRequiredByKey,
     stageRunPolicyByKey,
@@ -4972,6 +5038,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStage,
     nextStageLabel: nextStage?.label || "",
     nextStageSummary: nextStage?.reason || "",
+    nextStageActionType: nextStageActionRow?.actionType || "",
+    nextStageActionLabel: nextStageActionRow?.actionLabel || "",
     nextStageKind: nextStage?.kind || "",
     nextStageRequired: nextStage?.required === true,
     nextStageRunPolicy: nextStage?.runPolicy || "",
