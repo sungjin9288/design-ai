@@ -1831,6 +1831,44 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     report.operatorRunbook.stageActionDisabledReasonByKey.recordEvidence,
     "No local design-ai command is available for this stage; record evidence after target-repo implementation and verification.",
   );
+  assert.deepEqual(report.operatorRunbook.stageActionPrerequisiteKeysByKey, {
+    verifySourceBundle: [],
+    refreshHandoffSnapshot: [],
+    writeEffectiveTaskPrompt: ["verifySourceBundle"],
+    executeInTargetRepo: ["verifySourceBundle", "writeEffectiveTaskPrompt"],
+    recordEvidence: ["executeInTargetRepo"],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionPrerequisiteLabelsByKey.writeEffectiveTaskPrompt, [
+    "Verify source bundle integrity",
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageActionPrerequisiteLabelsByKey.executeInTargetRepo, [
+    "Verify source bundle integrity",
+    "Write effective task handoff prompt",
+  ]);
+  assert.deepEqual(report.operatorRunbook.stageActionPrerequisiteCountByKey, {
+    verifySourceBundle: 0,
+    refreshHandoffSnapshot: 0,
+    writeEffectiveTaskPrompt: 1,
+    executeInTargetRepo: 2,
+    recordEvidence: 1,
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionHasPrerequisitesByKey, {
+    verifySourceBundle: false,
+    refreshHandoffSnapshot: false,
+    writeEffectiveTaskPrompt: true,
+    executeInTargetRepo: true,
+    recordEvidence: true,
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionBlockedStageKeysByKey, {
+    verifySourceBundle: ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
+    refreshHandoffSnapshot: [],
+    writeEffectiveTaskPrompt: ["executeInTargetRepo"],
+    executeInTargetRepo: ["recordEvidence"],
+    recordEvidence: [],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionBlockedStageLabelsByKey.executeInTargetRepo, [
+    "Record implementation evidence",
+  ]);
   assert.equal(
     report.operatorRunbook.stageActionInstructionsByKey.verifySourceBundle,
     "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff.",
@@ -1854,6 +1892,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionStatusLabel: stage.actionStatusLabel,
     actionStatusTone: stage.actionStatusTone,
     actionDisabledReasonCode: stage.actionDisabledReasonCode,
+    actionPrerequisiteKeys: stage.actionPrerequisiteKeys,
+    actionPrerequisiteCount: stage.actionPrerequisiteCount,
+    actionHasPrerequisites: stage.actionHasPrerequisites,
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -1875,6 +1916,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionStatusLabel: "Ready",
       actionStatusTone: "success",
       actionDisabledReasonCode: "",
+      actionPrerequisiteKeys: [],
+      actionPrerequisiteCount: 0,
+      actionHasPrerequisites: false,
       required: true,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -1896,6 +1940,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionStatusLabel: "Optional",
       actionStatusTone: "neutral",
       actionDisabledReasonCode: "",
+      actionPrerequisiteKeys: [],
+      actionPrerequisiteCount: 0,
+      actionHasPrerequisites: false,
       required: false,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -1917,6 +1964,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionStatusLabel: "Ready",
       actionStatusTone: "success",
       actionDisabledReasonCode: "",
+      actionPrerequisiteKeys: ["verifySourceBundle"],
+      actionPrerequisiteCount: 1,
+      actionHasPrerequisites: true,
       required: true,
       runPolicy: "writes-local-file",
       safetyLevel: "local-output-file",
@@ -1938,6 +1988,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionStatusLabel: "Manual",
       actionStatusTone: "info",
       actionDisabledReasonCode: "manual-target-repo-step",
+      actionPrerequisiteKeys: ["verifySourceBundle", "writeEffectiveTaskPrompt"],
+      actionPrerequisiteCount: 2,
+      actionHasPrerequisites: true,
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -1959,6 +2012,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionStatusLabel: "Manual",
       actionStatusTone: "info",
       actionDisabledReasonCode: "manual-evidence-step",
+      actionPrerequisiteKeys: ["executeInTargetRepo"],
+      actionPrerequisiteCount: 1,
+      actionHasPrerequisites: true,
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -1977,6 +2033,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     enabledActionCount: 3,
     disabledActionCount: 2,
     manualDisabledActionCount: 2,
+    actionWithPrerequisiteCount: 3,
+    maxActionPrerequisiteCount: 2,
     requiredActionCount: 4,
     optionalActionCount: 1,
     readOnlyActionCount: 2,
@@ -1992,6 +2050,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     nextActionStatusLabel: "Ready",
     nextActionStatusTone: "success",
     nextActionDisabledReasonCode: "",
+    nextActionPrerequisiteKeys: [],
+    nextActionPrerequisiteLabels: [],
+    nextActionPrerequisiteCount: 0,
+    nextActionHasPrerequisites: false,
     nextActionRunPolicy: "read-only",
     nextActionSafetyLevel: "local-read-only",
     firstRequiredCommandStageKey: "verifySourceBundle",
@@ -1999,6 +2061,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     firstManualStageKey: "executeInTargetRepo",
     firstRequiredManualStageKey: "executeInTargetRepo",
     firstEvidenceStageKey: "recordEvidence",
+    firstActionWithPrerequisiteKey: "writeEffectiveTaskPrompt",
+    firstManualActionWithPrerequisiteKey: "executeInTargetRepo",
+    firstEvidenceActionWithPrerequisiteKey: "recordEvidence",
     requiresTargetRepoWork: true,
     requiresEvidenceReturn: true,
     externalCalls: false,
@@ -2146,6 +2211,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.equal(report.operatorRunbook.nextStageActionStatusTone, "success");
   assert.equal(report.operatorRunbook.nextStageActionDisabledReasonCode, "");
   assert.equal(report.operatorRunbook.nextStageActionDisabledReason, "");
+  assert.deepEqual(report.operatorRunbook.nextStageActionPrerequisiteKeys, []);
+  assert.deepEqual(report.operatorRunbook.nextStageActionPrerequisiteLabels, []);
+  assert.equal(report.operatorRunbook.nextStageActionPrerequisiteCount, 0);
+  assert.equal(report.operatorRunbook.nextStageActionHasPrerequisites, false);
   assert.equal(report.operatorRunbook.nextStageKind, "read-only-gate");
   assert.equal(report.operatorRunbook.nextStageRequired, true);
   assert.equal(report.operatorRunbook.nextStageRunPolicy, "read-only");

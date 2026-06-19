@@ -2466,6 +2466,40 @@ def assert_site_bundle_handoff_json_smoke(
         != "No local design-ai command is available for this stage; execute the generated prompt inside the target website repo."
         or operator_runbook["stageActionDisabledReasonByKey"].get("recordEvidence")
         != "No local design-ai command is available for this stage; record evidence after target-repo implementation and verification."
+        or operator_runbook.get("stageActionPrerequisiteKeysByKey") != {
+            "verifySourceBundle": [],
+            "refreshHandoffSnapshot": [],
+            "writeEffectiveTaskPrompt": ["verifySourceBundle"],
+            "executeInTargetRepo": ["verifySourceBundle", "writeEffectiveTaskPrompt"],
+            "recordEvidence": ["executeInTargetRepo"],
+        }
+        or operator_runbook.get("stageActionPrerequisiteCountByKey") != {
+            "verifySourceBundle": 0,
+            "refreshHandoffSnapshot": 0,
+            "writeEffectiveTaskPrompt": 1,
+            "executeInTargetRepo": 2,
+            "recordEvidence": 1,
+        }
+        or operator_runbook.get("stageActionHasPrerequisitesByKey") != {
+            "verifySourceBundle": False,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": True,
+            "recordEvidence": True,
+        }
+        or not isinstance(operator_runbook.get("stageActionPrerequisiteLabelsByKey"), dict)
+        or operator_runbook["stageActionPrerequisiteLabelsByKey"].get("executeInTargetRepo")
+        != ["Verify source bundle integrity", "Write effective task handoff prompt"]
+        or operator_runbook.get("stageActionBlockedStageKeysByKey") != {
+            "verifySourceBundle": ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
+            "refreshHandoffSnapshot": [],
+            "writeEffectiveTaskPrompt": ["executeInTargetRepo"],
+            "executeInTargetRepo": ["recordEvidence"],
+            "recordEvidence": [],
+        }
+        or not isinstance(operator_runbook.get("stageActionBlockedStageLabelsByKey"), dict)
+        or operator_runbook["stageActionBlockedStageLabelsByKey"].get("executeInTargetRepo")
+        != ["Record implementation evidence"]
         or not isinstance(operator_runbook.get("stageActionInstructionsByKey"), dict)
         or operator_runbook["stageActionInstructionsByKey"].get("verifySourceBundle")
         != "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff."
@@ -2480,6 +2514,8 @@ def assert_site_bundle_handoff_json_smoke(
             "enabledActionCount": 3,
             "disabledActionCount": 2,
             "manualDisabledActionCount": 2,
+            "actionWithPrerequisiteCount": 3,
+            "maxActionPrerequisiteCount": 2,
             "requiredActionCount": 4,
             "optionalActionCount": 1,
             "readOnlyActionCount": 2,
@@ -2495,6 +2531,10 @@ def assert_site_bundle_handoff_json_smoke(
             "nextActionStatusLabel": "Ready",
             "nextActionStatusTone": "success",
             "nextActionDisabledReasonCode": "",
+            "nextActionPrerequisiteKeys": [],
+            "nextActionPrerequisiteLabels": [],
+            "nextActionPrerequisiteCount": 0,
+            "nextActionHasPrerequisites": False,
             "nextActionRunPolicy": "read-only",
             "nextActionSafetyLevel": "local-read-only",
             "firstRequiredCommandStageKey": "verifySourceBundle",
@@ -2502,6 +2542,9 @@ def assert_site_bundle_handoff_json_smoke(
             "firstManualStageKey": "executeInTargetRepo",
             "firstRequiredManualStageKey": "executeInTargetRepo",
             "firstEvidenceStageKey": "recordEvidence",
+            "firstActionWithPrerequisiteKey": "writeEffectiveTaskPrompt",
+            "firstManualActionWithPrerequisiteKey": "executeInTargetRepo",
+            "firstEvidenceActionWithPrerequisiteKey": "recordEvidence",
             "requiresTargetRepoWork": True,
             "requiresEvidenceReturn": True,
             "externalCalls": False,
@@ -2565,6 +2608,10 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("nextStageActionStatusTone") != "success"
         or operator_runbook.get("nextStageActionDisabledReasonCode") != ""
         or operator_runbook.get("nextStageActionDisabledReason") != ""
+        or operator_runbook.get("nextStageActionPrerequisiteKeys") != []
+        or operator_runbook.get("nextStageActionPrerequisiteLabels") != []
+        or operator_runbook.get("nextStageActionPrerequisiteCount") != 0
+        or operator_runbook.get("nextStageActionHasPrerequisites") is not False
         or operator_runbook.get("nextStageKind") != "read-only-gate"
         or operator_runbook.get("nextStageRequired") is not True
         or operator_runbook.get("nextStageRunPolicy") != "read-only"
@@ -2607,6 +2654,9 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[0].get("actionEnabled") is not True
         or action_rows[0].get("actionStatus") != "ready"
         or action_rows[0].get("actionStatusTone") != "success"
+        or action_rows[0].get("actionPrerequisiteKeys") != []
+        or action_rows[0].get("actionPrerequisiteCount") != 0
+        or action_rows[0].get("actionHasPrerequisites") is not False
         or action_rows[0].get("commandKeys") != verify_stage.get("commandKeys")
         or action_rows[0].get("manual") is not False
         or action_rows[2].get("actionType") != "write-local-output"
@@ -2614,6 +2664,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[2].get("actionAffordance") != "local-output-button"
         or action_rows[2].get("actionEnabled") is not True
         or action_rows[2].get("actionStatus") != "ready"
+        or action_rows[2].get("actionPrerequisiteKeys") != ["verifySourceBundle"]
+        or action_rows[2].get("actionPrerequisiteCount") != 1
         or action_rows[2].get("outputFiles") != task_prompt_stage.get("outputFiles")
         or action_rows[2].get("writesLocalFile") != task_prompt_stage.get("writesLocalFile")
         or action_rows[3].get("actionType") != "manual-target-repo"
@@ -2622,6 +2674,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[3].get("actionEnabled") is not False
         or action_rows[3].get("actionStatus") != "manual"
         or action_rows[3].get("actionDisabledReasonCode") != "manual-target-repo-step"
+        or action_rows[3].get("actionPrerequisiteKeys") != ["verifySourceBundle", "writeEffectiveTaskPrompt"]
+        or action_rows[3].get("actionPrerequisiteCount") != 2
         or action_rows[3].get("manual") is not True
         or operator_runbook.get("nextStage") != verify_stage
         or operator_runbook.get("nextStageSummary") != verify_stage.get("reason")

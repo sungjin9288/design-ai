@@ -1,5 +1,35 @@
 # Roadmap
 
+## Phase 592 — Website Bundle Handoff Runbook Action Prerequisite Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action prerequisite metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render the strict bundle gate, selected prompt output, target-repo implementation, and evidence-return sequence without hard-coded stage dependency rules.
+
+### Added
+- Added `operatorRunbook.stageActionPrerequisiteKeysByKey` so wrappers can read the required upstream action keys for each handoff stage.
+- Added `operatorRunbook.stageActionPrerequisiteLabelsByKey` so dependency chips can render human-readable prerequisite labels without dereferencing stage objects.
+- Added `operatorRunbook.stageActionPrerequisiteCountByKey` and `stageActionHasPrerequisitesByKey` for compact dependency counts and conditional UI rendering.
+- Added `operatorRunbook.stageActionBlockedStageKeysByKey` and `stageActionBlockedStageLabelsByKey` so wrappers can show which downstream actions are blocked by a stage.
+- Added `actionPrerequisiteKeys`, `actionPrerequisiteLabels`, `actionPrerequisiteCount`, and `actionHasPrerequisites` to each `stageActionRows[]` item.
+- Added `nextStageActionPrerequisiteKeys`, `nextStageActionPrerequisiteLabels`, `nextStageActionPrerequisiteCount`, and `nextStageActionHasPrerequisites` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.actionWithPrerequisiteCount`, `maxActionPrerequisiteCount`, and first prerequisite-bearing action keys for local output, manual target-repo, and evidence stages.
+- Added unit and packed-tarball smoke assertions for prerequisite lookup maps, row metadata, blocked-stage inverse lookups, and next-stage mirrors.
+
+### Impact
+- Wrappers can render ordered handoff checklists and dependency chips from the JSON contract instead of hard-coding `verify -> write prompt -> target repo -> evidence`.
+- Company website pilots get clearer operator sequencing before moving from local bundle validation into target-repo implementation.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 591 — Website Bundle Handoff Runbook Action Readiness Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes action readiness metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render enabled command buttons, optional action status, manual-step badges, disabled reasons, and status tones without recomputing command availability from lower-level stage fields.

@@ -4970,6 +4970,15 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     "manual-evidence-step": "No local design-ai command is available for this stage; record evidence after target-repo implementation and verification.",
     "missing-local-command": "No local command is available for this stage.",
   }[getStageActionDisabledReasonCode(stage)] || "");
+  const getStageActionPrerequisiteKeys = (stage) => ({
+    verifySourceBundle: [],
+    refreshHandoffSnapshot: [],
+    writeEffectiveTaskPrompt: ["verifySourceBundle"],
+    executeInTargetRepo: ["verifySourceBundle", "writeEffectiveTaskPrompt"],
+    recordEvidence: ["executeInTargetRepo"],
+  }[stage.key] || []);
+  const getStageLabel = (stageKey) => stages.find((stage) => stage.key === stageKey)?.label || stageKey;
+  const getStageActionPrerequisiteLabels = (stage) => getStageActionPrerequisiteKeys(stage).map(getStageLabel);
   const stageActionRows = stages.map((stage) => ({
     step: stage.step,
     key: stage.key,
@@ -4985,6 +4994,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionStatusTone: getStageActionStatusTone(stage),
     actionDisabledReasonCode: getStageActionDisabledReasonCode(stage),
     actionDisabledReason: getStageActionDisabledReason(stage),
+    actionPrerequisiteKeys: getStageActionPrerequisiteKeys(stage),
+    actionPrerequisiteLabels: getStageActionPrerequisiteLabels(stage),
+    actionPrerequisiteCount: getStageActionPrerequisiteKeys(stage).length,
+    actionHasPrerequisites: getStageActionPrerequisiteKeys(stage).length > 0,
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -5011,6 +5024,20 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionStatusToneByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionStatusTone]));
   const stageActionDisabledReasonCodeByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionDisabledReasonCode]));
   const stageActionDisabledReasonByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionDisabledReason]));
+  const stageActionPrerequisiteKeysByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionPrerequisiteKeys]));
+  const stageActionPrerequisiteLabelsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionPrerequisiteLabels]));
+  const stageActionPrerequisiteCountByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionPrerequisiteCount]));
+  const stageActionHasPrerequisitesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionHasPrerequisites]));
+  const stageActionBlockedStageKeysByKey = Object.fromEntries(stages.map((stage) => [
+    stage.key,
+    stageActionRows
+      .filter((action) => action.actionPrerequisiteKeys.includes(stage.key))
+      .map((action) => action.key),
+  ]));
+  const stageActionBlockedStageLabelsByKey = Object.fromEntries(stages.map((stage) => [
+    stage.key,
+    stageActionBlockedStageKeysByKey[stage.key].map(getStageLabel),
+  ]));
   const stageKindByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.kind]));
   const stageRequiredByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.required]));
   const stageRunPolicyByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.runPolicy]));
@@ -5044,6 +5071,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     enabledActionCount: stageActionRows.filter((stage) => stage.actionEnabled).length,
     disabledActionCount: stageActionRows.filter((stage) => !stage.actionEnabled).length,
     manualDisabledActionCount: stageActionRows.filter((stage) => !stage.actionEnabled && stage.manual).length,
+    actionWithPrerequisiteCount: stageActionRows.filter((stage) => stage.actionHasPrerequisites).length,
+    maxActionPrerequisiteCount: Math.max(0, ...stageActionRows.map((stage) => stage.actionPrerequisiteCount)),
     requiredActionCount: countBy((stage) => stage.required),
     optionalActionCount: countBy((stage) => !stage.required),
     readOnlyActionCount: countBy((stage) => stage.runPolicy === "read-only"),
@@ -5059,6 +5088,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionStatusLabel: nextStageActionRow?.actionStatusLabel || "",
     nextActionStatusTone: nextStageActionRow?.actionStatusTone || "",
     nextActionDisabledReasonCode: nextStageActionRow?.actionDisabledReasonCode || "",
+    nextActionPrerequisiteKeys: nextStageActionRow?.actionPrerequisiteKeys || [],
+    nextActionPrerequisiteLabels: nextStageActionRow?.actionPrerequisiteLabels || [],
+    nextActionPrerequisiteCount: nextStageActionRow?.actionPrerequisiteCount || 0,
+    nextActionHasPrerequisites: nextStageActionRow?.actionHasPrerequisites === true,
     nextActionRunPolicy: nextStage?.runPolicy || "",
     nextActionSafetyLevel: nextStage?.safetyLevel || "",
     firstRequiredCommandStageKey: firstStageKey((stage) => stage.required && stage.commandCount > 0),
@@ -5066,6 +5099,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstManualStageKey: firstStageKey((stage) => stage.commandCount === 0),
     firstRequiredManualStageKey: firstStageKey((stage) => stage.required && stage.commandCount === 0),
     firstEvidenceStageKey: firstStageKey((stage) => stage.kind === "manual-reporting"),
+    firstActionWithPrerequisiteKey: stageActionRows.find((stage) => stage.actionHasPrerequisites)?.key || "",
+    firstManualActionWithPrerequisiteKey: stageActionRows.find((stage) => stage.manual && stage.actionHasPrerequisites)?.key || "",
+    firstEvidenceActionWithPrerequisiteKey: stageActionRows.find((stage) => stage.actionType === "manual-evidence" && stage.actionHasPrerequisites)?.key || "",
     requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
     requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
     externalCalls: stages.some((stage) => stage.externalCalls),
@@ -5101,6 +5137,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionStatusToneByKey,
     stageActionDisabledReasonCodeByKey,
     stageActionDisabledReasonByKey,
+    stageActionPrerequisiteKeysByKey,
+    stageActionPrerequisiteLabelsByKey,
+    stageActionPrerequisiteCountByKey,
+    stageActionHasPrerequisitesByKey,
+    stageActionBlockedStageKeysByKey,
+    stageActionBlockedStageLabelsByKey,
     actionSummary,
     stageKindByKey,
     stageRequiredByKey,
@@ -5136,6 +5178,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionStatusTone: nextStageActionRow?.actionStatusTone || "",
     nextStageActionDisabledReasonCode: nextStageActionRow?.actionDisabledReasonCode || "",
     nextStageActionDisabledReason: nextStageActionRow?.actionDisabledReason || "",
+    nextStageActionPrerequisiteKeys: nextStageActionRow?.actionPrerequisiteKeys || [],
+    nextStageActionPrerequisiteLabels: nextStageActionRow?.actionPrerequisiteLabels || [],
+    nextStageActionPrerequisiteCount: nextStageActionRow?.actionPrerequisiteCount || 0,
+    nextStageActionHasPrerequisites: nextStageActionRow?.actionHasPrerequisites === true,
     nextStageKind: nextStage?.kind || "",
     nextStageRequired: nextStage?.required === true,
     nextStageRunPolicy: nextStage?.runPolicy || "",
