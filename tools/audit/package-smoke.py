@@ -2345,6 +2345,20 @@ def assert_site_bundle_handoff_json_smoke(
         "executeInTargetRepo": [True, False, False],
         "recordEvidence": [False, False],
     }
+    expected_capture_field_default_values = {
+        "verifySourceBundle": ["", ""],
+        "refreshHandoffSnapshot": [""],
+        "writeEffectiveTaskPrompt": ["", ""],
+        "executeInTargetRepo": [[], "", ""],
+        "recordEvidence": ["", ""],
+    }
+    expected_capture_field_empty_values = {
+        "verifySourceBundle": ["", ""],
+        "refreshHandoffSnapshot": [""],
+        "writeEffectiveTaskPrompt": ["", ""],
+        "executeInTargetRepo": [[], "", ""],
+        "recordEvidence": ["", ""],
+    }
     expected_capture_field_validation_rules = {
         "verifySourceBundle": ["non-empty-text", "checksum-or-digest-text"],
         "refreshHandoffSnapshot": ["optional-json-snapshot"],
@@ -2391,6 +2405,8 @@ def assert_site_bundle_handoff_json_smoke(
             "validationHint": "Required: paste a passing strict bundle-check result.",
             "valueShape": "long-text",
             "acceptsMultiple": False,
+            "defaultValue": "",
+            "emptyValue": "",
         },
         {
             "key": "bundleDigest",
@@ -2405,6 +2421,8 @@ def assert_site_bundle_handoff_json_smoke(
             "validationHint": "Required: record a digest, checksum, or equivalent bundle integrity summary.",
             "valueShape": "short-text",
             "acceptsMultiple": False,
+            "defaultValue": "",
+            "emptyValue": "",
         },
     ]
     if (
@@ -2683,6 +2701,8 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("stageActionEvidenceCaptureFieldInputTypesByKey") != expected_capture_field_input_types
         or operator_runbook.get("stageActionEvidenceCaptureFieldValueShapesByKey") != expected_capture_field_value_shapes
         or operator_runbook.get("stageActionEvidenceCaptureFieldAcceptsMultipleByKey") != expected_capture_field_accepts_multiple
+        or operator_runbook.get("stageActionEvidenceCaptureFieldDefaultValuesByKey") != expected_capture_field_default_values
+        or operator_runbook.get("stageActionEvidenceCaptureFieldEmptyValuesByKey") != expected_capture_field_empty_values
         or operator_runbook.get("stageActionEvidenceCaptureFieldValidationRulesByKey") != expected_capture_field_validation_rules
         or operator_runbook.get("stageActionEvidenceCaptureFieldMinLengthsByKey") != expected_capture_field_min_lengths
         or operator_runbook.get("stageActionEvidenceCaptureFieldExamplesByKey", {}).get("verifySourceBundle")
@@ -2775,6 +2795,8 @@ def assert_site_bundle_handoff_json_smoke(
             "stringListEvidenceCaptureFieldCount": 1,
             "multiValueEvidenceCaptureFieldCount": 1,
             "singleValueEvidenceCaptureFieldCount": 9,
+            "emptyStringEvidenceCaptureFieldCount": 9,
+            "emptyListEvidenceCaptureFieldCount": 1,
             "validatedEvidenceCaptureFieldCount": 10,
             "requiredValidatedEvidenceCaptureFieldCount": 9,
             "optionalValidatedEvidenceCaptureFieldCount": 1,
@@ -2828,6 +2850,8 @@ def assert_site_bundle_handoff_json_smoke(
             "nextActionEvidenceCaptureFieldInputTypes": ["textarea", "text"],
             "nextActionEvidenceCaptureFieldValueShapes": ["long-text", "short-text"],
             "nextActionEvidenceCaptureFieldAcceptsMultiple": [False, False],
+            "nextActionEvidenceCaptureFieldDefaultValues": ["", ""],
+            "nextActionEvidenceCaptureFieldEmptyValues": ["", ""],
             "nextActionEvidenceCaptureFieldValidationRules": ["non-empty-text", "checksum-or-digest-text"],
             "nextActionEvidenceCaptureFieldMinLengths": [20, 8],
             "nextActionEvidenceCaptureFieldExamples": [
@@ -2959,6 +2983,8 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldDefaultValues") != ["", ""]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldEmptyValues") != ["", ""]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldValidationRules")
         != ["non-empty-text", "checksum-or-digest-text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldMinLengths") != [20, 8]
