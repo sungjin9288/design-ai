@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 594 — Website Bundle Handoff Runbook Action Completion Criteria (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action completion criteria metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render deterministic done-checklists for bundle verification, prompt output, target-repo implementation, and evidence capture without hard-coded handoff rules.
+
+### Added
+- Added `operatorRunbook.stageActionCompletionCriteriaByKey` so wrappers can render per-action completion criteria from stable stage keys.
+- Added `operatorRunbook.stageActionCompletionCriteriaCountByKey` and `stageActionHasCompletionCriteriaByKey` so compact dashboards can show done-criteria counts and conditional UI without counting arrays.
+- Added `actionCompletionCriteria`, `actionCompletionCriteriaCount`, and `actionHasCompletionCriteria` to each `stageActionRows[]` item.
+- Added `nextStageActionCompletionCriteria`, `nextStageActionCompletionCriteriaCount`, and `nextStageActionHasCompletionCriteria` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.actionWithCompletionCriteriaCount`, `totalActionCompletionCriteriaCount`, `maxActionCompletionCriteriaCount`, `firstActionWithCompletionCriteriaKey`, and `firstManualActionWithCompletionCriteriaKey` for completion dashboards and manual-step summaries.
+- Added unit and packed-tarball smoke assertions for completion criteria lookup maps, row-level completion metadata, summary fields, and next-stage mirrors.
+
+### Impact
+- Wrappers can show exactly what marks each handoff action done before the operator moves into company target-repo work.
+- Company website pilots get clearer stop/go criteria for strict bundle validation, local prompt output, target-repo implementation, and evidence return.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 593 — Website Bundle Handoff Runbook Action Dependency Reasons (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes action dependency reason and blocked-action count metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can explain why a handoff action depends on earlier steps and which downstream actions a completed stage unlocks without scanning row arrays.

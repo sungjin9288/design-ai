@@ -2524,6 +2524,28 @@ def assert_site_bundle_handoff_json_smoke(
             "executeInTargetRepo": True,
             "recordEvidence": False,
         }
+        or not isinstance(operator_runbook.get("stageActionCompletionCriteriaByKey"), dict)
+        or operator_runbook["stageActionCompletionCriteriaByKey"].get("verifySourceBundle")
+        != ["Strict bundle check status is pass.", "Checksum and generated-file drift counts are zero."]
+        or operator_runbook["stageActionCompletionCriteriaByKey"].get("executeInTargetRepo")
+        != [
+            "Target website repo has scoped implementation changes for the selected task.",
+            "Target repo lint/typecheck/build or equivalent verification has been run.",
+        ]
+        or operator_runbook.get("stageActionCompletionCriteriaCountByKey") != {
+            "verifySourceBundle": 2,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 2,
+            "executeInTargetRepo": 2,
+            "recordEvidence": 1,
+        }
+        or operator_runbook.get("stageActionHasCompletionCriteriaByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": True,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": True,
+            "recordEvidence": True,
+        }
         or not isinstance(operator_runbook.get("stageActionInstructionsByKey"), dict)
         or operator_runbook["stageActionInstructionsByKey"].get("verifySourceBundle")
         != "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff."
@@ -2543,6 +2565,9 @@ def assert_site_bundle_handoff_json_smoke(
             "actionWithDependencyReasonCount": 3,
             "actionBlockingOtherActionCount": 3,
             "maxActionBlockedStageCount": 2,
+            "actionWithCompletionCriteriaCount": 5,
+            "totalActionCompletionCriteriaCount": 8,
+            "maxActionCompletionCriteriaCount": 2,
             "requiredActionCount": 4,
             "optionalActionCount": 1,
             "readOnlyActionCount": 2,
@@ -2571,6 +2596,12 @@ def assert_site_bundle_handoff_json_smoke(
             ],
             "nextActionBlockedStageCount": 2,
             "nextActionBlocksStages": True,
+            "nextActionCompletionCriteria": [
+                "Strict bundle check status is pass.",
+                "Checksum and generated-file drift counts are zero.",
+            ],
+            "nextActionCompletionCriteriaCount": 2,
+            "nextActionHasCompletionCriteria": True,
             "nextActionRunPolicy": "read-only",
             "nextActionSafetyLevel": "local-read-only",
             "firstRequiredCommandStageKey": "verifySourceBundle",
@@ -2583,6 +2614,8 @@ def assert_site_bundle_handoff_json_smoke(
             "firstEvidenceActionWithPrerequisiteKey": "recordEvidence",
             "firstActionWithDependencyReasonKey": "writeEffectiveTaskPrompt",
             "firstActionBlockingOtherActionKey": "verifySourceBundle",
+            "firstActionWithCompletionCriteriaKey": "verifySourceBundle",
+            "firstManualActionWithCompletionCriteriaKey": "executeInTargetRepo",
             "requiresTargetRepoWork": True,
             "requiresEvidenceReturn": True,
             "externalCalls": False,
@@ -2657,6 +2690,10 @@ def assert_site_bundle_handoff_json_smoke(
         != ["Write effective task handoff prompt", "Execute the task in the target website repo"]
         or operator_runbook.get("nextStageActionBlockedStageCount") != 2
         or operator_runbook.get("nextStageActionBlocksStages") is not True
+        or operator_runbook.get("nextStageActionCompletionCriteria")
+        != ["Strict bundle check status is pass.", "Checksum and generated-file drift counts are zero."]
+        or operator_runbook.get("nextStageActionCompletionCriteriaCount") != 2
+        or operator_runbook.get("nextStageActionHasCompletionCriteria") is not True
         or operator_runbook.get("nextStageKind") != "read-only-gate"
         or operator_runbook.get("nextStageRequired") is not True
         or operator_runbook.get("nextStageRunPolicy") != "read-only"
@@ -2706,6 +2743,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[0].get("actionBlockedStageKeys") != ["writeEffectiveTaskPrompt", "executeInTargetRepo"]
         or action_rows[0].get("actionBlockedStageCount") != 2
         or action_rows[0].get("actionBlocksStages") is not True
+        or action_rows[0].get("actionCompletionCriteriaCount") != 2
+        or action_rows[0].get("actionHasCompletionCriteria") is not True
         or action_rows[0].get("commandKeys") != verify_stage.get("commandKeys")
         or action_rows[0].get("manual") is not False
         or action_rows[2].get("actionType") != "write-local-output"
@@ -2719,6 +2758,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[2].get("actionBlockedStageKeys") != ["executeInTargetRepo"]
         or action_rows[2].get("actionBlockedStageCount") != 1
         or action_rows[2].get("actionBlocksStages") is not True
+        or action_rows[2].get("actionCompletionCriteriaCount") != 2
+        or action_rows[2].get("actionHasCompletionCriteria") is not True
         or action_rows[2].get("outputFiles") != task_prompt_stage.get("outputFiles")
         or action_rows[2].get("writesLocalFile") != task_prompt_stage.get("writesLocalFile")
         or action_rows[3].get("actionType") != "manual-target-repo"
@@ -2733,6 +2774,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[3].get("actionBlockedStageKeys") != ["recordEvidence"]
         or action_rows[3].get("actionBlockedStageCount") != 1
         or action_rows[3].get("actionBlocksStages") is not True
+        or action_rows[3].get("actionCompletionCriteriaCount") != 2
+        or action_rows[3].get("actionHasCompletionCriteria") is not True
         or action_rows[3].get("manual") is not True
         or operator_runbook.get("nextStage") != verify_stage
         or operator_runbook.get("nextStageSummary") != verify_stage.get("reason")
