@@ -1745,6 +1745,21 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.deepEqual(report.operatorRunbook.stages.map((stage) => stage.key), expectedRunbookStageKeys);
   assert.deepEqual(report.operatorRunbook.stageKeys, expectedRunbookStageKeys);
   assert.deepEqual(Object.keys(report.operatorRunbook.stageByKey), expectedRunbookStageKeys);
+  assert.deepEqual(report.operatorRunbook.stageLabelByKey, {
+    verifySourceBundle: "Verify source bundle integrity",
+    refreshHandoffSnapshot: "Refresh strict handoff JSON snapshot",
+    writeEffectiveTaskPrompt: "Write effective task handoff prompt",
+    executeInTargetRepo: "Execute the task in the target website repo",
+    recordEvidence: "Record implementation evidence",
+  });
+  assert.equal(
+    report.operatorRunbook.stageSummaryByKey.verifySourceBundle,
+    report.operatorRunbook.stages[0].reason,
+  );
+  assert.equal(
+    report.operatorRunbook.stageSummaryByKey.writeEffectiveTaskPrompt,
+    report.operatorRunbook.stages[2].reason,
+  );
   assert.deepEqual(report.operatorRunbook.commandStageKeys, [
     "verifySourceBundle",
     "refreshHandoffSnapshot",
@@ -1755,6 +1770,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     "recordEvidence",
   ]);
   assert.deepEqual(report.operatorRunbook.nextStage, report.operatorRunbook.stages[0]);
+  assert.equal(report.operatorRunbook.nextStageLabel, "Verify source bundle integrity");
+  assert.equal(report.operatorRunbook.nextStageSummary, report.operatorRunbook.stages[0].reason);
   assert.deepEqual(report.operatorRunbook.nextStageCommandKeys, ["source.bundleCheck.strict"]);
   assert.equal(report.operatorRunbook.nextCommand, report.commandManifest.commands[1].command);
   assert.deepEqual(report.operatorRunbook.nextCommandArgs, ["design-ai", "site", dir, "--bundle-check", "--strict", "--json"]);

@@ -4905,6 +4905,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const commandStages = stages.filter((stage) => stage.commandCount > 0);
   const stageKeys = stages.map((stage) => stage.key);
   const stageByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage]));
+  const stageLabelByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.label]));
+  const stageSummaryByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.reason]));
   const commandStageKeys = commandStages.map((stage) => stage.key);
   const manualStageKeys = stages.filter((stage) => stage.commandCount === 0).map((stage) => stage.key);
   const nextStageKey = "verifySourceBundle";
@@ -4928,10 +4930,14 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     effectiveStrictTaskCommandKey,
     stageKeys,
     stageByKey,
+    stageLabelByKey,
+    stageSummaryByKey,
     commandStageKeys,
     manualStageKeys,
     nextStageKey,
     nextStage,
+    nextStageLabel: nextStage?.label || "",
+    nextStageSummary: nextStage?.reason || "",
     nextStageCommandKeys: nextStage?.commandKeys || [],
     nextCommandKey,
     nextCommand: nextCommandEntry?.command || "",

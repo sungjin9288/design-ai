@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 585 (unreleased)** — Added display-label and summary lookup metadata to the Website Console bundle handoff operator runbook.
 - **Phase 584 (unreleased)** — Added lookup and next-command metadata to the Website Console bundle handoff operator runbook.
 - **Phase 583 (unreleased)** — Added a Website Console bundle handoff operator runbook derived from the command manifest.
 - **Phase 582 (unreleased)** — Added a unified Website Console bundle handoff command manifest for source and task commands.

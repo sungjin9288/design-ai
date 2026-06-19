@@ -2328,6 +2328,13 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("effectiveTaskId") != expected_effective_task_id
         or operator_runbook.get("effectiveStrictTaskCommandKey") != f"task.{expected_effective_task_id}.handoff.strict"
         or operator_runbook.get("stageKeys") != expected_stage_keys
+        or operator_runbook.get("stageLabelByKey") != {
+            "verifySourceBundle": "Verify source bundle integrity",
+            "refreshHandoffSnapshot": "Refresh strict handoff JSON snapshot",
+            "writeEffectiveTaskPrompt": "Write effective task handoff prompt",
+            "executeInTargetRepo": "Execute the task in the target website repo",
+            "recordEvidence": "Record implementation evidence",
+        }
         or operator_runbook.get("commandStageKeys") != [
             "verifySourceBundle",
             "refreshHandoffSnapshot",
@@ -2338,9 +2345,11 @@ def assert_site_bundle_handoff_json_smoke(
             "recordEvidence",
         ]
         or operator_runbook.get("nextStageKey") != "verifySourceBundle"
+        or operator_runbook.get("nextStageLabel") != "Verify source bundle integrity"
         or operator_runbook.get("nextStageCommandKeys") != ["source.bundleCheck.strict"]
         or operator_runbook.get("nextCommandKey") != "source.bundleCheck.strict"
         or not isinstance(operator_runbook.get("stageByKey"), dict)
+        or not isinstance(operator_runbook.get("stageSummaryByKey"), dict)
         or not isinstance(runbook_stages, list)
         or [stage.get("key") for stage in runbook_stages] != expected_stage_keys
     ):
@@ -2353,6 +2362,9 @@ def assert_site_bundle_handoff_json_smoke(
         stage_by_key.get("verifySourceBundle") != verify_stage
         or stage_by_key.get("writeEffectiveTaskPrompt") != task_prompt_stage
         or operator_runbook.get("nextStage") != verify_stage
+        or operator_runbook.get("nextStageSummary") != verify_stage.get("reason")
+        or operator_runbook["stageSummaryByKey"].get("verifySourceBundle") != verify_stage.get("reason")
+        or operator_runbook["stageSummaryByKey"].get("writeEffectiveTaskPrompt") != task_prompt_stage.get("reason")
         or not isinstance(operator_runbook.get("nextCommandEntry"), dict)
         or operator_runbook["nextCommandEntry"].get("key") != "source.bundleCheck.strict"
         or operator_runbook.get("nextCommand") != operator_runbook["nextCommandEntry"].get("command")
