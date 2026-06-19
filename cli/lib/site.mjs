@@ -4907,6 +4907,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage]));
   const stageLabelByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.label]));
   const stageSummaryByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.reason]));
+  const stageKindByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.kind]));
+  const stageRequiredByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.required]));
+  const stageRunPolicyByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.runPolicy]));
+  const stageSafetyLevelByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.safetyLevel]));
+  const stageCommandCountByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.commandCount]));
+  const stageOutputFilesByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.outputFiles]));
   const commandStageKeys = commandStages.map((stage) => stage.key);
   const manualStageKeys = stages.filter((stage) => stage.commandCount === 0).map((stage) => stage.key);
   const nextStageKey = "verifySourceBundle";
@@ -4932,12 +4938,24 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageByKey,
     stageLabelByKey,
     stageSummaryByKey,
+    stageKindByKey,
+    stageRequiredByKey,
+    stageRunPolicyByKey,
+    stageSafetyLevelByKey,
+    stageCommandCountByKey,
+    stageOutputFilesByKey,
     commandStageKeys,
     manualStageKeys,
     nextStageKey,
     nextStage,
     nextStageLabel: nextStage?.label || "",
     nextStageSummary: nextStage?.reason || "",
+    nextStageKind: nextStage?.kind || "",
+    nextStageRequired: nextStage?.required === true,
+    nextStageRunPolicy: nextStage?.runPolicy || "",
+    nextStageSafetyLevel: nextStage?.safetyLevel || "",
+    nextStageCommandCount: nextStage?.commandCount || 0,
+    nextStageOutputFiles: nextStage?.outputFiles || [],
     nextStageCommandKeys: nextStage?.commandKeys || [],
     nextCommandKey,
     nextCommand: nextCommandEntry?.command || "",

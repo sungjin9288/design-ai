@@ -2335,6 +2335,41 @@ def assert_site_bundle_handoff_json_smoke(
             "executeInTargetRepo": "Execute the task in the target website repo",
             "recordEvidence": "Record implementation evidence",
         }
+        or operator_runbook.get("stageKindByKey") != {
+            "verifySourceBundle": "read-only-gate",
+            "refreshHandoffSnapshot": "read-only-preview",
+            "writeEffectiveTaskPrompt": "local-output",
+            "executeInTargetRepo": "manual-target-repo",
+            "recordEvidence": "manual-reporting",
+        }
+        or operator_runbook.get("stageRequiredByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": True,
+            "recordEvidence": True,
+        }
+        or operator_runbook.get("stageRunPolicyByKey") != {
+            "verifySourceBundle": "read-only",
+            "refreshHandoffSnapshot": "read-only",
+            "writeEffectiveTaskPrompt": "writes-local-file",
+            "executeInTargetRepo": "manual-target-repo",
+            "recordEvidence": "manual-target-repo",
+        }
+        or operator_runbook.get("stageSafetyLevelByKey") != {
+            "verifySourceBundle": "local-read-only",
+            "refreshHandoffSnapshot": "local-read-only",
+            "writeEffectiveTaskPrompt": "local-output-file",
+            "executeInTargetRepo": "operator-controlled-target-repo",
+            "recordEvidence": "operator-controlled-target-repo",
+        }
+        or operator_runbook.get("stageCommandCountByKey") != {
+            "verifySourceBundle": 1,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 1,
+            "executeInTargetRepo": 0,
+            "recordEvidence": 0,
+        }
         or operator_runbook.get("commandStageKeys") != [
             "verifySourceBundle",
             "refreshHandoffSnapshot",
@@ -2346,10 +2381,17 @@ def assert_site_bundle_handoff_json_smoke(
         ]
         or operator_runbook.get("nextStageKey") != "verifySourceBundle"
         or operator_runbook.get("nextStageLabel") != "Verify source bundle integrity"
+        or operator_runbook.get("nextStageKind") != "read-only-gate"
+        or operator_runbook.get("nextStageRequired") is not True
+        or operator_runbook.get("nextStageRunPolicy") != "read-only"
+        or operator_runbook.get("nextStageSafetyLevel") != "local-read-only"
+        or operator_runbook.get("nextStageCommandCount") != 1
+        or operator_runbook.get("nextStageOutputFiles") != []
         or operator_runbook.get("nextStageCommandKeys") != ["source.bundleCheck.strict"]
         or operator_runbook.get("nextCommandKey") != "source.bundleCheck.strict"
         or not isinstance(operator_runbook.get("stageByKey"), dict)
         or not isinstance(operator_runbook.get("stageSummaryByKey"), dict)
+        or not isinstance(operator_runbook.get("stageOutputFilesByKey"), dict)
         or not isinstance(runbook_stages, list)
         or [stage.get("key") for stage in runbook_stages] != expected_stage_keys
     ):
@@ -2365,6 +2407,8 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("nextStageSummary") != verify_stage.get("reason")
         or operator_runbook["stageSummaryByKey"].get("verifySourceBundle") != verify_stage.get("reason")
         or operator_runbook["stageSummaryByKey"].get("writeEffectiveTaskPrompt") != task_prompt_stage.get("reason")
+        or operator_runbook["stageOutputFilesByKey"].get("writeEffectiveTaskPrompt") != task_prompt_stage.get("outputFiles")
+        or operator_runbook["stageOutputFilesByKey"].get("verifySourceBundle") != []
         or not isinstance(operator_runbook.get("nextCommandEntry"), dict)
         or operator_runbook["nextCommandEntry"].get("key") != "source.bundleCheck.strict"
         or operator_runbook.get("nextCommand") != operator_runbook["nextCommandEntry"].get("command")

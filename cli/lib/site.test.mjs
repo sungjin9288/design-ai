@@ -1760,6 +1760,48 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     report.operatorRunbook.stageSummaryByKey.writeEffectiveTaskPrompt,
     report.operatorRunbook.stages[2].reason,
   );
+  assert.deepEqual(report.operatorRunbook.stageKindByKey, {
+    verifySourceBundle: "read-only-gate",
+    refreshHandoffSnapshot: "read-only-preview",
+    writeEffectiveTaskPrompt: "local-output",
+    executeInTargetRepo: "manual-target-repo",
+    recordEvidence: "manual-reporting",
+  });
+  assert.deepEqual(report.operatorRunbook.stageRequiredByKey, {
+    verifySourceBundle: true,
+    refreshHandoffSnapshot: false,
+    writeEffectiveTaskPrompt: true,
+    executeInTargetRepo: true,
+    recordEvidence: true,
+  });
+  assert.deepEqual(report.operatorRunbook.stageRunPolicyByKey, {
+    verifySourceBundle: "read-only",
+    refreshHandoffSnapshot: "read-only",
+    writeEffectiveTaskPrompt: "writes-local-file",
+    executeInTargetRepo: "manual-target-repo",
+    recordEvidence: "manual-target-repo",
+  });
+  assert.deepEqual(report.operatorRunbook.stageSafetyLevelByKey, {
+    verifySourceBundle: "local-read-only",
+    refreshHandoffSnapshot: "local-read-only",
+    writeEffectiveTaskPrompt: "local-output-file",
+    executeInTargetRepo: "operator-controlled-target-repo",
+    recordEvidence: "operator-controlled-target-repo",
+  });
+  assert.deepEqual(report.operatorRunbook.stageCommandCountByKey, {
+    verifySourceBundle: 1,
+    refreshHandoffSnapshot: 1,
+    writeEffectiveTaskPrompt: 1,
+    executeInTargetRepo: 0,
+    recordEvidence: 0,
+  });
+  assert.deepEqual(report.operatorRunbook.stageOutputFilesByKey, {
+    verifySourceBundle: [],
+    refreshHandoffSnapshot: [],
+    writeEffectiveTaskPrompt: ["target-repo-task-accessibility-handoff.md"],
+    executeInTargetRepo: [],
+    recordEvidence: [],
+  });
   assert.deepEqual(report.operatorRunbook.commandStageKeys, [
     "verifySourceBundle",
     "refreshHandoffSnapshot",
@@ -1772,6 +1814,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.deepEqual(report.operatorRunbook.nextStage, report.operatorRunbook.stages[0]);
   assert.equal(report.operatorRunbook.nextStageLabel, "Verify source bundle integrity");
   assert.equal(report.operatorRunbook.nextStageSummary, report.operatorRunbook.stages[0].reason);
+  assert.equal(report.operatorRunbook.nextStageKind, "read-only-gate");
+  assert.equal(report.operatorRunbook.nextStageRequired, true);
+  assert.equal(report.operatorRunbook.nextStageRunPolicy, "read-only");
+  assert.equal(report.operatorRunbook.nextStageSafetyLevel, "local-read-only");
+  assert.equal(report.operatorRunbook.nextStageCommandCount, 1);
+  assert.deepEqual(report.operatorRunbook.nextStageOutputFiles, []);
   assert.deepEqual(report.operatorRunbook.nextStageCommandKeys, ["source.bundleCheck.strict"]);
   assert.equal(report.operatorRunbook.nextCommand, report.commandManifest.commands[1].command);
   assert.deepEqual(report.operatorRunbook.nextCommandArgs, ["design-ai", "site", dir, "--bundle-check", "--strict", "--json"]);

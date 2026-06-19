@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 586 — Website Bundle Handoff Runbook Stage Gating Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes stage gating fields as stable lookup maps, so wrappers and GUI surfaces can render stage status, run policy, safety, command counts, and output targets without scanning ordered stage arrays.
+
+### Added
+- Added `operatorRunbook.stageKindByKey` for stable stage-key to stage-kind lookup.
+- Added `operatorRunbook.stageRequiredByKey` so wrappers can mark required and optional stages without reducing `stages[]`.
+- Added `operatorRunbook.stageRunPolicyByKey` and `stageSafetyLevelByKey` so local operators can gate read-only, local-output, and manual target-repo stages from compact maps.
+- Added `operatorRunbook.stageCommandCountByKey` and `stageOutputFilesByKey` for stage badge counts and local output-file previews.
+- Added `nextStageKind`, `nextStageRequired`, `nextStageRunPolicy`, `nextStageSafetyLevel`, `nextStageCommandCount`, and `nextStageOutputFiles` as top-level mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for stage gating lookup parity and next-stage mirror metadata.
+
+### Impact
+- Wrappers can render stage chips, disabled/enabled state, safety badges, and output-file preview affordances without scanning `operatorRunbook.stages`.
+- Company website pilots get clearer local gate metadata before handing a selected Website bundle task into the target repo.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 585 — Website Bundle Handoff Runbook Display Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes stage display copy as stable lookup fields, so wrappers and GUI surfaces can render runbook labels and summaries without scanning or dereferencing full stage objects.
