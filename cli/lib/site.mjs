@@ -4979,6 +4979,17 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   }[stage.key] || []);
   const getStageLabel = (stageKey) => stages.find((stage) => stage.key === stageKey)?.label || stageKey;
   const getStageActionPrerequisiteLabels = (stage) => getStageActionPrerequisiteKeys(stage).map(getStageLabel);
+  const getStageActionBlockedStageKeys = (stage) => stages
+    .filter((candidate) => getStageActionPrerequisiteKeys(candidate).includes(stage.key))
+    .map((candidate) => candidate.key);
+  const getStageActionDependencyReasonCode = (stage) => (
+    getStageActionPrerequisiteKeys(stage).length > 0 ? "requires-prerequisite-actions" : ""
+  );
+  const getStageActionDependencyReason = (stage) => ({
+    writeEffectiveTaskPrompt: "Complete Verify source bundle integrity before writing the selected task prompt.",
+    executeInTargetRepo: "Complete Verify source bundle integrity and Write effective task handoff prompt before implementing in the target website repo.",
+    recordEvidence: "Complete Execute the task in the target website repo before recording implementation evidence.",
+  }[stage.key] || "");
   const stageActionRows = stages.map((stage) => ({
     step: stage.step,
     key: stage.key,
@@ -4998,6 +5009,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionPrerequisiteLabels: getStageActionPrerequisiteLabels(stage),
     actionPrerequisiteCount: getStageActionPrerequisiteKeys(stage).length,
     actionHasPrerequisites: getStageActionPrerequisiteKeys(stage).length > 0,
+    actionDependencyReasonCode: getStageActionDependencyReasonCode(stage),
+    actionDependencyReason: getStageActionDependencyReason(stage),
+    actionBlockedStageKeys: getStageActionBlockedStageKeys(stage),
+    actionBlockedStageLabels: getStageActionBlockedStageKeys(stage).map(getStageLabel),
+    actionBlockedStageCount: getStageActionBlockedStageKeys(stage).length,
+    actionBlocksStages: getStageActionBlockedStageKeys(stage).length > 0,
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -5028,16 +5045,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionPrerequisiteLabelsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionPrerequisiteLabels]));
   const stageActionPrerequisiteCountByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionPrerequisiteCount]));
   const stageActionHasPrerequisitesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionHasPrerequisites]));
-  const stageActionBlockedStageKeysByKey = Object.fromEntries(stages.map((stage) => [
-    stage.key,
-    stageActionRows
-      .filter((action) => action.actionPrerequisiteKeys.includes(stage.key))
-      .map((action) => action.key),
-  ]));
-  const stageActionBlockedStageLabelsByKey = Object.fromEntries(stages.map((stage) => [
-    stage.key,
-    stageActionBlockedStageKeysByKey[stage.key].map(getStageLabel),
-  ]));
+  const stageActionDependencyReasonCodeByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionDependencyReasonCode]));
+  const stageActionDependencyReasonByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionDependencyReason]));
+  const stageActionBlockedStageKeysByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionBlockedStageKeys]));
+  const stageActionBlockedStageLabelsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionBlockedStageLabels]));
+  const stageActionBlockedStageCountByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionBlockedStageCount]));
+  const stageActionBlocksStagesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionBlocksStages]));
   const stageKindByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.kind]));
   const stageRequiredByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.required]));
   const stageRunPolicyByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.runPolicy]));
@@ -5073,6 +5086,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     manualDisabledActionCount: stageActionRows.filter((stage) => !stage.actionEnabled && stage.manual).length,
     actionWithPrerequisiteCount: stageActionRows.filter((stage) => stage.actionHasPrerequisites).length,
     maxActionPrerequisiteCount: Math.max(0, ...stageActionRows.map((stage) => stage.actionPrerequisiteCount)),
+    actionWithDependencyReasonCount: stageActionRows.filter((stage) => stage.actionDependencyReasonCode).length,
+    actionBlockingOtherActionCount: stageActionRows.filter((stage) => stage.actionBlocksStages).length,
+    maxActionBlockedStageCount: Math.max(0, ...stageActionRows.map((stage) => stage.actionBlockedStageCount)),
     requiredActionCount: countBy((stage) => stage.required),
     optionalActionCount: countBy((stage) => !stage.required),
     readOnlyActionCount: countBy((stage) => stage.runPolicy === "read-only"),
@@ -5092,6 +5108,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionPrerequisiteLabels: nextStageActionRow?.actionPrerequisiteLabels || [],
     nextActionPrerequisiteCount: nextStageActionRow?.actionPrerequisiteCount || 0,
     nextActionHasPrerequisites: nextStageActionRow?.actionHasPrerequisites === true,
+    nextActionDependencyReasonCode: nextStageActionRow?.actionDependencyReasonCode || "",
+    nextActionDependencyReason: nextStageActionRow?.actionDependencyReason || "",
+    nextActionBlockedStageKeys: nextStageActionRow?.actionBlockedStageKeys || [],
+    nextActionBlockedStageLabels: nextStageActionRow?.actionBlockedStageLabels || [],
+    nextActionBlockedStageCount: nextStageActionRow?.actionBlockedStageCount || 0,
+    nextActionBlocksStages: nextStageActionRow?.actionBlocksStages === true,
     nextActionRunPolicy: nextStage?.runPolicy || "",
     nextActionSafetyLevel: nextStage?.safetyLevel || "",
     firstRequiredCommandStageKey: firstStageKey((stage) => stage.required && stage.commandCount > 0),
@@ -5102,6 +5124,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstActionWithPrerequisiteKey: stageActionRows.find((stage) => stage.actionHasPrerequisites)?.key || "",
     firstManualActionWithPrerequisiteKey: stageActionRows.find((stage) => stage.manual && stage.actionHasPrerequisites)?.key || "",
     firstEvidenceActionWithPrerequisiteKey: stageActionRows.find((stage) => stage.actionType === "manual-evidence" && stage.actionHasPrerequisites)?.key || "",
+    firstActionWithDependencyReasonKey: stageActionRows.find((stage) => stage.actionDependencyReasonCode)?.key || "",
+    firstActionBlockingOtherActionKey: stageActionRows.find((stage) => stage.actionBlocksStages)?.key || "",
     requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
     requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
     externalCalls: stages.some((stage) => stage.externalCalls),
@@ -5141,8 +5165,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionPrerequisiteLabelsByKey,
     stageActionPrerequisiteCountByKey,
     stageActionHasPrerequisitesByKey,
+    stageActionDependencyReasonCodeByKey,
+    stageActionDependencyReasonByKey,
     stageActionBlockedStageKeysByKey,
     stageActionBlockedStageLabelsByKey,
+    stageActionBlockedStageCountByKey,
+    stageActionBlocksStagesByKey,
     actionSummary,
     stageKindByKey,
     stageRequiredByKey,
@@ -5182,6 +5210,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionPrerequisiteLabels: nextStageActionRow?.actionPrerequisiteLabels || [],
     nextStageActionPrerequisiteCount: nextStageActionRow?.actionPrerequisiteCount || 0,
     nextStageActionHasPrerequisites: nextStageActionRow?.actionHasPrerequisites === true,
+    nextStageActionDependencyReasonCode: nextStageActionRow?.actionDependencyReasonCode || "",
+    nextStageActionDependencyReason: nextStageActionRow?.actionDependencyReason || "",
+    nextStageActionBlockedStageKeys: nextStageActionRow?.actionBlockedStageKeys || [],
+    nextStageActionBlockedStageLabels: nextStageActionRow?.actionBlockedStageLabels || [],
+    nextStageActionBlockedStageCount: nextStageActionRow?.actionBlockedStageCount || 0,
+    nextStageActionBlocksStages: nextStageActionRow?.actionBlocksStages === true,
     nextStageKind: nextStage?.kind || "",
     nextStageRequired: nextStage?.required === true,
     nextStageRunPolicy: nextStage?.runPolicy || "",

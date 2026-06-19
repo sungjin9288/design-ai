@@ -1859,6 +1859,20 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: true,
     recordEvidence: true,
   });
+  assert.deepEqual(report.operatorRunbook.stageActionDependencyReasonCodeByKey, {
+    verifySourceBundle: "",
+    refreshHandoffSnapshot: "",
+    writeEffectiveTaskPrompt: "requires-prerequisite-actions",
+    executeInTargetRepo: "requires-prerequisite-actions",
+    recordEvidence: "requires-prerequisite-actions",
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionDependencyReasonByKey, {
+    verifySourceBundle: "",
+    refreshHandoffSnapshot: "",
+    writeEffectiveTaskPrompt: "Complete Verify source bundle integrity before writing the selected task prompt.",
+    executeInTargetRepo: "Complete Verify source bundle integrity and Write effective task handoff prompt before implementing in the target website repo.",
+    recordEvidence: "Complete Execute the task in the target website repo before recording implementation evidence.",
+  });
   assert.deepEqual(report.operatorRunbook.stageActionBlockedStageKeysByKey, {
     verifySourceBundle: ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
     refreshHandoffSnapshot: [],
@@ -1869,6 +1883,20 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.deepEqual(report.operatorRunbook.stageActionBlockedStageLabelsByKey.executeInTargetRepo, [
     "Record implementation evidence",
   ]);
+  assert.deepEqual(report.operatorRunbook.stageActionBlockedStageCountByKey, {
+    verifySourceBundle: 2,
+    refreshHandoffSnapshot: 0,
+    writeEffectiveTaskPrompt: 1,
+    executeInTargetRepo: 1,
+    recordEvidence: 0,
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionBlocksStagesByKey, {
+    verifySourceBundle: true,
+    refreshHandoffSnapshot: false,
+    writeEffectiveTaskPrompt: true,
+    executeInTargetRepo: true,
+    recordEvidence: false,
+  });
   assert.equal(
     report.operatorRunbook.stageActionInstructionsByKey.verifySourceBundle,
     "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff.",
@@ -1895,6 +1923,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionPrerequisiteKeys: stage.actionPrerequisiteKeys,
     actionPrerequisiteCount: stage.actionPrerequisiteCount,
     actionHasPrerequisites: stage.actionHasPrerequisites,
+    actionDependencyReasonCode: stage.actionDependencyReasonCode,
+    actionBlockedStageKeys: stage.actionBlockedStageKeys,
+    actionBlockedStageCount: stage.actionBlockedStageCount,
+    actionBlocksStages: stage.actionBlocksStages,
     required: stage.required,
     runPolicy: stage.runPolicy,
     safetyLevel: stage.safetyLevel,
@@ -1919,6 +1951,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionPrerequisiteKeys: [],
       actionPrerequisiteCount: 0,
       actionHasPrerequisites: false,
+      actionDependencyReasonCode: "",
+      actionBlockedStageKeys: ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
+      actionBlockedStageCount: 2,
+      actionBlocksStages: true,
       required: true,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -1943,6 +1979,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionPrerequisiteKeys: [],
       actionPrerequisiteCount: 0,
       actionHasPrerequisites: false,
+      actionDependencyReasonCode: "",
+      actionBlockedStageKeys: [],
+      actionBlockedStageCount: 0,
+      actionBlocksStages: false,
       required: false,
       runPolicy: "read-only",
       safetyLevel: "local-read-only",
@@ -1967,6 +2007,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionPrerequisiteKeys: ["verifySourceBundle"],
       actionPrerequisiteCount: 1,
       actionHasPrerequisites: true,
+      actionDependencyReasonCode: "requires-prerequisite-actions",
+      actionBlockedStageKeys: ["executeInTargetRepo"],
+      actionBlockedStageCount: 1,
+      actionBlocksStages: true,
       required: true,
       runPolicy: "writes-local-file",
       safetyLevel: "local-output-file",
@@ -1991,6 +2035,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionPrerequisiteKeys: ["verifySourceBundle", "writeEffectiveTaskPrompt"],
       actionPrerequisiteCount: 2,
       actionHasPrerequisites: true,
+      actionDependencyReasonCode: "requires-prerequisite-actions",
+      actionBlockedStageKeys: ["recordEvidence"],
+      actionBlockedStageCount: 1,
+      actionBlocksStages: true,
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -2015,6 +2063,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionPrerequisiteKeys: ["executeInTargetRepo"],
       actionPrerequisiteCount: 1,
       actionHasPrerequisites: true,
+      actionDependencyReasonCode: "requires-prerequisite-actions",
+      actionBlockedStageKeys: [],
+      actionBlockedStageCount: 0,
+      actionBlocksStages: false,
       required: true,
       runPolicy: "manual-target-repo",
       safetyLevel: "operator-controlled-target-repo",
@@ -2035,6 +2087,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     manualDisabledActionCount: 2,
     actionWithPrerequisiteCount: 3,
     maxActionPrerequisiteCount: 2,
+    actionWithDependencyReasonCount: 3,
+    actionBlockingOtherActionCount: 3,
+    maxActionBlockedStageCount: 2,
     requiredActionCount: 4,
     optionalActionCount: 1,
     readOnlyActionCount: 2,
@@ -2054,6 +2109,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     nextActionPrerequisiteLabels: [],
     nextActionPrerequisiteCount: 0,
     nextActionHasPrerequisites: false,
+    nextActionDependencyReasonCode: "",
+    nextActionDependencyReason: "",
+    nextActionBlockedStageKeys: ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
+    nextActionBlockedStageLabels: ["Write effective task handoff prompt", "Execute the task in the target website repo"],
+    nextActionBlockedStageCount: 2,
+    nextActionBlocksStages: true,
     nextActionRunPolicy: "read-only",
     nextActionSafetyLevel: "local-read-only",
     firstRequiredCommandStageKey: "verifySourceBundle",
@@ -2064,6 +2125,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     firstActionWithPrerequisiteKey: "writeEffectiveTaskPrompt",
     firstManualActionWithPrerequisiteKey: "executeInTargetRepo",
     firstEvidenceActionWithPrerequisiteKey: "recordEvidence",
+    firstActionWithDependencyReasonKey: "writeEffectiveTaskPrompt",
+    firstActionBlockingOtherActionKey: "verifySourceBundle",
     requiresTargetRepoWork: true,
     requiresEvidenceReturn: true,
     externalCalls: false,
@@ -2215,6 +2278,18 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.deepEqual(report.operatorRunbook.nextStageActionPrerequisiteLabels, []);
   assert.equal(report.operatorRunbook.nextStageActionPrerequisiteCount, 0);
   assert.equal(report.operatorRunbook.nextStageActionHasPrerequisites, false);
+  assert.equal(report.operatorRunbook.nextStageActionDependencyReasonCode, "");
+  assert.equal(report.operatorRunbook.nextStageActionDependencyReason, "");
+  assert.deepEqual(report.operatorRunbook.nextStageActionBlockedStageKeys, [
+    "writeEffectiveTaskPrompt",
+    "executeInTargetRepo",
+  ]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionBlockedStageLabels, [
+    "Write effective task handoff prompt",
+    "Execute the task in the target website repo",
+  ]);
+  assert.equal(report.operatorRunbook.nextStageActionBlockedStageCount, 2);
+  assert.equal(report.operatorRunbook.nextStageActionBlocksStages, true);
   assert.equal(report.operatorRunbook.nextStageKind, "read-only-gate");
   assert.equal(report.operatorRunbook.nextStageRequired, true);
   assert.equal(report.operatorRunbook.nextStageRunPolicy, "read-only");

@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 593 — Website Bundle Handoff Runbook Action Dependency Reasons (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action dependency reason and blocked-action count metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can explain why a handoff action depends on earlier steps and which downstream actions a completed stage unlocks without scanning row arrays.
+
+### Added
+- Added `operatorRunbook.stageActionDependencyReasonCodeByKey` so wrappers can distinguish prerequisite-driven dependency messages from disabled-command reasons.
+- Added `operatorRunbook.stageActionDependencyReasonByKey` so wrappers can render stable dependency copy for local prompt output, target-repo implementation, and evidence-return actions.
+- Added `operatorRunbook.stageActionBlockedStageCountByKey` and `stageActionBlocksStagesByKey` so wrappers can show unlock counts and conditional downstream dependency UI without counting blocked-stage arrays.
+- Added `actionDependencyReasonCode`, `actionDependencyReason`, `actionBlockedStageKeys`, `actionBlockedStageLabels`, `actionBlockedStageCount`, and `actionBlocksStages` to each `stageActionRows[]` item.
+- Added `nextStageActionDependencyReasonCode`, `nextStageActionDependencyReason`, `nextStageActionBlockedStageKeys`, `nextStageActionBlockedStageLabels`, `nextStageActionBlockedStageCount`, and `nextStageActionBlocksStages` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.actionWithDependencyReasonCount`, `actionBlockingOtherActionCount`, `maxActionBlockedStageCount`, `firstActionWithDependencyReasonKey`, and `firstActionBlockingOtherActionKey` for compact dependency dashboards.
+- Added unit and packed-tarball smoke assertions for dependency reason lookup maps, blocked-stage counts, row-level dependency metadata, summary fields, and next-stage mirrors.
+
+### Impact
+- Wrappers can render "do this first" copy and downstream unlock counts directly from the JSON contract.
+- Company website pilots get clearer operator guidance before moving from bundle validation to prompt output, target-repo work, and evidence capture.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 592 — Website Bundle Handoff Runbook Action Prerequisite Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes action prerequisite metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render the strict bundle gate, selected prompt output, target-repo implementation, and evidence-return sequence without hard-coded stage dependency rules.
