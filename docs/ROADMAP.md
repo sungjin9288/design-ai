@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 600 — Website Bundle Handoff Runbook Action Evidence Capture Value Shape Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes value-shape metadata for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can render text areas, short text inputs, file-path inputs, and multi-value lists without local `inputType` mapping.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldValueShapesByKey` so wrappers can read stable value shapes per action.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldAcceptsMultipleByKey` so evidence forms can distinguish single-value fields from list-style multi-value capture.
+- Added row-level `actionEvidenceCaptureFieldValueShapes` and `actionEvidenceCaptureFieldAcceptsMultiple` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for long-text, short-text, file-path value, string-list, multi-value, single-value, and first multi-value action lookup.
+- Added matching `nextAction*` and `nextStageAction*` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for value-shape maps, accepts-multiple maps, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render Website bundle handoff evidence forms from the CLI JSON contract without duplicating `textarea`/`text`/`file-path`/`list` translation rules.
+- Company website pilots can capture target-repo changed files as an explicit string-list while keeping verification, viewport/accessibility, risk, and final evidence as long-text records.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 599 — Website Bundle Handoff Runbook Action Evidence Capture Validation Metadata (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes validation metadata for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can validate evidence forms without scanning full field objects or carrying local schema maps.

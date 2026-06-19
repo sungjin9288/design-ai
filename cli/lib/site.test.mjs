@@ -1978,6 +1978,20 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: ["list", "textarea", "textarea"],
     recordEvidence: ["textarea", "textarea"],
   });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldValueShapesByKey, {
+    verifySourceBundle: ["long-text", "short-text"],
+    refreshHandoffSnapshot: ["long-text"],
+    writeEffectiveTaskPrompt: ["file-path", "short-text"],
+    executeInTargetRepo: ["string-list", "long-text", "long-text"],
+    recordEvidence: ["long-text", "long-text"],
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldAcceptsMultipleByKey, {
+    verifySourceBundle: [false, false],
+    refreshHandoffSnapshot: [false],
+    writeEffectiveTaskPrompt: [false, false],
+    executeInTargetRepo: [true, false, false],
+    recordEvidence: [false, false],
+  });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldValidationRulesByKey, {
     verifySourceBundle: ["non-empty-text", "checksum-or-digest-text"],
     refreshHandoffSnapshot: ["optional-json-snapshot"],
@@ -2057,6 +2071,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     minLength: 20,
     example: "Status: pass; checksumFailures: 0; generatedFailures: 0",
     validationHint: "Required: paste a passing strict bundle-check result.",
+    valueShape: "long-text",
+    acceptsMultiple: false,
   });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldsByKey.executeInTargetRepo[2], {
     key: "viewportAccessibilityNotes",
@@ -2069,6 +2085,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     minLength: 20,
     example: "desktop/tablet/mobile checked; focus visible; contrast AA",
     validationHint: "Required: document viewport coverage plus keyboard, contrast, and screen-reader notes.",
+    valueShape: "long-text",
+    acceptsMultiple: false,
   });
   assert.equal(
     report.operatorRunbook.stageActionInstructionsByKey.verifySourceBundle,
@@ -2109,6 +2127,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     actionEvidenceCaptureFieldKeys: stage.actionEvidenceCaptureFieldKeys,
     actionEvidenceCaptureFieldLabels: stage.actionEvidenceCaptureFieldLabels,
     actionEvidenceCaptureFieldInputTypes: stage.actionEvidenceCaptureFieldInputTypes,
+    actionEvidenceCaptureFieldValueShapes: stage.actionEvidenceCaptureFieldValueShapes,
+    actionEvidenceCaptureFieldAcceptsMultiple: stage.actionEvidenceCaptureFieldAcceptsMultiple,
     actionEvidenceCaptureFieldValidationRules: stage.actionEvidenceCaptureFieldValidationRules,
     actionEvidenceCaptureFieldMinLengths: stage.actionEvidenceCaptureFieldMinLengths,
     actionRequiredEvidenceCaptureFieldKeys: stage.actionRequiredEvidenceCaptureFieldKeys,
@@ -2154,6 +2174,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
       actionEvidenceCaptureFieldLabels: ["Strict bundle-check output", "Bundle digest"],
       actionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
+      actionEvidenceCaptureFieldValueShapes: ["long-text", "short-text"],
+      actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
       actionEvidenceCaptureFieldValidationRules: ["non-empty-text", "checksum-or-digest-text"],
       actionEvidenceCaptureFieldMinLengths: [20, 8],
       actionRequiredEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
@@ -2199,6 +2221,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureFieldKeys: ["handoffJsonSnapshot"],
       actionEvidenceCaptureFieldLabels: ["Strict handoff JSON snapshot"],
       actionEvidenceCaptureFieldInputTypes: ["textarea"],
+      actionEvidenceCaptureFieldValueShapes: ["long-text"],
+      actionEvidenceCaptureFieldAcceptsMultiple: [false],
       actionEvidenceCaptureFieldValidationRules: ["optional-json-snapshot"],
       actionEvidenceCaptureFieldMinLengths: [0],
       actionRequiredEvidenceCaptureFieldKeys: [],
@@ -2244,6 +2268,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureFieldKeys: ["promptOutputFile", "selectedTaskId"],
       actionEvidenceCaptureFieldLabels: ["Prompt output file", "Selected task id"],
       actionEvidenceCaptureFieldInputTypes: ["file-path", "text"],
+      actionEvidenceCaptureFieldValueShapes: ["file-path", "short-text"],
+      actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
       actionEvidenceCaptureFieldValidationRules: ["local-markdown-file-path", "task-id"],
       actionEvidenceCaptureFieldMinLengths: [12, 5],
       actionRequiredEvidenceCaptureFieldKeys: ["promptOutputFile", "selectedTaskId"],
@@ -2297,6 +2323,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         "Viewport and accessibility notes",
       ],
       actionEvidenceCaptureFieldInputTypes: ["list", "textarea", "textarea"],
+      actionEvidenceCaptureFieldValueShapes: ["string-list", "long-text", "long-text"],
+      actionEvidenceCaptureFieldAcceptsMultiple: [true, false, false],
       actionEvidenceCaptureFieldValidationRules: [
         "non-empty-file-list",
         "verification-results",
@@ -2350,6 +2378,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       actionEvidenceCaptureFieldKeys: ["finalEvidenceRecord", "remainingRisks"],
       actionEvidenceCaptureFieldLabels: ["Final evidence record", "Remaining risks"],
       actionEvidenceCaptureFieldInputTypes: ["textarea", "textarea"],
+      actionEvidenceCaptureFieldValueShapes: ["long-text", "long-text"],
+      actionEvidenceCaptureFieldAcceptsMultiple: [false, false],
       actionEvidenceCaptureFieldValidationRules: ["final-evidence-record", "risk-notes"],
       actionEvidenceCaptureFieldMinLengths: [30, 10],
       actionRequiredEvidenceCaptureFieldKeys: ["finalEvidenceRecord", "remainingRisks"],
@@ -2402,6 +2432,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     textEvidenceCaptureFieldCount: 2,
     filePathEvidenceCaptureFieldCount: 1,
     listEvidenceCaptureFieldCount: 1,
+    longTextEvidenceCaptureFieldCount: 6,
+    shortTextEvidenceCaptureFieldCount: 2,
+    filePathValueEvidenceCaptureFieldCount: 1,
+    stringListEvidenceCaptureFieldCount: 1,
+    multiValueEvidenceCaptureFieldCount: 1,
+    singleValueEvidenceCaptureFieldCount: 9,
     validatedEvidenceCaptureFieldCount: 10,
     requiredValidatedEvidenceCaptureFieldCount: 9,
     optionalValidatedEvidenceCaptureFieldCount: 1,
@@ -2458,6 +2494,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         minLength: 20,
         example: "Status: pass; checksumFailures: 0; generatedFailures: 0",
         validationHint: "Required: paste a passing strict bundle-check result.",
+        valueShape: "long-text",
+        acceptsMultiple: false,
       },
       {
         key: "bundleDigest",
@@ -2470,11 +2508,15 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
         minLength: 8,
         example: "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
         validationHint: "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+        valueShape: "short-text",
+        acceptsMultiple: false,
       },
     ],
     nextActionEvidenceCaptureFieldKeys: ["strictBundleCheckOutput", "bundleDigest"],
     nextActionEvidenceCaptureFieldLabels: ["Strict bundle-check output", "Bundle digest"],
     nextActionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
+    nextActionEvidenceCaptureFieldValueShapes: ["long-text", "short-text"],
+    nextActionEvidenceCaptureFieldAcceptsMultiple: [false, false],
     nextActionEvidenceCaptureFieldValidationRules: ["non-empty-text", "checksum-or-digest-text"],
     nextActionEvidenceCaptureFieldMinLengths: [20, 8],
     nextActionEvidenceCaptureFieldExamples: [
@@ -2514,6 +2556,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     firstActionWithOptionalEvidenceCaptureFieldKey: "refreshHandoffSnapshot",
     firstManualActionWithEvidenceCaptureFieldKey: "executeInTargetRepo",
     firstTextareaEvidenceCaptureActionKey: "verifySourceBundle",
+    firstMultiValueEvidenceCaptureActionKey: "executeInTargetRepo",
     firstValidationRuleEvidenceCaptureActionKey: "verifySourceBundle",
     requiresTargetRepoWork: true,
     requiresEvidenceReturn: true,
@@ -2701,6 +2744,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     "Bundle digest",
   ]);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldInputTypes, ["textarea", "text"]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldValueShapes, ["long-text", "short-text"]);
+  assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldAcceptsMultiple, [false, false]);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldValidationRules, [
     "non-empty-text",
     "checksum-or-digest-text",
@@ -2734,6 +2779,8 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     minLength: 8,
     example: "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
     validationHint: "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+    valueShape: "short-text",
+    acceptsMultiple: false,
   });
   assert.equal(report.operatorRunbook.nextStageKind, "read-only-gate");
   assert.equal(report.operatorRunbook.nextStageRequired, true);

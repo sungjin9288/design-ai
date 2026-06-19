@@ -2331,6 +2331,20 @@ def assert_site_bundle_handoff_json_smoke(
         "executeInTargetRepo": ["list", "textarea", "textarea"],
         "recordEvidence": ["textarea", "textarea"],
     }
+    expected_capture_field_value_shapes = {
+        "verifySourceBundle": ["long-text", "short-text"],
+        "refreshHandoffSnapshot": ["long-text"],
+        "writeEffectiveTaskPrompt": ["file-path", "short-text"],
+        "executeInTargetRepo": ["string-list", "long-text", "long-text"],
+        "recordEvidence": ["long-text", "long-text"],
+    }
+    expected_capture_field_accepts_multiple = {
+        "verifySourceBundle": [False, False],
+        "refreshHandoffSnapshot": [False],
+        "writeEffectiveTaskPrompt": [False, False],
+        "executeInTargetRepo": [True, False, False],
+        "recordEvidence": [False, False],
+    }
     expected_capture_field_validation_rules = {
         "verifySourceBundle": ["non-empty-text", "checksum-or-digest-text"],
         "refreshHandoffSnapshot": ["optional-json-snapshot"],
@@ -2375,6 +2389,8 @@ def assert_site_bundle_handoff_json_smoke(
             "minLength": 20,
             "example": "Status: pass; checksumFailures: 0; generatedFailures: 0",
             "validationHint": "Required: paste a passing strict bundle-check result.",
+            "valueShape": "long-text",
+            "acceptsMultiple": False,
         },
         {
             "key": "bundleDigest",
@@ -2387,6 +2403,8 @@ def assert_site_bundle_handoff_json_smoke(
             "minLength": 8,
             "example": "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
             "validationHint": "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+            "valueShape": "short-text",
+            "acceptsMultiple": False,
         },
     ]
     if (
@@ -2663,6 +2681,8 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("stageActionEvidenceCaptureFieldLabelsByKey", {}).get("verifySourceBundle")
         != ["Strict bundle-check output", "Bundle digest"]
         or operator_runbook.get("stageActionEvidenceCaptureFieldInputTypesByKey") != expected_capture_field_input_types
+        or operator_runbook.get("stageActionEvidenceCaptureFieldValueShapesByKey") != expected_capture_field_value_shapes
+        or operator_runbook.get("stageActionEvidenceCaptureFieldAcceptsMultipleByKey") != expected_capture_field_accepts_multiple
         or operator_runbook.get("stageActionEvidenceCaptureFieldValidationRulesByKey") != expected_capture_field_validation_rules
         or operator_runbook.get("stageActionEvidenceCaptureFieldMinLengthsByKey") != expected_capture_field_min_lengths
         or operator_runbook.get("stageActionEvidenceCaptureFieldExamplesByKey", {}).get("verifySourceBundle")
@@ -2749,6 +2769,12 @@ def assert_site_bundle_handoff_json_smoke(
             "textEvidenceCaptureFieldCount": 2,
             "filePathEvidenceCaptureFieldCount": 1,
             "listEvidenceCaptureFieldCount": 1,
+            "longTextEvidenceCaptureFieldCount": 6,
+            "shortTextEvidenceCaptureFieldCount": 2,
+            "filePathValueEvidenceCaptureFieldCount": 1,
+            "stringListEvidenceCaptureFieldCount": 1,
+            "multiValueEvidenceCaptureFieldCount": 1,
+            "singleValueEvidenceCaptureFieldCount": 9,
             "validatedEvidenceCaptureFieldCount": 10,
             "requiredValidatedEvidenceCaptureFieldCount": 9,
             "optionalValidatedEvidenceCaptureFieldCount": 1,
@@ -2800,6 +2826,8 @@ def assert_site_bundle_handoff_json_smoke(
             "nextActionEvidenceCaptureFieldKeys": ["strictBundleCheckOutput", "bundleDigest"],
             "nextActionEvidenceCaptureFieldLabels": ["Strict bundle-check output", "Bundle digest"],
             "nextActionEvidenceCaptureFieldInputTypes": ["textarea", "text"],
+            "nextActionEvidenceCaptureFieldValueShapes": ["long-text", "short-text"],
+            "nextActionEvidenceCaptureFieldAcceptsMultiple": [False, False],
             "nextActionEvidenceCaptureFieldValidationRules": ["non-empty-text", "checksum-or-digest-text"],
             "nextActionEvidenceCaptureFieldMinLengths": [20, 8],
             "nextActionEvidenceCaptureFieldExamples": [
@@ -2839,6 +2867,7 @@ def assert_site_bundle_handoff_json_smoke(
             "firstActionWithOptionalEvidenceCaptureFieldKey": "refreshHandoffSnapshot",
             "firstManualActionWithEvidenceCaptureFieldKey": "executeInTargetRepo",
             "firstTextareaEvidenceCaptureActionKey": "verifySourceBundle",
+            "firstMultiValueEvidenceCaptureActionKey": "executeInTargetRepo",
             "firstValidationRuleEvidenceCaptureActionKey": "verifySourceBundle",
             "requiresTargetRepoWork": True,
             "requiresEvidenceReturn": True,
@@ -2928,6 +2957,8 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldKeys") != ["strictBundleCheckOutput", "bundleDigest"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldLabels") != ["Strict bundle-check output", "Bundle digest"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldValidationRules")
         != ["non-empty-text", "checksum-or-digest-text"]
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldMinLengths") != [20, 8]
@@ -3005,6 +3036,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[0].get("actionEvidenceCaptureFieldKeys") != ["strictBundleCheckOutput", "bundleDigest"]
         or action_rows[0].get("actionEvidenceCaptureFieldLabels") != ["Strict bundle-check output", "Bundle digest"]
         or action_rows[0].get("actionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
+        or action_rows[0].get("actionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
+        or action_rows[0].get("actionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
         or action_rows[0].get("actionEvidenceCaptureFieldValidationRules")
         != ["non-empty-text", "checksum-or-digest-text"]
         or action_rows[0].get("actionEvidenceCaptureFieldMinLengths") != [20, 8]
@@ -3036,6 +3069,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[2].get("actionEvidenceTargetLabel") != "Local output file"
         or action_rows[2].get("actionEvidenceCaptureFieldKeys") != ["promptOutputFile", "selectedTaskId"]
         or action_rows[2].get("actionEvidenceCaptureFieldInputTypes") != ["file-path", "text"]
+        or action_rows[2].get("actionEvidenceCaptureFieldValueShapes") != ["file-path", "short-text"]
+        or action_rows[2].get("actionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
         or action_rows[2].get("actionEvidenceCaptureFieldValidationRules") != ["local-markdown-file-path", "task-id"]
         or action_rows[2].get("actionEvidenceCaptureFieldMinLengths") != [12, 5]
         or action_rows[2].get("actionRequiredEvidenceCaptureFieldKeys") != ["promptOutputFile", "selectedTaskId"]
@@ -3067,6 +3102,8 @@ def assert_site_bundle_handoff_json_smoke(
         or action_rows[3].get("actionEvidenceCaptureFieldKeys")
         != ["targetRepoChangedFiles", "targetRepoVerificationResults", "viewportAccessibilityNotes"]
         or action_rows[3].get("actionEvidenceCaptureFieldInputTypes") != ["list", "textarea", "textarea"]
+        or action_rows[3].get("actionEvidenceCaptureFieldValueShapes") != ["string-list", "long-text", "long-text"]
+        or action_rows[3].get("actionEvidenceCaptureFieldAcceptsMultiple") != [True, False, False]
         or action_rows[3].get("actionEvidenceCaptureFieldValidationRules")
         != ["non-empty-file-list", "verification-results", "viewport-accessibility-notes"]
         or action_rows[3].get("actionEvidenceCaptureFieldMinLengths") != [1, 20, 20]

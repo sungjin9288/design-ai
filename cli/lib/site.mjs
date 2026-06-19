@@ -5045,6 +5045,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     "handoff-evidence-record": "Handoff evidence record",
     "not-applicable": "Not applicable",
   }[getStageActionEvidenceTarget(stage)]);
+  const getEvidenceCaptureFieldValueShape = (field) => ({
+    textarea: "long-text",
+    text: "short-text",
+    "file-path": "file-path",
+    list: "string-list",
+  }[field.inputType] || "text");
   const getStageActionEvidenceCaptureFields = (stage) => ({
     verifySourceBundle: [
       {
@@ -5176,7 +5182,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
         validationHint: "Required: record unresolved risks, skipped checks, or confirm none remain.",
       },
     ],
-  }[stage.key] || []);
+  }[stage.key] || []).map((field) => ({
+    ...field,
+    valueShape: getEvidenceCaptureFieldValueShape(field),
+    acceptsMultiple: field.inputType === "list",
+  }));
   const stageActionRows = stages.map((stage) => ({
     step: stage.step,
     key: stage.key,
@@ -5214,6 +5224,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionEvidenceCaptureFieldKeys: getStageActionEvidenceCaptureFields(stage).map((field) => field.key),
     actionEvidenceCaptureFieldLabels: getStageActionEvidenceCaptureFields(stage).map((field) => field.label),
     actionEvidenceCaptureFieldInputTypes: getStageActionEvidenceCaptureFields(stage).map((field) => field.inputType),
+    actionEvidenceCaptureFieldValueShapes: getStageActionEvidenceCaptureFields(stage).map((field) => field.valueShape),
+    actionEvidenceCaptureFieldAcceptsMultiple: getStageActionEvidenceCaptureFields(stage).map((field) => field.acceptsMultiple),
     actionEvidenceCaptureFieldValidationRules: getStageActionEvidenceCaptureFields(stage).map((field) => field.validationRule),
     actionEvidenceCaptureFieldMinLengths: getStageActionEvidenceCaptureFields(stage).map((field) => field.minLength),
     actionEvidenceCaptureFieldExamples: getStageActionEvidenceCaptureFields(stage).map((field) => field.example),
@@ -5272,6 +5284,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionEvidenceCaptureFieldKeysByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldKeys]));
   const stageActionEvidenceCaptureFieldLabelsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldLabels]));
   const stageActionEvidenceCaptureFieldInputTypesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldInputTypes]));
+  const stageActionEvidenceCaptureFieldValueShapesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldValueShapes]));
+  const stageActionEvidenceCaptureFieldAcceptsMultipleByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldAcceptsMultiple]));
   const stageActionEvidenceCaptureFieldValidationRulesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldValidationRules]));
   const stageActionEvidenceCaptureFieldMinLengthsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldMinLengths]));
   const stageActionEvidenceCaptureFieldExamplesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldExamples]));
@@ -5341,6 +5355,12 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     textEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.inputType === "text").length, 0),
     filePathEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.inputType === "file-path").length, 0),
     listEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.inputType === "list").length, 0),
+    longTextEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.valueShape === "long-text").length, 0),
+    shortTextEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.valueShape === "short-text").length, 0),
+    filePathValueEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.valueShape === "file-path").length, 0),
+    stringListEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.valueShape === "string-list").length, 0),
+    multiValueEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.acceptsMultiple).length, 0),
+    singleValueEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => !field.acceptsMultiple).length, 0),
     validatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.validationRule).length, 0),
     requiredValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.required && field.validationRule).length, 0),
     optionalValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => !field.required && field.validationRule).length, 0),
@@ -5383,6 +5403,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionEvidenceCaptureFieldKeys: nextStageActionRow?.actionEvidenceCaptureFieldKeys || [],
     nextActionEvidenceCaptureFieldLabels: nextStageActionRow?.actionEvidenceCaptureFieldLabels || [],
     nextActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
+    nextActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],
+    nextActionEvidenceCaptureFieldAcceptsMultiple: nextStageActionRow?.actionEvidenceCaptureFieldAcceptsMultiple || [],
     nextActionEvidenceCaptureFieldValidationRules: nextStageActionRow?.actionEvidenceCaptureFieldValidationRules || [],
     nextActionEvidenceCaptureFieldMinLengths: nextStageActionRow?.actionEvidenceCaptureFieldMinLengths || [],
     nextActionEvidenceCaptureFieldExamples: nextStageActionRow?.actionEvidenceCaptureFieldExamples || [],
@@ -5416,6 +5438,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstActionWithOptionalEvidenceCaptureFieldKey: stageActionRows.find((stage) => stage.actionOptionalEvidenceCaptureFieldCount > 0)?.key || "",
     firstManualActionWithEvidenceCaptureFieldKey: stageActionRows.find((stage) => stage.manual && stage.actionHasEvidenceCaptureFields)?.key || "",
     firstTextareaEvidenceCaptureActionKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureFields.some((field) => field.inputType === "textarea"))?.key || "",
+    firstMultiValueEvidenceCaptureActionKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureFields.some((field) => field.acceptsMultiple))?.key || "",
     firstValidationRuleEvidenceCaptureActionKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureFields.some((field) => field.validationRule))?.key || "",
     requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
     requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
@@ -5474,6 +5497,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionEvidenceCaptureFieldKeysByKey,
     stageActionEvidenceCaptureFieldLabelsByKey,
     stageActionEvidenceCaptureFieldInputTypesByKey,
+    stageActionEvidenceCaptureFieldValueShapesByKey,
+    stageActionEvidenceCaptureFieldAcceptsMultipleByKey,
     stageActionEvidenceCaptureFieldValidationRulesByKey,
     stageActionEvidenceCaptureFieldMinLengthsByKey,
     stageActionEvidenceCaptureFieldExamplesByKey,
@@ -5541,6 +5566,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceCaptureFieldKeys: nextStageActionRow?.actionEvidenceCaptureFieldKeys || [],
     nextStageActionEvidenceCaptureFieldLabels: nextStageActionRow?.actionEvidenceCaptureFieldLabels || [],
     nextStageActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
+    nextStageActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],
+    nextStageActionEvidenceCaptureFieldAcceptsMultiple: nextStageActionRow?.actionEvidenceCaptureFieldAcceptsMultiple || [],
     nextStageActionEvidenceCaptureFieldValidationRules: nextStageActionRow?.actionEvidenceCaptureFieldValidationRules || [],
     nextStageActionEvidenceCaptureFieldMinLengths: nextStageActionRow?.actionEvidenceCaptureFieldMinLengths || [],
     nextStageActionEvidenceCaptureFieldExamples: nextStageActionRow?.actionEvidenceCaptureFieldExamples || [],
