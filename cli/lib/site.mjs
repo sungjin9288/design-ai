@@ -5650,6 +5650,27 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     };
   });
   const stageHumanLineDisplayRowByKey = Object.fromEntries(stageHumanLineDisplayRows.map((row) => [row.key, row]));
+  const stageHumanLineDisplayRowSummary = {
+    count: stageHumanLineDisplayRows.length,
+    byKeyCount: Object.keys(stageHumanLineDisplayRowByKey).length,
+    requiredCount: stageHumanLineDisplayRows.filter((row) => row.required).length,
+    optionalCount: stageHumanLineDisplayRows.filter((row) => !row.required).length,
+    commandCount: stageHumanLineDisplayRows.filter((row) => row.commandCount > 0).length,
+    manualCount: stageHumanLineDisplayRows.filter((row) => row.manual).length,
+    readyActionStatusCount: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "ready").length,
+    optionalActionStatusCount: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "optional").length,
+    manualActionStatusCount: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "manual").length,
+    blockedActionStatusCount: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "blocked").length,
+    evidenceProgressCount: stageHumanLineDisplayRows.filter((row) => row.hasEvidenceProgress).length,
+    blockedEvidenceProgressCount: stageHumanLineDisplayRows.filter((row) => row.evidenceProgressStatus === "blocked").length,
+    readyEvidenceProgressCount: stageHumanLineDisplayRows.filter((row) => row.evidenceProgressStatus === "ready").length,
+    firstRowKey: stageHumanLineDisplayRows[0]?.key || "",
+    firstReadyActionRowKey: stageHumanLineDisplayRows.find((row) => row.actionStatus === "ready")?.key || "",
+    firstOptionalActionRowKey: stageHumanLineDisplayRows.find((row) => row.actionStatus === "optional")?.key || "",
+    firstManualActionRowKey: stageHumanLineDisplayRows.find((row) => row.actionStatus === "manual")?.key || "",
+    firstBlockedEvidenceProgressRowKey: stageHumanLineDisplayRows.find((row) => row.evidenceProgressStatus === "blocked")?.key || "",
+    firstReadyEvidenceProgressRowKey: stageHumanLineDisplayRows.find((row) => row.evidenceProgressStatus === "ready")?.key || "",
+  };
   const stageHumanLineSummary = {
     count: stageHumanLines.length,
     byKeyCount: Object.keys(stageHumanLineByKey).length,
@@ -5819,6 +5840,10 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     humanLineDisplayRowCount: stageHumanLineDisplayRows.length,
     humanLineDisplayRowByKeyCount: Object.keys(stageHumanLineDisplayRowByKey).length,
     humanLineDisplayRowWithEvidenceProgressCount: stageHumanLineDisplayRows.filter((row) => row.hasEvidenceProgress).length,
+    humanLineDisplayRowWithBlockedEvidenceProgressCount: stageHumanLineDisplayRowSummary.blockedEvidenceProgressCount,
+    humanLineDisplayRowWithReadyEvidenceProgressCount: stageHumanLineDisplayRowSummary.readyEvidenceProgressCount,
+    humanLineDisplayRowReadyActionCount: stageHumanLineDisplayRowSummary.readyActionStatusCount,
+    humanLineDisplayRowManualActionCount: stageHumanLineDisplayRowSummary.manualActionStatusCount,
     validatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.validationRule).length, 0),
     requiredValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.required && field.validationRule).length, 0),
     optionalValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => !field.required && field.validationRule).length, 0),
@@ -5949,6 +5974,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageHumanLineByKey,
     stageHumanLineDisplayRows,
     stageHumanLineDisplayRowByKey,
+    stageHumanLineDisplayRowSummary,
     stageHumanLineSummary,
     stageActionRows,
     stageActionTypeByKey,

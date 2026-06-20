@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 617 — Website Bundle Handoff Runbook Human Line Display Row Summaries (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact summaries for display-ready operator runbook human line rows, so wrappers can render row totals, action-status chips, and evidence-progress summary badges without reducing `stageHumanLineDisplayRows`.
+
+### Added
+- Added `operatorRunbook.stageHumanLineDisplayRowSummary` with row counts, required/optional counts, command/manual counts, action-status counts, evidence-progress counts, and first-row keys.
+- Added action-summary display-row totals for blocked/ready evidence progress and ready/manual action rows.
+- Added unit and packed-tarball smoke assertions for the display-row summary contract.
+
+### Impact
+- Website Console and VS Code wrappers can render runbook summary chips from one object instead of reducing display rows.
+- Company website pilots keep the same local/read-only handoff flow while gaining a simpler row-summary UI contract.
+- The change is additive JSON metadata only; it adds no external MCP calls, no target repo mutation, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 616 — Website Bundle Handoff Runbook Human Line Display Rows (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes display-ready rows for copy-ready operator runbook human lines, so wrappers can render labels, action status, and evidence-progress badges without joining `stageHumanLines`, `stageActionRows`, and checklist summary maps.

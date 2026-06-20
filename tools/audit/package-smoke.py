@@ -3575,6 +3575,10 @@ def assert_site_bundle_handoff_json_smoke(
             "humanLineDisplayRowCount": 5,
             "humanLineDisplayRowByKeyCount": 5,
             "humanLineDisplayRowWithEvidenceProgressCount": 5,
+            "humanLineDisplayRowWithBlockedEvidenceProgressCount": 4,
+            "humanLineDisplayRowWithReadyEvidenceProgressCount": 1,
+            "humanLineDisplayRowReadyActionCount": 2,
+            "humanLineDisplayRowManualActionCount": 2,
             "validatedEvidenceCaptureFieldCount": 10,
             "requiredValidatedEvidenceCaptureFieldCount": 9,
             "optionalValidatedEvidenceCaptureFieldCount": 1,
@@ -3907,6 +3911,7 @@ def assert_site_bundle_handoff_json_smoke(
     stage_human_line_by_key = operator_runbook.get("stageHumanLineByKey")
     stage_human_line_display_rows = operator_runbook.get("stageHumanLineDisplayRows")
     stage_human_line_display_row_by_key = operator_runbook.get("stageHumanLineDisplayRowByKey")
+    stage_human_line_display_row_summary = operator_runbook.get("stageHumanLineDisplayRowSummary")
     stage_human_line_summary = operator_runbook.get("stageHumanLineSummary")
     next_stage_human_line_summary = operator_runbook.get("nextStageHumanLineSummary")
     if (
@@ -3943,6 +3948,28 @@ def assert_site_bundle_handoff_json_smoke(
         }
         or stage_human_line_display_row_by_key.get("verifySourceBundle") != stage_human_line_display_rows[0]
         or operator_runbook.get("nextStageHumanLineDisplayRow") != stage_human_line_display_rows[0]
+        or stage_human_line_display_row_summary
+        != {
+            "count": 5,
+            "byKeyCount": 5,
+            "requiredCount": 4,
+            "optionalCount": 1,
+            "commandCount": 3,
+            "manualCount": 2,
+            "readyActionStatusCount": 2,
+            "optionalActionStatusCount": 1,
+            "manualActionStatusCount": 2,
+            "blockedActionStatusCount": 0,
+            "evidenceProgressCount": 5,
+            "blockedEvidenceProgressCount": 4,
+            "readyEvidenceProgressCount": 1,
+            "firstRowKey": "verifySourceBundle",
+            "firstReadyActionRowKey": "verifySourceBundle",
+            "firstOptionalActionRowKey": "refreshHandoffSnapshot",
+            "firstManualActionRowKey": "executeInTargetRepo",
+            "firstBlockedEvidenceProgressRowKey": "verifySourceBundle",
+            "firstReadyEvidenceProgressRowKey": "refreshHandoffSnapshot",
+        }
         or stage_human_line_summary
         != {
             "count": 5,
