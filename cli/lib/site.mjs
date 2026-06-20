@@ -6091,7 +6091,14 @@ function formatBundleHandoffOperatorRunbookLines(operatorRunbook) {
       ? ` command: \`${stage.commands[0].command}\``
       : " command: manual";
     const outputText = stage.outputFiles.length ? ` output: ${stage.outputFiles.join(", ")}` : "";
-    return `- ${stage.step}. ${stage.key} (${required}, ${stage.runPolicy || stage.kind}): ${stage.label}.${commandText}${outputText}`;
+    const checklistSummary = stage.actionEvidenceCaptureInitialValidationChecklistSummary
+      || operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey?.[stage.key];
+    const evidenceText = checklistSummary?.itemCount > 0
+      ? ` evidence: ${checklistSummary.progressLabel}, ${checklistSummary.statusLabel}${
+        checklistSummary.firstUncheckedItemLabel ? `; next: ${checklistSummary.firstUncheckedItemLabel}` : ""
+      }`
+      : "";
+    return `- ${stage.step}. ${stage.key} (${required}, ${stage.runPolicy || stage.kind}): ${stage.label}.${commandText}${outputText}${evidenceText}`;
   });
 }
 

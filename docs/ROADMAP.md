@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 613 — Website Bundle Handoff Runbook Human Evidence Checklist Progress (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff` now includes evidence checklist progress in the human-readable operator runbook lines, so target-repo operators can see first-render evidence completion state without opening the JSON contract.
+
+### Added
+- Added per-stage evidence progress text to human runbook lines when an action has evidence capture checklist metadata.
+- Included progress label, checklist status label, and the first unchecked evidence item label for blocked stages.
+- Added unit and packed-tarball human smoke assertions so installed-bin handoff prompts keep exposing source-bundle, optional snapshot, and target-repo evidence progress.
+
+### Impact
+- Operators can scan handoff prompts and immediately see which evidence item blocks each runbook stage.
+- Website Console wrappers still use the richer JSON contract, while CLI-only company pilots get the same checklist status in copy-ready Markdown.
+- The change is additive human-output metadata only; it adds no external MCP calls, no target repo mutation, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 612 — Website Bundle Handoff Runbook Action Evidence Capture Initial Validation Checklist Summaries (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact progress summaries for action evidence capture initial validation checklists in the Website bundle operator runbook, so wrappers and GUI surfaces can render checklist badges, progress labels, and first-unchecked guidance without reducing checklist rows.

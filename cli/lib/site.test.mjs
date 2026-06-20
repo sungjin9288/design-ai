@@ -4091,7 +4091,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.match(report.prompt, /Runbook stages: 5 \(4 required, 1 optional\)/);
   assert.match(report.prompt, /Next command key: source\.bundleCheck\.strict/);
   assert.match(report.prompt, /1\. verifySourceBundle \(required, read-only\): Verify source bundle integrity\. command: `design-ai site .* --bundle-check --strict --json`/);
+  assert.match(report.prompt, /1\. verifySourceBundle .* evidence: 0\/2 complete, Checklist blocked; next: Strict bundle-check output/);
   assert.match(report.prompt, /3\. writeEffectiveTaskPrompt \(required, writes-local-file\): Write effective task handoff prompt\. command: `design-ai site .* --bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff\.md` output: target-repo-task-accessibility-handoff\.md/);
+  assert.match(report.prompt, /2\. refreshHandoffSnapshot .* evidence: 1\/1 complete, Checklist ready/);
+  assert.match(report.prompt, /4\. executeInTargetRepo .* evidence: 0\/3 complete, Checklist blocked; next: Target repo changed files/);
   assert.match(report.prompt, /4\. executeInTargetRepo \(required, manual-target-repo\): Execute the task in the target website repo\. command: manual/);
   assert.match(report.prompt, /MCP probes: 4\/4 passing, 0 warning, 0 failing/);
   assert.match(report.prompt, /mcp-probes\.json/);

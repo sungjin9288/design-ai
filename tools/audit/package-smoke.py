@@ -4336,6 +4336,9 @@ def assert_site_bundle_handoff_human_smoke(
         f"Task ID: {expected_task_id}",
         "Target Repo Execution Checklist",
         "Required Final Response",
+        "evidence: 0/2 complete, Checklist blocked; next: Strict bundle-check output",
+        "evidence: 1/1 complete, Checklist ready",
+        "evidence: 0/3 complete, Checklist blocked; next: Target repo changed files",
     ]
     if expected_selected_task_id:
         fragments.extend([
