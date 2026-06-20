@@ -5241,6 +5241,38 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
       message: state.message,
     }))
   );
+  const buildEvidenceCaptureInitialValidationSummary = (fields) => {
+    const states = buildEvidenceCaptureInitialValidationStates(fields);
+    const blockingStates = states.filter((state) => state.blocking);
+    const firstBlockingState = blockingStates[0];
+    const status = blockingStates.length > 0 ? "blocked" : "ready";
+    return {
+      status,
+      statusLabel: status === "blocked" ? "Blocked by required evidence" : "Ready for completion",
+      statusTone: status === "blocked" ? "danger" : "success",
+      iconName: status === "blocked" ? "alert-circle" : "check-circle",
+      actionLabel: status === "blocked" ? "Provide required evidence" : "Continue",
+      helperText: status === "blocked"
+        ? `${blockingStates.length} required evidence field(s) need input before completion.`
+        : "No required evidence is missing on first render.",
+      fieldCount: states.length,
+      requiredCount: states.filter((state) => state.required).length,
+      optionalCount: states.filter((state) => !state.required).length,
+      validCount: states.filter((state) => state.valid).length,
+      invalidCount: states.filter((state) => !state.valid).length,
+      blockingCount: blockingStates.length,
+      nonBlockingCount: states.filter((state) => !state.blocking).length,
+      missingRequiredCount: states.filter((state) => state.status === "missing-required").length,
+      optionalEmptyCount: states.filter((state) => state.status === "optional-empty").length,
+      dangerDisplayCount: states.filter((state) => state.statusTone === "danger").length,
+      infoDisplayCount: states.filter((state) => state.statusTone === "info").length,
+      allFieldsPristine: states.every((state) => !state.dirty && !state.touched),
+      canCompleteInitially: blockingStates.length === 0,
+      firstBlockingFieldKey: firstBlockingState?.key || "",
+      firstBlockingFieldLabel: firstBlockingState?.label || "",
+      firstBlockingMessage: firstBlockingState?.message || "",
+    };
+  };
   const getStageActionEvidenceCaptureFields = (stage) => ({
     verifySourceBundle: [
       {
@@ -5441,6 +5473,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionEvidenceCaptureValidationSpecs: buildEvidenceCaptureValidationSpecs(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureInitialValidationStates: buildEvidenceCaptureInitialValidationStates(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureInitialValidationDisplayMetadata: buildEvidenceCaptureInitialValidationDisplayMetadata(getStageActionEvidenceCaptureFields(stage)),
+    actionEvidenceCaptureInitialValidationSummary: buildEvidenceCaptureInitialValidationSummary(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureFieldInputTypes: getStageActionEvidenceCaptureFields(stage).map((field) => field.inputType),
     actionEvidenceCaptureFieldValueShapes: getStageActionEvidenceCaptureFields(stage).map((field) => field.valueShape),
     actionEvidenceCaptureFieldAcceptsMultiple: getStageActionEvidenceCaptureFields(stage).map((field) => field.acceptsMultiple),
@@ -5522,6 +5555,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionEvidenceCaptureValidationSpecsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureValidationSpecs]));
   const stageActionEvidenceCaptureInitialValidationStatesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationStates]));
   const stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationDisplayMetadata]));
+  const stageActionEvidenceCaptureInitialValidationSummaryByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationSummary]));
   const stageActionEvidenceCaptureFieldInputTypesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldInputTypes]));
   const stageActionEvidenceCaptureFieldValueShapesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldValueShapes]));
   const stageActionEvidenceCaptureFieldAcceptsMultipleByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldAcceptsMultiple]));
@@ -5644,6 +5678,14 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     infoInitialEvidenceCaptureDisplayMetadataCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationDisplayMetadata.filter((display) => display.statusTone === "info").length, 0),
     blockingInitialEvidenceCaptureDisplayMetadataCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationDisplayMetadata.filter((display) => display.blocking).length, 0),
     nonBlockingInitialEvidenceCaptureDisplayMetadataCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationDisplayMetadata.filter((display) => !display.blocking).length, 0),
+    actionWithEvidenceCaptureInitialValidationSummaryCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationSummary.fieldCount > 0).length,
+    blockedInitialEvidenceCaptureSummaryActionCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationSummary.status === "blocked").length,
+    readyInitialEvidenceCaptureSummaryActionCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationSummary.status === "ready").length,
+    completableInitialEvidenceCaptureSummaryActionCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationSummary.canCompleteInitially).length,
+    nonCompletableInitialEvidenceCaptureSummaryActionCount: stageActionRows.filter((stage) => !stage.actionEvidenceCaptureInitialValidationSummary.canCompleteInitially).length,
+    initialEvidenceCaptureSummaryBlockingFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationSummary.blockingCount, 0),
+    initialEvidenceCaptureSummaryMissingRequiredFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationSummary.missingRequiredCount, 0),
+    initialEvidenceCaptureSummaryOptionalEmptyFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationSummary.optionalEmptyCount, 0),
     validatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.validationRule).length, 0),
     requiredValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.required && field.validationRule).length, 0),
     optionalValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => !field.required && field.validationRule).length, 0),
@@ -5704,6 +5746,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionEvidenceCaptureValidationSpecs: nextStageActionRow?.actionEvidenceCaptureValidationSpecs || [],
     nextActionEvidenceCaptureInitialValidationStates: nextStageActionRow?.actionEvidenceCaptureInitialValidationStates || [],
     nextActionEvidenceCaptureInitialValidationDisplayMetadata: nextStageActionRow?.actionEvidenceCaptureInitialValidationDisplayMetadata || [],
+    nextActionEvidenceCaptureInitialValidationSummary: nextStageActionRow?.actionEvidenceCaptureInitialValidationSummary || {},
     nextActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
     nextActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],
     nextActionEvidenceCaptureFieldAcceptsMultiple: nextStageActionRow?.actionEvidenceCaptureFieldAcceptsMultiple || [],
@@ -5819,6 +5862,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionEvidenceCaptureValidationSpecsByKey,
     stageActionEvidenceCaptureInitialValidationStatesByKey,
     stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey,
+    stageActionEvidenceCaptureInitialValidationSummaryByKey,
     stageActionEvidenceCaptureFieldInputTypesByKey,
     stageActionEvidenceCaptureFieldValueShapesByKey,
     stageActionEvidenceCaptureFieldAcceptsMultipleByKey,
@@ -5909,6 +5953,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceCaptureValidationSpecs: nextStageActionRow?.actionEvidenceCaptureValidationSpecs || [],
     nextStageActionEvidenceCaptureInitialValidationStates: nextStageActionRow?.actionEvidenceCaptureInitialValidationStates || [],
     nextStageActionEvidenceCaptureInitialValidationDisplayMetadata: nextStageActionRow?.actionEvidenceCaptureInitialValidationDisplayMetadata || [],
+    nextStageActionEvidenceCaptureInitialValidationSummary: nextStageActionRow?.actionEvidenceCaptureInitialValidationSummary || {},
     nextStageActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
     nextStageActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],
     nextStageActionEvidenceCaptureFieldAcceptsMultiple: nextStageActionRow?.actionEvidenceCaptureFieldAcceptsMultiple || [],

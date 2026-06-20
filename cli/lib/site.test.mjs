@@ -2319,6 +2319,34 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     report.operatorRunbook.stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey.verifySourceBundle,
     expectedNextInitialValidationDisplayMetadata,
   );
+  const expectedNextInitialValidationSummary = {
+    status: "blocked",
+    statusLabel: "Blocked by required evidence",
+    statusTone: "danger",
+    iconName: "alert-circle",
+    actionLabel: "Provide required evidence",
+    helperText: "2 required evidence field(s) need input before completion.",
+    fieldCount: 2,
+    requiredCount: 2,
+    optionalCount: 0,
+    validCount: 0,
+    invalidCount: 2,
+    blockingCount: 2,
+    nonBlockingCount: 0,
+    missingRequiredCount: 2,
+    optionalEmptyCount: 0,
+    dangerDisplayCount: 2,
+    infoDisplayCount: 0,
+    allFieldsPristine: true,
+    canCompleteInitially: false,
+    firstBlockingFieldKey: "strictBundleCheckOutput",
+    firstBlockingFieldLabel: "Strict bundle-check output",
+    firstBlockingMessage: "Provide strict bundle-check output before marking this action complete.",
+  };
+  assert.deepEqual(
+    report.operatorRunbook.stageActionEvidenceCaptureInitialValidationSummaryByKey.verifySourceBundle,
+    expectedNextInitialValidationSummary,
+  );
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureInitialValidationStatesByKey.refreshHandoffSnapshot[0], {
     key: "handoffJsonSnapshot",
     label: "Strict handoff JSON snapshot",
@@ -2358,6 +2386,30 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     required: false,
     message: "Optional: paste the refreshed strict handoff JSON snapshot when available.",
   });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureInitialValidationSummaryByKey.refreshHandoffSnapshot, {
+    status: "ready",
+    statusLabel: "Ready for completion",
+    statusTone: "success",
+    iconName: "check-circle",
+    actionLabel: "Continue",
+    helperText: "No required evidence is missing on first render.",
+    fieldCount: 1,
+    requiredCount: 0,
+    optionalCount: 1,
+    validCount: 1,
+    invalidCount: 0,
+    blockingCount: 0,
+    nonBlockingCount: 1,
+    missingRequiredCount: 0,
+    optionalEmptyCount: 1,
+    dangerDisplayCount: 0,
+    infoDisplayCount: 1,
+    allFieldsPristine: true,
+    canCompleteInitially: true,
+    firstBlockingFieldKey: "",
+    firstBlockingFieldLabel: "",
+    firstBlockingMessage: "",
+  });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureInitialValidationStatesByKey.executeInTargetRepo[0], {
     key: "targetRepoChangedFiles",
     label: "Target repo changed files",
@@ -2396,6 +2448,30 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     blocking: true,
     required: true,
     message: "Provide target repo changed files before marking this action complete.",
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureInitialValidationSummaryByKey.executeInTargetRepo, {
+    status: "blocked",
+    statusLabel: "Blocked by required evidence",
+    statusTone: "danger",
+    iconName: "alert-circle",
+    actionLabel: "Provide required evidence",
+    helperText: "3 required evidence field(s) need input before completion.",
+    fieldCount: 3,
+    requiredCount: 3,
+    optionalCount: 0,
+    validCount: 0,
+    invalidCount: 3,
+    blockingCount: 3,
+    nonBlockingCount: 0,
+    missingRequiredCount: 3,
+    optionalEmptyCount: 0,
+    dangerDisplayCount: 3,
+    infoDisplayCount: 0,
+    allFieldsPristine: true,
+    canCompleteInitially: false,
+    firstBlockingFieldKey: "targetRepoChangedFiles",
+    firstBlockingFieldLabel: "Target repo changed files",
+    firstBlockingMessage: "Provide target repo changed files before marking this action complete.",
   });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureFieldInputTypesByKey, {
     verifySourceBundle: ["textarea", "text"],
@@ -3159,6 +3235,14 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     infoInitialEvidenceCaptureDisplayMetadataCount: 1,
     blockingInitialEvidenceCaptureDisplayMetadataCount: 9,
     nonBlockingInitialEvidenceCaptureDisplayMetadataCount: 1,
+    actionWithEvidenceCaptureInitialValidationSummaryCount: 5,
+    blockedInitialEvidenceCaptureSummaryActionCount: 4,
+    readyInitialEvidenceCaptureSummaryActionCount: 1,
+    completableInitialEvidenceCaptureSummaryActionCount: 1,
+    nonCompletableInitialEvidenceCaptureSummaryActionCount: 4,
+    initialEvidenceCaptureSummaryBlockingFieldCount: 9,
+    initialEvidenceCaptureSummaryMissingRequiredFieldCount: 9,
+    initialEvidenceCaptureSummaryOptionalEmptyFieldCount: 1,
     validatedEvidenceCaptureFieldCount: 10,
     requiredValidatedEvidenceCaptureFieldCount: 9,
     optionalValidatedEvidenceCaptureFieldCount: 1,
@@ -3361,6 +3445,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     ],
     nextActionEvidenceCaptureInitialValidationStates: expectedNextInitialValidationStates,
     nextActionEvidenceCaptureInitialValidationDisplayMetadata: expectedNextInitialValidationDisplayMetadata,
+    nextActionEvidenceCaptureInitialValidationSummary: expectedNextInitialValidationSummary,
     nextActionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
     nextActionEvidenceCaptureFieldValueShapes: ["long-text", "short-text"],
     nextActionEvidenceCaptureFieldAcceptsMultiple: [false, false],
@@ -3662,6 +3747,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.deepEqual(
     report.operatorRunbook.nextStageActionEvidenceCaptureInitialValidationDisplayMetadata,
     report.operatorRunbook.stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey.verifySourceBundle,
+  );
+  assert.deepEqual(
+    report.operatorRunbook.nextStageActionEvidenceCaptureInitialValidationSummary,
+    report.operatorRunbook.stageActionEvidenceCaptureInitialValidationSummaryByKey.verifySourceBundle,
   );
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldInputTypes, ["textarea", "text"]);
   assert.deepEqual(report.operatorRunbook.nextStageActionEvidenceCaptureFieldValueShapes, ["long-text", "short-text"]);
