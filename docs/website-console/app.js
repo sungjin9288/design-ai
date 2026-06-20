@@ -264,7 +264,7 @@
       mcpReadiness: normalizeMcp(source.mcpReadiness || fallback.mcpReadiness),
       refactorTasks: normalizeTasks(source.refactorTasks || fallback.refactorTasks),
       implementationEvidence: normalizeImplementationEvidence(source.implementationEvidence || fallback.implementationEvidence),
-      operatorRunbook: normalizeOperatorRunbook(source.operatorRunbook),
+      operatorRunbook: normalizeOperatorRunbook(source.operatorRunbook || (source.bundle && source.bundle.operatorRunbook)),
       reportNotes: String(source.reportNotes || ""),
     };
     if (workspace.siteProfile.viewports.length === 0) {
@@ -342,6 +342,13 @@
       acc[key] = normalizeStringArray(source[key], []);
       return acc;
     }, {});
+  }
+
+  function extractOperatorRunbookPayload(value) {
+    if (!value || typeof value !== "object") return null;
+    if (value.operatorRunbook) return value.operatorRunbook;
+    if (value.bundle && value.bundle.operatorRunbook) return value.bundle.operatorRunbook;
+    return null;
   }
 
   function normalizeImplementationEvidence(value) {
@@ -485,6 +492,7 @@
     }).length;
     var evidence = appState.workspace.implementationEvidence;
     var evidenceCount = evidence.executedWork.length + evidence.verificationResults.length;
+    var runbook = appState.workspace.operatorRunbook;
     var graph = buildWorkflowGraph();
     return {
       pages: appState.workspace.siteProfile.pages.length,
@@ -493,6 +501,7 @@
       tasks: appState.workspace.refactorTasks.length,
       requiredMcp: requiredMcp,
       evidence: evidenceCount,
+      runbookStages: runbook ? runbook.stageCount || runbook.stageHumanLineDisplayRows.length : 0,
       graphNodes: graph.summary.nodeCount,
       graphEdges: graph.summary.edgeCount,
     };
@@ -531,7 +540,7 @@
           : id === "tasks" ? String(metrics.tasks)
             : id === "mcp" ? String(metrics.requiredMcp)
               : id === "graph" ? String(metrics.graphNodes)
-                : id === "report" && metrics.evidence ? String(metrics.evidence)
+                : id === "report" && (metrics.evidence || metrics.runbookStages) ? String(metrics.evidence || metrics.runbookStages)
                   : "";
         return [
           "<li>",
@@ -545,7 +554,7 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\">Import JSON</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\">Import workspace/runbook JSON</button>",
       "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
@@ -1908,10 +1917,13 @@
     reader.onload = function () {
       try {
         var parsed = JSON.parse(String(reader.result || ""));
-        if (parsed && parsed.operatorRunbook && !parsed.siteProfile) {
-          appState.workspace.operatorRunbook = normalizeOperatorRunbook(parsed.operatorRunbook);
+        var importedRunbook = normalizeOperatorRunbook(extractOperatorRunbookPayload(parsed));
+        if (importedRunbook && !parsed.siteProfile) {
+          appState.workspace.operatorRunbook = importedRunbook;
+          appState.activeTab = "report";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
           saveWorkspace();
-          setMessage("Bundle handoff operator runbook imported.");
+          setMessage("Bundle handoff operator runbook imported. Report tab opened.");
           return;
         }
         appState.workspace = normalizeWorkspace(parsed);

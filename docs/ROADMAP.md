@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 620 — Website Console Operator Runbook Import Handoff UX (unreleased)
+
+Website Console operator runbook import now guides the operator directly into the Report tab after importing bundle handoff JSON, making the browser-local review step easier to discover before target-repo execution.
+
+### Added
+- Updated the sidebar import copy to state that both workspace JSON and runbook JSON are accepted.
+- Added nested `bundle.operatorRunbook` fallback support when normalizing imported JSON.
+- Added Report-tab auto-navigation after a bundle handoff runbook import.
+- Added report navigation count support for imported runbook stages when implementation evidence is not recorded yet.
+- Documented the save-and-import workflow for `design-ai site <bundle-dir> --bundle-handoff --strict --json --out target-repo-handoff.json --force`.
+
+### Impact
+- Company website pilots can round-trip from CLI bundle handoff JSON back into the static console without hunting for the Report tab.
+- Operators can see that the Report section has imported runbook content even before target-repo verification evidence exists.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 619 — Website Console Operator Runbook Import UI (unreleased)
 
 The static Website Console can now import `design-ai site <bundle-dir> --bundle-handoff --json` output and render the embedded `operatorRunbook` in the Report tab, turning the CLI handoff contract into a browser-local review surface before target-repo execution.
