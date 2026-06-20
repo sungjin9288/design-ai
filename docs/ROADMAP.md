@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 619 — Website Console Operator Runbook Import UI (unreleased)
+
+The static Website Console can now import `design-ai site <bundle-dir> --bundle-handoff --json` output and render the embedded `operatorRunbook` in the Report tab, turning the CLI handoff contract into a browser-local review surface before target-repo execution.
+
+### Added
+- Added optional `operatorRunbook` workspace persistence with normalization for bundle-handoff JSON imports.
+- Added Report-tab Operator Runbook metrics for stage count, manual steps, blocked evidence rows, next stage, and next command.
+- Added status-index chips for action status and evidence-progress status.
+- Added display-ready runbook row rendering with stage key, action status, evidence progress, and copy-ready line text.
+- Added copy actions for the full operator runbook Markdown and the next runbook line, plus a clear action.
+
+### Impact
+- Company website pilots can inspect the verified handoff bundle runbook in the same local console used for audit, MCP readiness, tasks, prompts, and final report notes.
+- CLI bundle handoff JSON now has a direct browser UI consumer, reducing the gap between machine-readable contract work and solo/company operator workflows.
+- The change stays browser-local, uses localStorage/export/import, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 618 — Website Bundle Handoff Runbook Human Line Display Row Status Indexes (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes status-key indexes for display-ready operator runbook human line rows, so wrappers can render action-status tabs and evidence-progress filters without reducing `stageHumanLineDisplayRows`.

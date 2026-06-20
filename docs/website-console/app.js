@@ -230,6 +230,7 @@
         ],
         nextActions: [],
       },
+      operatorRunbook: null,
       reportNotes: "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
     };
   }
@@ -263,12 +264,84 @@
       mcpReadiness: normalizeMcp(source.mcpReadiness || fallback.mcpReadiness),
       refactorTasks: normalizeTasks(source.refactorTasks || fallback.refactorTasks),
       implementationEvidence: normalizeImplementationEvidence(source.implementationEvidence || fallback.implementationEvidence),
+      operatorRunbook: normalizeOperatorRunbook(source.operatorRunbook),
       reportNotes: String(source.reportNotes || ""),
     };
     if (workspace.siteProfile.viewports.length === 0) {
       workspace.siteProfile.viewports = ["desktop"];
     }
     return workspace;
+  }
+
+  function normalizeOperatorRunbook(value) {
+    if (!value || typeof value !== "object") return null;
+    var rows = Array.isArray(value.stageHumanLineDisplayRows)
+      ? value.stageHumanLineDisplayRows.map(normalizeRunbookRow).filter(function (row) { return row.key; })
+      : [];
+    var rowByKey = rows.reduce(function (acc, row) {
+      acc[row.key] = row;
+      return acc;
+    }, {});
+    return {
+      version: Number(value.version || 1),
+      source: String(value.source || "bundle-handoff"),
+      stageCount: Number(value.stageCount || rows.length),
+      requiredStageCount: Number(value.requiredStageCount || 0),
+      optionalStageCount: Number(value.optionalStageCount || 0),
+      nextStageKey: String(value.nextStageKey || ""),
+      nextCommandKey: String(value.nextCommandKey || ""),
+      nextStageHumanLine: String(value.nextStageHumanLine || ""),
+      nextStageHumanLineDisplayRow: normalizeRunbookRow(value.nextStageHumanLineDisplayRow || rowByKey[value.nextStageKey] || {}),
+      stageHumanLineDisplayRows: rows,
+      stageHumanLineDisplayRowByKey: rowByKey,
+      stageHumanLineDisplayRowSummary: normalizePlainObject(value.stageHumanLineDisplayRowSummary),
+      stageHumanLineDisplayRowKeysByActionStatus: normalizeRunbookKeyIndex(
+        value.stageHumanLineDisplayRowKeysByActionStatus,
+        ["ready", "optional", "manual", "blocked"],
+      ),
+      stageHumanLineDisplayRowKeysByEvidenceProgressStatus: normalizeRunbookKeyIndex(
+        value.stageHumanLineDisplayRowKeysByEvidenceProgressStatus,
+        ["blocked", "ready"],
+      ),
+    };
+  }
+
+  function normalizeRunbookRow(value) {
+    var row = value && typeof value === "object" ? value : {};
+    return {
+      step: Number(row.step || 0),
+      key: String(row.key || ""),
+      label: String(row.label || ""),
+      line: String(row.line || ""),
+      required: row.required === true,
+      manual: row.manual === true,
+      commandCount: Number(row.commandCount || 0),
+      actionType: String(row.actionType || ""),
+      actionLabel: String(row.actionLabel || ""),
+      actionStatus: String(row.actionStatus || ""),
+      actionStatusLabel: String(row.actionStatusLabel || ""),
+      actionStatusTone: String(row.actionStatusTone || ""),
+      hasEvidenceProgress: row.hasEvidenceProgress === true,
+      evidenceProgressStatus: String(row.evidenceProgressStatus || ""),
+      evidenceProgressStatusLabel: String(row.evidenceProgressStatusLabel || ""),
+      evidenceProgressStatusTone: String(row.evidenceProgressStatusTone || ""),
+      evidenceProgressIconName: String(row.evidenceProgressIconName || ""),
+      evidenceProgressLabel: String(row.evidenceProgressLabel || ""),
+      evidenceCompletionPercent: Number(row.evidenceCompletionPercent || 0),
+      firstUncheckedEvidenceItemLabel: String(row.firstUncheckedEvidenceItemLabel || ""),
+    };
+  }
+
+  function normalizePlainObject(value) {
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  }
+
+  function normalizeRunbookKeyIndex(value, keys) {
+    var source = normalizePlainObject(value);
+    return keys.reduce(function (acc, key) {
+      acc[key] = normalizeStringArray(source[key], []);
+      return acc;
+    }, {});
   }
 
   function normalizeImplementationEvidence(value) {
@@ -849,29 +922,98 @@
   function renderReport() {
     var report = buildHandoffReport();
     var evidence = appState.workspace.implementationEvidence;
-    return panel("Handoff Report", "Draft the before/after and verification report after target repo implementation work.", [
-      "<div class=\"evidence-summary\" aria-label=\"Implementation evidence summary\">",
-      metric("Executed", evidence.executedWork.length, "Target repo changes"),
-      metric("Verified", evidence.verificationResults.length, "Checks recorded"),
-      metric("Risks", evidence.remainingRisks.length, "Open items"),
-      metric("Next", evidence.nextActions.length, "Follow-up steps"),
+    return [
+      renderOperatorRunbook(),
+      panel("Handoff Report", "Draft the before/after and verification report after target repo implementation work.", [
+        "<div class=\"evidence-summary\" aria-label=\"Implementation evidence summary\">",
+        metric("Executed", evidence.executedWork.length, "Target repo changes"),
+        metric("Verified", evidence.verificationResults.length, "Checks recorded"),
+        metric("Risks", evidence.remainingRisks.length, "Open items"),
+        metric("Next", evidence.nextActions.length, "Follow-up steps"),
+        "</div>",
+        "<div class=\"form-grid evidence-grid\">",
+        textareaField("Executed work", "implementationEvidence.executedWork", linesToText(evidence.executedWork), "", "One completed target-repo change per line."),
+        textareaField("Verification results", "implementationEvidence.verificationResults", linesToText(evidence.verificationResults), "", "One command, browser check, deployment check, or manual QA result per line."),
+        textareaField("Remaining risks", "implementationEvidence.remainingRisks", linesToText(evidence.remainingRisks), "", "One unresolved risk or dependency per line."),
+        textareaField("Next actions", "implementationEvidence.nextActions", linesToText(evidence.nextActions), "", "One follow-up task per line."),
+        "</div>",
+        "<div class=\"field field--wide\" style=\"margin-bottom: 12px;\">",
+        "<label for=\"reportNotes\">Report notes</label>",
+        "<textarea id=\"reportNotes\" data-field=\"reportNotes\">" + escapeHtml(appState.workspace.reportNotes) + "</textarea>",
+        "</div>",
+        "<div class=\"button-row\" style=\"margin-bottom: 8px;\">",
+        "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-report\">Copy report</button>",
+        "<button type=\"button\" class=\"button\" data-action=\"download-report\">Export .md</button>",
+        "</div>",
+        "<pre class=\"report-preview\" data-output=\"report\">" + escapeHtml(report) + "</pre>",
+      ].join("")),
+    ].join("");
+  }
+
+  function renderOperatorRunbook() {
+    var runbook = appState.workspace.operatorRunbook;
+    if (!runbook) {
+      return panel("Operator Runbook", "Import `design-ai site <bundle-dir> --bundle-handoff --json` to inspect the target-repo handoff stages in this console.", [
+        "<div class=\"empty-state\">No operator runbook imported. Use the sidebar Import JSON action with a bundle handoff JSON output.</div>",
+      ].join(""));
+    }
+    var summary = runbook.stageHumanLineDisplayRowSummary || {};
+    var rows = runbook.stageHumanLineDisplayRows || [];
+    return panel("Operator Runbook", "Review the verified bundle handoff stages before switching into the target website repo.", [
+      "<div class=\"evidence-summary\" aria-label=\"Operator runbook summary\">",
+      metric("Stages", runbook.stageCount || rows.length, (runbook.requiredStageCount || 0) + " required"),
+      metric("Manual", summary.manualCount || 0, "Target-repo or evidence steps"),
+      metric("Blocked evidence", summary.blockedEvidenceProgressCount || 0, "Rows needing evidence"),
+      metric("Next", runbook.nextStageKey || "none", runbook.nextCommandKey || "No command"),
       "</div>",
-      "<div class=\"form-grid evidence-grid\">",
-      textareaField("Executed work", "implementationEvidence.executedWork", linesToText(evidence.executedWork), "", "One completed target-repo change per line."),
-      textareaField("Verification results", "implementationEvidence.verificationResults", linesToText(evidence.verificationResults), "", "One command, browser check, deployment check, or manual QA result per line."),
-      textareaField("Remaining risks", "implementationEvidence.remainingRisks", linesToText(evidence.remainingRisks), "", "One unresolved risk or dependency per line."),
-      textareaField("Next actions", "implementationEvidence.nextActions", linesToText(evidence.nextActions), "", "One follow-up task per line."),
+      "<div class=\"button-row\" style=\"margin-bottom: 12px;\">",
+      "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-runbook\">Copy runbook</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"copy-next-runbook-line\">Copy next line</button>",
+      "<button type=\"button\" class=\"button button--danger\" data-action=\"clear-runbook\">Clear runbook</button>",
       "</div>",
-      "<div class=\"field field--wide\" style=\"margin-bottom: 12px;\">",
-      "<label for=\"reportNotes\">Report notes</label>",
-      "<textarea id=\"reportNotes\" data-field=\"reportNotes\">" + escapeHtml(appState.workspace.reportNotes) + "</textarea>",
-      "</div>",
-      "<div class=\"button-row\" style=\"margin-bottom: 8px;\">",
-      "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-report\">Copy report</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"download-report\">Export .md</button>",
-      "</div>",
-      "<pre class=\"report-preview\" data-output=\"report\">" + escapeHtml(report) + "</pre>",
+      renderRunbookStatusIndex(runbook),
+      renderRunbookRows(rows),
     ].join(""));
+  }
+
+  function renderRunbookStatusIndex(runbook) {
+    var actionIndex = runbook.stageHumanLineDisplayRowKeysByActionStatus || {};
+    var evidenceIndex = runbook.stageHumanLineDisplayRowKeysByEvidenceProgressStatus || {};
+    return [
+      "<div class=\"graph-boundaries\" aria-label=\"Operator runbook status indexes\">",
+      ["ready", "optional", "manual", "blocked"].map(function (key) {
+        return "<span class=\"pill\">" + escapeHtml(labelize(key) + ": " + (actionIndex[key] || []).length) + "</span>";
+      }).join(""),
+      ["blocked", "ready"].map(function (key) {
+        return "<span class=\"pill\">" + escapeHtml("Evidence " + labelize(key) + ": " + (evidenceIndex[key] || []).length) + "</span>";
+      }).join(""),
+      "</div>",
+    ].join("");
+  }
+
+  function renderRunbookRows(rows) {
+    if (!rows.length) {
+      return "<div class=\"empty-state\">The imported runbook did not include display-ready rows.</div>";
+    }
+    return [
+      "<div class=\"table-wrap\">",
+      "<table>",
+      "<thead><tr><th>Stage</th><th>Action</th><th>Evidence</th><th>Copy-ready line</th></tr></thead>",
+      "<tbody>",
+      rows.map(function (row) {
+        return [
+          "<tr>",
+          "<td><strong>" + escapeHtml(row.step + ". " + row.label) + "</strong><br><code>" + escapeHtml(row.key) + "</code></td>",
+          "<td>" + badge(row.actionStatus || "planned") + "<br><small>" + escapeHtml(row.actionLabel || row.actionType) + "</small></td>",
+          "<td>" + badge(row.evidenceProgressStatus || "planned") + "<br><small>" + escapeHtml(row.evidenceProgressLabel || "No progress") + "</small></td>",
+          "<td><small>" + escapeHtml(row.line) + "</small></td>",
+          "</tr>",
+        ].join("");
+      }).join(""),
+      "</tbody>",
+      "</table>",
+      "</div>",
+    ].join("");
   }
 
   function syncReportPreview() {
@@ -1563,6 +1705,35 @@
     ].join("\n");
   }
 
+  function buildOperatorRunbookMarkdown() {
+    var runbook = appState.workspace.operatorRunbook;
+    if (!runbook) return "No operator runbook imported.";
+    var rows = runbook.stageHumanLineDisplayRows || [];
+    return [
+      "# Website improvement operator runbook",
+      "",
+      "- Source: " + runbook.source,
+      "- Stages: " + (runbook.stageCount || rows.length),
+      "- Next stage: " + (runbook.nextStageKey || "none"),
+      "- Next command: " + (runbook.nextCommandKey || "none"),
+      "",
+      "## Stages",
+      "",
+      rows.length ? rows.map(function (row) {
+        return [
+          "### " + row.step + ". " + row.label,
+          "",
+          "- Key: `" + row.key + "`",
+          "- Action: " + (row.actionStatusLabel || row.actionStatus || "unknown") + " / " + (row.actionLabel || row.actionType || "unknown"),
+          "- Evidence: " + (row.evidenceProgressStatusLabel || row.evidenceProgressStatus || "unknown") + " / " + (row.evidenceProgressLabel || "No progress"),
+          row.firstUncheckedEvidenceItemLabel ? "- Next evidence item: " + row.firstUncheckedEvidenceItemLabel : "",
+          "",
+          row.line,
+        ].filter(Boolean).join("\n");
+      }).join("\n\n") : "No display-ready rows included.",
+    ].join("\n");
+  }
+
   function copyText(text, successMessage) {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(function () {
@@ -1713,6 +1884,15 @@
     } else if (action === "download-report") {
       downloadFile("website-improvement-handoff.md", buildHandoffReport(), "text/markdown");
       setMessage("Handoff report exported.");
+    } else if (action === "copy-runbook") {
+      copyText(buildOperatorRunbookMarkdown(), "Operator runbook copied.");
+    } else if (action === "copy-next-runbook-line") {
+      var runbook = appState.workspace.operatorRunbook;
+      copyText(runbook ? runbook.nextStageHumanLine : "", "Next runbook line copied.");
+    } else if (action === "clear-runbook") {
+      appState.workspace.operatorRunbook = null;
+      saveWorkspace();
+      setMessage("Operator runbook cleared.");
     } else if (action === "copy-graph-json") {
       copyText(JSON.stringify(buildWorkflowGraph(), null, 2), "Workflow graph JSON copied.");
     } else if (action === "download-graph-json") {
@@ -1727,7 +1907,14 @@
     var reader = new FileReader();
     reader.onload = function () {
       try {
-        appState.workspace = normalizeWorkspace(JSON.parse(String(reader.result || "")));
+        var parsed = JSON.parse(String(reader.result || ""));
+        if (parsed && parsed.operatorRunbook && !parsed.siteProfile) {
+          appState.workspace.operatorRunbook = normalizeOperatorRunbook(parsed.operatorRunbook);
+          saveWorkspace();
+          setMessage("Bundle handoff operator runbook imported.");
+          return;
+        }
+        appState.workspace = normalizeWorkspace(parsed);
         saveWorkspace();
         setMessage("Workspace JSON imported.");
       } catch (error) {
