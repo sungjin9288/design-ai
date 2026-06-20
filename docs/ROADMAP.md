@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 625 — Website Console Operator Runbook Reset Filters (unreleased)
+
+Website Console operator runbook review now includes a one-step reset control for action/evidence row filters.
+
+### Added
+- Added a `Reset filters` button inside the Operator Runbook filter summary.
+- Disabled the reset button with `aria-disabled` when both action and evidence filters are already `all`.
+- Reset both browser-local runbook filters to `all` and re-render the full imported handoff row set in one action.
+- Added compact reset styling with a 44px minimum touch target.
+
+### Impact
+- Company website pilots can quickly return from a focused manual/evidence-blocked subset to the full handoff runbook.
+- Operators no longer need to click both filter groups back to `All` individually before copying or exporting the complete view.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 624 — Website Console Operator Runbook Row Line Copy (unreleased)
 
 Website Console operator runbook review now lets operators copy an individual stage line directly from the filtered runbook table.

@@ -501,8 +501,24 @@ td input {
 }
 
 .runbook-filter__summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   color: var(--text-muted);
   font-size: 12px;
+}
+
+.reset-filter-button {
+  min-height: 44px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.reset-filter-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .runbook-filter__group {

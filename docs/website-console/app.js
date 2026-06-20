@@ -1016,9 +1016,10 @@
     var evidenceIndex = runbook.stageHumanLineDisplayRowKeysByEvidenceProgressStatus || {};
     var actionOptions = [["all", totalCount], ["ready", (actionIndex.ready || []).length], ["optional", (actionIndex.optional || []).length], ["manual", (actionIndex.manual || []).length], ["blocked", (actionIndex.blocked || []).length]];
     var evidenceOptions = [["all", totalCount], ["blocked", (evidenceIndex.blocked || []).length], ["ready", (evidenceIndex.ready || []).length]];
+    var filtersActive = appState.runbookActionFilter !== "all" || appState.runbookEvidenceFilter !== "all";
     return [
       "<div class=\"runbook-filter\" aria-label=\"Operator runbook row filters\">",
-      "<div class=\"runbook-filter__summary\"><strong>" + escapeHtml(String(visibleCount)) + "</strong> of " + escapeHtml(String(totalCount)) + " rows shown</div>",
+      "<div class=\"runbook-filter__summary\"><span><strong>" + escapeHtml(String(visibleCount)) + "</strong> of " + escapeHtml(String(totalCount)) + " rows shown</span><button type=\"button\" class=\"button reset-filter-button\" data-action=\"reset-runbook-filters\"" + (filtersActive ? "" : " disabled aria-disabled=\"true\"") + ">Reset filters</button></div>",
       "<div class=\"runbook-filter__group\" role=\"group\" aria-label=\"Filter by action status\">",
       "<span class=\"runbook-filter__label\">Action</span>",
       actionOptions.map(function (option) {
@@ -1998,6 +1999,11 @@
       appState.runbookEvidenceFilter = "all";
       saveWorkspace();
       setMessage("Operator runbook cleared.");
+    } else if (action === "reset-runbook-filters") {
+      appState.runbookActionFilter = "all";
+      appState.runbookEvidenceFilter = "all";
+      render();
+      setMessage("Runbook filters reset.");
     } else if (action === "copy-graph-json") {
       copyText(JSON.stringify(buildWorkflowGraph(), null, 2), "Workflow graph JSON copied.");
     } else if (action === "download-graph-json") {
