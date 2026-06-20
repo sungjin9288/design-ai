@@ -3895,9 +3895,20 @@ def assert_site_bundle_handoff_json_smoke(
     manual_stage = runbook_stages[3]
     action_rows = operator_runbook["stageActionRows"]
     stage_by_key = operator_runbook["stageByKey"]
+    stage_human_lines = operator_runbook.get("stageHumanLines")
+    stage_human_line_by_key = operator_runbook.get("stageHumanLineByKey")
     if (
         stage_by_key.get("verifySourceBundle") != verify_stage
         or stage_by_key.get("writeEffectiveTaskPrompt") != task_prompt_stage
+        or not isinstance(stage_human_lines, list)
+        or len(stage_human_lines) != len(expected_stage_keys)
+        or not isinstance(stage_human_line_by_key, dict)
+        or stage_human_line_by_key.get("verifySourceBundle") != stage_human_lines[0]
+        or stage_human_line_by_key.get("executeInTargetRepo") != stage_human_lines[3]
+        or operator_runbook.get("nextStageHumanLine") != stage_human_lines[0]
+        or "evidence: 0/2 complete, Checklist blocked; next: Strict bundle-check output" not in stage_human_lines[0]
+        or "evidence: 1/1 complete, Checklist ready" not in stage_human_line_by_key.get("refreshHandoffSnapshot", "")
+        or "evidence: 0/3 complete, Checklist blocked; next: Target repo changed files" not in stage_human_lines[3]
         or [stage.get("key") for stage in action_rows] != expected_stage_keys
         or action_rows[0].get("actionType") != "run-local-gate"
         or action_rows[0].get("actionLabel") != "Run strict bundle check"

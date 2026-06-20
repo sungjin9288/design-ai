@@ -5618,6 +5618,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionEvidenceCaptureInitialValidationChecklistByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationChecklist]));
   const stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationChecklistSummary]));
   const stageActionEvidenceCaptureInitialValidationSummaryByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationSummary]));
+  const stageHumanLines = stages.map((stage) => formatBundleHandoffOperatorRunbookStageLine(
+    stage,
+    stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey[stage.key],
+  ));
+  const stageHumanLineByKey = Object.fromEntries(stages.map((stage, index) => [stage.key, stageHumanLines[index]]));
   const stageActionEvidenceCaptureFieldInputTypesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldInputTypes]));
   const stageActionEvidenceCaptureFieldValueShapesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldValueShapes]));
   const stageActionEvidenceCaptureFieldAcceptsMultipleByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldAcceptsMultiple]));
@@ -5890,6 +5895,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageByKey,
     stageLabelByKey,
     stageSummaryByKey,
+    stageHumanLines,
+    stageHumanLineByKey,
     stageActionRows,
     stageActionTypeByKey,
     stageActionLabelByKey,
@@ -5984,6 +5991,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStage,
     nextStageLabel: nextStage?.label || "",
     nextStageSummary: nextStage?.reason || "",
+    nextStageHumanLine: nextStage ? stageHumanLineByKey[nextStage.key] || "" : "",
     nextStageActionType: nextStageActionRow?.actionType || "",
     nextStageActionLabel: nextStageActionRow?.actionLabel || "",
     nextStageActionInstruction: nextStageActionRow?.actionInstruction || "",
@@ -6085,21 +6093,30 @@ function formatBundleHandoffOperatorRunbookLines(operatorRunbook) {
   if (!operatorRunbook || !Array.isArray(operatorRunbook.stages) || operatorRunbook.stages.length === 0) {
     return ["- No operator runbook is available."];
   }
+  if (Array.isArray(operatorRunbook.stageHumanLines) && operatorRunbook.stageHumanLines.length === operatorRunbook.stages.length) {
+    return operatorRunbook.stageHumanLines;
+  }
   return operatorRunbook.stages.map((stage) => {
-    const required = stage.required ? "required" : "optional";
-    const commandText = stage.commands.length
-      ? ` command: \`${stage.commands[0].command}\``
-      : " command: manual";
-    const outputText = stage.outputFiles.length ? ` output: ${stage.outputFiles.join(", ")}` : "";
     const checklistSummary = stage.actionEvidenceCaptureInitialValidationChecklistSummary
       || operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey?.[stage.key];
-    const evidenceText = checklistSummary?.itemCount > 0
-      ? ` evidence: ${checklistSummary.progressLabel}, ${checklistSummary.statusLabel}${
-        checklistSummary.firstUncheckedItemLabel ? `; next: ${checklistSummary.firstUncheckedItemLabel}` : ""
-      }`
-      : "";
-    return `- ${stage.step}. ${stage.key} (${required}, ${stage.runPolicy || stage.kind}): ${stage.label}.${commandText}${outputText}${evidenceText}`;
+    return formatBundleHandoffOperatorRunbookStageLine(stage, checklistSummary);
   });
+}
+
+function formatBundleHandoffOperatorRunbookStageLine(stage, checklistSummary = null) {
+  const commands = Array.isArray(stage.commands) ? stage.commands : [];
+  const outputFiles = Array.isArray(stage.outputFiles) ? stage.outputFiles : [];
+  const required = stage.required ? "required" : "optional";
+  const commandText = commands.length
+    ? ` command: \`${commands[0].command}\``
+    : " command: manual";
+  const outputText = outputFiles.length ? ` output: ${outputFiles.join(", ")}` : "";
+  const evidenceText = checklistSummary?.itemCount > 0
+    ? ` evidence: ${checklistSummary.progressLabel}, ${checklistSummary.statusLabel}${
+      checklistSummary.firstUncheckedItemLabel ? `; next: ${checklistSummary.firstUncheckedItemLabel}` : ""
+    }`
+    : "";
+  return `- ${stage.step}. ${stage.key} (${required}, ${stage.runPolicy || stage.kind}): ${stage.label}.${commandText}${outputText}${evidenceText}`;
 }
 
 export function buildSiteBundleHandoffReport({

@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 614 — Website Bundle Handoff Runbook Human Line JSON Mirrors (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes the same copy-ready operator runbook lines that human Markdown output uses, so Website Console and VS Code wrappers can render exact stage guidance without parsing the prompt string.
+
+### Added
+- Added ordered `operatorRunbook.stageHumanLines` entries for every bundle handoff runbook stage.
+- Added `operatorRunbook.stageHumanLineByKey` so wrappers can retrieve each stage's copy-ready line by stable stage key.
+- Added `operatorRunbook.nextStageHumanLine` as a direct mirror for the first strict source-bundle gate.
+- Reused the same formatter for JSON mirrors and human Markdown output so evidence checklist progress copy stays aligned.
+
+### Impact
+- Wrappers can show the same runbook copy as CLI Markdown while still consuming structured JSON.
+- Target-repo company pilots can render source-bundle, optional snapshot, prompt-output, target-repo, and evidence-recording guidance without prompt parsing.
+- The change is additive JSON metadata only; it adds no external MCP calls, no target repo mutation, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 613 — Website Bundle Handoff Runbook Human Evidence Checklist Progress (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff` now includes evidence checklist progress in the human-readable operator runbook lines, so target-repo operators can see first-render evidence completion state without opening the JSON contract.

@@ -1752,6 +1752,24 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     executeInTargetRepo: "Execute the task in the target website repo",
     recordEvidence: "Record implementation evidence",
   });
+  assert.equal(report.operatorRunbook.stageHumanLines.length, 5);
+  assert.equal(
+    report.operatorRunbook.stageHumanLineByKey.verifySourceBundle,
+    report.operatorRunbook.stageHumanLines[0],
+  );
+  assert.equal(report.operatorRunbook.nextStageHumanLine, report.operatorRunbook.stageHumanLines[0]);
+  assert.match(
+    report.operatorRunbook.stageHumanLineByKey.verifySourceBundle,
+    /1\. verifySourceBundle .* evidence: 0\/2 complete, Checklist blocked; next: Strict bundle-check output/,
+  );
+  assert.match(
+    report.operatorRunbook.stageHumanLineByKey.refreshHandoffSnapshot,
+    /2\. refreshHandoffSnapshot .* evidence: 1\/1 complete, Checklist ready/,
+  );
+  assert.match(
+    report.operatorRunbook.stageHumanLineByKey.executeInTargetRepo,
+    /4\. executeInTargetRepo .* evidence: 0\/3 complete, Checklist blocked; next: Target repo changed files/,
+  );
   assert.equal(
     report.operatorRunbook.stageSummaryByKey.verifySourceBundle,
     report.operatorRunbook.stages[0].reason,
