@@ -3911,6 +3911,12 @@ def assert_site_bundle_handoff_json_smoke(
     stage_human_line_by_key = operator_runbook.get("stageHumanLineByKey")
     stage_human_line_display_rows = operator_runbook.get("stageHumanLineDisplayRows")
     stage_human_line_display_row_by_key = operator_runbook.get("stageHumanLineDisplayRowByKey")
+    stage_human_line_display_row_keys_by_action_status = operator_runbook.get(
+        "stageHumanLineDisplayRowKeysByActionStatus"
+    )
+    stage_human_line_display_row_keys_by_evidence_progress_status = operator_runbook.get(
+        "stageHumanLineDisplayRowKeysByEvidenceProgressStatus"
+    )
     stage_human_line_display_row_summary = operator_runbook.get("stageHumanLineDisplayRowSummary")
     stage_human_line_summary = operator_runbook.get("stageHumanLineSummary")
     next_stage_human_line_summary = operator_runbook.get("nextStageHumanLineSummary")
@@ -3948,6 +3954,18 @@ def assert_site_bundle_handoff_json_smoke(
         }
         or stage_human_line_display_row_by_key.get("verifySourceBundle") != stage_human_line_display_rows[0]
         or operator_runbook.get("nextStageHumanLineDisplayRow") != stage_human_line_display_rows[0]
+        or stage_human_line_display_row_keys_by_action_status
+        != {
+            "ready": ["verifySourceBundle", "writeEffectiveTaskPrompt"],
+            "optional": ["refreshHandoffSnapshot"],
+            "manual": ["executeInTargetRepo", "recordEvidence"],
+            "blocked": [],
+        }
+        or stage_human_line_display_row_keys_by_evidence_progress_status
+        != {
+            "blocked": ["verifySourceBundle", "writeEffectiveTaskPrompt", "executeInTargetRepo", "recordEvidence"],
+            "ready": ["refreshHandoffSnapshot"],
+        }
         or stage_human_line_display_row_summary
         != {
             "count": 5,

@@ -1788,6 +1788,16 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     report.operatorRunbook.nextStageHumanLineDisplayRow,
     report.operatorRunbook.stageHumanLineDisplayRows[0],
   );
+  assert.deepEqual(report.operatorRunbook.stageHumanLineDisplayRowKeysByActionStatus, {
+    ready: ["verifySourceBundle", "writeEffectiveTaskPrompt"],
+    optional: ["refreshHandoffSnapshot"],
+    manual: ["executeInTargetRepo", "recordEvidence"],
+    blocked: [],
+  });
+  assert.deepEqual(report.operatorRunbook.stageHumanLineDisplayRowKeysByEvidenceProgressStatus, {
+    blocked: ["verifySourceBundle", "writeEffectiveTaskPrompt", "executeInTargetRepo", "recordEvidence"],
+    ready: ["refreshHandoffSnapshot"],
+  });
   assert.deepEqual(report.operatorRunbook.stageHumanLineDisplayRowSummary, {
     count: 5,
     byKeyCount: 5,

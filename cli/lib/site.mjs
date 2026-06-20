@@ -5650,6 +5650,16 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     };
   });
   const stageHumanLineDisplayRowByKey = Object.fromEntries(stageHumanLineDisplayRows.map((row) => [row.key, row]));
+  const stageHumanLineDisplayRowKeysByActionStatus = {
+    ready: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "ready").map((row) => row.key),
+    optional: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "optional").map((row) => row.key),
+    manual: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "manual").map((row) => row.key),
+    blocked: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "blocked").map((row) => row.key),
+  };
+  const stageHumanLineDisplayRowKeysByEvidenceProgressStatus = {
+    blocked: stageHumanLineDisplayRows.filter((row) => row.evidenceProgressStatus === "blocked").map((row) => row.key),
+    ready: stageHumanLineDisplayRows.filter((row) => row.evidenceProgressStatus === "ready").map((row) => row.key),
+  };
   const stageHumanLineDisplayRowSummary = {
     count: stageHumanLineDisplayRows.length,
     byKeyCount: Object.keys(stageHumanLineDisplayRowByKey).length,
@@ -5974,6 +5984,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageHumanLineByKey,
     stageHumanLineDisplayRows,
     stageHumanLineDisplayRowByKey,
+    stageHumanLineDisplayRowKeysByActionStatus,
+    stageHumanLineDisplayRowKeysByEvidenceProgressStatus,
     stageHumanLineDisplayRowSummary,
     stageHumanLineSummary,
     stageActionRows,

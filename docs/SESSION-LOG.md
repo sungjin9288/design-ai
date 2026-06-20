@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 618 (unreleased)** — Added status indexes for Website Console bundle handoff operator runbook human line display rows.
 - **Phase 617 (unreleased)** — Added summary metadata for Website Console bundle handoff operator runbook human line display rows.
 - **Phase 616 (unreleased)** — Added display-ready rows for Website Console bundle handoff operator runbook human lines.
 - **Phase 615 (unreleased)** — Added summary metadata for Website Console bundle handoff operator runbook human lines.
