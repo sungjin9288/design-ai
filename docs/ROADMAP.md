@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 626 — Website Console Operator Runbook Row Markdown Copy (unreleased)
+
+Website Console operator runbook review now lets operators copy one stage as Markdown with metadata, not only the raw copy-ready line.
+
+### Added
+- Added per-row `Copy row` actions beside each `Copy line` action in the Operator Runbook table.
+- Added a shared row Markdown formatter that includes stage heading, stable key, action status, action label, evidence status, evidence progress label, optional next evidence item, and the copy-ready line.
+- Reused the same row formatter in full and filtered runbook Markdown output so row-level and document-level copy stay aligned.
+
+### Impact
+- Company website pilots can paste a single structured handoff stage into an issue, implementation note, or target-repo Codex prompt without copying the entire runbook.
+- Operators can choose between raw line copy for quick execution and row Markdown copy for context-rich handoff.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 625 — Website Console Operator Runbook Reset Filters (unreleased)
 
 Website Console operator runbook review now includes a one-step reset control for action/evidence row filters.

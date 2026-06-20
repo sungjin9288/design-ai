@@ -1075,7 +1075,7 @@
           "<td><strong>" + escapeHtml(row.step + ". " + row.label) + "</strong><br><code>" + escapeHtml(row.key) + "</code></td>",
           "<td>" + badge(row.actionStatus || "planned") + "<br><small>" + escapeHtml(row.actionLabel || row.actionType) + "</small></td>",
           "<td>" + badge(row.evidenceProgressStatus || "planned") + "<br><small>" + escapeHtml(row.evidenceProgressLabel || "No progress") + "</small></td>",
-          "<td class=\"runbook-line-cell\"><small>" + escapeHtml(row.line) + "</small><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-row-line\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Copy line</button></div></td>",
+          "<td class=\"runbook-line-cell\"><small>" + escapeHtml(row.line) + "</small><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-row-markdown\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Copy row</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-row-line\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Copy line</button></div></td>",
           "</tr>",
         ].join("");
       }).join(""),
@@ -1795,19 +1795,21 @@
       "",
       "## Stages",
       "",
-      rows.length ? rows.map(function (row) {
-        return [
-          "### " + row.step + ". " + row.label,
-          "",
-          "- Key: `" + row.key + "`",
-          "- Action: " + (row.actionStatusLabel || row.actionStatus || "unknown") + " / " + (row.actionLabel || row.actionType || "unknown"),
-          "- Evidence: " + (row.evidenceProgressStatusLabel || row.evidenceProgressStatus || "unknown") + " / " + (row.evidenceProgressLabel || "No progress"),
-          row.firstUncheckedEvidenceItemLabel ? "- Next evidence item: " + row.firstUncheckedEvidenceItemLabel : "",
-          "",
-          row.line,
-        ].filter(Boolean).join("\n");
-      }).join("\n\n") : (settings.filtered ? "No operator runbook rows match the selected filters." : "No display-ready rows included."),
+      rows.length ? rows.map(buildOperatorRunbookRowMarkdown).join("\n\n") : (settings.filtered ? "No operator runbook rows match the selected filters." : "No display-ready rows included."),
     ].join("\n");
+  }
+
+  function buildOperatorRunbookRowMarkdown(row) {
+    return [
+      "### " + row.step + ". " + row.label,
+      "",
+      "- Key: `" + row.key + "`",
+      "- Action: " + (row.actionStatusLabel || row.actionStatus || "unknown") + " / " + (row.actionLabel || row.actionType || "unknown"),
+      "- Evidence: " + (row.evidenceProgressStatusLabel || row.evidenceProgressStatus || "unknown") + " / " + (row.evidenceProgressLabel || "No progress"),
+      row.firstUncheckedEvidenceItemLabel ? "- Next evidence item: " + row.firstUncheckedEvidenceItemLabel : "",
+      "",
+      row.line,
+    ].filter(Boolean).join("\n");
   }
 
   function copyText(text, successMessage) {
@@ -1980,6 +1982,16 @@
     } else if (action === "download-filtered-runbook") {
       downloadFile("website-operator-runbook.filtered.md", buildOperatorRunbookMarkdown({ filtered: true }), "text/markdown");
       setMessage("Filtered operator runbook exported.");
+    } else if (action === "copy-runbook-row-markdown") {
+      var markdownRunbook = appState.workspace.operatorRunbook;
+      var markdownRow = markdownRunbook && markdownRunbook.stageHumanLineDisplayRowByKey
+        ? markdownRunbook.stageHumanLineDisplayRowByKey[button.dataset.runbookRowKey]
+        : null;
+      if (markdownRow && markdownRow.line) {
+        copyText(buildOperatorRunbookRowMarkdown(markdownRow), "Runbook row Markdown copied.");
+      } else {
+        setMessage("Runbook row Markdown unavailable.");
+      }
     } else if (action === "copy-runbook-row-line") {
       var rowRunbook = appState.workspace.operatorRunbook;
       var row = rowRunbook && rowRunbook.stageHumanLineDisplayRowByKey
