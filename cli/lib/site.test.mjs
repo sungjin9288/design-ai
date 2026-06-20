@@ -2332,6 +2332,44 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     message: state.message,
     payloadPath: state.payloadPath,
   }));
+  const buildExpectedInitialValidationChecklistSummary = (checklist) => {
+    const checkedItems = checklist.filter((item) => item.checkedInitially);
+    const uncheckedItems = checklist.filter((item) => !item.checkedInitially);
+    const blockingItems = checklist.filter((item) => item.completionBlocking);
+    const blockingUncheckedItems = checklist.filter((item) => item.completionBlocking && !item.checkedInitially);
+    const firstUncheckedItem = uncheckedItems[0] || {};
+    const status = blockingUncheckedItems.length > 0 ? "blocked" : "ready";
+    return {
+      status,
+      statusLabel: status === "blocked" ? "Checklist blocked" : "Checklist ready",
+      statusTone: status === "blocked" ? "danger" : "success",
+      iconName: status === "blocked" ? "list-x" : "list-checks",
+      actionLabel: status === "blocked" ? "Complete required evidence" : "Continue",
+      helperText: status === "blocked"
+        ? `${blockingUncheckedItems.length} required checklist item(s) need evidence before completion.`
+        : "No required checklist items are unchecked on first render.",
+      itemCount: checklist.length,
+      checkedCount: checkedItems.length,
+      uncheckedCount: uncheckedItems.length,
+      requiredCount: checklist.filter((item) => item.required).length,
+      optionalCount: checklist.filter((item) => !item.required).length,
+      blockingCount: blockingItems.length,
+      blockingUncheckedCount: blockingUncheckedItems.length,
+      nonBlockingCount: checklist.filter((item) => !item.completionBlocking).length,
+      completionPercent: checklist.length > 0 ? Math.round((checkedItems.length / checklist.length) * 100) : 100,
+      progressLabel: `${checkedItems.length}/${checklist.length} complete`,
+      allCheckedInitially: uncheckedItems.length === 0,
+      hasUncheckedItems: uncheckedItems.length > 0,
+      hasBlockingUncheckedItems: blockingUncheckedItems.length > 0,
+      canCompleteInitially: blockingUncheckedItems.length === 0,
+      firstUncheckedItemKey: firstUncheckedItem.key || "",
+      firstUncheckedItemLabel: firstUncheckedItem.label || "",
+      firstUncheckedItemMessage: firstUncheckedItem.message || "",
+    };
+  };
+  const expectedNextInitialValidationChecklistSummary = buildExpectedInitialValidationChecklistSummary(
+    expectedNextInitialValidationChecklist,
+  );
   assert.deepEqual(
     report.operatorRunbook.stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey.verifySourceBundle,
     expectedNextInitialValidationDisplayMetadata,
@@ -2339,6 +2377,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.deepEqual(
     report.operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistByKey.verifySourceBundle,
     expectedNextInitialValidationChecklist,
+  );
+  assert.deepEqual(
+    report.operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey.verifySourceBundle,
+    expectedNextInitialValidationChecklistSummary,
   );
   const expectedNextInitialValidationSummary = {
     status: "blocked",
@@ -2424,6 +2466,12 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     message: "Optional: paste the refreshed strict handoff JSON snapshot when available.",
     payloadPath: "handoffSnapshot.strictJson",
   });
+  assert.deepEqual(
+    report.operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey.refreshHandoffSnapshot,
+    buildExpectedInitialValidationChecklistSummary(
+      report.operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistByKey.refreshHandoffSnapshot,
+    ),
+  );
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureInitialValidationSummaryByKey.refreshHandoffSnapshot, {
     status: "ready",
     statusLabel: "Ready for completion",
@@ -2503,6 +2551,31 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     disabled: false,
     message: "Provide target repo changed files before marking this action complete.",
     payloadPath: "targetRepo.changedFiles",
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey.executeInTargetRepo, {
+    status: "blocked",
+    statusLabel: "Checklist blocked",
+    statusTone: "danger",
+    iconName: "list-x",
+    actionLabel: "Complete required evidence",
+    helperText: "3 required checklist item(s) need evidence before completion.",
+    itemCount: 3,
+    checkedCount: 0,
+    uncheckedCount: 3,
+    requiredCount: 3,
+    optionalCount: 0,
+    blockingCount: 3,
+    blockingUncheckedCount: 3,
+    nonBlockingCount: 0,
+    completionPercent: 0,
+    progressLabel: "0/3 complete",
+    allCheckedInitially: false,
+    hasUncheckedItems: true,
+    hasBlockingUncheckedItems: true,
+    canCompleteInitially: false,
+    firstUncheckedItemKey: "targetRepoChangedFiles",
+    firstUncheckedItemLabel: "Target repo changed files",
+    firstUncheckedItemMessage: "Provide target repo changed files before marking this action complete.",
   });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureInitialValidationSummaryByKey.executeInTargetRepo, {
     status: "blocked",
@@ -3306,6 +3379,14 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     nonBlockingInitialEvidenceCaptureChecklistItemCount: 1,
     requiredInitialEvidenceCaptureChecklistItemCount: 9,
     optionalInitialEvidenceCaptureChecklistItemCount: 1,
+    actionWithEvidenceCaptureInitialValidationChecklistSummaryCount: 5,
+    blockedInitialEvidenceCaptureChecklistSummaryActionCount: 4,
+    readyInitialEvidenceCaptureChecklistSummaryActionCount: 1,
+    completeInitialEvidenceCaptureChecklistSummaryActionCount: 1,
+    incompleteInitialEvidenceCaptureChecklistSummaryActionCount: 4,
+    initialEvidenceCaptureChecklistSummaryCheckedItemCount: 1,
+    initialEvidenceCaptureChecklistSummaryUncheckedItemCount: 9,
+    initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount: 9,
     validatedEvidenceCaptureFieldCount: 10,
     requiredValidatedEvidenceCaptureFieldCount: 9,
     optionalValidatedEvidenceCaptureFieldCount: 1,
@@ -3509,6 +3590,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     nextActionEvidenceCaptureInitialValidationStates: expectedNextInitialValidationStates,
     nextActionEvidenceCaptureInitialValidationDisplayMetadata: expectedNextInitialValidationDisplayMetadata,
     nextActionEvidenceCaptureInitialValidationChecklist: expectedNextInitialValidationChecklist,
+    nextActionEvidenceCaptureInitialValidationChecklistSummary: expectedNextInitialValidationChecklistSummary,
     nextActionEvidenceCaptureInitialValidationSummary: expectedNextInitialValidationSummary,
     nextActionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
     nextActionEvidenceCaptureFieldValueShapes: ["long-text", "short-text"],
@@ -3815,6 +3897,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.deepEqual(
     report.operatorRunbook.nextStageActionEvidenceCaptureInitialValidationChecklist,
     report.operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistByKey.verifySourceBundle,
+  );
+  assert.deepEqual(
+    report.operatorRunbook.nextStageActionEvidenceCaptureInitialValidationChecklistSummary,
+    report.operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey.verifySourceBundle,
   );
   assert.deepEqual(
     report.operatorRunbook.nextStageActionEvidenceCaptureInitialValidationSummary,

@@ -2754,6 +2754,49 @@ def assert_site_bundle_handoff_json_smoke(
         for state in expected_next_initial_validation_states
     ]
 
+    def expected_initial_validation_checklist_summary(checklist):
+        checked_items = [item for item in checklist if item["checkedInitially"]]
+        unchecked_items = [item for item in checklist if not item["checkedInitially"]]
+        blocking_items = [item for item in checklist if item["completionBlocking"]]
+        blocking_unchecked_items = [
+            item for item in checklist if item["completionBlocking"] and not item["checkedInitially"]
+        ]
+        first_unchecked_item = unchecked_items[0] if unchecked_items else {}
+        status = "blocked" if blocking_unchecked_items else "ready"
+        return {
+            "status": status,
+            "statusLabel": "Checklist blocked" if status == "blocked" else "Checklist ready",
+            "statusTone": "danger" if status == "blocked" else "success",
+            "iconName": "list-x" if status == "blocked" else "list-checks",
+            "actionLabel": "Complete required evidence" if status == "blocked" else "Continue",
+            "helperText": (
+                f"{len(blocking_unchecked_items)} required checklist item(s) need evidence before completion."
+                if status == "blocked"
+                else "No required checklist items are unchecked on first render."
+            ),
+            "itemCount": len(checklist),
+            "checkedCount": len(checked_items),
+            "uncheckedCount": len(unchecked_items),
+            "requiredCount": len([item for item in checklist if item["required"]]),
+            "optionalCount": len([item for item in checklist if not item["required"]]),
+            "blockingCount": len(blocking_items),
+            "blockingUncheckedCount": len(blocking_unchecked_items),
+            "nonBlockingCount": len([item for item in checklist if not item["completionBlocking"]]),
+            "completionPercent": round((len(checked_items) / len(checklist)) * 100) if checklist else 100,
+            "progressLabel": f"{len(checked_items)}/{len(checklist)} complete",
+            "allCheckedInitially": len(unchecked_items) == 0,
+            "hasUncheckedItems": len(unchecked_items) > 0,
+            "hasBlockingUncheckedItems": len(blocking_unchecked_items) > 0,
+            "canCompleteInitially": len(blocking_unchecked_items) == 0,
+            "firstUncheckedItemKey": first_unchecked_item.get("key", ""),
+            "firstUncheckedItemLabel": first_unchecked_item.get("label", ""),
+            "firstUncheckedItemMessage": first_unchecked_item.get("message", ""),
+        }
+
+    expected_next_initial_validation_checklist_summary = expected_initial_validation_checklist_summary(
+        expected_next_initial_validation_checklist
+    )
+
     def expected_initial_validation_summary(states):
         blocking_states = [state for state in states if state["blocking"]]
         first_blocking = blocking_states[0] if blocking_states else {}
@@ -2874,6 +2917,9 @@ def assert_site_bundle_handoff_json_smoke(
         "message": "Optional: paste the refreshed strict handoff JSON snapshot when available.",
         "payloadPath": "handoffSnapshot.strictJson",
     }
+    expected_optional_handoff_initial_validation_checklist_summary = expected_initial_validation_checklist_summary(
+        [expected_optional_handoff_initial_validation_checklist]
+    )
     expected_optional_handoff_initial_validation_summary = expected_initial_validation_summary(
         [expected_optional_handoff_initial_validation_state]
     )
@@ -2932,6 +2978,31 @@ def assert_site_bundle_handoff_json_smoke(
         "disabled": False,
         "message": "Provide target repo changed files before marking this action complete.",
         "payloadPath": "targetRepo.changedFiles",
+    }
+    expected_target_repo_initial_validation_checklist_summary = {
+        "status": "blocked",
+        "statusLabel": "Checklist blocked",
+        "statusTone": "danger",
+        "iconName": "list-x",
+        "actionLabel": "Complete required evidence",
+        "helperText": "3 required checklist item(s) need evidence before completion.",
+        "itemCount": 3,
+        "checkedCount": 0,
+        "uncheckedCount": 3,
+        "requiredCount": 3,
+        "optionalCount": 0,
+        "blockingCount": 3,
+        "blockingUncheckedCount": 3,
+        "nonBlockingCount": 0,
+        "completionPercent": 0,
+        "progressLabel": "0/3 complete",
+        "allCheckedInitially": False,
+        "hasUncheckedItems": True,
+        "hasBlockingUncheckedItems": True,
+        "canCompleteInitially": False,
+        "firstUncheckedItemKey": "targetRepoChangedFiles",
+        "firstUncheckedItemLabel": "Target repo changed files",
+        "firstUncheckedItemMessage": "Provide target repo changed files before marking this action complete.",
     }
     expected_target_repo_initial_validation_summary = {
         **expected_initial_validation_summary(
@@ -3296,6 +3367,10 @@ def assert_site_bundle_handoff_json_smoke(
             "verifySourceBundle"
         )
         != expected_next_initial_validation_checklist
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey", {}).get(
+            "verifySourceBundle"
+        )
+        != expected_next_initial_validation_checklist_summary
         or operator_runbook.get("stageActionEvidenceCaptureInitialValidationSummaryByKey", {}).get(
             "verifySourceBundle"
         )
@@ -3309,6 +3384,10 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("stageActionEvidenceCaptureInitialValidationChecklistByKey", {})
         .get("refreshHandoffSnapshot", [{}])[0]
         != expected_optional_handoff_initial_validation_checklist
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey", {}).get(
+            "refreshHandoffSnapshot"
+        )
+        != expected_optional_handoff_initial_validation_checklist_summary
         or operator_runbook.get("stageActionEvidenceCaptureInitialValidationSummaryByKey", {}).get(
             "refreshHandoffSnapshot"
         )
@@ -3322,6 +3401,10 @@ def assert_site_bundle_handoff_json_smoke(
         or operator_runbook.get("stageActionEvidenceCaptureInitialValidationChecklistByKey", {})
         .get("executeInTargetRepo", [{}])[0]
         != expected_target_repo_changed_files_initial_validation_checklist
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey", {}).get(
+            "executeInTargetRepo"
+        )
+        != expected_target_repo_initial_validation_checklist_summary
         or operator_runbook.get("stageActionEvidenceCaptureInitialValidationSummaryByKey", {}).get(
             "executeInTargetRepo"
         )
@@ -3476,6 +3559,14 @@ def assert_site_bundle_handoff_json_smoke(
             "nonBlockingInitialEvidenceCaptureChecklistItemCount": 1,
             "requiredInitialEvidenceCaptureChecklistItemCount": 9,
             "optionalInitialEvidenceCaptureChecklistItemCount": 1,
+            "actionWithEvidenceCaptureInitialValidationChecklistSummaryCount": 5,
+            "blockedInitialEvidenceCaptureChecklistSummaryActionCount": 4,
+            "readyInitialEvidenceCaptureChecklistSummaryActionCount": 1,
+            "completeInitialEvidenceCaptureChecklistSummaryActionCount": 1,
+            "incompleteInitialEvidenceCaptureChecklistSummaryActionCount": 4,
+            "initialEvidenceCaptureChecklistSummaryCheckedItemCount": 1,
+            "initialEvidenceCaptureChecklistSummaryUncheckedItemCount": 9,
+            "initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount": 9,
             "validatedEvidenceCaptureFieldCount": 10,
             "requiredValidatedEvidenceCaptureFieldCount": 9,
             "optionalValidatedEvidenceCaptureFieldCount": 1,
@@ -3564,6 +3655,7 @@ def assert_site_bundle_handoff_json_smoke(
             "nextActionEvidenceCaptureInitialValidationStates": expected_next_initial_validation_states,
             "nextActionEvidenceCaptureInitialValidationDisplayMetadata": expected_next_initial_validation_display_metadata,
             "nextActionEvidenceCaptureInitialValidationChecklist": expected_next_initial_validation_checklist,
+            "nextActionEvidenceCaptureInitialValidationChecklistSummary": expected_next_initial_validation_checklist_summary,
             "nextActionEvidenceCaptureInitialValidationSummary": expected_next_initial_validation_summary,
             "nextActionEvidenceCaptureFieldInputTypes": ["textarea", "text"],
             "nextActionEvidenceCaptureFieldValueShapes": ["long-text", "short-text"],
@@ -3744,6 +3836,8 @@ def assert_site_bundle_handoff_json_smoke(
         != expected_next_initial_validation_display_metadata
         or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationChecklist")
         != expected_next_initial_validation_checklist
+        or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationChecklistSummary")
+        != expected_next_initial_validation_checklist_summary
         or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationSummary")
         != expected_next_initial_validation_summary
         or operator_runbook.get("nextStageActionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
@@ -3853,6 +3947,8 @@ def assert_site_bundle_handoff_json_smoke(
         != expected_next_initial_validation_display_metadata
         or action_rows[0].get("actionEvidenceCaptureInitialValidationChecklist")
         != expected_next_initial_validation_checklist
+        or action_rows[0].get("actionEvidenceCaptureInitialValidationChecklistSummary")
+        != expected_next_initial_validation_checklist_summary
         or action_rows[0].get("actionEvidenceCaptureInitialValidationSummary")
         != expected_next_initial_validation_summary
         or action_rows[0].get("actionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
@@ -3961,6 +4057,8 @@ def assert_site_bundle_handoff_json_smoke(
         != expected_target_repo_initial_validation_summary
         or action_rows[3].get("actionEvidenceCaptureInitialValidationChecklist", [{}])[0]
         != expected_target_repo_changed_files_initial_validation_checklist
+        or action_rows[3].get("actionEvidenceCaptureInitialValidationChecklistSummary")
+        != expected_target_repo_initial_validation_checklist_summary
         or action_rows[3].get("actionEvidenceCaptureFieldInputTypes") != ["list", "textarea", "textarea"]
         or action_rows[3].get("actionEvidenceCaptureFieldValueShapes") != ["string-list", "long-text", "long-text"]
         or action_rows[3].get("actionEvidenceCaptureFieldAcceptsMultiple") != [True, False, False]

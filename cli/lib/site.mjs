@@ -5260,6 +5260,45 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
       payloadPath: state.payloadPath,
     }))
   );
+  const buildEvidenceCaptureInitialValidationChecklistSummary = (fields) => {
+    const checklist = buildEvidenceCaptureInitialValidationChecklist(fields);
+    const checkedItems = checklist.filter((item) => item.checkedInitially);
+    const uncheckedItems = checklist.filter((item) => !item.checkedInitially);
+    const blockingItems = checklist.filter((item) => item.completionBlocking);
+    const blockingUncheckedItems = checklist.filter((item) => item.completionBlocking && !item.checkedInitially);
+    const firstUncheckedItem = uncheckedItems[0];
+    const status = blockingUncheckedItems.length > 0 ? "blocked" : "ready";
+    const completionPercent = checklist.length > 0
+      ? Math.round((checkedItems.length / checklist.length) * 100)
+      : 100;
+    return {
+      status,
+      statusLabel: status === "blocked" ? "Checklist blocked" : "Checklist ready",
+      statusTone: status === "blocked" ? "danger" : "success",
+      iconName: status === "blocked" ? "list-x" : "list-checks",
+      actionLabel: status === "blocked" ? "Complete required evidence" : "Continue",
+      helperText: status === "blocked"
+        ? `${blockingUncheckedItems.length} required checklist item(s) need evidence before completion.`
+        : "No required checklist items are unchecked on first render.",
+      itemCount: checklist.length,
+      checkedCount: checkedItems.length,
+      uncheckedCount: uncheckedItems.length,
+      requiredCount: checklist.filter((item) => item.required).length,
+      optionalCount: checklist.filter((item) => !item.required).length,
+      blockingCount: blockingItems.length,
+      blockingUncheckedCount: blockingUncheckedItems.length,
+      nonBlockingCount: checklist.filter((item) => !item.completionBlocking).length,
+      completionPercent,
+      progressLabel: `${checkedItems.length}/${checklist.length} complete`,
+      allCheckedInitially: uncheckedItems.length === 0,
+      hasUncheckedItems: uncheckedItems.length > 0,
+      hasBlockingUncheckedItems: blockingUncheckedItems.length > 0,
+      canCompleteInitially: blockingUncheckedItems.length === 0,
+      firstUncheckedItemKey: firstUncheckedItem?.key || "",
+      firstUncheckedItemLabel: firstUncheckedItem?.label || "",
+      firstUncheckedItemMessage: firstUncheckedItem?.message || "",
+    };
+  };
   const buildEvidenceCaptureInitialValidationSummary = (fields) => {
     const states = buildEvidenceCaptureInitialValidationStates(fields);
     const blockingStates = states.filter((state) => state.blocking);
@@ -5493,6 +5532,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionEvidenceCaptureInitialValidationStates: buildEvidenceCaptureInitialValidationStates(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureInitialValidationDisplayMetadata: buildEvidenceCaptureInitialValidationDisplayMetadata(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureInitialValidationChecklist: buildEvidenceCaptureInitialValidationChecklist(getStageActionEvidenceCaptureFields(stage)),
+    actionEvidenceCaptureInitialValidationChecklistSummary: buildEvidenceCaptureInitialValidationChecklistSummary(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureInitialValidationSummary: buildEvidenceCaptureInitialValidationSummary(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureFieldInputTypes: getStageActionEvidenceCaptureFields(stage).map((field) => field.inputType),
     actionEvidenceCaptureFieldValueShapes: getStageActionEvidenceCaptureFields(stage).map((field) => field.valueShape),
@@ -5576,6 +5616,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionEvidenceCaptureInitialValidationStatesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationStates]));
   const stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationDisplayMetadata]));
   const stageActionEvidenceCaptureInitialValidationChecklistByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationChecklist]));
+  const stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationChecklistSummary]));
   const stageActionEvidenceCaptureInitialValidationSummaryByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationSummary]));
   const stageActionEvidenceCaptureFieldInputTypesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldInputTypes]));
   const stageActionEvidenceCaptureFieldValueShapesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldValueShapes]));
@@ -5715,6 +5756,14 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nonBlockingInitialEvidenceCaptureChecklistItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklist.filter((item) => !item.completionBlocking).length, 0),
     requiredInitialEvidenceCaptureChecklistItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklist.filter((item) => item.required).length, 0),
     optionalInitialEvidenceCaptureChecklistItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklist.filter((item) => !item.required).length, 0),
+    actionWithEvidenceCaptureInitialValidationChecklistSummaryCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.itemCount > 0).length,
+    blockedInitialEvidenceCaptureChecklistSummaryActionCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "blocked").length,
+    readyInitialEvidenceCaptureChecklistSummaryActionCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "ready").length,
+    completeInitialEvidenceCaptureChecklistSummaryActionCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.allCheckedInitially).length,
+    incompleteInitialEvidenceCaptureChecklistSummaryActionCount: stageActionRows.filter((stage) => !stage.actionEvidenceCaptureInitialValidationChecklistSummary.allCheckedInitially).length,
+    initialEvidenceCaptureChecklistSummaryCheckedItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklistSummary.checkedCount, 0),
+    initialEvidenceCaptureChecklistSummaryUncheckedItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklistSummary.uncheckedCount, 0),
+    initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklistSummary.blockingUncheckedCount, 0),
     validatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.validationRule).length, 0),
     requiredValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.required && field.validationRule).length, 0),
     optionalValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => !field.required && field.validationRule).length, 0),
@@ -5776,6 +5825,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionEvidenceCaptureInitialValidationStates: nextStageActionRow?.actionEvidenceCaptureInitialValidationStates || [],
     nextActionEvidenceCaptureInitialValidationDisplayMetadata: nextStageActionRow?.actionEvidenceCaptureInitialValidationDisplayMetadata || [],
     nextActionEvidenceCaptureInitialValidationChecklist: nextStageActionRow?.actionEvidenceCaptureInitialValidationChecklist || [],
+    nextActionEvidenceCaptureInitialValidationChecklistSummary: nextStageActionRow?.actionEvidenceCaptureInitialValidationChecklistSummary || {},
     nextActionEvidenceCaptureInitialValidationSummary: nextStageActionRow?.actionEvidenceCaptureInitialValidationSummary || {},
     nextActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
     nextActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],
@@ -5893,6 +5943,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionEvidenceCaptureInitialValidationStatesByKey,
     stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey,
     stageActionEvidenceCaptureInitialValidationChecklistByKey,
+    stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey,
     stageActionEvidenceCaptureInitialValidationSummaryByKey,
     stageActionEvidenceCaptureFieldInputTypesByKey,
     stageActionEvidenceCaptureFieldValueShapesByKey,
@@ -5985,6 +6036,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceCaptureInitialValidationStates: nextStageActionRow?.actionEvidenceCaptureInitialValidationStates || [],
     nextStageActionEvidenceCaptureInitialValidationDisplayMetadata: nextStageActionRow?.actionEvidenceCaptureInitialValidationDisplayMetadata || [],
     nextStageActionEvidenceCaptureInitialValidationChecklist: nextStageActionRow?.actionEvidenceCaptureInitialValidationChecklist || [],
+    nextStageActionEvidenceCaptureInitialValidationChecklistSummary: nextStageActionRow?.actionEvidenceCaptureInitialValidationChecklistSummary || {},
     nextStageActionEvidenceCaptureInitialValidationSummary: nextStageActionRow?.actionEvidenceCaptureInitialValidationSummary || {},
     nextStageActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
     nextStageActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],
