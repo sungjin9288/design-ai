@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 615 — Website Bundle Handoff Runbook Human Line Summaries (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact summaries for copy-ready operator runbook human lines, so wrappers can render header counts, evidence-progress badges, and next-stage previews without reducing `stageHumanLines`.
+
+### Added
+- Added `operatorRunbook.stageHumanLineSummary` with line counts, required/optional counts, command/manual counts, evidence-progress counts, and first-stage keys.
+- Added `operatorRunbook.nextStageHumanLineSummary` so wrappers can render the first strict source-bundle gate line plus evidence progress status from one object.
+- Added action-summary human-line totals for line count, key count, evidence-progress line count, blocked evidence-progress line count, and ready evidence-progress line count.
+- Added unit and packed-tarball smoke assertions for the new summary contract.
+
+### Impact
+- Website Console and VS Code wrappers can render runbook count badges and first-action previews without scanning line arrays or parsing Markdown prompt text.
+- Company website pilots keep the same deterministic local handoff flow while gaining a simpler UI contract.
+- The change is additive JSON metadata only; it adds no external MCP calls, no target repo mutation, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 614 — Website Bundle Handoff Runbook Human Line JSON Mirrors (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes the same copy-ready operator runbook lines that human Markdown output uses, so Website Console and VS Code wrappers can render exact stage guidance without parsing the prompt string.

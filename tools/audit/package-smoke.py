@@ -3567,6 +3567,11 @@ def assert_site_bundle_handoff_json_smoke(
             "initialEvidenceCaptureChecklistSummaryCheckedItemCount": 1,
             "initialEvidenceCaptureChecklistSummaryUncheckedItemCount": 9,
             "initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount": 9,
+            "humanLineCount": 5,
+            "humanLineByKeyCount": 5,
+            "humanLineWithEvidenceProgressCount": 5,
+            "humanLineWithBlockedEvidenceProgressCount": 4,
+            "humanLineWithReadyEvidenceProgressCount": 1,
             "validatedEvidenceCaptureFieldCount": 10,
             "requiredValidatedEvidenceCaptureFieldCount": 9,
             "optionalValidatedEvidenceCaptureFieldCount": 1,
@@ -3897,12 +3902,39 @@ def assert_site_bundle_handoff_json_smoke(
     stage_by_key = operator_runbook["stageByKey"]
     stage_human_lines = operator_runbook.get("stageHumanLines")
     stage_human_line_by_key = operator_runbook.get("stageHumanLineByKey")
+    stage_human_line_summary = operator_runbook.get("stageHumanLineSummary")
+    next_stage_human_line_summary = operator_runbook.get("nextStageHumanLineSummary")
     if (
         stage_by_key.get("verifySourceBundle") != verify_stage
         or stage_by_key.get("writeEffectiveTaskPrompt") != task_prompt_stage
         or not isinstance(stage_human_lines, list)
         or len(stage_human_lines) != len(expected_stage_keys)
         or not isinstance(stage_human_line_by_key, dict)
+        or stage_human_line_summary
+        != {
+            "count": 5,
+            "byKeyCount": 5,
+            "requiredCount": 4,
+            "optionalCount": 1,
+            "commandCount": 3,
+            "manualCount": 2,
+            "evidenceProgressCount": 5,
+            "blockedEvidenceProgressCount": 4,
+            "readyEvidenceProgressCount": 1,
+            "firstStageKey": "verifySourceBundle",
+            "firstLine": stage_human_lines[0],
+            "firstEvidenceProgressStageKey": "verifySourceBundle",
+            "firstBlockedEvidenceProgressStageKey": "verifySourceBundle",
+        }
+        or next_stage_human_line_summary
+        != {
+            "stageKey": "verifySourceBundle",
+            "line": stage_human_lines[0],
+            "hasEvidenceProgress": True,
+            "evidenceProgressStatus": "blocked",
+            "evidenceProgressLabel": "0/2 complete",
+            "firstUncheckedEvidenceItemLabel": "Strict bundle-check output",
+        }
         or stage_human_line_by_key.get("verifySourceBundle") != stage_human_lines[0]
         or stage_human_line_by_key.get("executeInTargetRepo") != stage_human_lines[3]
         or operator_runbook.get("nextStageHumanLine") != stage_human_lines[0]

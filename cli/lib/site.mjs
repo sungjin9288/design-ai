@@ -5623,6 +5623,21 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey[stage.key],
   ));
   const stageHumanLineByKey = Object.fromEntries(stages.map((stage, index) => [stage.key, stageHumanLines[index]]));
+  const stageHumanLineSummary = {
+    count: stageHumanLines.length,
+    byKeyCount: Object.keys(stageHumanLineByKey).length,
+    requiredCount: stages.filter((stage) => stage.required).length,
+    optionalCount: stages.filter((stage) => !stage.required).length,
+    commandCount: stages.filter((stage) => stage.commandCount > 0).length,
+    manualCount: stages.filter((stage) => stage.commandCount === 0).length,
+    evidenceProgressCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.itemCount > 0).length,
+    blockedEvidenceProgressCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "blocked").length,
+    readyEvidenceProgressCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "ready").length,
+    firstStageKey: stages[0]?.key || "",
+    firstLine: stageHumanLines[0] || "",
+    firstEvidenceProgressStageKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.itemCount > 0)?.key || "",
+    firstBlockedEvidenceProgressStageKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "blocked")?.key || "",
+  };
   const stageActionEvidenceCaptureFieldInputTypesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldInputTypes]));
   const stageActionEvidenceCaptureFieldValueShapesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldValueShapes]));
   const stageActionEvidenceCaptureFieldAcceptsMultipleByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldAcceptsMultiple]));
@@ -5769,6 +5784,11 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     initialEvidenceCaptureChecklistSummaryCheckedItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklistSummary.checkedCount, 0),
     initialEvidenceCaptureChecklistSummaryUncheckedItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklistSummary.uncheckedCount, 0),
     initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklistSummary.blockingUncheckedCount, 0),
+    humanLineCount: stageHumanLineSummary.count,
+    humanLineByKeyCount: stageHumanLineSummary.byKeyCount,
+    humanLineWithEvidenceProgressCount: stageHumanLineSummary.evidenceProgressCount,
+    humanLineWithBlockedEvidenceProgressCount: stageHumanLineSummary.blockedEvidenceProgressCount,
+    humanLineWithReadyEvidenceProgressCount: stageHumanLineSummary.readyEvidenceProgressCount,
     validatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.validationRule).length, 0),
     requiredValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.required && field.validationRule).length, 0),
     optionalValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => !field.required && field.validationRule).length, 0),
@@ -5897,6 +5917,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageSummaryByKey,
     stageHumanLines,
     stageHumanLineByKey,
+    stageHumanLineSummary,
     stageActionRows,
     stageActionTypeByKey,
     stageActionLabelByKey,
@@ -5992,6 +6013,14 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageLabel: nextStage?.label || "",
     nextStageSummary: nextStage?.reason || "",
     nextStageHumanLine: nextStage ? stageHumanLineByKey[nextStage.key] || "" : "",
+    nextStageHumanLineSummary: nextStage ? {
+      stageKey: nextStage.key,
+      line: stageHumanLineByKey[nextStage.key] || "",
+      hasEvidenceProgress: (nextStageActionRow?.actionEvidenceCaptureInitialValidationChecklistSummary?.itemCount || 0) > 0,
+      evidenceProgressStatus: nextStageActionRow?.actionEvidenceCaptureInitialValidationChecklistSummary?.status || "",
+      evidenceProgressLabel: nextStageActionRow?.actionEvidenceCaptureInitialValidationChecklistSummary?.progressLabel || "",
+      firstUncheckedEvidenceItemLabel: nextStageActionRow?.actionEvidenceCaptureInitialValidationChecklistSummary?.firstUncheckedItemLabel || "",
+    } : {},
     nextStageActionType: nextStageActionRow?.actionType || "",
     nextStageActionLabel: nextStageActionRow?.actionLabel || "",
     nextStageActionInstruction: nextStageActionRow?.actionInstruction || "",

@@ -1758,6 +1758,29 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     report.operatorRunbook.stageHumanLines[0],
   );
   assert.equal(report.operatorRunbook.nextStageHumanLine, report.operatorRunbook.stageHumanLines[0]);
+  assert.deepEqual(report.operatorRunbook.stageHumanLineSummary, {
+    count: 5,
+    byKeyCount: 5,
+    requiredCount: 4,
+    optionalCount: 1,
+    commandCount: 3,
+    manualCount: 2,
+    evidenceProgressCount: 5,
+    blockedEvidenceProgressCount: 4,
+    readyEvidenceProgressCount: 1,
+    firstStageKey: "verifySourceBundle",
+    firstLine: report.operatorRunbook.stageHumanLines[0],
+    firstEvidenceProgressStageKey: "verifySourceBundle",
+    firstBlockedEvidenceProgressStageKey: "verifySourceBundle",
+  });
+  assert.deepEqual(report.operatorRunbook.nextStageHumanLineSummary, {
+    stageKey: "verifySourceBundle",
+    line: report.operatorRunbook.stageHumanLines[0],
+    hasEvidenceProgress: true,
+    evidenceProgressStatus: "blocked",
+    evidenceProgressLabel: "0/2 complete",
+    firstUncheckedEvidenceItemLabel: "Strict bundle-check output",
+  });
   assert.match(
     report.operatorRunbook.stageHumanLineByKey.verifySourceBundle,
     /1\. verifySourceBundle .* evidence: 0\/2 complete, Checklist blocked; next: Strict bundle-check output/,
@@ -3405,6 +3428,11 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     initialEvidenceCaptureChecklistSummaryCheckedItemCount: 1,
     initialEvidenceCaptureChecklistSummaryUncheckedItemCount: 9,
     initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount: 9,
+    humanLineCount: 5,
+    humanLineByKeyCount: 5,
+    humanLineWithEvidenceProgressCount: 5,
+    humanLineWithBlockedEvidenceProgressCount: 4,
+    humanLineWithReadyEvidenceProgressCount: 1,
     validatedEvidenceCaptureFieldCount: 10,
     requiredValidatedEvidenceCaptureFieldCount: 9,
     optionalValidatedEvidenceCaptureFieldCount: 1,
