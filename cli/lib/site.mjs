@@ -5241,6 +5241,25 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
       message: state.message,
     }))
   );
+  const buildEvidenceCaptureInitialValidationChecklist = (fields) => (
+    buildEvidenceCaptureInitialValidationStates(fields).map((state) => ({
+      key: state.key,
+      label: state.label,
+      status: state.status,
+      statusLabel: state.statusLabel,
+      statusTone: state.statusTone,
+      iconName: state.iconName,
+      actionLabel: state.actionLabel,
+      helperText: state.helperText,
+      required: state.required,
+      blocking: state.blocking,
+      completionBlocking: state.blocking,
+      checkedInitially: state.valid,
+      disabled: false,
+      message: state.message,
+      payloadPath: state.payloadPath,
+    }))
+  );
   const buildEvidenceCaptureInitialValidationSummary = (fields) => {
     const states = buildEvidenceCaptureInitialValidationStates(fields);
     const blockingStates = states.filter((state) => state.blocking);
@@ -5473,6 +5492,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionEvidenceCaptureValidationSpecs: buildEvidenceCaptureValidationSpecs(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureInitialValidationStates: buildEvidenceCaptureInitialValidationStates(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureInitialValidationDisplayMetadata: buildEvidenceCaptureInitialValidationDisplayMetadata(getStageActionEvidenceCaptureFields(stage)),
+    actionEvidenceCaptureInitialValidationChecklist: buildEvidenceCaptureInitialValidationChecklist(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureInitialValidationSummary: buildEvidenceCaptureInitialValidationSummary(getStageActionEvidenceCaptureFields(stage)),
     actionEvidenceCaptureFieldInputTypes: getStageActionEvidenceCaptureFields(stage).map((field) => field.inputType),
     actionEvidenceCaptureFieldValueShapes: getStageActionEvidenceCaptureFields(stage).map((field) => field.valueShape),
@@ -5555,6 +5575,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageActionEvidenceCaptureValidationSpecsByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureValidationSpecs]));
   const stageActionEvidenceCaptureInitialValidationStatesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationStates]));
   const stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationDisplayMetadata]));
+  const stageActionEvidenceCaptureInitialValidationChecklistByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationChecklist]));
   const stageActionEvidenceCaptureInitialValidationSummaryByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureInitialValidationSummary]));
   const stageActionEvidenceCaptureFieldInputTypesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldInputTypes]));
   const stageActionEvidenceCaptureFieldValueShapesByKey = Object.fromEntries(stageActionRows.map((stage) => [stage.key, stage.actionEvidenceCaptureFieldValueShapes]));
@@ -5686,6 +5707,14 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     initialEvidenceCaptureSummaryBlockingFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationSummary.blockingCount, 0),
     initialEvidenceCaptureSummaryMissingRequiredFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationSummary.missingRequiredCount, 0),
     initialEvidenceCaptureSummaryOptionalEmptyFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationSummary.optionalEmptyCount, 0),
+    actionWithEvidenceCaptureInitialValidationChecklistCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationChecklist.length > 0).length,
+    evidenceCaptureInitialValidationChecklistItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklist.length, 0),
+    checkedInitialEvidenceCaptureChecklistItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklist.filter((item) => item.checkedInitially).length, 0),
+    uncheckedInitialEvidenceCaptureChecklistItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklist.filter((item) => !item.checkedInitially).length, 0),
+    blockingInitialEvidenceCaptureChecklistItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklist.filter((item) => item.completionBlocking).length, 0),
+    nonBlockingInitialEvidenceCaptureChecklistItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklist.filter((item) => !item.completionBlocking).length, 0),
+    requiredInitialEvidenceCaptureChecklistItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklist.filter((item) => item.required).length, 0),
+    optionalInitialEvidenceCaptureChecklistItemCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureInitialValidationChecklist.filter((item) => !item.required).length, 0),
     validatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.validationRule).length, 0),
     requiredValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.required && field.validationRule).length, 0),
     optionalValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => !field.required && field.validationRule).length, 0),
@@ -5746,6 +5775,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionEvidenceCaptureValidationSpecs: nextStageActionRow?.actionEvidenceCaptureValidationSpecs || [],
     nextActionEvidenceCaptureInitialValidationStates: nextStageActionRow?.actionEvidenceCaptureInitialValidationStates || [],
     nextActionEvidenceCaptureInitialValidationDisplayMetadata: nextStageActionRow?.actionEvidenceCaptureInitialValidationDisplayMetadata || [],
+    nextActionEvidenceCaptureInitialValidationChecklist: nextStageActionRow?.actionEvidenceCaptureInitialValidationChecklist || [],
     nextActionEvidenceCaptureInitialValidationSummary: nextStageActionRow?.actionEvidenceCaptureInitialValidationSummary || {},
     nextActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
     nextActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],
@@ -5862,6 +5892,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionEvidenceCaptureValidationSpecsByKey,
     stageActionEvidenceCaptureInitialValidationStatesByKey,
     stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey,
+    stageActionEvidenceCaptureInitialValidationChecklistByKey,
     stageActionEvidenceCaptureInitialValidationSummaryByKey,
     stageActionEvidenceCaptureFieldInputTypesByKey,
     stageActionEvidenceCaptureFieldValueShapesByKey,
@@ -5953,6 +5984,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceCaptureValidationSpecs: nextStageActionRow?.actionEvidenceCaptureValidationSpecs || [],
     nextStageActionEvidenceCaptureInitialValidationStates: nextStageActionRow?.actionEvidenceCaptureInitialValidationStates || [],
     nextStageActionEvidenceCaptureInitialValidationDisplayMetadata: nextStageActionRow?.actionEvidenceCaptureInitialValidationDisplayMetadata || [],
+    nextStageActionEvidenceCaptureInitialValidationChecklist: nextStageActionRow?.actionEvidenceCaptureInitialValidationChecklist || [],
     nextStageActionEvidenceCaptureInitialValidationSummary: nextStageActionRow?.actionEvidenceCaptureInitialValidationSummary || {},
     nextStageActionEvidenceCaptureFieldInputTypes: nextStageActionRow?.actionEvidenceCaptureFieldInputTypes || [],
     nextStageActionEvidenceCaptureFieldValueShapes: nextStageActionRow?.actionEvidenceCaptureFieldValueShapes || [],

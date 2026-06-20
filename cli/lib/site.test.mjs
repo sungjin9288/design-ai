@@ -2315,9 +2315,30 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
       message: "Provide bundle digest before marking this action complete.",
     },
   ];
+  const expectedNextInitialValidationChecklist = expectedNextInitialValidationStates.map((state) => ({
+    key: state.key,
+    label: state.label,
+    status: state.status,
+    statusLabel: state.statusLabel,
+    statusTone: state.statusTone,
+    iconName: state.iconName,
+    actionLabel: state.actionLabel,
+    helperText: state.helperText,
+    required: state.required,
+    blocking: state.blocking,
+    completionBlocking: state.blocking,
+    checkedInitially: state.valid,
+    disabled: false,
+    message: state.message,
+    payloadPath: state.payloadPath,
+  }));
   assert.deepEqual(
     report.operatorRunbook.stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey.verifySourceBundle,
     expectedNextInitialValidationDisplayMetadata,
+  );
+  assert.deepEqual(
+    report.operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistByKey.verifySourceBundle,
+    expectedNextInitialValidationChecklist,
   );
   const expectedNextInitialValidationSummary = {
     status: "blocked",
@@ -2386,6 +2407,23 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     required: false,
     message: "Optional: paste the refreshed strict handoff JSON snapshot when available.",
   });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistByKey.refreshHandoffSnapshot[0], {
+    key: "handoffJsonSnapshot",
+    label: "Strict handoff JSON snapshot",
+    status: "optional-empty",
+    statusLabel: "Optional empty",
+    statusTone: "info",
+    iconName: "info",
+    actionLabel: "Add optional evidence",
+    helperText: "Can remain empty",
+    required: false,
+    blocking: false,
+    completionBlocking: false,
+    checkedInitially: true,
+    disabled: false,
+    message: "Optional: paste the refreshed strict handoff JSON snapshot when available.",
+    payloadPath: "handoffSnapshot.strictJson",
+  });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureInitialValidationSummaryByKey.refreshHandoffSnapshot, {
     status: "ready",
     statusLabel: "Ready for completion",
@@ -2448,6 +2486,23 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     blocking: true,
     required: true,
     message: "Provide target repo changed files before marking this action complete.",
+  });
+  assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistByKey.executeInTargetRepo[0], {
+    key: "targetRepoChangedFiles",
+    label: "Target repo changed files",
+    status: "missing-required",
+    statusLabel: "Missing required",
+    statusTone: "danger",
+    iconName: "alert-circle",
+    actionLabel: "Provide evidence",
+    helperText: "Required before completion",
+    required: true,
+    blocking: true,
+    completionBlocking: true,
+    checkedInitially: false,
+    disabled: false,
+    message: "Provide target repo changed files before marking this action complete.",
+    payloadPath: "targetRepo.changedFiles",
   });
   assert.deepEqual(report.operatorRunbook.stageActionEvidenceCaptureInitialValidationSummaryByKey.executeInTargetRepo, {
     status: "blocked",
@@ -3243,6 +3298,14 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     initialEvidenceCaptureSummaryBlockingFieldCount: 9,
     initialEvidenceCaptureSummaryMissingRequiredFieldCount: 9,
     initialEvidenceCaptureSummaryOptionalEmptyFieldCount: 1,
+    actionWithEvidenceCaptureInitialValidationChecklistCount: 5,
+    evidenceCaptureInitialValidationChecklistItemCount: 10,
+    checkedInitialEvidenceCaptureChecklistItemCount: 1,
+    uncheckedInitialEvidenceCaptureChecklistItemCount: 9,
+    blockingInitialEvidenceCaptureChecklistItemCount: 9,
+    nonBlockingInitialEvidenceCaptureChecklistItemCount: 1,
+    requiredInitialEvidenceCaptureChecklistItemCount: 9,
+    optionalInitialEvidenceCaptureChecklistItemCount: 1,
     validatedEvidenceCaptureFieldCount: 10,
     requiredValidatedEvidenceCaptureFieldCount: 9,
     optionalValidatedEvidenceCaptureFieldCount: 1,
@@ -3445,6 +3508,7 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     ],
     nextActionEvidenceCaptureInitialValidationStates: expectedNextInitialValidationStates,
     nextActionEvidenceCaptureInitialValidationDisplayMetadata: expectedNextInitialValidationDisplayMetadata,
+    nextActionEvidenceCaptureInitialValidationChecklist: expectedNextInitialValidationChecklist,
     nextActionEvidenceCaptureInitialValidationSummary: expectedNextInitialValidationSummary,
     nextActionEvidenceCaptureFieldInputTypes: ["textarea", "text"],
     nextActionEvidenceCaptureFieldValueShapes: ["long-text", "short-text"],
@@ -3747,6 +3811,10 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   assert.deepEqual(
     report.operatorRunbook.nextStageActionEvidenceCaptureInitialValidationDisplayMetadata,
     report.operatorRunbook.stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey.verifySourceBundle,
+  );
+  assert.deepEqual(
+    report.operatorRunbook.nextStageActionEvidenceCaptureInitialValidationChecklist,
+    report.operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistByKey.verifySourceBundle,
   );
   assert.deepEqual(
     report.operatorRunbook.nextStageActionEvidenceCaptureInitialValidationSummary,

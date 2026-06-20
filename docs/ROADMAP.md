@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 611 — Website Bundle Handoff Runbook Action Evidence Capture Initial Validation Checklists (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes first-render checklist rows for action evidence capture initial validation states in the Website bundle operator runbook, so wrappers and GUI surfaces can render completion-oriented evidence checklists without reducing validation state arrays.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistByKey` so wrappers can consume per-action checklist rows with field key, label, status, display metadata, required/blocking state, completion-blocking state, initial checked state, disabled state, message, and payload path.
+- Added row-level `actionEvidenceCaptureInitialValidationChecklist` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for checklist-bearing actions, checklist item count, checked/unchecked initial rows, blocking/non-blocking rows, and required/optional rows.
+- Added matching `nextActionEvidenceCaptureInitialValidationChecklist` and `nextStageActionEvidenceCaptureInitialValidationChecklist` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for checklist maps, optional/required checklist semantics, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render checkbox-style evidence completion lists from one compact checklist array while preserving full validation states, display metadata, and summaries for more detailed form surfaces.
+- Company website pilots get deterministic initial checklist state for source bundle verification, optional handoff snapshot refresh, prompt output, target-repo implementation evidence, and final evidence recording.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 610 — Website Bundle Handoff Runbook Action Evidence Capture Initial Validation Summaries (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes action-level initial validation summaries for evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can render blocked/ready form state without reducing per-field validation rows.
