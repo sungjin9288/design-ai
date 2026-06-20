@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 627 — Website Console Operator Runbook Row Markdown Export (unreleased)
+
+Website Console operator runbook review now lets operators save one structured handoff stage as its own Markdown file.
+
+### Added
+- Added per-row `Export row` actions beside `Copy row` and `Copy line` in the Operator Runbook table.
+- Reused the row Markdown formatter so exported row files include the same stage heading, key, action status, evidence status, optional next evidence item, and copy-ready line as copied row Markdown.
+- Added a small filename segment sanitizer so row exports use stable `website-operator-runbook.<stage-key>.md` filenames.
+
+### Impact
+- Company website pilots can attach one focused stage artifact to an issue, implementation note, or target-repo handoff without exporting the full or filtered runbook.
+- Operators can choose full export, filtered export, row export, row copy, or raw line copy depending on how much context the next tool needs.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 626 — Website Console Operator Runbook Row Markdown Copy (unreleased)
 
 Website Console operator runbook review now lets operators copy one stage as Markdown with metadata, not only the raw copy-ready line.

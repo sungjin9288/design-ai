@@ -1075,7 +1075,7 @@
           "<td><strong>" + escapeHtml(row.step + ". " + row.label) + "</strong><br><code>" + escapeHtml(row.key) + "</code></td>",
           "<td>" + badge(row.actionStatus || "planned") + "<br><small>" + escapeHtml(row.actionLabel || row.actionType) + "</small></td>",
           "<td>" + badge(row.evidenceProgressStatus || "planned") + "<br><small>" + escapeHtml(row.evidenceProgressLabel || "No progress") + "</small></td>",
-          "<td class=\"runbook-line-cell\"><small>" + escapeHtml(row.line) + "</small><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-row-markdown\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Copy row</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-row-line\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Copy line</button></div></td>",
+          "<td class=\"runbook-line-cell\"><small>" + escapeHtml(row.line) + "</small><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-row-markdown\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Copy row</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-row-markdown\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Export row</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-row-line\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Copy line</button></div></td>",
           "</tr>",
         ].join("");
       }).join(""),
@@ -1853,6 +1853,15 @@
     URL.revokeObjectURL(url);
   }
 
+  function safeFileSegment(value) {
+    return String(value || "row")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || "row";
+  }
+
   function handleInput(event) {
     var target = event.target;
     if (!target) return;
@@ -1989,6 +1998,17 @@
         : null;
       if (markdownRow && markdownRow.line) {
         copyText(buildOperatorRunbookRowMarkdown(markdownRow), "Runbook row Markdown copied.");
+      } else {
+        setMessage("Runbook row Markdown unavailable.");
+      }
+    } else if (action === "download-runbook-row-markdown") {
+      var exportRunbook = appState.workspace.operatorRunbook;
+      var exportRow = exportRunbook && exportRunbook.stageHumanLineDisplayRowByKey
+        ? exportRunbook.stageHumanLineDisplayRowByKey[button.dataset.runbookRowKey]
+        : null;
+      if (exportRow && exportRow.line) {
+        downloadFile("website-operator-runbook." + safeFileSegment(exportRow.key) + ".md", buildOperatorRunbookRowMarkdown(exportRow), "text/markdown");
+        setMessage("Runbook row Markdown exported.");
       } else {
         setMessage("Runbook row Markdown unavailable.");
       }

@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 627 (unreleased)** — Added row-level Markdown export for Website Console operator runbook stages.
 - **Phase 626 (unreleased)** — Added row-level Markdown copy for Website Console operator runbook stages.
 - **Phase 625 (unreleased)** — Added a reset control for Website Console operator runbook action/evidence filters.
 - **Phase 624 (unreleased)** — Added row-level copy actions for Website Console operator runbook stage lines.
