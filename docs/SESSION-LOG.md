@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 623 (unreleased)** — Added full and filtered Markdown export actions for Website Console operator runbooks.
 - **Phase 622 (unreleased)** — Added filtered-copy output for Website Console operator runbook rows.
 - **Phase 621 (unreleased)** — Added Website Console operator runbook row filters for action status and evidence progress.
 - **Phase 620 (unreleased)** — Improved Website Console operator runbook import handoff UX and documented the JSON round-trip.

@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 623 — Website Console Operator Runbook Markdown Export (unreleased)
+
+Website Console operator runbook review now lets operators save full and filtered bundle handoff runbooks as Markdown files from the Report tab.
+
+### Added
+- Added `Export runbook .md` for the full imported operator runbook.
+- Added `Export filtered .md` for the currently visible action/evidence-filtered row subset.
+- Reused the same Markdown builder as the copy actions so saved files include source, stage count, included row count, active filters, next stage, next command, and copy-ready stage lines.
+
+### Impact
+- Company website pilots can archive the full handoff runbook or save a focused filtered runbook before moving into the target repo.
+- Operators can attach the filtered runbook to internal notes, issues, or implementation records without manually copying from the browser.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 622 — Website Console Operator Runbook Filtered Copy (unreleased)
 
 Website Console operator runbook review now lets operators copy only the currently visible action/evidence-filtered rows as Markdown while preserving full-runbook copy.

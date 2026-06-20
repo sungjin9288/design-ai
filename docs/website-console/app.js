@@ -1000,7 +1000,9 @@
       "</div>",
       "<div class=\"button-row\" style=\"margin-bottom: 12px;\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-runbook\">Copy runbook</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"download-runbook\">Export runbook .md</button>",
       "<button type=\"button\" class=\"button\" data-action=\"copy-filtered-runbook\">Copy filtered rows</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"download-filtered-runbook\">Export filtered .md</button>",
       "<button type=\"button\" class=\"button\" data-action=\"copy-next-runbook-line\">Copy next line</button>",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"clear-runbook\">Clear runbook</button>",
       "</div>",
@@ -1969,8 +1971,14 @@
       setMessage("Handoff report exported.");
     } else if (action === "copy-runbook") {
       copyText(buildOperatorRunbookMarkdown(), "Operator runbook copied.");
+    } else if (action === "download-runbook") {
+      downloadFile("website-operator-runbook.md", buildOperatorRunbookMarkdown(), "text/markdown");
+      setMessage("Operator runbook exported.");
     } else if (action === "copy-filtered-runbook") {
       copyText(buildOperatorRunbookMarkdown({ filtered: true }), "Filtered operator runbook rows copied.");
+    } else if (action === "download-filtered-runbook") {
+      downloadFile("website-operator-runbook.filtered.md", buildOperatorRunbookMarkdown({ filtered: true }), "text/markdown");
+      setMessage("Filtered operator runbook exported.");
     } else if (action === "copy-next-runbook-line") {
       var runbook = appState.workspace.operatorRunbook;
       copyText(runbook ? runbook.nextStageHumanLine : "", "Next runbook line copied.");
