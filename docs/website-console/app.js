@@ -1000,6 +1000,7 @@
       "</div>",
       "<div class=\"button-row\" style=\"margin-bottom: 12px;\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-runbook\">Copy runbook</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"copy-filtered-runbook\">Copy filtered rows</button>",
       "<button type=\"button\" class=\"button\" data-action=\"copy-next-runbook-line\">Copy next line</button>",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"clear-runbook\">Clear runbook</button>",
       "</div>",
@@ -1770,15 +1771,22 @@
     ].join("\n");
   }
 
-  function buildOperatorRunbookMarkdown() {
+  function buildOperatorRunbookMarkdown(options) {
     var runbook = appState.workspace.operatorRunbook;
     if (!runbook) return "No operator runbook imported.";
-    var rows = runbook.stageHumanLineDisplayRows || [];
+    var settings = options && typeof options === "object" ? options : {};
+    var allRows = runbook.stageHumanLineDisplayRows || [];
+    var rows = settings.filtered ? filterRunbookRows(runbook) : allRows;
+    var actionFilter = appState.runbookActionFilter || "all";
+    var evidenceFilter = appState.runbookEvidenceFilter || "all";
     return [
-      "# Website improvement operator runbook",
+      settings.filtered ? "# Website improvement operator runbook - filtered rows" : "# Website improvement operator runbook",
       "",
       "- Source: " + runbook.source,
-      "- Stages: " + (runbook.stageCount || rows.length),
+      "- Stages: " + (runbook.stageCount || allRows.length),
+      "- Rows included: " + rows.length + " of " + allRows.length,
+      "- Action filter: " + (settings.filtered ? actionFilter : "all"),
+      "- Evidence filter: " + (settings.filtered ? evidenceFilter : "all"),
       "- Next stage: " + (runbook.nextStageKey || "none"),
       "- Next command: " + (runbook.nextCommandKey || "none"),
       "",
@@ -1795,7 +1803,7 @@
           "",
           row.line,
         ].filter(Boolean).join("\n");
-      }).join("\n\n") : "No display-ready rows included.",
+      }).join("\n\n") : (settings.filtered ? "No operator runbook rows match the selected filters." : "No display-ready rows included."),
     ].join("\n");
   }
 
@@ -1961,11 +1969,15 @@
       setMessage("Handoff report exported.");
     } else if (action === "copy-runbook") {
       copyText(buildOperatorRunbookMarkdown(), "Operator runbook copied.");
+    } else if (action === "copy-filtered-runbook") {
+      copyText(buildOperatorRunbookMarkdown({ filtered: true }), "Filtered operator runbook rows copied.");
     } else if (action === "copy-next-runbook-line") {
       var runbook = appState.workspace.operatorRunbook;
       copyText(runbook ? runbook.nextStageHumanLine : "", "Next runbook line copied.");
     } else if (action === "clear-runbook") {
       appState.workspace.operatorRunbook = null;
+      appState.runbookActionFilter = "all";
+      appState.runbookEvidenceFilter = "all";
       saveWorkspace();
       setMessage("Operator runbook cleared.");
     } else if (action === "copy-graph-json") {
@@ -1986,6 +1998,8 @@
         var importedRunbook = normalizeOperatorRunbook(extractOperatorRunbookPayload(parsed));
         if (importedRunbook && !parsed.siteProfile) {
           appState.workspace.operatorRunbook = importedRunbook;
+          appState.runbookActionFilter = "all";
+          appState.runbookEvidenceFilter = "all";
           appState.activeTab = "report";
           localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
           saveWorkspace();
@@ -1993,6 +2007,8 @@
           return;
         }
         appState.workspace = normalizeWorkspace(parsed);
+        appState.runbookActionFilter = "all";
+        appState.runbookEvidenceFilter = "all";
         saveWorkspace();
         setMessage("Workspace JSON imported.");
       } catch (error) {

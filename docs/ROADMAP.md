@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 622 — Website Console Operator Runbook Filtered Copy (unreleased)
+
+Website Console operator runbook review now lets operators copy only the currently visible action/evidence-filtered rows as Markdown while preserving full-runbook copy.
+
+### Added
+- Added a `Copy filtered rows` action beside the full runbook and next-line copy actions.
+- Added filtered Markdown output that records source, total stages, included row count, active action filter, active evidence filter, next stage, and next command.
+- Reset browser-local runbook filters to `all` when importing or clearing a runbook so stale filters do not hide newly imported bundle handoff rows.
+
+### Impact
+- Company website pilots can hand off only manual target-repo stages, evidence-blocked stages, or another focused filtered subset without copying the full runbook.
+- Operators keep the full-copy path for archival handoff while gaining a narrower copy path for immediate execution.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 621 — Website Console Operator Runbook Row Filters (unreleased)
 
 Website Console operator runbook review now exposes action-status and evidence-progress row filters backed by the existing bundle handoff status-index contract.
