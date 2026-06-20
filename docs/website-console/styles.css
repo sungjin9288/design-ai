@@ -490,6 +490,65 @@ td input {
   margin-bottom: 16px;
 }
 
+.runbook-filter {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+.runbook-filter__summary {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.runbook-filter__group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.runbook-filter__label {
+  min-width: 64px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 92px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-muted);
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.filter-chip[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.filter-chip strong {
+  min-width: 22px;
+  color: inherit;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .graph-lanes {
   display: grid;
   grid-template-columns: 0.8fr 1.2fr 1.2fr 1.4fr 1.2fr 1fr;

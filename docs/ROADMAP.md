@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 621 — Website Console Operator Runbook Row Filters (unreleased)
+
+Website Console operator runbook review now exposes action-status and evidence-progress row filters backed by the existing bundle handoff status-index contract.
+
+### Added
+- Added browser-local runbook filter state for action status and evidence progress.
+- Added accessible filter chips with row counts for all, ready, optional, manual, blocked, and evidence-ready/evidence-blocked rows.
+- Updated the Operator Runbook table to render filtered rows while preserving all imported runbook data in localStorage/export JSON.
+- Added an empty filtered-state message when no rows match the selected filters.
+
+### Impact
+- Company website pilots can focus on manual target-repo actions or evidence-blocked rows before switching repositories.
+- The Website Console now consumes the `operatorRunbook.stageHumanLineDisplayRowKeysByActionStatus` and `stageHumanLineDisplayRowKeysByEvidenceProgressStatus` contract directly instead of only showing summary chips.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 620 — Website Console Operator Runbook Import Handoff UX (unreleased)
 
 Website Console operator runbook import now guides the operator directly into the Report tab after importing bundle handoff JSON, making the browser-local review step easier to discover before target-repo execution.

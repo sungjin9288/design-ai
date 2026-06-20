@@ -110,6 +110,8 @@
     workspace: loadWorkspace(),
     activeTab: localStorage.getItem(ACTIVE_TAB_KEY) || "profile",
     selectedTemplate: localStorage.getItem(SELECTED_TEMPLATE_KEY) || "codex-repo-intake",
+    runbookActionFilter: "all",
+    runbookEvidenceFilter: "all",
     message: "",
   };
 
@@ -282,6 +284,20 @@
       acc[row.key] = row;
       return acc;
     }, {});
+    var actionStatusKeys = ["ready", "optional", "manual", "blocked"];
+    var evidenceProgressStatusKeys = ["blocked", "ready"];
+    var actionStatusIndex = fillRunbookKeyIndexFromRows(
+      normalizeRunbookKeyIndex(value.stageHumanLineDisplayRowKeysByActionStatus, actionStatusKeys),
+      rows,
+      "actionStatus",
+      actionStatusKeys,
+    );
+    var evidenceProgressStatusIndex = fillRunbookKeyIndexFromRows(
+      normalizeRunbookKeyIndex(value.stageHumanLineDisplayRowKeysByEvidenceProgressStatus, evidenceProgressStatusKeys),
+      rows,
+      "evidenceProgressStatus",
+      evidenceProgressStatusKeys,
+    );
     return {
       version: Number(value.version || 1),
       source: String(value.source || "bundle-handoff"),
@@ -295,14 +311,8 @@
       stageHumanLineDisplayRows: rows,
       stageHumanLineDisplayRowByKey: rowByKey,
       stageHumanLineDisplayRowSummary: normalizePlainObject(value.stageHumanLineDisplayRowSummary),
-      stageHumanLineDisplayRowKeysByActionStatus: normalizeRunbookKeyIndex(
-        value.stageHumanLineDisplayRowKeysByActionStatus,
-        ["ready", "optional", "manual", "blocked"],
-      ),
-      stageHumanLineDisplayRowKeysByEvidenceProgressStatus: normalizeRunbookKeyIndex(
-        value.stageHumanLineDisplayRowKeysByEvidenceProgressStatus,
-        ["blocked", "ready"],
-      ),
+      stageHumanLineDisplayRowKeysByActionStatus: actionStatusIndex,
+      stageHumanLineDisplayRowKeysByEvidenceProgressStatus: evidenceProgressStatusIndex,
     };
   }
 
@@ -342,6 +352,18 @@
       acc[key] = normalizeStringArray(source[key], []);
       return acc;
     }, {});
+  }
+
+  function fillRunbookKeyIndexFromRows(index, rows, statusField, keys) {
+    keys.forEach(function (key) {
+      if (index[key] && index[key].length) return;
+      index[key] = rows.filter(function (row) {
+        return row[statusField] === key;
+      }).map(function (row) {
+        return row.key;
+      });
+    });
+    return index;
   }
 
   function extractOperatorRunbookPayload(value) {
@@ -968,6 +990,7 @@
     }
     var summary = runbook.stageHumanLineDisplayRowSummary || {};
     var rows = runbook.stageHumanLineDisplayRows || [];
+    var filteredRows = filterRunbookRows(runbook);
     return panel("Operator Runbook", "Review the verified bundle handoff stages before switching into the target website repo.", [
       "<div class=\"evidence-summary\" aria-label=\"Operator runbook summary\">",
       metric("Stages", runbook.stageCount || rows.length, (runbook.requiredStageCount || 0) + " required"),
@@ -980,33 +1003,66 @@
       "<button type=\"button\" class=\"button\" data-action=\"copy-next-runbook-line\">Copy next line</button>",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"clear-runbook\">Clear runbook</button>",
       "</div>",
-      renderRunbookStatusIndex(runbook),
-      renderRunbookRows(rows),
+      renderRunbookStatusIndex(runbook, filteredRows.length, rows.length),
+      renderRunbookRows(filteredRows, rows.length),
     ].join(""));
   }
 
-  function renderRunbookStatusIndex(runbook) {
+  function renderRunbookStatusIndex(runbook, visibleCount, totalCount) {
     var actionIndex = runbook.stageHumanLineDisplayRowKeysByActionStatus || {};
     var evidenceIndex = runbook.stageHumanLineDisplayRowKeysByEvidenceProgressStatus || {};
+    var actionOptions = [["all", totalCount], ["ready", (actionIndex.ready || []).length], ["optional", (actionIndex.optional || []).length], ["manual", (actionIndex.manual || []).length], ["blocked", (actionIndex.blocked || []).length]];
+    var evidenceOptions = [["all", totalCount], ["blocked", (evidenceIndex.blocked || []).length], ["ready", (evidenceIndex.ready || []).length]];
     return [
-      "<div class=\"graph-boundaries\" aria-label=\"Operator runbook status indexes\">",
-      ["ready", "optional", "manual", "blocked"].map(function (key) {
-        return "<span class=\"pill\">" + escapeHtml(labelize(key) + ": " + (actionIndex[key] || []).length) + "</span>";
+      "<div class=\"runbook-filter\" aria-label=\"Operator runbook row filters\">",
+      "<div class=\"runbook-filter__summary\"><strong>" + escapeHtml(String(visibleCount)) + "</strong> of " + escapeHtml(String(totalCount)) + " rows shown</div>",
+      "<div class=\"runbook-filter__group\" role=\"group\" aria-label=\"Filter by action status\">",
+      "<span class=\"runbook-filter__label\">Action</span>",
+      actionOptions.map(function (option) {
+        return renderRunbookFilterButton("action", option[0], option[1], appState.runbookActionFilter === option[0]);
       }).join(""),
-      ["blocked", "ready"].map(function (key) {
-        return "<span class=\"pill\">" + escapeHtml("Evidence " + labelize(key) + ": " + (evidenceIndex[key] || []).length) + "</span>";
+      "</div>",
+      "<div class=\"runbook-filter__group\" role=\"group\" aria-label=\"Filter by evidence progress\">",
+      "<span class=\"runbook-filter__label\">Evidence</span>",
+      evidenceOptions.map(function (option) {
+        return renderRunbookFilterButton("evidence", option[0], option[1], appState.runbookEvidenceFilter === option[0]);
       }).join(""),
+      "</div>",
       "</div>",
     ].join("");
   }
 
-  function renderRunbookRows(rows) {
+  function renderRunbookFilterButton(type, value, count, selected) {
+    var label = value === "all" ? "All" : labelize(value);
+    return [
+      "<button type=\"button\" class=\"filter-chip\" data-runbook-filter-type=\"" + escapeAttr(type) + "\" data-runbook-filter-value=\"" + escapeAttr(value) + "\" aria-pressed=\"" + (selected ? "true" : "false") + "\">",
+      "<span>" + escapeHtml(label) + "</span>",
+      "<strong>" + escapeHtml(String(count)) + "</strong>",
+      "</button>",
+    ].join("");
+  }
+
+  function filterRunbookRows(runbook) {
+    var rows = runbook.stageHumanLineDisplayRows || [];
+    var actionFilter = appState.runbookActionFilter || "all";
+    var evidenceFilter = appState.runbookEvidenceFilter || "all";
+    var actionKeys = actionFilter === "all" ? null : (runbook.stageHumanLineDisplayRowKeysByActionStatus || {})[actionFilter] || [];
+    var evidenceKeys = evidenceFilter === "all" ? null : (runbook.stageHumanLineDisplayRowKeysByEvidenceProgressStatus || {})[evidenceFilter] || [];
+    return rows.filter(function (row) {
+      return (!actionKeys || actionKeys.indexOf(row.key) !== -1) && (!evidenceKeys || evidenceKeys.indexOf(row.key) !== -1);
+    });
+  }
+
+  function renderRunbookRows(rows, totalRows) {
     if (!rows.length) {
-      return "<div class=\"empty-state\">The imported runbook did not include display-ready rows.</div>";
+      return totalRows
+        ? "<div class=\"empty-state\">No operator runbook rows match the selected filters.</div>"
+        : "<div class=\"empty-state\">The imported runbook did not include display-ready rows.</div>";
     }
     return [
       "<div class=\"table-wrap\">",
       "<table>",
+      "<caption class=\"sr-only\">Filtered operator runbook stages</caption>",
       "<thead><tr><th>Stage</th><th>Action</th><th>Evidence</th><th>Copy-ready line</th></tr></thead>",
       "<tbody>",
       rows.map(function (row) {
@@ -1853,6 +1909,16 @@
     if (button.dataset.template) {
       appState.selectedTemplate = button.dataset.template;
       localStorage.setItem(SELECTED_TEMPLATE_KEY, appState.selectedTemplate);
+      render();
+      return;
+    }
+
+    if (button.dataset.runbookFilterType) {
+      if (button.dataset.runbookFilterType === "action") {
+        appState.runbookActionFilter = button.dataset.runbookFilterValue || "all";
+      } else if (button.dataset.runbookFilterType === "evidence") {
+        appState.runbookEvidenceFilter = button.dataset.runbookFilterValue || "all";
+      }
       render();
       return;
     }
