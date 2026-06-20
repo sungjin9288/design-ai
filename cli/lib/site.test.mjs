@@ -1758,6 +1758,36 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     report.operatorRunbook.stageHumanLines[0],
   );
   assert.equal(report.operatorRunbook.nextStageHumanLine, report.operatorRunbook.stageHumanLines[0]);
+  assert.deepEqual(report.operatorRunbook.stageHumanLineDisplayRows[0], {
+    step: 1,
+    key: "verifySourceBundle",
+    label: "Verify source bundle integrity",
+    line: report.operatorRunbook.stageHumanLines[0],
+    required: true,
+    manual: false,
+    commandCount: 1,
+    actionType: "run-local-gate",
+    actionLabel: "Run strict bundle check",
+    actionStatus: "ready",
+    actionStatusLabel: "Ready",
+    actionStatusTone: "success",
+    hasEvidenceProgress: true,
+    evidenceProgressStatus: "blocked",
+    evidenceProgressStatusLabel: "Checklist blocked",
+    evidenceProgressStatusTone: "danger",
+    evidenceProgressIconName: "list-x",
+    evidenceProgressLabel: "0/2 complete",
+    evidenceCompletionPercent: 0,
+    firstUncheckedEvidenceItemLabel: "Strict bundle-check output",
+  });
+  assert.deepEqual(
+    report.operatorRunbook.stageHumanLineDisplayRowByKey.verifySourceBundle,
+    report.operatorRunbook.stageHumanLineDisplayRows[0],
+  );
+  assert.deepEqual(
+    report.operatorRunbook.nextStageHumanLineDisplayRow,
+    report.operatorRunbook.stageHumanLineDisplayRows[0],
+  );
   assert.deepEqual(report.operatorRunbook.stageHumanLineSummary, {
     count: 5,
     byKeyCount: 5,
@@ -3433,6 +3463,9 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
     humanLineWithEvidenceProgressCount: 5,
     humanLineWithBlockedEvidenceProgressCount: 4,
     humanLineWithReadyEvidenceProgressCount: 1,
+    humanLineDisplayRowCount: 5,
+    humanLineDisplayRowByKeyCount: 5,
+    humanLineDisplayRowWithEvidenceProgressCount: 5,
     validatedEvidenceCaptureFieldCount: 10,
     requiredValidatedEvidenceCaptureFieldCount: 9,
     optionalValidatedEvidenceCaptureFieldCount: 1,

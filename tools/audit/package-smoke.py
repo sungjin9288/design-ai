@@ -3572,6 +3572,9 @@ def assert_site_bundle_handoff_json_smoke(
             "humanLineWithEvidenceProgressCount": 5,
             "humanLineWithBlockedEvidenceProgressCount": 4,
             "humanLineWithReadyEvidenceProgressCount": 1,
+            "humanLineDisplayRowCount": 5,
+            "humanLineDisplayRowByKeyCount": 5,
+            "humanLineDisplayRowWithEvidenceProgressCount": 5,
             "validatedEvidenceCaptureFieldCount": 10,
             "requiredValidatedEvidenceCaptureFieldCount": 9,
             "optionalValidatedEvidenceCaptureFieldCount": 1,
@@ -3902,6 +3905,8 @@ def assert_site_bundle_handoff_json_smoke(
     stage_by_key = operator_runbook["stageByKey"]
     stage_human_lines = operator_runbook.get("stageHumanLines")
     stage_human_line_by_key = operator_runbook.get("stageHumanLineByKey")
+    stage_human_line_display_rows = operator_runbook.get("stageHumanLineDisplayRows")
+    stage_human_line_display_row_by_key = operator_runbook.get("stageHumanLineDisplayRowByKey")
     stage_human_line_summary = operator_runbook.get("stageHumanLineSummary")
     next_stage_human_line_summary = operator_runbook.get("nextStageHumanLineSummary")
     if (
@@ -3910,6 +3915,34 @@ def assert_site_bundle_handoff_json_smoke(
         or not isinstance(stage_human_lines, list)
         or len(stage_human_lines) != len(expected_stage_keys)
         or not isinstance(stage_human_line_by_key, dict)
+        or not isinstance(stage_human_line_display_rows, list)
+        or len(stage_human_line_display_rows) != len(expected_stage_keys)
+        or not isinstance(stage_human_line_display_row_by_key, dict)
+        or stage_human_line_display_rows[0]
+        != {
+            "step": 1,
+            "key": "verifySourceBundle",
+            "label": "Verify source bundle integrity",
+            "line": stage_human_lines[0],
+            "required": True,
+            "manual": False,
+            "commandCount": 1,
+            "actionType": "run-local-gate",
+            "actionLabel": "Run strict bundle check",
+            "actionStatus": "ready",
+            "actionStatusLabel": "Ready",
+            "actionStatusTone": "success",
+            "hasEvidenceProgress": True,
+            "evidenceProgressStatus": "blocked",
+            "evidenceProgressStatusLabel": "Checklist blocked",
+            "evidenceProgressStatusTone": "danger",
+            "evidenceProgressIconName": "list-x",
+            "evidenceProgressLabel": "0/2 complete",
+            "evidenceCompletionPercent": 0,
+            "firstUncheckedEvidenceItemLabel": "Strict bundle-check output",
+        }
+        or stage_human_line_display_row_by_key.get("verifySourceBundle") != stage_human_line_display_rows[0]
+        or operator_runbook.get("nextStageHumanLineDisplayRow") != stage_human_line_display_rows[0]
         or stage_human_line_summary
         != {
             "count": 5,

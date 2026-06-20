@@ -5623,6 +5623,33 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey[stage.key],
   ));
   const stageHumanLineByKey = Object.fromEntries(stages.map((stage, index) => [stage.key, stageHumanLines[index]]));
+  const stageHumanLineDisplayRows = stages.map((stage, index) => {
+    const actionRow = stageActionRows[index];
+    const evidenceProgress = actionRow.actionEvidenceCaptureInitialValidationChecklistSummary;
+    return {
+      step: stage.step,
+      key: stage.key,
+      label: stage.label,
+      line: stageHumanLines[index],
+      required: stage.required,
+      manual: stage.commandCount === 0,
+      commandCount: stage.commandCount,
+      actionType: actionRow.actionType,
+      actionLabel: actionRow.actionLabel,
+      actionStatus: actionRow.actionStatus,
+      actionStatusLabel: actionRow.actionStatusLabel,
+      actionStatusTone: actionRow.actionStatusTone,
+      hasEvidenceProgress: evidenceProgress.itemCount > 0,
+      evidenceProgressStatus: evidenceProgress.status || "",
+      evidenceProgressStatusLabel: evidenceProgress.statusLabel || "",
+      evidenceProgressStatusTone: evidenceProgress.statusTone || "",
+      evidenceProgressIconName: evidenceProgress.iconName || "",
+      evidenceProgressLabel: evidenceProgress.progressLabel || "",
+      evidenceCompletionPercent: evidenceProgress.completionPercent ?? 0,
+      firstUncheckedEvidenceItemLabel: evidenceProgress.firstUncheckedItemLabel || "",
+    };
+  });
+  const stageHumanLineDisplayRowByKey = Object.fromEntries(stageHumanLineDisplayRows.map((row) => [row.key, row]));
   const stageHumanLineSummary = {
     count: stageHumanLines.length,
     byKeyCount: Object.keys(stageHumanLineByKey).length,
@@ -5789,6 +5816,9 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     humanLineWithEvidenceProgressCount: stageHumanLineSummary.evidenceProgressCount,
     humanLineWithBlockedEvidenceProgressCount: stageHumanLineSummary.blockedEvidenceProgressCount,
     humanLineWithReadyEvidenceProgressCount: stageHumanLineSummary.readyEvidenceProgressCount,
+    humanLineDisplayRowCount: stageHumanLineDisplayRows.length,
+    humanLineDisplayRowByKeyCount: Object.keys(stageHumanLineDisplayRowByKey).length,
+    humanLineDisplayRowWithEvidenceProgressCount: stageHumanLineDisplayRows.filter((row) => row.hasEvidenceProgress).length,
     validatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.validationRule).length, 0),
     requiredValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => field.required && field.validationRule).length, 0),
     optionalValidatedEvidenceCaptureFieldCount: stageActionRows.reduce((sum, stage) => sum + stage.actionEvidenceCaptureFields.filter((field) => !field.required && field.validationRule).length, 0),
@@ -5917,6 +5947,8 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageSummaryByKey,
     stageHumanLines,
     stageHumanLineByKey,
+    stageHumanLineDisplayRows,
+    stageHumanLineDisplayRowByKey,
     stageHumanLineSummary,
     stageActionRows,
     stageActionTypeByKey,
@@ -6013,6 +6045,7 @@ function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageLabel: nextStage?.label || "",
     nextStageSummary: nextStage?.reason || "",
     nextStageHumanLine: nextStage ? stageHumanLineByKey[nextStage.key] || "" : "",
+    nextStageHumanLineDisplayRow: nextStage ? stageHumanLineDisplayRowByKey[nextStage.key] || {} : {},
     nextStageHumanLineSummary: nextStage ? {
       stageKey: nextStage.key,
       line: stageHumanLineByKey[nextStage.key] || "",

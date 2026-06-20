@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 616 — Website Bundle Handoff Runbook Human Line Display Rows (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes display-ready rows for copy-ready operator runbook human lines, so wrappers can render labels, action status, and evidence-progress badges without joining `stageHumanLines`, `stageActionRows`, and checklist summary maps.
+
+### Added
+- Added `operatorRunbook.stageHumanLineDisplayRows` with stage key, label, line, required/manual flags, command count, action status metadata, and evidence-progress display metadata.
+- Added `operatorRunbook.stageHumanLineDisplayRowByKey` so wrappers can retrieve display-ready rows by stable stage key.
+- Added `operatorRunbook.nextStageHumanLineDisplayRow` for the first strict source-bundle gate.
+- Added action-summary display-row totals for row count, keyed row count, and evidence-progress row count.
+- Added unit and packed-tarball smoke assertions for the display-row contract.
+
+### Impact
+- Website Console and VS Code wrappers can render runbook table rows and badges from one object per stage instead of joining parallel JSON arrays.
+- Company website pilots keep the same local/read-only source-bundle handoff flow while gaining a denser UI contract for the first gate.
+- The change is additive JSON metadata only; it adds no external MCP calls, no target repo mutation, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
 ## Phase 615 — Website Bundle Handoff Runbook Human Line Summaries (unreleased)
 
 `design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact summaries for copy-ready operator runbook human lines, so wrappers can render header counts, evidence-progress badges, and next-stage previews without reducing `stageHumanLines`.
