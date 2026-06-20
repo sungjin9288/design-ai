@@ -1074,7 +1074,7 @@
           "<td><strong>" + escapeHtml(row.step + ". " + row.label) + "</strong><br><code>" + escapeHtml(row.key) + "</code></td>",
           "<td>" + badge(row.actionStatus || "planned") + "<br><small>" + escapeHtml(row.actionLabel || row.actionType) + "</small></td>",
           "<td>" + badge(row.evidenceProgressStatus || "planned") + "<br><small>" + escapeHtml(row.evidenceProgressLabel || "No progress") + "</small></td>",
-          "<td><small>" + escapeHtml(row.line) + "</small></td>",
+          "<td class=\"runbook-line-cell\"><small>" + escapeHtml(row.line) + "</small><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-row-line\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Copy line</button></div></td>",
           "</tr>",
         ].join("");
       }).join(""),
@@ -1979,6 +1979,16 @@
     } else if (action === "download-filtered-runbook") {
       downloadFile("website-operator-runbook.filtered.md", buildOperatorRunbookMarkdown({ filtered: true }), "text/markdown");
       setMessage("Filtered operator runbook exported.");
+    } else if (action === "copy-runbook-row-line") {
+      var rowRunbook = appState.workspace.operatorRunbook;
+      var row = rowRunbook && rowRunbook.stageHumanLineDisplayRowByKey
+        ? rowRunbook.stageHumanLineDisplayRowByKey[button.dataset.runbookRowKey]
+        : null;
+      if (row && row.line) {
+        copyText(row.line, "Runbook row line copied.");
+      } else {
+        setMessage("Runbook row line unavailable.");
+      }
     } else if (action === "copy-next-runbook-line") {
       var runbook = appState.workspace.operatorRunbook;
       copyText(runbook ? runbook.nextStageHumanLine : "", "Next runbook line copied.");

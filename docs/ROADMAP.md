@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 624 — Website Console Operator Runbook Row Line Copy (unreleased)
+
+Website Console operator runbook review now lets operators copy an individual stage line directly from the filtered runbook table.
+
+### Added
+- Added per-row `Copy line` actions beside each copy-ready operator runbook stage line.
+- Wired row copy through `stageHumanLineDisplayRowByKey` so filtered rows still copy the canonical imported row line by stable stage key.
+- Added compact row-action styling with a 44px minimum touch target for keyboard and mobile use.
+
+### Impact
+- Company website pilots can copy only one selected handoff stage without copying the next global line, the filtered subset, or the full runbook.
+- The action works with filtered views because it uses the row key instead of table position.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 623 — Website Console Operator Runbook Markdown Export (unreleased)
 
 Website Console operator runbook review now lets operators save full and filtered bundle handoff runbooks as Markdown files from the Report tab.

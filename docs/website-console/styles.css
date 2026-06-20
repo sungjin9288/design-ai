@@ -549,6 +549,23 @@ td input {
   font-variant-numeric: tabular-nums;
 }
 
+.runbook-line-cell {
+  min-width: 320px;
+}
+
+.runbook-line-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.row-copy-button {
+  min-height: 44px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
 .graph-lanes {
   display: grid;
   grid-template-columns: 0.8fr 1.2fr 1.2fr 1.4fr 1.2fr 1fr;
