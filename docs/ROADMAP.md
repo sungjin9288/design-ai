@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 634 — Website Console Provenance-Only Runbook Review State (unreleased)
+
+Website Console now distinguishes source-bundle provenance-only imports from full bundle handoff runbooks.
+
+### Added
+- Added a provenance-only notice in the Operator Runbook panel when imported source-bundle JSON contains bundle identity and guard commands but no stage rows.
+- Hid row filter controls when a runbook has no display rows, avoiding irrelevant action/evidence filter UI for provenance-only reviews.
+- Kept source-bundle detail, Markdown/JSON copy/export, and strict source command copy available for provenance-only imports.
+
+### Impact
+- Company website pilots can tell the difference between a compact source-bundle provenance artifact and a full target-repo execution runbook.
+- Operators avoid mistaking a valid source-bundle JSON import for a broken or incomplete bundle handoff import.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 633 — Website Console Source Bundle JSON Import (unreleased)
 
 Website Console import now accepts focused source-bundle provenance JSON artifacts exported from Operator Runbook review.

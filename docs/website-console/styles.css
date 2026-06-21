@@ -517,6 +517,21 @@ td input {
   color: var(--text-muted);
 }
 
+.runbook-provenance-only {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+.runbook-provenance-only span {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .runbook-filter {
   display: grid;
   gap: 10px;

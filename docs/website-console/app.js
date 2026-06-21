@@ -1054,6 +1054,7 @@
       "</div>",
       renderRunbookMetadata(runbook),
       renderRunbookSourceBundleDetails(runbook),
+      renderRunbookProvenanceOnlyNotice(runbook, rows),
       "<div class=\"button-row\" style=\"margin-bottom: 12px;\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-runbook\">Copy runbook</button>",
       "<button type=\"button\" class=\"button\" data-action=\"download-runbook\">Export runbook .md</button>",
@@ -1062,9 +1063,9 @@
       "<button type=\"button\" class=\"button\" data-action=\"copy-next-runbook-line\">Copy next line</button>",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"clear-runbook\">Clear runbook</button>",
       "</div>",
-      renderRunbookStatusIndex(runbook, filteredRows.length, rows.length),
+      rows.length ? renderRunbookStatusIndex(runbook, filteredRows.length, rows.length) : "",
       renderRunbookRows(filteredRows, rows.length),
-    ].join(""));
+    ].filter(Boolean).join(""));
   }
 
   function renderRunbookMetadata(runbook) {
@@ -1129,6 +1130,16 @@
       command ? "<code>" + escapeHtml(command) + "</code><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"" + escapeAttr(action) + "\">Copy command</button></div>" : "<span class=\"muted\">not recorded</span>",
       "</td>",
       "</tr>",
+    ].join("");
+  }
+
+  function renderRunbookProvenanceOnlyNotice(runbook, rows) {
+    if (rows.length || !runbook.sourceBundle) return "";
+    return [
+      "<div class=\"runbook-provenance-only\" role=\"status\">",
+      "<strong>Provenance-only review</strong>",
+      "<span>This import contains source-bundle identity, diagnostics, and guard commands only. Import a full bundle handoff JSON when you need stage rows for target-repo execution.</span>",
+      "</div>",
     ].join("");
   }
 

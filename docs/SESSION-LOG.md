@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 634 (unreleased)** — Added Website Console provenance-only Operator Runbook review state.
 - **Phase 633 (unreleased)** — Added Website Console source-bundle provenance JSON import for Operator Runbook review.
 - **Phase 632 (unreleased)** — Added Website Console source-bundle JSON copy/export from Operator Runbook review.
 - **Phase 631 (unreleased)** — Added Website Console source-bundle Markdown copy/export from Operator Runbook review.
