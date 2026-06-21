@@ -1072,7 +1072,7 @@
     var handoffCommand = sourceBundle.strictHandoffCommand || "";
     return [
       "<div class=\"runbook-source-bundle\" aria-label=\"Source bundle provenance\">",
-      "<div class=\"runbook-source-bundle__header\"><strong>Source Bundle</strong><span>" + escapeHtml(sourceBundle.directory || "No source directory recorded") + "</span></div>",
+      "<div class=\"runbook-source-bundle__header\"><div><strong>Source Bundle</strong><span>" + escapeHtml(sourceBundle.directory || "No source directory recorded") + "</span></div><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-source-bundle\">Copy bundle</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-source-bundle\">Export bundle</button></div></div>",
       "<div class=\"table-wrap\">",
       "<table>",
       "<caption class=\"sr-only\">Source bundle provenance details</caption>",
@@ -1906,6 +1906,32 @@
     ].join("\n");
   }
 
+  function buildSourceBundleMarkdown(sourceBundle) {
+    if (!sourceBundle) return "No source bundle provenance recorded.";
+    return [
+      "# Website improvement source bundle provenance",
+      "",
+      sourceBundleMarkdownRow("Directory", sourceBundle.directory),
+      sourceBundleMarkdownRow("Source workspace", sourceBundle.sourceWorkspace),
+      sourceBundleMarkdownRow("Site name", sourceBundle.siteName),
+      sourceBundleMarkdownRow("Status", (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid")),
+      sourceBundleMarkdownRow("Workspace status", sourceBundle.workspaceStatus),
+      sourceBundleMarkdownRow("MCP status", sourceBundle.mcpStatus),
+      sourceBundleMarkdownRow("MCP probe status", sourceBundle.mcpProbeStatus),
+      sourceBundleMarkdownRow("Checksum algorithm", sourceBundle.checksumAlgorithm),
+      sourceBundleMarkdownRow("Checksum bundle digest", sourceBundle.checksumBundleDigest),
+      sourceBundleMarkdownRow("Checksum files", String(sourceBundle.verifiedChecksumFiles || 0) + "/" + String(sourceBundle.expectedChecksumFiles || 0)),
+      sourceBundleMarkdownRow("Generated files", String(sourceBundle.verifiedGeneratedFiles || 0) + "/" + String(sourceBundle.expectedGeneratedFiles || 0)),
+      sourceBundleMarkdownRow("Diagnostics", String(sourceBundle.failureCount || 0) + " failures, " + String(sourceBundle.warningCount || 0) + " warnings, " + String(sourceBundle.issueCount || 0) + " issues"),
+      sourceBundleMarkdownRow("Strict bundle check command", sourceBundle.strictCheckCommand),
+      sourceBundleMarkdownRow("Strict bundle handoff command", sourceBundle.strictHandoffCommand),
+    ].join("\n");
+  }
+
+  function sourceBundleMarkdownRow(label, value) {
+    return "- " + label + ": " + (value || "not recorded");
+  }
+
   function buildOperatorRunbookRowMarkdown(row) {
     return [
       "### " + row.step + ". " + row.label,
@@ -2160,6 +2186,13 @@
       var handoffRunbook = appState.workspace.operatorRunbook;
       var handoffSourceBundle = handoffRunbook && handoffRunbook.sourceBundle;
       copyText(handoffSourceBundle ? handoffSourceBundle.strictHandoffCommand : "", "Strict bundle handoff command copied.");
+    } else if (action === "copy-runbook-source-bundle") {
+      var sourceBundleRunbook = appState.workspace.operatorRunbook;
+      copyText(buildSourceBundleMarkdown(sourceBundleRunbook && sourceBundleRunbook.sourceBundle), "Source bundle Markdown copied.");
+    } else if (action === "download-runbook-source-bundle") {
+      var exportSourceBundleRunbook = appState.workspace.operatorRunbook;
+      downloadFile("website-source-bundle-provenance.md", buildSourceBundleMarkdown(exportSourceBundleRunbook && exportSourceBundleRunbook.sourceBundle), "text/markdown");
+      setMessage("Source bundle Markdown exported.");
     } else if (action === "clear-runbook") {
       appState.workspace.operatorRunbook = null;
       appState.runbookActionFilter = "all";

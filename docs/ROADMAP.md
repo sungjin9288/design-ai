@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 631 — Website Console Source Bundle Markdown Export (unreleased)
+
+Website Console operator runbook review now lets operators archive source-bundle provenance as its own focused Markdown artifact.
+
+### Added
+- Added `Copy bundle` and `Export bundle` actions to the Operator Runbook Source Bundle detail block.
+- Added a dedicated source-bundle Markdown formatter with directory, source workspace, site name, status, workspace/MCP status, checksum digest, checksum/generated-file counts, diagnostics totals, and strict source commands.
+- Kept the artifact separate from full/filtered operator runbook Markdown so provenance can be attached to handoff notes or target-repo issues without all stage rows.
+
+### Impact
+- Company website pilots can preserve source bundle identity and guard commands as a compact audit artifact before target-repo execution.
+- Operators can share bundle provenance independently from the detailed implementation runbook.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 630 — Website Console Operator Runbook Source Bundle Detail Review (unreleased)
 
 Website Console operator runbook review now surfaces source-bundle diagnostics and strict source commands as copy-ready operator controls.

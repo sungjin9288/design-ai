@@ -507,6 +507,11 @@ td input {
   margin-bottom: 10px;
 }
 
+.runbook-source-bundle__header > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
 .runbook-source-bundle__header span,
 .muted {
   color: var(--text-muted);
