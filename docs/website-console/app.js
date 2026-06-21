@@ -1072,7 +1072,7 @@
     var handoffCommand = sourceBundle.strictHandoffCommand || "";
     return [
       "<div class=\"runbook-source-bundle\" aria-label=\"Source bundle provenance\">",
-      "<div class=\"runbook-source-bundle__header\"><div><strong>Source Bundle</strong><span>" + escapeHtml(sourceBundle.directory || "No source directory recorded") + "</span></div><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-source-bundle\">Copy bundle</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-source-bundle\">Export bundle</button></div></div>",
+      "<div class=\"runbook-source-bundle__header\"><div><strong>Source Bundle</strong><span>" + escapeHtml(sourceBundle.directory || "No source directory recorded") + "</span></div><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-source-bundle\">Copy bundle</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-source-bundle\">Export bundle</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-source-bundle-json\">Copy JSON</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-source-bundle-json\">Export JSON</button></div></div>",
       "<div class=\"table-wrap\">",
       "<table>",
       "<caption class=\"sr-only\">Source bundle provenance details</caption>",
@@ -1928,6 +1928,14 @@
     ].join("\n");
   }
 
+  function buildSourceBundleJson(sourceBundle) {
+    return JSON.stringify({
+      type: "website-improvement-source-bundle-provenance",
+      version: 1,
+      sourceBundle: sourceBundle || null,
+    }, null, 2);
+  }
+
   function sourceBundleMarkdownRow(label, value) {
     return "- " + label + ": " + (value || "not recorded");
   }
@@ -2193,6 +2201,13 @@
       var exportSourceBundleRunbook = appState.workspace.operatorRunbook;
       downloadFile("website-source-bundle-provenance.md", buildSourceBundleMarkdown(exportSourceBundleRunbook && exportSourceBundleRunbook.sourceBundle), "text/markdown");
       setMessage("Source bundle Markdown exported.");
+    } else if (action === "copy-runbook-source-bundle-json") {
+      var sourceBundleJsonRunbook = appState.workspace.operatorRunbook;
+      copyText(buildSourceBundleJson(sourceBundleJsonRunbook && sourceBundleJsonRunbook.sourceBundle), "Source bundle JSON copied.");
+    } else if (action === "download-runbook-source-bundle-json") {
+      var exportSourceBundleJsonRunbook = appState.workspace.operatorRunbook;
+      downloadFile("website-source-bundle-provenance.json", buildSourceBundleJson(exportSourceBundleJsonRunbook && exportSourceBundleJsonRunbook.sourceBundle), "application/json");
+      setMessage("Source bundle JSON exported.");
     } else if (action === "clear-runbook") {
       appState.workspace.operatorRunbook = null;
       appState.runbookActionFilter = "all";

@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 632 — Website Console Source Bundle JSON Export (unreleased)
+
+Website Console operator runbook review now lets operators copy or export source-bundle provenance as a focused portable JSON artifact.
+
+### Added
+- Added `Copy JSON` and `Export JSON` actions to the Operator Runbook Source Bundle detail block.
+- Added a dedicated source-bundle JSON payload with `type`, `version`, and normalized `sourceBundle` metadata.
+- Kept the JSON artifact separate from full workspace export and full/filtered operator runbook export so follow-up tools can ingest provenance without unrelated browser-local state.
+
+### Impact
+- Company website pilots can pass verified source-bundle identity and guard-command metadata into later local tooling without exposing the whole Website Console workspace.
+- Operators can choose between human-readable Markdown provenance and machine-readable JSON provenance from the same Report tab.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 631 — Website Console Source Bundle Markdown Export (unreleased)
 
 Website Console operator runbook review now lets operators archive source-bundle provenance as its own focused Markdown artifact.
