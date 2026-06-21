@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 628 — Website Console Operator Runbook Task Provenance Display (unreleased)
+
+Website Console operator runbook review now preserves and displays task/command provenance from imported bundle handoff JSON.
+
+### Added
+- Preserved optional `effectiveTaskId`, `effectiveStrictTaskCommandKey`, command/manual stage counts, read-only command stage counts, and local-output command stage counts during runbook normalization.
+- Added metadata chips for effective task, strict command key, command stages, manual stages, read-only stages, and local-output stages in the Operator Runbook panel.
+- Added effective task and strict task command key to full and filtered runbook Markdown copy/export output.
+
+### Impact
+- Company website pilots can confirm which bundled task and strict handoff command the imported runbook targets before moving into the target repo.
+- Operators can distinguish command-bearing, manual, read-only, and local-output stage shape without scanning every row.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 627 — Website Console Operator Runbook Row Markdown Export (unreleased)
 
 Website Console operator runbook review now lets operators save one structured handoff stage as its own Markdown file.

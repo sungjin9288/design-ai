@@ -302,8 +302,16 @@
       version: Number(value.version || 1),
       source: String(value.source || "bundle-handoff"),
       stageCount: Number(value.stageCount || rows.length),
+      commandStageCount: Number(value.commandStageCount || 0),
+      manualStageCount: Number(value.manualStageCount || 0),
       requiredStageCount: Number(value.requiredStageCount || 0),
       optionalStageCount: Number(value.optionalStageCount || 0),
+      readOnlyCommandStageCount: Number(value.readOnlyCommandStageCount || 0),
+      localOutputCommandStageCount: Number(value.localOutputCommandStageCount || 0),
+      externalCallCommandStageCount: Number(value.externalCallCommandStageCount || 0),
+      targetRepoMutationCommandStageCount: Number(value.targetRepoMutationCommandStageCount || 0),
+      effectiveTaskId: String(value.effectiveTaskId || ""),
+      effectiveStrictTaskCommandKey: String(value.effectiveStrictTaskCommandKey || ""),
       nextStageKey: String(value.nextStageKey || ""),
       nextCommandKey: String(value.nextCommandKey || ""),
       nextStageHumanLine: String(value.nextStageHumanLine || ""),
@@ -998,6 +1006,7 @@
       metric("Blocked evidence", summary.blockedEvidenceProgressCount || 0, "Rows needing evidence"),
       metric("Next", runbook.nextStageKey || "none", runbook.nextCommandKey || "No command"),
       "</div>",
+      renderRunbookMetadata(runbook),
       "<div class=\"button-row\" style=\"margin-bottom: 12px;\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-runbook\">Copy runbook</button>",
       "<button type=\"button\" class=\"button\" data-action=\"download-runbook\">Export runbook .md</button>",
@@ -1009,6 +1018,19 @@
       renderRunbookStatusIndex(runbook, filteredRows.length, rows.length),
       renderRunbookRows(filteredRows, rows.length),
     ].join(""));
+  }
+
+  function renderRunbookMetadata(runbook) {
+    return [
+      "<div class=\"graph-boundaries\" aria-label=\"Operator runbook metadata\">",
+      "<span class=\"pill\">Task: " + escapeHtml(runbook.effectiveTaskId || "not specified") + "</span>",
+      "<span class=\"pill\">Strict command: " + escapeHtml(runbook.effectiveStrictTaskCommandKey || "not specified") + "</span>",
+      "<span class=\"pill\">Command stages: " + escapeHtml(String(runbook.commandStageCount || 0)) + "</span>",
+      "<span class=\"pill\">Manual stages: " + escapeHtml(String(runbook.manualStageCount || 0)) + "</span>",
+      "<span class=\"pill\">Read-only: " + escapeHtml(String(runbook.readOnlyCommandStageCount || 0)) + "</span>",
+      "<span class=\"pill\">Local output: " + escapeHtml(String(runbook.localOutputCommandStageCount || 0)) + "</span>",
+      "</div>",
+    ].join("");
   }
 
   function renderRunbookStatusIndex(runbook, visibleCount, totalCount) {
@@ -1788,6 +1810,8 @@
       "- Source: " + runbook.source,
       "- Stages: " + (runbook.stageCount || allRows.length),
       "- Rows included: " + rows.length + " of " + allRows.length,
+      "- Effective task: " + (runbook.effectiveTaskId || "not specified"),
+      "- Strict task command key: " + (runbook.effectiveStrictTaskCommandKey || "not specified"),
       "- Action filter: " + (settings.filtered ? actionFilter : "all"),
       "- Evidence filter: " + (settings.filtered ? evidenceFilter : "all"),
       "- Next stage: " + (runbook.nextStageKey || "none"),
