@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 640 — Website Console Source Bundle JSON Revalidation Gate (unreleased)
+
+Website Console focused source-bundle JSON exports now include machine-readable revalidation gate metadata.
+
+### Added
+- Added `revalidationGate` to `website-improvement-source-bundle-provenance` JSON copy/export payloads.
+- Reports whether strict source-bundle revalidation is required, the normalized bundle status, validity, failure count, strict check command, and an operator message.
+- Keeps the existing `sourceBundle` payload intact so existing imports and wrappers remain backward-compatible.
+
+### Impact
+- Automation and follow-up tools can gate target-repo execution without parsing Markdown strings or browser UI copy.
+- Company website pilots can pass compact source-bundle provenance between tools while preserving a structured invalid-bundle stop signal.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 639 — Website Console Source Bundle Revalidation Markdown Gate (unreleased)
 
 Website Console copied/exported Markdown artifacts now preserve the same source-bundle revalidation gate shown in the browser UI.

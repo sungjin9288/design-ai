@@ -1990,6 +1990,7 @@
       type: "website-improvement-source-bundle-provenance",
       version: 1,
       sourceBundle: sourceBundle || null,
+      revalidationGate: buildSourceBundleRevalidationGate(sourceBundle),
     }, null, 2);
   }
 
@@ -2035,6 +2036,32 @@
     var status = (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid");
     var command = sourceBundle.strictCheckCommand ? "; run " + sourceBundle.strictCheckCommand : "";
     return "required; status " + status + "; failures " + String(failureCount) + command;
+  }
+
+  function buildSourceBundleRevalidationGate(sourceBundle) {
+    if (!sourceBundle) {
+      return {
+        required: false,
+        status: "not-provided",
+        valid: false,
+        failureCount: 0,
+        strictCheckCommand: "",
+        message: "No source bundle provenance recorded.",
+      };
+    }
+    var failureCount = Number(sourceBundle.failureCount || 0);
+    var required = sourceBundleNeedsRevalidation(sourceBundle);
+    var status = (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid");
+    return {
+      required: required,
+      status: status,
+      valid: sourceBundle.valid === true,
+      failureCount: failureCount,
+      strictCheckCommand: String(sourceBundle.strictCheckCommand || ""),
+      message: required
+        ? "Run the strict bundle check before target-repo execution."
+        : "Source bundle revalidation is not required.",
+    };
   }
 
   function shortDisplay(value, maxLength) {
