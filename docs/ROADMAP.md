@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 637 — Website Console Operator Runbook Provenance-Only Markdown Markers (unreleased)
+
+Website Console copied/exported Operator Runbook Markdown now distinguishes provenance-only reviews from full bundle handoff runbooks.
+
+### Added
+- Added a `Provenance-only: yes/no` line to Operator Runbook Markdown headers.
+- Added a provenance-only empty-stage explanation when a full runbook export contains source-bundle metadata but no stage rows.
+- Kept filtered exports using the existing filtered-empty message because filtered output is only available when stage rows exist.
+
+### Impact
+- Archived runbook Markdown clearly communicates whether it is a compact source-bundle provenance artifact or a target-repo execution runbook.
+- Operators can share full runbook exports from provenance-only reviews without recipients mistaking missing stage rows for data loss.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 636 — Website Console Operator Runbook Filtered-Row Action Guard (unreleased)
 
 Website Console now guards filtered-row copy/export actions when an imported runbook has no stage rows.

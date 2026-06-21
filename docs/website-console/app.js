@@ -1916,10 +1916,12 @@
     var rows = settings.filtered ? filterRunbookRows(runbook) : allRows;
     var actionFilter = appState.runbookActionFilter || "all";
     var evidenceFilter = appState.runbookEvidenceFilter || "all";
+    var provenanceOnly = allRows.length === 0 && !!runbook.sourceBundle;
     return [
       settings.filtered ? "# Website improvement operator runbook - filtered rows" : "# Website improvement operator runbook",
       "",
       "- Source: " + runbook.source,
+      "- Provenance-only: " + (provenanceOnly ? "yes" : "no"),
       "- Stages: " + (runbook.stageCount || allRows.length),
       "- Rows included: " + rows.length + " of " + allRows.length,
       "- Effective task: " + (runbook.effectiveTaskId || "not specified"),
@@ -1934,8 +1936,14 @@
       "",
       "## Stages",
       "",
-      rows.length ? rows.map(buildOperatorRunbookRowMarkdown).join("\n\n") : (settings.filtered ? "No operator runbook rows match the selected filters." : "No display-ready rows included."),
+      rows.length ? rows.map(buildOperatorRunbookRowMarkdown).join("\n\n") : formatEmptyRunbookRowsMessage(settings, provenanceOnly),
     ].join("\n");
+  }
+
+  function formatEmptyRunbookRowsMessage(settings, provenanceOnly) {
+    if (settings.filtered) return "No operator runbook rows match the selected filters.";
+    if (provenanceOnly) return "This artifact contains source-bundle identity, diagnostics, and guard commands only. Import a full bundle handoff JSON when target-repo execution stage rows are required.";
+    return "No display-ready rows included.";
   }
 
   function buildSourceBundleMarkdown(sourceBundle) {
