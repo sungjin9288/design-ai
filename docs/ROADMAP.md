@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 641 — Website Console Source Bundle Strict Command Copy Guards (unreleased)
+
+Website Console now guards source-bundle strict command copy actions when imported provenance lacks command strings.
+
+### Added
+- Added click-handler guards for strict source-bundle check command copy.
+- Added click-handler guards for strict source-bundle handoff command copy.
+- Reports an unavailable-command message instead of copying an empty string and showing a false success state.
+
+### Impact
+- Imported or hand-edited provenance artifacts cannot accidentally produce empty command clipboard state with a success toast.
+- Operators get clearer feedback when source-bundle provenance is incomplete before target-repo execution.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 640 — Website Console Source Bundle JSON Revalidation Gate (unreleased)
 
 Website Console focused source-bundle JSON exports now include machine-readable revalidation gate metadata.

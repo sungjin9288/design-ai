@@ -2301,11 +2301,19 @@
     } else if (action === "copy-runbook-source-check-command") {
       var checkRunbook = appState.workspace.operatorRunbook;
       var checkSourceBundle = checkRunbook && checkRunbook.sourceBundle;
-      copyText(checkSourceBundle ? checkSourceBundle.strictCheckCommand : "", "Strict bundle check command copied.");
+      if (checkSourceBundle && checkSourceBundle.strictCheckCommand) {
+        copyText(checkSourceBundle.strictCheckCommand, "Strict bundle check command copied.");
+      } else {
+        setMessage("Strict bundle check command unavailable.");
+      }
     } else if (action === "copy-runbook-source-handoff-command") {
       var handoffRunbook = appState.workspace.operatorRunbook;
       var handoffSourceBundle = handoffRunbook && handoffRunbook.sourceBundle;
-      copyText(handoffSourceBundle ? handoffSourceBundle.strictHandoffCommand : "", "Strict bundle handoff command copied.");
+      if (handoffSourceBundle && handoffSourceBundle.strictHandoffCommand) {
+        copyText(handoffSourceBundle.strictHandoffCommand, "Strict bundle handoff command copied.");
+      } else {
+        setMessage("Strict bundle handoff command unavailable.");
+      }
     } else if (action === "copy-runbook-source-bundle") {
       var sourceBundleRunbook = appState.workspace.operatorRunbook;
       copyText(buildSourceBundleMarkdown(sourceBundleRunbook && sourceBundleRunbook.sourceBundle), "Source bundle Markdown copied.");
