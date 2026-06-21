@@ -1140,8 +1140,7 @@
     var sourceBundle = runbook.sourceBundle;
     if (!sourceBundle) return "";
     var failureCount = Number(sourceBundle.failureCount || 0);
-    var shouldWarn = sourceBundle.valid !== true || failureCount > 0;
-    if (!shouldWarn) return "";
+    if (!sourceBundleNeedsRevalidation(sourceBundle)) return "";
     return [
       "<div class=\"runbook-source-bundle-warning\" role=\"alert\">",
       "<strong>Source bundle needs revalidation</strong>",
@@ -1945,6 +1944,7 @@
       "- Source bundle status: " + formatSourceBundleMarkdownStatus(runbook.sourceBundle),
       "- Strict bundle check command: " + formatSourceBundleMarkdownCommand(runbook.sourceBundle, "strictCheckCommand"),
       "- Strict bundle handoff command: " + formatSourceBundleMarkdownCommand(runbook.sourceBundle, "strictHandoffCommand"),
+      "- Source bundle revalidation: " + formatSourceBundleRevalidationMarkdown(runbook.sourceBundle),
       "- Action filter: " + (settings.filtered ? actionFilter : "all"),
       "- Evidence filter: " + (settings.filtered ? evidenceFilter : "all"),
       "- Next stage: " + (runbook.nextStageKey || "none"),
@@ -1981,6 +1981,7 @@
       sourceBundleMarkdownRow("Diagnostics", String(sourceBundle.failureCount || 0) + " failures, " + String(sourceBundle.warningCount || 0) + " warnings, " + String(sourceBundle.issueCount || 0) + " issues"),
       sourceBundleMarkdownRow("Strict bundle check command", sourceBundle.strictCheckCommand),
       sourceBundleMarkdownRow("Strict bundle handoff command", sourceBundle.strictHandoffCommand),
+      sourceBundleMarkdownRow("Revalidation gate", formatSourceBundleRevalidationMarkdown(sourceBundle)),
     ].join("\n");
   }
 
@@ -2020,6 +2021,20 @@
   function formatSourceBundleMarkdownCommand(sourceBundle, key) {
     if (!sourceBundle || !sourceBundle[key]) return "not provided";
     return sourceBundle[key];
+  }
+
+  function sourceBundleNeedsRevalidation(sourceBundle) {
+    if (!sourceBundle) return false;
+    return sourceBundle.valid !== true || Number(sourceBundle.failureCount || 0) > 0;
+  }
+
+  function formatSourceBundleRevalidationMarkdown(sourceBundle) {
+    if (!sourceBundle) return "not provided";
+    if (!sourceBundleNeedsRevalidation(sourceBundle)) return "not required";
+    var failureCount = Number(sourceBundle.failureCount || 0);
+    var status = (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid");
+    var command = sourceBundle.strictCheckCommand ? "; run " + sourceBundle.strictCheckCommand : "";
+    return "required; status " + status + "; failures " + String(failureCount) + command;
   }
 
   function shortDisplay(value, maxLength) {

@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 639 — Website Console Source Bundle Revalidation Markdown Gate (unreleased)
+
+Website Console copied/exported Markdown artifacts now preserve the same source-bundle revalidation gate shown in the browser UI.
+
+### Added
+- Added a `Source bundle revalidation` line to full and filtered Operator Runbook Markdown exports.
+- Added a `Revalidation gate` row to focused source-bundle provenance Markdown exports.
+- Reused one deterministic revalidation helper so UI warning blocks and Markdown exports agree on invalid/failing bundle state.
+
+### Impact
+- Company website pilots keep the strict source-bundle check gate visible even after copying or exporting runbooks outside the browser.
+- Operators can share provenance artifacts without losing the invalid-bundle stop signal.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 638 — Website Console Source Bundle Revalidation Warning Gate (unreleased)
 
 Website Console now surfaces invalid or failing source-bundle provenance as an explicit revalidation gate before target-repo execution.

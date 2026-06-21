@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 639 (unreleased)** — Added Website Console source-bundle revalidation gates to Markdown exports.
 - **Phase 638 (unreleased)** — Added Website Console source-bundle revalidation warning gate.
 - **Phase 637 (unreleased)** — Added Website Console Operator Runbook provenance-only Markdown markers.
 - **Phase 636 (unreleased)** — Added Website Console Operator Runbook filtered-row action guard.
