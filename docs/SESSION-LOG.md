@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 629 (unreleased)** — Added Website Console operator runbook source-bundle provenance display.
 - **Phase 628 (unreleased)** — Added Website Console operator runbook task and command provenance metadata display.
 - **Phase 627 (unreleased)** — Added row-level Markdown export for Website Console operator runbook stages.
 - **Phase 626 (unreleased)** — Added row-level Markdown copy for Website Console operator runbook stages.

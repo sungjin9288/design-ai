@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 629 — Website Console Operator Runbook Source Bundle Provenance (unreleased)
+
+Website Console operator runbook review now preserves and displays source-bundle provenance from imported bundle handoff JSON.
+
+### Added
+- Preserved optional source bundle metadata during operator runbook normalization, including directory, source workspace, site name, bundle status, validity, workspace/MCP status, checksum algorithm, bundle digest, generated-file counts, issue counts, and strict source commands.
+- Imported sibling `sourceBundle` metadata from `design-ai site <bundle-dir> --bundle-handoff --json` output into the stored browser-local operator runbook.
+- Added source bundle status, digest, and generated-file count chips to the Operator Runbook panel.
+- Added source bundle status, digest, and directory to full and filtered runbook Markdown copy/export output.
+
+### Impact
+- Company website pilots can verify the exact source bundle identity and validation state before entering the target repo.
+- Operators can archive or paste runbook Markdown with bundle digest provenance, reducing ambiguity when multiple handoff bundles exist.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 628 — Website Console Operator Runbook Task Provenance Display (unreleased)
 
 Website Console operator runbook review now preserves and displays task/command provenance from imported bundle handoff JSON.

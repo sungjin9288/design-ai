@@ -266,7 +266,7 @@
       mcpReadiness: normalizeMcp(source.mcpReadiness || fallback.mcpReadiness),
       refactorTasks: normalizeTasks(source.refactorTasks || fallback.refactorTasks),
       implementationEvidence: normalizeImplementationEvidence(source.implementationEvidence || fallback.implementationEvidence),
-      operatorRunbook: normalizeOperatorRunbook(source.operatorRunbook || (source.bundle && source.bundle.operatorRunbook)),
+      operatorRunbook: normalizeOperatorRunbook(source.operatorRunbook || (source.bundle && source.bundle.operatorRunbook), source),
       reportNotes: String(source.reportNotes || ""),
     };
     if (workspace.siteProfile.viewports.length === 0) {
@@ -275,8 +275,9 @@
     return workspace;
   }
 
-  function normalizeOperatorRunbook(value) {
+  function normalizeOperatorRunbook(value, container) {
     if (!value || typeof value !== "object") return null;
+    var sourceBundle = normalizeRunbookSourceBundle(value.sourceBundle || (container && container.sourceBundle) || (container && container.bundle && container.bundle.sourceBundle));
     var rows = Array.isArray(value.stageHumanLineDisplayRows)
       ? value.stageHumanLineDisplayRows.map(normalizeRunbookRow).filter(function (row) { return row.key; })
       : [];
@@ -312,6 +313,7 @@
       targetRepoMutationCommandStageCount: Number(value.targetRepoMutationCommandStageCount || 0),
       effectiveTaskId: String(value.effectiveTaskId || ""),
       effectiveStrictTaskCommandKey: String(value.effectiveStrictTaskCommandKey || ""),
+      sourceBundle: sourceBundle,
       nextStageKey: String(value.nextStageKey || ""),
       nextCommandKey: String(value.nextCommandKey || ""),
       nextStageHumanLine: String(value.nextStageHumanLine || ""),
@@ -321,6 +323,31 @@
       stageHumanLineDisplayRowSummary: normalizePlainObject(value.stageHumanLineDisplayRowSummary),
       stageHumanLineDisplayRowKeysByActionStatus: actionStatusIndex,
       stageHumanLineDisplayRowKeysByEvidenceProgressStatus: evidenceProgressStatusIndex,
+    };
+  }
+
+  function normalizeRunbookSourceBundle(value) {
+    if (!value || typeof value !== "object") return null;
+    return {
+      directory: String(value.directory || ""),
+      sourceWorkspace: String(value.sourceWorkspace || ""),
+      siteName: String(value.siteName || ""),
+      status: String(value.status || "unknown"),
+      valid: value.valid === true,
+      workspaceStatus: String(value.workspaceStatus || ""),
+      mcpStatus: String(value.mcpStatus || ""),
+      mcpProbeStatus: String(value.mcpProbeStatus || ""),
+      checksumAlgorithm: String(value.checksumAlgorithm || ""),
+      checksumBundleDigest: String(value.checksumBundleDigest || ""),
+      verifiedChecksumFiles: Number(value.verifiedChecksumFiles || 0),
+      expectedChecksumFiles: Number(value.expectedChecksumFiles || 0),
+      verifiedGeneratedFiles: Number(value.verifiedGeneratedFiles || 0),
+      expectedGeneratedFiles: Number(value.expectedGeneratedFiles || 0),
+      issueCount: Number(value.issueCount || 0),
+      warningCount: Number(value.warningCount || 0),
+      failureCount: Number(value.failureCount || 0),
+      strictCheckCommand: String(value.strictCheckCommand || ""),
+      strictHandoffCommand: String(value.strictHandoffCommand || ""),
     };
   }
 
@@ -1021,6 +1048,7 @@
   }
 
   function renderRunbookMetadata(runbook) {
+    var sourceBundle = runbook.sourceBundle || {};
     return [
       "<div class=\"graph-boundaries\" aria-label=\"Operator runbook metadata\">",
       "<span class=\"pill\">Task: " + escapeHtml(runbook.effectiveTaskId || "not specified") + "</span>",
@@ -1029,8 +1057,11 @@
       "<span class=\"pill\">Manual stages: " + escapeHtml(String(runbook.manualStageCount || 0)) + "</span>",
       "<span class=\"pill\">Read-only: " + escapeHtml(String(runbook.readOnlyCommandStageCount || 0)) + "</span>",
       "<span class=\"pill\">Local output: " + escapeHtml(String(runbook.localOutputCommandStageCount || 0)) + "</span>",
+      sourceBundle.status ? "<span class=\"pill\">Bundle: " + escapeHtml(sourceBundle.status + "/" + (sourceBundle.valid ? "valid" : "invalid")) + "</span>" : "",
+      sourceBundle.checksumBundleDigest ? "<span class=\"pill\">Digest: " + escapeHtml(shortDisplay(sourceBundle.checksumBundleDigest, 12)) + "</span>" : "",
+      sourceBundle.expectedGeneratedFiles ? "<span class=\"pill\">Generated: " + escapeHtml(String(sourceBundle.verifiedGeneratedFiles || 0) + "/" + String(sourceBundle.expectedGeneratedFiles)) + "</span>" : "",
       "</div>",
-    ].join("");
+    ].filter(Boolean).join("");
   }
 
   function renderRunbookStatusIndex(runbook, visibleCount, totalCount) {
@@ -1812,6 +1843,7 @@
       "- Rows included: " + rows.length + " of " + allRows.length,
       "- Effective task: " + (runbook.effectiveTaskId || "not specified"),
       "- Strict task command key: " + (runbook.effectiveStrictTaskCommandKey || "not specified"),
+      "- Source bundle status: " + formatSourceBundleMarkdownStatus(runbook.sourceBundle),
       "- Action filter: " + (settings.filtered ? actionFilter : "all"),
       "- Evidence filter: " + (settings.filtered ? evidenceFilter : "all"),
       "- Next stage: " + (runbook.nextStageKey || "none"),
@@ -1834,6 +1866,21 @@
       "",
       row.line,
     ].filter(Boolean).join("\n");
+  }
+
+  function formatSourceBundleMarkdownStatus(sourceBundle) {
+    if (!sourceBundle) return "not provided";
+    var status = (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid");
+    var digest = sourceBundle.checksumBundleDigest ? "; digest " + sourceBundle.checksumBundleDigest : "";
+    var directory = sourceBundle.directory ? "; directory " + sourceBundle.directory : "";
+    return status + digest + directory;
+  }
+
+  function shortDisplay(value, maxLength) {
+    var text = String(value || "");
+    var limit = Number(maxLength || 12);
+    if (text.length <= limit) return text;
+    return text.slice(0, limit) + "...";
   }
 
   function copyText(text, successMessage) {
@@ -2075,7 +2122,7 @@
     reader.onload = function () {
       try {
         var parsed = JSON.parse(String(reader.result || ""));
-        var importedRunbook = normalizeOperatorRunbook(extractOperatorRunbookPayload(parsed));
+        var importedRunbook = normalizeOperatorRunbook(extractOperatorRunbookPayload(parsed), parsed);
         if (importedRunbook && !parsed.siteProfile) {
           appState.workspace.operatorRunbook = importedRunbook;
           appState.runbookActionFilter = "all";
