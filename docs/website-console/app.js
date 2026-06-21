@@ -1034,6 +1034,7 @@
       metric("Next", runbook.nextStageKey || "none", runbook.nextCommandKey || "No command"),
       "</div>",
       renderRunbookMetadata(runbook),
+      renderRunbookSourceBundleDetails(runbook),
       "<div class=\"button-row\" style=\"margin-bottom: 12px;\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-runbook\">Copy runbook</button>",
       "<button type=\"button\" class=\"button\" data-action=\"download-runbook\">Export runbook .md</button>",
@@ -1062,6 +1063,54 @@
       sourceBundle.expectedGeneratedFiles ? "<span class=\"pill\">Generated: " + escapeHtml(String(sourceBundle.verifiedGeneratedFiles || 0) + "/" + String(sourceBundle.expectedGeneratedFiles)) + "</span>" : "",
       "</div>",
     ].filter(Boolean).join("");
+  }
+
+  function renderRunbookSourceBundleDetails(runbook) {
+    var sourceBundle = runbook.sourceBundle;
+    if (!sourceBundle) return "";
+    var checkCommand = sourceBundle.strictCheckCommand || "";
+    var handoffCommand = sourceBundle.strictHandoffCommand || "";
+    return [
+      "<div class=\"runbook-source-bundle\" aria-label=\"Source bundle provenance\">",
+      "<div class=\"runbook-source-bundle__header\"><strong>Source Bundle</strong><span>" + escapeHtml(sourceBundle.directory || "No source directory recorded") + "</span></div>",
+      "<div class=\"table-wrap\">",
+      "<table>",
+      "<caption class=\"sr-only\">Source bundle provenance details</caption>",
+      "<tbody>",
+      sourceBundleRow("Status", (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid")),
+      sourceBundleRow("Workspace", sourceBundle.workspaceStatus || "not recorded"),
+      sourceBundleRow("MCP", [sourceBundle.mcpStatus, sourceBundle.mcpProbeStatus].filter(Boolean).join(" / ") || "not recorded"),
+      sourceBundleRow("Checksum", sourceBundle.checksumBundleDigest || "not recorded"),
+      sourceBundleRow("Checksum files", String(sourceBundle.verifiedChecksumFiles || 0) + "/" + String(sourceBundle.expectedChecksumFiles || 0)),
+      sourceBundleRow("Generated files", String(sourceBundle.verifiedGeneratedFiles || 0) + "/" + String(sourceBundle.expectedGeneratedFiles || 0)),
+      sourceBundleRow("Diagnostics", String(sourceBundle.failureCount || 0) + " failures, " + String(sourceBundle.warningCount || 0) + " warnings, " + String(sourceBundle.issueCount || 0) + " issues"),
+      sourceBundleCommandRow("Strict check command", checkCommand, "copy-runbook-source-check-command"),
+      sourceBundleCommandRow("Strict handoff command", handoffCommand, "copy-runbook-source-handoff-command"),
+      "</tbody>",
+      "</table>",
+      "</div>",
+      "</div>",
+    ].join("");
+  }
+
+  function sourceBundleRow(label, value) {
+    return [
+      "<tr>",
+      "<th scope=\"row\">" + escapeHtml(label) + "</th>",
+      "<td>" + escapeHtml(value || "not recorded") + "</td>",
+      "</tr>",
+    ].join("");
+  }
+
+  function sourceBundleCommandRow(label, command, action) {
+    return [
+      "<tr>",
+      "<th scope=\"row\">" + escapeHtml(label) + "</th>",
+      "<td class=\"runbook-line-cell\">",
+      command ? "<code>" + escapeHtml(command) + "</code><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"" + escapeAttr(action) + "\">Copy command</button></div>" : "<span class=\"muted\">not recorded</span>",
+      "</td>",
+      "</tr>",
+    ].join("");
   }
 
   function renderRunbookStatusIndex(runbook, visibleCount, totalCount) {
@@ -1844,6 +1893,8 @@
       "- Effective task: " + (runbook.effectiveTaskId || "not specified"),
       "- Strict task command key: " + (runbook.effectiveStrictTaskCommandKey || "not specified"),
       "- Source bundle status: " + formatSourceBundleMarkdownStatus(runbook.sourceBundle),
+      "- Strict bundle check command: " + formatSourceBundleMarkdownCommand(runbook.sourceBundle, "strictCheckCommand"),
+      "- Strict bundle handoff command: " + formatSourceBundleMarkdownCommand(runbook.sourceBundle, "strictHandoffCommand"),
       "- Action filter: " + (settings.filtered ? actionFilter : "all"),
       "- Evidence filter: " + (settings.filtered ? evidenceFilter : "all"),
       "- Next stage: " + (runbook.nextStageKey || "none"),
@@ -1874,6 +1925,11 @@
     var digest = sourceBundle.checksumBundleDigest ? "; digest " + sourceBundle.checksumBundleDigest : "";
     var directory = sourceBundle.directory ? "; directory " + sourceBundle.directory : "";
     return status + digest + directory;
+  }
+
+  function formatSourceBundleMarkdownCommand(sourceBundle, key) {
+    if (!sourceBundle || !sourceBundle[key]) return "not provided";
+    return sourceBundle[key];
   }
 
   function shortDisplay(value, maxLength) {
@@ -2096,6 +2152,14 @@
     } else if (action === "copy-next-runbook-line") {
       var runbook = appState.workspace.operatorRunbook;
       copyText(runbook ? runbook.nextStageHumanLine : "", "Next runbook line copied.");
+    } else if (action === "copy-runbook-source-check-command") {
+      var checkRunbook = appState.workspace.operatorRunbook;
+      var checkSourceBundle = checkRunbook && checkRunbook.sourceBundle;
+      copyText(checkSourceBundle ? checkSourceBundle.strictCheckCommand : "", "Strict bundle check command copied.");
+    } else if (action === "copy-runbook-source-handoff-command") {
+      var handoffRunbook = appState.workspace.operatorRunbook;
+      var handoffSourceBundle = handoffRunbook && handoffRunbook.sourceBundle;
+      copyText(handoffSourceBundle ? handoffSourceBundle.strictHandoffCommand : "", "Strict bundle handoff command copied.");
     } else if (action === "clear-runbook") {
       appState.workspace.operatorRunbook = null;
       appState.runbookActionFilter = "all";

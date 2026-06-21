@@ -490,6 +490,28 @@ td input {
   margin-bottom: 16px;
 }
 
+.runbook-source-bundle {
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+.runbook-source-bundle__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.runbook-source-bundle__header span,
+.muted {
+  color: var(--text-muted);
+}
+
 .runbook-filter {
   display: grid;
   gap: 10px;

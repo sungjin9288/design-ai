@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 630 — Website Console Operator Runbook Source Bundle Detail Review (unreleased)
+
+Website Console operator runbook review now surfaces source-bundle diagnostics and strict source commands as copy-ready operator controls.
+
+### Added
+- Added a Source Bundle detail block to the Operator Runbook panel with status, workspace/MCP state, checksum digest, checksum-file counts, generated-file counts, and diagnostics totals.
+- Added copy-ready strict bundle check and strict bundle handoff command controls when those commands are present in imported `sourceBundle` metadata.
+- Added strict source commands to full and filtered operator runbook Markdown exports.
+
+### Impact
+- Company website pilots can revalidate the exact local handoff bundle before target-repo execution without opening raw JSON.
+- Operators can copy source-bundle guard commands from the same Report tab used for stage-by-stage handoff review.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 629 — Website Console Operator Runbook Source Bundle Provenance (unreleased)
 
 Website Console operator runbook review now preserves and displays source-bundle provenance from imported bundle handoff JSON.
