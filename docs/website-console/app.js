@@ -1045,6 +1045,7 @@
     var summary = runbook.stageHumanLineDisplayRowSummary || {};
     var rows = runbook.stageHumanLineDisplayRows || [];
     var filteredRows = filterRunbookRows(runbook);
+    var rowActionsDisabled = rows.length ? "" : " disabled aria-disabled=\"true\"";
     var nextLineDisabled = runbook.nextStageHumanLine ? "" : " disabled aria-disabled=\"true\"";
     return panel("Operator Runbook", "Review the verified bundle handoff stages before switching into the target website repo.", [
       "<div class=\"evidence-summary\" aria-label=\"Operator runbook summary\">",
@@ -1059,8 +1060,8 @@
       "<div class=\"button-row\" style=\"margin-bottom: 12px;\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-runbook\">Copy runbook</button>",
       "<button type=\"button\" class=\"button\" data-action=\"download-runbook\">Export runbook .md</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"copy-filtered-runbook\">Copy filtered rows</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"download-filtered-runbook\">Export filtered .md</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"copy-filtered-runbook\"" + rowActionsDisabled + ">Copy filtered rows</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"download-filtered-runbook\"" + rowActionsDisabled + ">Export filtered .md</button>",
       "<button type=\"button\" class=\"button\" data-action=\"copy-next-runbook-line\"" + nextLineDisabled + ">Copy next line</button>",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"clear-runbook\">Clear runbook</button>",
       "</div>",
@@ -2179,10 +2180,20 @@
       downloadFile("website-operator-runbook.md", buildOperatorRunbookMarkdown(), "text/markdown");
       setMessage("Operator runbook exported.");
     } else if (action === "copy-filtered-runbook") {
-      copyText(buildOperatorRunbookMarkdown({ filtered: true }), "Filtered operator runbook rows copied.");
+      var filteredCopyRunbook = appState.workspace.operatorRunbook;
+      if (filteredCopyRunbook && (filteredCopyRunbook.stageHumanLineDisplayRows || []).length) {
+        copyText(buildOperatorRunbookMarkdown({ filtered: true }), "Filtered operator runbook rows copied.");
+      } else {
+        setMessage("Filtered runbook rows unavailable.");
+      }
     } else if (action === "download-filtered-runbook") {
-      downloadFile("website-operator-runbook.filtered.md", buildOperatorRunbookMarkdown({ filtered: true }), "text/markdown");
-      setMessage("Filtered operator runbook exported.");
+      var filteredExportRunbook = appState.workspace.operatorRunbook;
+      if (filteredExportRunbook && (filteredExportRunbook.stageHumanLineDisplayRows || []).length) {
+        downloadFile("website-operator-runbook.filtered.md", buildOperatorRunbookMarkdown({ filtered: true }), "text/markdown");
+        setMessage("Filtered operator runbook exported.");
+      } else {
+        setMessage("Filtered runbook rows unavailable.");
+      }
     } else if (action === "copy-runbook-row-markdown") {
       var markdownRunbook = appState.workspace.operatorRunbook;
       var markdownRow = markdownRunbook && markdownRunbook.stageHumanLineDisplayRowByKey

@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 636 — Website Console Operator Runbook Filtered-Row Action Guard (unreleased)
+
+Website Console now guards filtered-row copy/export actions when an imported runbook has no stage rows.
+
+### Added
+- Disabled `Copy filtered rows` and `Export filtered .md` when `operatorRunbook.stageHumanLineDisplayRows` is empty.
+- Added click-handler fallbacks that report `Filtered runbook rows unavailable` instead of producing empty filtered artifacts.
+- Kept full runbook export and source-bundle Markdown/JSON export available for provenance-only reviews.
+
+### Impact
+- Provenance-only source-bundle imports no longer expose misleading filtered-row artifact actions.
+- Operators can still archive provenance while stage-specific actions remain available only for full bundle handoff runbooks.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 635 — Website Console Operator Runbook Next-Line Action Guard (unreleased)
 
 Website Console now guards the `Copy next line` action when an imported runbook has no next stage line.
