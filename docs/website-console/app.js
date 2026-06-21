@@ -408,6 +408,25 @@
     return null;
   }
 
+  function extractSourceBundleProvenancePayload(value) {
+    if (!value || typeof value !== "object") return null;
+    if (value.type === "website-improvement-source-bundle-provenance") return value.sourceBundle;
+    if (!value.siteProfile && !value.operatorRunbook && !(value.bundle && value.bundle.operatorRunbook) && value.sourceBundle) {
+      return value.sourceBundle;
+    }
+    return null;
+  }
+
+  function createSourceBundleOnlyRunbook(sourceBundle) {
+    return normalizeOperatorRunbook({
+      version: 1,
+      source: "source-bundle-provenance",
+      sourceBundle: sourceBundle,
+      stageCount: 0,
+      stageHumanLineDisplayRows: [],
+    });
+  }
+
   function normalizeImplementationEvidence(value) {
     var fallback = createDefaultWorkspace().implementationEvidence;
     var source = value && typeof value === "object" ? value : {};
@@ -2243,6 +2262,19 @@
           localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
           saveWorkspace();
           setMessage("Bundle handoff operator runbook imported. Report tab opened.");
+          return;
+        }
+        var importedSourceBundle = normalizeRunbookSourceBundle(extractSourceBundleProvenancePayload(parsed));
+        if (importedSourceBundle && !parsed.siteProfile) {
+          if (appState.workspace.operatorRunbook) {
+            appState.workspace.operatorRunbook.sourceBundle = importedSourceBundle;
+          } else {
+            appState.workspace.operatorRunbook = createSourceBundleOnlyRunbook(importedSourceBundle);
+          }
+          appState.activeTab = "report";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveWorkspace();
+          setMessage("Source bundle provenance JSON imported. Report tab opened.");
           return;
         }
         appState.workspace = normalizeWorkspace(parsed);

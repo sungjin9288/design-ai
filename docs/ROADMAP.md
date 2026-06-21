@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 633 — Website Console Source Bundle JSON Import (unreleased)
+
+Website Console import now accepts focused source-bundle provenance JSON artifacts exported from Operator Runbook review.
+
+### Added
+- Added import detection for `website-improvement-source-bundle-provenance` JSON payloads.
+- Rehydrates source-bundle provenance into the current Operator Runbook when one is already loaded.
+- Creates a provenance-only Operator Runbook when no runbook exists, so the Report tab can still review bundle identity, diagnostics, and guard commands.
+
+### Impact
+- Company website pilots can round-trip source-bundle provenance as a compact JSON artifact without replacing the whole browser-local workspace.
+- Operators can refresh source-bundle identity after regenerating or revalidating a bundle while keeping existing workspace notes, tasks, and evidence intact.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 632 — Website Console Source Bundle JSON Export (unreleased)
 
 Website Console operator runbook review now lets operators copy or export source-bundle provenance as a focused portable JSON artifact.
