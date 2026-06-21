@@ -1056,6 +1056,7 @@
       "</div>",
       renderRunbookMetadata(runbook),
       renderRunbookSourceBundleDetails(runbook),
+      renderRunbookSourceBundleWarning(runbook),
       renderRunbookProvenanceOnlyNotice(runbook, rows),
       "<div class=\"button-row\" style=\"margin-bottom: 12px;\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-runbook\">Copy runbook</button>",
@@ -1133,6 +1134,21 @@
       "</td>",
       "</tr>",
     ].join("");
+  }
+
+  function renderRunbookSourceBundleWarning(runbook) {
+    var sourceBundle = runbook.sourceBundle;
+    if (!sourceBundle) return "";
+    var failureCount = Number(sourceBundle.failureCount || 0);
+    var shouldWarn = sourceBundle.valid !== true || failureCount > 0;
+    if (!shouldWarn) return "";
+    return [
+      "<div class=\"runbook-source-bundle-warning\" role=\"alert\">",
+      "<strong>Source bundle needs revalidation</strong>",
+      "<span>Status is " + escapeHtml((sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid")) + " with " + escapeHtml(String(failureCount)) + " failures. Run the strict bundle check before target-repo execution.</span>",
+      sourceBundle.strictCheckCommand ? "<code>" + escapeHtml(sourceBundle.strictCheckCommand) + "</code>" : "",
+      "</div>",
+    ].filter(Boolean).join("");
   }
 
   function renderRunbookProvenanceOnlyNotice(runbook, rows) {

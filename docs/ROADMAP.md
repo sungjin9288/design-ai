@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 638 — Website Console Source Bundle Revalidation Warning Gate (unreleased)
+
+Website Console now surfaces invalid or failing source-bundle provenance as an explicit revalidation gate before target-repo execution.
+
+### Added
+- Added a Source Bundle warning block when imported provenance is not valid or reports bundle-check failures.
+- Shows the source-bundle status, failure count, and strict bundle-check command when available.
+- Keeps the warning visible for both full bundle handoff runbooks and provenance-only source-bundle imports.
+
+### Impact
+- Company website pilots get a clear stop signal before entering the target website repo with an invalid handoff bundle.
+- Operators can copy or rerun the strict bundle-check command without hunting through raw JSON or Markdown exports.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 637 — Website Console Operator Runbook Provenance-Only Markdown Markers (unreleased)
 
 Website Console copied/exported Operator Runbook Markdown now distinguishes provenance-only reviews from full bundle handoff runbooks.

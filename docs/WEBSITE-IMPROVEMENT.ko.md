@@ -19,7 +19,7 @@
 | Refactor Plan | finding을 실제 task, priority, Codex prompt, verification, risk로 변환 |
 | Prompt Generator | Codex/Claude에 넘길 8개 prompt template 생성 |
 | Handoff Report | 실행한 작업, 검증 결과, 남은 리스크, 다음 작업을 기록하고 Markdown report로 정리 |
-| Operator Runbook | `design-ai site <bundle-dir> --bundle-handoff --json` 결과를 import해 source-bundle provenance/detail review, focused source-bundle JSON import, provenance-only review state와 Markdown marker, copy-ready strict source command, source-bundle Markdown/JSON copy/export, task/command provenance chip, stage metric, resettable action/evidence row filter, status index, evidence progress, copy-ready stage row, row-level Markdown copy/export와 line copy, guarded filtered/full Markdown export, guarded next-line copy action을 검토 |
+| Operator Runbook | `design-ai site <bundle-dir> --bundle-handoff --json` 결과를 import해 source-bundle provenance/detail review, source-bundle revalidation warning, focused source-bundle JSON import, provenance-only review state와 Markdown marker, copy-ready strict source command, source-bundle Markdown/JSON copy/export, task/command provenance chip, stage metric, resettable action/evidence row filter, status index, evidence progress, copy-ready stage row, row-level Markdown copy/export와 line copy, guarded filtered/full Markdown export, guarded next-line copy action을 검토 |
 
 브라우저에서 기록한 `implementationEvidence`는 JSON export 뒤에도 유지됩니다. `design-ai site --json`은 evidence count를 보고하고, `--tasks`는 evidence block을 보존하며, `--report`와 `--bundle`은 실행 작업 / 검증 결과 / 남은 리스크 / 다음 작업을 handoff artifact에 반영합니다.
 
