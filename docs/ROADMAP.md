@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 635 — Website Console Operator Runbook Next-Line Action Guard (unreleased)
+
+Website Console now guards the `Copy next line` action when an imported runbook has no next stage line.
+
+### Added
+- Disabled the `Copy next line` button when `operatorRunbook.nextStageHumanLine` is unavailable.
+- Added a click-handler fallback that reports `Next runbook line unavailable` instead of copying an empty string.
+- Added a shared disabled style for Website Console buttons so disabled actions are visually clear and keyboard-safe.
+
+### Impact
+- Provenance-only source-bundle imports no longer expose a misleading next-line copy action.
+- Operators get a clearer distinction between source-bundle provenance review and full target-repo execution runbooks.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 634 — Website Console Provenance-Only Runbook Review State (unreleased)
 
 Website Console now distinguishes source-bundle provenance-only imports from full bundle handoff runbooks.

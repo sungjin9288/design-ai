@@ -1045,6 +1045,7 @@
     var summary = runbook.stageHumanLineDisplayRowSummary || {};
     var rows = runbook.stageHumanLineDisplayRows || [];
     var filteredRows = filterRunbookRows(runbook);
+    var nextLineDisabled = runbook.nextStageHumanLine ? "" : " disabled aria-disabled=\"true\"";
     return panel("Operator Runbook", "Review the verified bundle handoff stages before switching into the target website repo.", [
       "<div class=\"evidence-summary\" aria-label=\"Operator runbook summary\">",
       metric("Stages", runbook.stageCount || rows.length, (runbook.requiredStageCount || 0) + " required"),
@@ -1060,7 +1061,7 @@
       "<button type=\"button\" class=\"button\" data-action=\"download-runbook\">Export runbook .md</button>",
       "<button type=\"button\" class=\"button\" data-action=\"copy-filtered-runbook\">Copy filtered rows</button>",
       "<button type=\"button\" class=\"button\" data-action=\"download-filtered-runbook\">Export filtered .md</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"copy-next-runbook-line\">Copy next line</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"copy-next-runbook-line\"" + nextLineDisabled + ">Copy next line</button>",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"clear-runbook\">Clear runbook</button>",
       "</div>",
       rows.length ? renderRunbookStatusIndex(runbook, filteredRows.length, rows.length) : "",
@@ -2215,7 +2216,11 @@
       }
     } else if (action === "copy-next-runbook-line") {
       var runbook = appState.workspace.operatorRunbook;
-      copyText(runbook ? runbook.nextStageHumanLine : "", "Next runbook line copied.");
+      if (runbook && runbook.nextStageHumanLine) {
+        copyText(runbook.nextStageHumanLine, "Next runbook line copied.");
+      } else {
+        setMessage("Next runbook line unavailable.");
+      }
     } else if (action === "copy-runbook-source-check-command") {
       var checkRunbook = appState.workspace.operatorRunbook;
       var checkSourceBundle = checkRunbook && checkRunbook.sourceBundle;

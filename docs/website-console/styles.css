@@ -773,6 +773,11 @@ td input {
   font-weight: 750;
 }
 
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .button:hover {
   border-color: var(--border-strong);
   background: var(--surface-subtle);
