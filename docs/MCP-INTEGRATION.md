@@ -2,6 +2,15 @@
 
 design-ai is an MCP-aware system. When MCP servers are connected to your AI agent, design-ai's skills and commands invoke them directly to read from / write to external tools (Figma, Notion, GitHub, Slack, Linear).
 
+design-ai can also run as its own local stdio MCP server. Use this when you want Claude Code or Codex to call design-ai tools directly instead of asking the agent to read files manually. See [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
+
+## Two MCP modes
+
+| Mode | What connects | Use when |
+| --- | --- | --- |
+| design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; design-ai exposes route, prompt, pack, search, show, examples, check, and Website Improvement readiness tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+
 ## What MCP enables for design-ai
 
 Without MCP, design-ai produces markdown deliverables. The user manually pastes/copies them into other tools.
@@ -53,6 +62,7 @@ design-ai's per-MCP integration guides cover Tier 1 + 2.
 
 | Guide | What it covers |
 | --- | --- |
+| [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md) | Running design-ai itself as a stdio MCP server for Claude Code and Codex |
 | [`integrations/figma-mcp.md`](integrations/figma-mcp.md) | Reading variables/components, writing tokens, code-connect via MCP |
 | [`integrations/notion-mcp.md`](integrations/notion-mcp.md) | Mirror knowledge base to a Notion site, capture design decisions |
 | [`integrations/github-mcp.md`](integrations/github-mcp.md) | PR design review, issue creation, design system change tracking |
@@ -71,6 +81,9 @@ After setup, MCP tools appear in your agent's available tools. design-ai's skill
 ### Claude Code
 
 ```bash
+# Add design-ai itself as a local stdio MCP server
+claude mcp add --transport stdio design-ai -- design-ai mcp
+
 # Install Figma MCP (example)
 claude mcp add figma -- node /path/to/figma-mcp-server
 # Auth flow opens browser
@@ -78,17 +91,18 @@ claude mcp add figma -- node /path/to/figma-mcp-server
 
 ### Codex CLI
 
-Edit `~/.codex/mcp.json`:
+Use the CLI:
 
-```jsonc
-{
-  "mcpServers": {
-    "figma": {
-      "command": "node",
-      "args": ["/path/to/figma-mcp-server"]
-    }
-  }
-}
+```bash
+codex mcp add design-ai -- design-ai mcp
+```
+
+Or edit `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.design-ai]
+command = "design-ai"
+args = ["mcp"]
 ```
 
 ### Cursor

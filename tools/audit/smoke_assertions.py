@@ -66,6 +66,7 @@ EXPECTED_HELP_TOPICS = (
     "learn",
     "workspace",
     "site",
+    "mcp",
     "version",
     "help",
 )
@@ -110,6 +111,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
     "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+    "mcp": "design-ai mcp",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
 }
@@ -277,6 +279,16 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "--task id",
         "--out file",
     ),
+    "mcp": (
+        "Usage:",
+        "design-ai mcp",
+        "stdio MCP server",
+        "Claude Code:",
+        "claude mcp add --transport stdio design-ai -- design-ai mcp",
+        "Codex:",
+        "codex mcp add design-ai -- design-ai mcp",
+        "node cli/bin/design-ai-mcp.mjs",
+    ),
     "version": ("Usage:", "design-ai version [--json]"),
     "help": ("Usage:", "design-ai help [command]", "design-ai help --json"),
 }
@@ -306,6 +318,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "site <bundle-dir> --bundle-compare",
     "site <bundle-dir> --bundle-handoff",
     "site <bundle-dir> --bundle-repair",
+    "mcp",
     "Environment overrides:",
     "Quickstart:",
     "Docs:",
