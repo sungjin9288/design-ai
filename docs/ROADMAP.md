@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 655 — Website Console Operator Runbook Metadata Source Pill (unreleased)
+
+Website Console Operator Runbook metadata now shows the current source marker in the top pill row.
+
+### Added
+- Added a `Source` pill to the Operator Runbook metadata strip.
+- Uses the normalized Operator Runbook source with a `bundle-handoff` fallback for legacy/full runbooks.
+
+### Impact
+- Operators can identify full handoff, focused provenance, or gate-only import state before scanning the Source Bundle detail table.
+- The visible UI now matches source markers already present in runbook Markdown, source-bundle Markdown, and compact JSON exports.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 654 — Website Console Source Bundle Detail Source Marker (unreleased)
 
 Website Console Source Bundle detail review now shows the Operator Runbook source marker in the browser table.

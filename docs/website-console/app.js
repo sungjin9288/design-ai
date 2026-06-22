@@ -1095,6 +1095,7 @@
     var gateRequired = runbook.sourceBundle && sourceBundleNeedsRevalidation(runbook.sourceBundle);
     return [
       "<div class=\"graph-boundaries\" aria-label=\"Operator runbook metadata\">",
+      "<span class=\"pill\">Source: " + escapeHtml(runbook.source || "bundle-handoff") + "</span>",
       "<span class=\"pill\">Task: " + escapeHtml(runbook.effectiveTaskId || "not specified") + "</span>",
       "<span class=\"pill\">Strict command: " + escapeHtml(runbook.effectiveStrictTaskCommandKey || "not specified") + "</span>",
       "<span class=\"pill\">Command stages: " + escapeHtml(String(runbook.commandStageCount || 0)) + "</span>",
