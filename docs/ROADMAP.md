@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 646 — Website Console Source Bundle Revalidation Gate JSON Export (unreleased)
+
+Website Console now lets operators copy or export only the source-bundle revalidation gate as a compact JSON artifact.
+
+### Added
+- Added `Copy gate` and `Export gate` controls to the Source Bundle `Revalidation gate` detail row.
+- Added a dedicated `website-improvement-source-bundle-revalidation-gate` JSON payload with source-bundle identity and `revalidationGate` metadata.
+- Added guarded click handlers so unavailable gate state reports a clear message instead of exporting an empty artifact.
+
+### Impact
+- Automation and wrapper layers can consume a small gate-only artifact without receiving the full source-bundle provenance payload.
+- Company website pilots can pass the strict-check block reason between local tools before target-repo execution.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 645 — Website Console Operator Runbook Gate Metadata Badge (unreleased)
 
 Website Console Operator Runbook metadata now shows source-bundle revalidation state before the detail table.

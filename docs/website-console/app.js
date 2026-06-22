@@ -1146,9 +1146,10 @@
     return [
       "<tr>",
       "<th scope=\"row\">Revalidation gate</th>",
-      "<td>",
+      "<td class=\"runbook-line-cell\">",
       "<span class=\"badge badge--" + escapeAttr(tone) + "\">" + escapeHtml(label) + "</span>",
       "<span class=\"runbook-revalidation-detail\">" + escapeHtml(formatSourceBundleRevalidationSummary(sourceBundle)) + "</span>",
+      "<div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-source-revalidation-gate\">Copy gate</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-source-revalidation-gate\">Export gate</button></div>",
       "</td>",
       "</tr>",
     ].join("");
@@ -2012,6 +2013,20 @@
     }, null, 2);
   }
 
+  function buildSourceBundleRevalidationGateJson(sourceBundle) {
+    return JSON.stringify({
+      type: "website-improvement-source-bundle-revalidation-gate",
+      version: 1,
+      sourceBundle: sourceBundle ? {
+        directory: sourceBundle.directory || "",
+        checksumBundleDigest: sourceBundle.checksumBundleDigest || "",
+        status: sourceBundle.status || "unknown",
+        valid: sourceBundle.valid === true,
+      } : null,
+      revalidationGate: buildSourceBundleRevalidationGate(sourceBundle),
+    }, null, 2);
+  }
+
   function sourceBundleMarkdownRow(label, value) {
     return "- " + label + ": " + (value || "not recorded");
   }
@@ -2361,6 +2376,23 @@
       var exportSourceBundleJsonRunbook = appState.workspace.operatorRunbook;
       downloadFile("website-source-bundle-provenance.json", buildSourceBundleJson(exportSourceBundleJsonRunbook && exportSourceBundleJsonRunbook.sourceBundle), "application/json");
       setMessage("Source bundle JSON exported.");
+    } else if (action === "copy-runbook-source-revalidation-gate") {
+      var sourceBundleGateRunbook = appState.workspace.operatorRunbook;
+      var sourceBundleGate = sourceBundleGateRunbook && sourceBundleGateRunbook.sourceBundle;
+      if (sourceBundleGate) {
+        copyText(buildSourceBundleRevalidationGateJson(sourceBundleGate), "Source bundle gate JSON copied.");
+      } else {
+        setMessage("Source bundle gate unavailable.");
+      }
+    } else if (action === "download-runbook-source-revalidation-gate") {
+      var exportSourceBundleGateRunbook = appState.workspace.operatorRunbook;
+      var exportSourceBundleGate = exportSourceBundleGateRunbook && exportSourceBundleGateRunbook.sourceBundle;
+      if (exportSourceBundleGate) {
+        downloadFile("website-source-bundle-revalidation-gate.json", buildSourceBundleRevalidationGateJson(exportSourceBundleGate), "application/json");
+        setMessage("Source bundle gate JSON exported.");
+      } else {
+        setMessage("Source bundle gate unavailable.");
+      }
     } else if (action === "clear-runbook") {
       appState.workspace.operatorRunbook = null;
       appState.runbookActionFilter = "all";
