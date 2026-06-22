@@ -2070,18 +2070,25 @@
         valid: false,
         failureCount: 0,
         strictCheckCommand: "",
+        strictCheckCommandAvailable: false,
+        reason: "source-bundle-not-provided",
         message: "No source bundle provenance recorded.",
       };
     }
     var failureCount = Number(sourceBundle.failureCount || 0);
     var required = sourceBundleNeedsRevalidation(sourceBundle);
     var status = (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid");
+    var strictCheckCommandAvailable = Boolean(sourceBundle.strictCheckCommand);
     return {
       required: required,
       status: status,
       valid: sourceBundle.valid === true,
       failureCount: failureCount,
       strictCheckCommand: String(sourceBundle.strictCheckCommand || ""),
+      strictCheckCommandAvailable: strictCheckCommandAvailable,
+      reason: required
+        ? strictCheckCommandAvailable ? "revalidation-required" : "revalidation-required-command-missing"
+        : "revalidation-not-required",
       message: required
         ? "Run the strict bundle check before target-repo execution."
         : "Source bundle revalidation is not required.",

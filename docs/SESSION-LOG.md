@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 644 (unreleased)** — Added Website Console source-bundle JSON gate reason metadata.
 - **Phase 643 (unreleased)** — Added Website Console Source Bundle revalidation gate badges.
 - **Phase 642 (unreleased)** — Added Website Console Source Bundle revalidation gate detail row.
 - **Phase 641 (unreleased)** — Added Website Console source-bundle strict command copy guards.

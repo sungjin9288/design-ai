@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 644 — Website Console Source Bundle JSON Gate Reason Metadata (unreleased)
+
+Website Console source-bundle JSON exports now include explicit revalidation reason and strict-check command availability metadata.
+
+### Added
+- Added `revalidationGate.strictCheckCommandAvailable` to focused source-bundle JSON copy/export payloads.
+- Added `revalidationGate.reason` values for missing provenance, required revalidation, missing strict-check command, and not-required state.
+- Kept the existing `sourceBundle` payload and existing `revalidationGate.required/status/message` fields intact for backward compatibility.
+
+### Impact
+- Automation and wrapper layers can distinguish missing strict-check commands from ready strict-check gates without parsing command strings.
+- Company website pilots get a clearer machine-readable reason when compact provenance artifacts block target-repo execution.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 643 — Website Console Source Bundle Revalidation Gate Badges (unreleased)
 
 Website Console Source Bundle detail review now uses badges for revalidation gate state.
