@@ -1121,6 +1121,7 @@
       "<table>",
       "<caption class=\"sr-only\">Source bundle provenance details</caption>",
       "<tbody>",
+      sourceBundleRow("Source", runbook.source || "source-bundle-provenance"),
       sourceBundleRow("Status", (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid")),
       sourceBundleRow("Workspace", sourceBundle.workspaceStatus || "not recorded"),
       sourceBundleRow("MCP", [sourceBundle.mcpStatus, sourceBundle.mcpProbeStatus].filter(Boolean).join(" / ") || "not recorded"),

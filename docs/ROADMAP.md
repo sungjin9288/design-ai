@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 654 — Website Console Source Bundle Detail Source Marker (unreleased)
+
+Website Console Source Bundle detail review now shows the Operator Runbook source marker in the browser table.
+
+### Added
+- Added a `Source` row to the Source Bundle provenance detail table.
+- Uses the current Operator Runbook source with a `source-bundle-provenance` fallback so full handoff, focused provenance, and gate-only import states remain visible in the UI.
+
+### Impact
+- Operators can confirm provenance directly in the browser without opening Markdown or JSON exports.
+- The Source Bundle detail table now matches the source marker convention used by compact JSON and focused Markdown artifacts.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 653 — Website Console Source Bundle Markdown Source Marker (unreleased)
 
 Website Console focused source-bundle Markdown exports now include the Operator Runbook source marker.
