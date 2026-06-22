@@ -2003,11 +2003,12 @@
     return "No display-ready rows included.";
   }
 
-  function buildSourceBundleMarkdown(sourceBundle) {
+  function buildSourceBundleMarkdown(sourceBundle, source) {
     if (!sourceBundle) return "No source bundle provenance recorded.";
     return [
       "# Website improvement source bundle provenance",
       "",
+      sourceBundleMarkdownRow("Source", source || "source-bundle-provenance"),
       sourceBundleMarkdownRow("Directory", sourceBundle.directory),
       sourceBundleMarkdownRow("Source workspace", sourceBundle.sourceWorkspace),
       sourceBundleMarkdownRow("Site name", sourceBundle.siteName),
@@ -2396,10 +2397,10 @@
       }
     } else if (action === "copy-runbook-source-bundle") {
       var sourceBundleRunbook = appState.workspace.operatorRunbook;
-      copyText(buildSourceBundleMarkdown(sourceBundleRunbook && sourceBundleRunbook.sourceBundle), "Source bundle Markdown copied.");
+      copyText(buildSourceBundleMarkdown(sourceBundleRunbook && sourceBundleRunbook.sourceBundle, sourceBundleRunbook && sourceBundleRunbook.source), "Source bundle Markdown copied.");
     } else if (action === "download-runbook-source-bundle") {
       var exportSourceBundleRunbook = appState.workspace.operatorRunbook;
-      downloadFile("website-source-bundle-provenance.md", buildSourceBundleMarkdown(exportSourceBundleRunbook && exportSourceBundleRunbook.sourceBundle), "text/markdown");
+      downloadFile("website-source-bundle-provenance.md", buildSourceBundleMarkdown(exportSourceBundleRunbook && exportSourceBundleRunbook.sourceBundle, exportSourceBundleRunbook && exportSourceBundleRunbook.source), "text/markdown");
       setMessage("Source bundle Markdown exported.");
     } else if (action === "copy-runbook-source-bundle-json") {
       var sourceBundleJsonRunbook = appState.workspace.operatorRunbook;
