@@ -1,0 +1,56 @@
+$ python3 -B tools/audit/link-check.py
+Checked 490 files
+
+43 broken links:
+
+
+_portfolio_export/design_ai_portfolio_pack/README.md:
+  line 76: docs/DISTRIBUTION.md
+  line 82: docs/integrations/codex-walkthrough.md
+  line 83: docs/integrations/cursor-walkthrough.md
+  line 84: docs/integrations/aider-walkthrough.md
+  line 85: docs/integrations/sdk-walkthrough.md
+  line 86: docs/integrations/vscode-walkthrough.md
+  line 89: docs/USING.md
+  line 171: docs/QUICKSTART.md
+  line 211: docs/PRODUCT-READINESS.md
+  line 213: docs/website-console/index.html
+  line 229: docs/CONTRIBUTING.md
+  line 258: CHANGELOG.md
+
+_portfolio_export/design_ai_portfolio_pack/evidence/output-artifacts/landing-audit-pack.md:
+  line 2318: ../knowledge/patterns/report-design.md
+  line 2322: ../skills/ux-audit/PLAYBOOK.md
+  line 2323: ../skills/design-system-qa/PLAYBOOK.md
+  line 2324: ../knowledge/patterns/report-design.md
+  line 2325: ../knowledge/i18n/korean-document-style.md
+  line 2346: ../../knowledge/colors/color-theory.md
+  line 2384: ../../knowledge/colors/color-theory.md
+  line 2411: ../../knowledge/a11y/contrast.md
+  line 2416: ../../knowledge/i18n/korean-typography.md
+  line 2519: ../../knowledge/i18n/korean-typography.md
+  line 2522: ../../knowledge/conversational/korean-voice-conventions.md
+  line 2525: ../component-form-control.md
+  line 2615: ../component-card-content.md
+  line 2616: ../component-card-actions.md
+  line 2617: ../component-list-item.md
+  line 2618: ../component-dialog-title.md
+  line 2619: ../component-dialog-content.md
+  line 2620: ../component-dialog-actions.md
+  line 2633: ../../knowledge/patterns/form-design.md
+
+evidence/output-artifacts/landing-audit-pack.md:
+  line 2318: ../knowledge/patterns/report-design.md
+  line 2322: ../skills/ux-audit/PLAYBOOK.md
+  line 2323: ../skills/design-system-qa/PLAYBOOK.md
+  line 2324: ../knowledge/patterns/report-design.md
+  line 2325: ../knowledge/i18n/korean-document-style.md
+  line 2525: ../component-form-control.md
+  line 2615: ../component-card-content.md
+  line 2616: ../component-card-actions.md
+  line 2617: ../component-list-item.md
+  line 2618: ../component-dialog-title.md
+  line 2619: ../component-dialog-content.md
+  line 2620: ../component-dialog-actions.md
+
+[exit_code] 1

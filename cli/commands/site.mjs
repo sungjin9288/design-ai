@@ -1,9 +1,12 @@
 // `design-ai site` — validate Website Improvement Console exports and generate handoff artifacts.
 
+import { readFileSync } from "node:fs";
+
 import {
   buildSiteHandoffReport,
   buildSiteHandoffBundle,
   buildSiteInitNextActionsReport,
+  buildSiteIntakeNextActionsReport,
   buildSiteIntakeTemplateMarkdown,
   buildSiteBundleCompareReport,
   buildSiteBundleCheckReport,
@@ -21,6 +24,7 @@ import {
   buildSiteWorkflowGraph,
   analyzeSiteWorkspace,
   createSiteWorkspaceFromInitOptions,
+  createSiteWorkspaceFromIntakeMarkdown,
   createSampleSiteWorkspace,
   formatSiteJson,
   formatSiteIntakeTemplateJson,
@@ -53,7 +57,8 @@ function printHelp() {
   console.log("        design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]");
   console.log("        design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]");
-  console.log("        design-ai site --intake-template [--json] [--out file] [--force]");
+  console.log("        design-ai site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] [--strict] [--force]");
+  console.log("        design-ai site --intake-template [--language en|ko] [--json] [--out file] [--force]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]");
@@ -64,7 +69,7 @@ function printHelp() {
   console.log("        design-ai site <workspace.json> --bundle --out dir [--strict] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-compare other-bundle-dir [--strict] [--json] [--out file] [--force]");
-  console.log("        design-ai site <bundle-dir> --bundle-handoff [--strict] [--json] [--out file] [--force]");
+  console.log("        design-ai site <bundle-dir> --bundle-handoff [--task id-or-number] [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <bundle-dir> --bundle-repair [--yes] [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --report [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --prompts [--out file] [--force]");
@@ -95,8 +100,12 @@ function printHelp() {
   console.log("  --flow text Add a key user flow for --init; repeatable");
   console.log("  --viewport kind");
   console.log("              Add a viewport for --init: desktop, tablet, mobile; repeatable");
+  console.log("  --from-intake file|--stdin");
+  console.log("              Generate a workspace, task-ready workspace, next-actions report, or handoff bundle from a filled intake Markdown file or stdin");
   console.log("  --intake-template");
   console.log("              Emit a blank company website intake Markdown template before --init or --bundle");
+  console.log("  --language code");
+  console.log("              With --intake-template, emit en or ko template content; default: en");
   console.log("  --sample    Emit a valid sample Website Improvement workspace JSON");
   console.log("  --prompt-list");
   console.log("              List Website Improvement prompt template ids and intended use");
@@ -127,7 +136,7 @@ function printHelp() {
   console.log("  --prompts   Generate a Markdown bundle of Codex and Claude prompts");
   console.log("  --prompt id Generate one Markdown prompt template");
   console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
-  console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation");
+  console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation or --bundle-handoff");
   console.log("  --out file  Write --json, --init, --intake-template, --sample, --prompt-list, --mcp-check, --mcp-plan, --next-actions, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --report, --prompts, or --prompt output to a file or directory");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
@@ -135,7 +144,17 @@ function printHelp() {
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --page / --page /pricing --flow \"Visitor compares plans and starts signup\" --out website-workspace.json");
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --next-actions --out website-next-actions.md");
   console.log("  design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --bundle --out website-handoff-bundle");
+  console.log("  design-ai site --from-intake company-website-intake.ko.md --out website-workspace.json");
+  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --json");
+  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force");
+  console.log("  design-ai site --from-intake company-website-intake.ko.md --next-actions --out website-next-actions.md");
+  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force");
+  console.log("  design-ai site --from-intake company-website-intake.ko.md --tasks --out website-workspace.tasks.json");
+  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force");
+  console.log("  design-ai site --from-intake company-website-intake.ko.md --bundle --tasks --out website-handoff-bundle");
+  console.log("  cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle");
   console.log("  design-ai site --intake-template --out company-website-intake.md");
+  console.log("  design-ai site --intake-template --language ko --out company-website-intake.ko.md");
   console.log("  design-ai site --sample --out website-workspace.json");
   console.log("  design-ai site --prompt-list --json");
   console.log("  design-ai site website-workspace.json --mcp-check --json");
@@ -152,6 +171,7 @@ function printHelp() {
   console.log("  design-ai site website-handoff-bundle --bundle-check --json");
   console.log("  design-ai site website-handoff-bundle --bundle-compare website-handoff-bundle.previous --json");
   console.log("  design-ai site website-handoff-bundle --bundle-handoff --out target-repo-prompt.md");
+  console.log("  design-ai site website-handoff-bundle --bundle-handoff --task task-accessibility --out target-repo-task-prompt.md");
   console.log("  design-ai site website-handoff-bundle --bundle-repair --json");
   console.log("  design-ai site website-handoff-bundle --bundle-repair --json --out bundle-repair-preview.json");
   console.log("  design-ai site website-handoff-bundle --bundle-repair --yes --json");
@@ -265,8 +285,58 @@ export async function runSite(args) {
     return;
   }
 
+  if (parsed.fromIntake) {
+    const intakeSource = parsed.stdin ? "--stdin" : parsed.fromIntakePath;
+    const markdown = parsed.stdin ? readFileSync(0, "utf8") : readFileSync(parsed.fromIntakePath, "utf8");
+    const workspace = createSiteWorkspaceFromIntakeMarkdown(markdown, { filePath: intakeSource });
+    let content = `${JSON.stringify(workspace, null, 2)}\n`;
+    let status = "pass";
+    if (parsed.bundle) {
+      const { summary } = analyzeSiteWorkspace(workspace, { filePath: "website-workspace.json" });
+      const bundle = buildSiteHandoffBundle(workspace, summary);
+      status = bundle.status;
+      const written = writeOutputFiles({
+        outPath: parsed.outPath,
+        files: bundle.files,
+        force: parsed.force,
+      });
+      success(`Wrote Website Improvement handoff bundle to ${written.directory} (${written.files.length} files)`);
+    } else if (parsed.nextActions) {
+      const { summary } = analyzeSiteWorkspace(workspace, { filePath: "website-workspace.json" });
+      const nextActionsReport = buildSiteIntakeNextActionsReport(workspace, summary, {
+        intakePath: intakeSource,
+        stdin: parsed.stdin,
+        workspacePath: "website-workspace.json",
+      });
+      status = nextActionsReport.status;
+      content = `${parsed.json ? formatSiteNextActionsJson(nextActionsReport) : formatSiteNextActionsHuman(nextActionsReport)}\n`;
+    } else if (parsed.tasks) {
+      const taskWorkspace = generateSiteRefactorTasks(workspace).workspace;
+      const { summary } = analyzeSiteWorkspace(taskWorkspace, { filePath: "website-workspace.tasks.json" });
+      status = summary.status;
+      content = `${JSON.stringify(taskWorkspace, null, 2)}\n`;
+    }
+    if (parsed.bundle) {
+      // Bundle output writes multiple files above.
+    } else if (parsed.outPath) {
+      const written = writeOutputFile({
+        outPath: parsed.outPath,
+        content,
+        force: parsed.force,
+      });
+      success(`Wrote ${written}`);
+    } else {
+      console.log(content.trimEnd());
+    }
+    if (shouldFail({ status }, parsed.strict)) {
+      process.exitCode = 1;
+    }
+    return;
+  }
+
   if (parsed.intakeTemplate) {
-    const content = `${parsed.json ? formatSiteIntakeTemplateJson() : buildSiteIntakeTemplateMarkdown()}\n`;
+    const templateOptions = { language: parsed.language };
+    const content = `${parsed.json ? formatSiteIntakeTemplateJson(templateOptions) : buildSiteIntakeTemplateMarkdown(templateOptions)}\n`;
     if (parsed.outPath) {
       const written = writeOutputFile({
         outPath: parsed.outPath,
@@ -362,6 +432,7 @@ export async function runSite(args) {
   if (parsed.bundleHandoff) {
     const handoffReport = buildSiteBundleHandoffReport({
       target: parsed.target,
+      taskSelector: parsed.taskSelector,
     });
     const content = `${parsed.json ? formatSiteBundleHandoffJson(handoffReport) : formatSiteBundleHandoffHuman(handoffReport)}\n`;
     if (parsed.outPath) {

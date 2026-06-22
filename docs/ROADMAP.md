@@ -1,5 +1,2409 @@
 # Roadmap
 
+## Phase 661 — Website Console Revalidation Gate JSON Action Labels (unreleased)
+
+Website Console revalidation gate action buttons now identify that they produce compact gate JSON.
+
+### Added
+- Renamed the Source Bundle revalidation gate row actions from generic gate labels to gate JSON labels.
+- Kept action ids and generated gate JSON payloads unchanged.
+
+### Impact
+- Operators can distinguish focused provenance JSON from compact revalidation gate JSON before copying or exporting.
+- The change improves UI clarity without changing local state, export payloads, or target-repo handoff behavior.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 660 — Website Console Source Bundle Artifact Action Labels (unreleased)
+
+Website Console Source Bundle action buttons now identify whether they produce Markdown or provenance JSON.
+
+### Added
+- Renamed Source Bundle header actions from generic bundle/JSON labels to artifact-specific Markdown and provenance JSON labels.
+- Kept action ids and generated artifact formats unchanged.
+
+### Impact
+- Operators can distinguish source-bundle Markdown, focused provenance JSON, and gate JSON workflows more quickly before copying or exporting.
+- The change improves UI clarity without changing local state, export payloads, or target-repo handoff behavior.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 659 — Website Console Source Bundle Source Copy Action (unreleased)
+
+Website Console Source Bundle detail review now lets operators copy the current runbook source marker directly.
+
+### Added
+- Added a copy-ready `Source` row in the Source Bundle provenance detail table.
+- Added a `copy-runbook-source-marker` action that copies the normalized Operator Runbook source with a provenance fallback.
+
+### Impact
+- Operators can pass source marker evidence to follow-up notes, QA logs, or wrapper tools without copying a larger Markdown/JSON artifact.
+- The source marker workflow now supports scan, export, import, and single-value copy paths.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 658 — Website Console Source-Aware Empty Runbook Markdown (unreleased)
+
+Website Console provenance-only Operator Runbook Markdown now keeps the source marker in the empty stage message.
+
+### Added
+- Added source-aware text to the provenance-only empty `Stages` section.
+- Keeps the existing filtered-empty message unchanged.
+
+### Impact
+- Markdown snippets that include only the `Stages` section still identify whether the artifact came from focused provenance or gate-only import state.
+- Source marker consistency now covers metadata, notices, detail rows, compact JSON, focused Markdown, and empty runbook Markdown.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 657 — Website Console Focused Provenance Import Source Refresh (unreleased)
+
+Website Console focused source-bundle provenance imports now refresh provenance-only runbook source markers.
+
+### Added
+- Updates existing provenance-only Operator Runbooks to `source-bundle-provenance` when a focused source-bundle provenance JSON artifact is imported.
+- Keeps full bundle handoff runbook sources unchanged when stage rows already exist.
+
+### Impact
+- Importing focused provenance JSON after a gate-only JSON review no longer leaves stale `source-bundle-revalidation-gate` metadata in the browser UI.
+- Source marker behavior is now symmetric between gate-only import and focused provenance import for provenance-only reviews.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 656 — Website Console Provenance-Only Notice Source Marker (unreleased)
+
+Website Console provenance-only Operator Runbook notices now show the source marker inline.
+
+### Added
+- Added a `Source` line to the provenance-only notice block.
+- Uses the current Operator Runbook source with a `source-bundle-provenance` fallback for focused source-bundle imports.
+
+### Impact
+- Gate-only and focused provenance imports remain identifiable even when an operator screenshots or copies only the provenance-only notice area.
+- The notice now matches the source marker convention used by metadata pills, detail tables, Markdown, and JSON exports.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 655 — Website Console Operator Runbook Metadata Source Pill (unreleased)
+
+Website Console Operator Runbook metadata now shows the current source marker in the top pill row.
+
+### Added
+- Added a `Source` pill to the Operator Runbook metadata strip.
+- Uses the normalized Operator Runbook source with a `bundle-handoff` fallback for legacy/full runbooks.
+
+### Impact
+- Operators can identify full handoff, focused provenance, or gate-only import state before scanning the Source Bundle detail table.
+- The visible UI now matches source markers already present in runbook Markdown, source-bundle Markdown, and compact JSON exports.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 654 — Website Console Source Bundle Detail Source Marker (unreleased)
+
+Website Console Source Bundle detail review now shows the Operator Runbook source marker in the browser table.
+
+### Added
+- Added a `Source` row to the Source Bundle provenance detail table.
+- Uses the current Operator Runbook source with a `source-bundle-provenance` fallback so full handoff, focused provenance, and gate-only import states remain visible in the UI.
+
+### Impact
+- Operators can confirm provenance directly in the browser without opening Markdown or JSON exports.
+- The Source Bundle detail table now matches the source marker convention used by compact JSON and focused Markdown artifacts.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 653 — Website Console Source Bundle Markdown Source Marker (unreleased)
+
+Website Console focused source-bundle Markdown exports now include the Operator Runbook source marker.
+
+### Added
+- Added a `Source` row to focused source-bundle Markdown copy/export output.
+- Passes the current Operator Runbook source into source-bundle Markdown generation so full handoff, focused provenance, and gate-only import states remain distinguishable.
+
+### Impact
+- Markdown-only handoffs preserve the same provenance signal already available in JSON payloads and Operator Runbook metadata.
+- Operators can inspect archived source-bundle Markdown and tell whether it came from `bundle-handoff`, `source-bundle-provenance`, or `source-bundle-revalidation-gate` state.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 652 — Website Console Focused Provenance JSON Source Marker Export (unreleased)
+
+Website Console focused source-bundle provenance JSON exports now include an explicit source marker.
+
+### Added
+- Added top-level `source: "source-bundle-provenance"` to `website-improvement-source-bundle-provenance` JSON copy/export payloads.
+- Keeps the existing payload `type`, `sourceBundle`, and `revalidationGate` contract intact for backward-compatible import.
+
+### Impact
+- Operators and wrapper automation can distinguish focused source-bundle provenance payloads from gate-only payloads using the same source-marker convention.
+- Compact source-bundle JSON export/import now uses consistent provenance language across payload, browser state, and Markdown metadata.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 651 — Website Console Gate-Only JSON Source Marker Export (unreleased)
+
+Website Console gate-only revalidation JSON exports now include the same source marker that imports store in Operator Runbook state.
+
+### Added
+- Added top-level `source: "source-bundle-revalidation-gate"` to `website-improvement-source-bundle-revalidation-gate` JSON copy/export payloads.
+- Keeps the existing payload `type`, `sourceBundle`, and `revalidationGate` contract intact for backward-compatible import.
+
+### Impact
+- Operators and wrapper automation can identify compact gate-only payloads by source marker without relying only on `type`.
+- Gate-only JSON export/import now carries consistent provenance language across payload, browser state, and Markdown metadata.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 650 — Website Console Gate-Only Import Source Marker (unreleased)
+
+Website Console gate-only revalidation JSON imports now preserve a distinct Operator Runbook source marker.
+
+### Added
+- Added `source-bundle-revalidation-gate` as the provenance-only source for imported `website-improvement-source-bundle-revalidation-gate` artifacts.
+- Updates existing provenance-only runbooks to the gate-only source marker when a compact gate artifact is imported.
+- Keeps full bundle handoff runbook sources unchanged when stage rows already exist.
+- Clarifies the provenance-only notice for gate-only imports.
+
+### Impact
+- Operators can distinguish compact gate-only imports from focused source-bundle provenance imports in UI state and Markdown exports.
+- Company website pilots can track whether a Report tab review came from a full handoff, focused provenance JSON, or compact revalidation gate JSON.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 649 — Website Console Gate-Only JSON Diagnostic Count Preservation (unreleased)
+
+Website Console gate-only revalidation JSON now preserves warning and issue counts during compact export/import roundtrips.
+
+### Added
+- Added `revalidationGate.warningCount` to gate-only JSON output.
+- Added `revalidationGate.issueCount` to gate-only JSON output.
+- Rehydrates warning and issue counts during gate-only JSON import so the Source Bundle diagnostics row stays consistent with the compact gate artifact.
+
+### Impact
+- Operators can import gate-only artifacts without losing non-failing diagnostic totals in the Source Bundle detail table.
+- Automation and wrapper layers keep a compact revalidation payload while preserving enough diagnostic context for review.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 648 — Website Console Gate-Only JSON Source Context Preservation (unreleased)
+
+Website Console gate-only revalidation JSON now preserves source workspace and site name context during export/import roundtrips.
+
+### Added
+- Added `sourceBundle.sourceWorkspace` to `website-improvement-source-bundle-revalidation-gate` JSON exports.
+- Added `sourceBundle.siteName` to the same compact gate-only JSON exports.
+- Rehydrates those fields during gate-only JSON import so provenance-only review keeps source context.
+
+### Impact
+- Operators can inspect compact gate artifacts without losing the source workspace or site name in the Source Bundle detail table.
+- Automation and wrapper layers can keep a small gate-only payload while retaining enough human context for review.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 647 — Website Console Source Bundle Revalidation Gate JSON Import (unreleased)
+
+Website Console now imports compact source-bundle revalidation gate JSON artifacts back into Operator Runbook review.
+
+### Added
+- Added import detection for `website-improvement-source-bundle-revalidation-gate` JSON payloads.
+- Rehydrates minimal source-bundle provenance from gate identity, normalized status, validity, failure count, and strict check command metadata.
+- Opens the Report tab with provenance-only Operator Runbook review when no full runbook is already loaded.
+
+### Impact
+- Operators can round-trip gate-only artifacts without exporting or importing full source-bundle provenance.
+- Automation and wrapper layers can hand a compact gate artifact back to the console for visual review before target-repo execution.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 646 — Website Console Source Bundle Revalidation Gate JSON Export (unreleased)
+
+Website Console now lets operators copy or export only the source-bundle revalidation gate as a compact JSON artifact.
+
+### Added
+- Added `Copy gate` and `Export gate` controls to the Source Bundle `Revalidation gate` detail row.
+- Added a dedicated `website-improvement-source-bundle-revalidation-gate` JSON payload with source-bundle identity and `revalidationGate` metadata.
+- Added guarded click handlers so unavailable gate state reports a clear message instead of exporting an empty artifact.
+
+### Impact
+- Automation and wrapper layers can consume a small gate-only artifact without receiving the full source-bundle provenance payload.
+- Company website pilots can pass the strict-check block reason between local tools before target-repo execution.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 645 — Website Console Operator Runbook Gate Metadata Badge (unreleased)
+
+Website Console Operator Runbook metadata now shows source-bundle revalidation state before the detail table.
+
+### Added
+- Added a `Gate: not required` pass badge when imported source-bundle provenance is valid and failure-free.
+- Added a `Gate: required` warn badge when imported source-bundle provenance is invalid or has bundle-check failures.
+- Reused the existing source-bundle revalidation predicate so metadata badges, detail rows, warning blocks, Markdown, and JSON gate metadata stay aligned.
+
+### Impact
+- Operators can see source-bundle gate state immediately in the runbook metadata strip.
+- Provenance-only imports and full bundle handoff imports now expose the same first-scan revalidation signal.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 644 — Website Console Source Bundle JSON Gate Reason Metadata (unreleased)
+
+Website Console source-bundle JSON exports now include explicit revalidation reason and strict-check command availability metadata.
+
+### Added
+- Added `revalidationGate.strictCheckCommandAvailable` to focused source-bundle JSON copy/export payloads.
+- Added `revalidationGate.reason` values for missing provenance, required revalidation, missing strict-check command, and not-required state.
+- Kept the existing `sourceBundle` payload and existing `revalidationGate.required/status/message` fields intact for backward compatibility.
+
+### Impact
+- Automation and wrapper layers can distinguish missing strict-check commands from ready strict-check gates without parsing command strings.
+- Company website pilots get a clearer machine-readable reason when compact provenance artifacts block target-repo execution.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 643 — Website Console Source Bundle Revalidation Gate Badges (unreleased)
+
+Website Console Source Bundle detail review now uses badges for revalidation gate state.
+
+### Added
+- Added a `pass` badge for source bundles where strict revalidation is not required.
+- Added a `warn` badge for source bundles where strict revalidation is required.
+- Added muted helper text beside the badge so the table remains scannable while preserving the actionable gate summary.
+
+### Impact
+- Operators can distinguish clear versus blocked source-bundle gate state without reading a long text cell.
+- The detail table now aligns with the existing dense dashboard badge language used across readiness, status, and runbook surfaces.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 642 — Website Console Source Bundle Revalidation Detail Row (unreleased)
+
+Website Console Source Bundle detail review now shows revalidation gate state in the provenance table.
+
+### Added
+- Added a `Revalidation gate` row to the Operator Runbook Source Bundle detail table.
+- Shows `not required` for valid/failure-free source bundles.
+- Shows a required strict-check summary when imported provenance is invalid, failing, or missing the strict check command.
+
+### Impact
+- Operators can confirm normal source-bundle gate state without relying on the absence of a warning block.
+- Incomplete provenance still surfaces a clear strict-check requirement in the same detail table as diagnostics and commands.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 641 — Website Console Source Bundle Strict Command Copy Guards (unreleased)
+
+Website Console now guards source-bundle strict command copy actions when imported provenance lacks command strings.
+
+### Added
+- Added click-handler guards for strict source-bundle check command copy.
+- Added click-handler guards for strict source-bundle handoff command copy.
+- Reports an unavailable-command message instead of copying an empty string and showing a false success state.
+
+### Impact
+- Imported or hand-edited provenance artifacts cannot accidentally produce empty command clipboard state with a success toast.
+- Operators get clearer feedback when source-bundle provenance is incomplete before target-repo execution.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 640 — Website Console Source Bundle JSON Revalidation Gate (unreleased)
+
+Website Console focused source-bundle JSON exports now include machine-readable revalidation gate metadata.
+
+### Added
+- Added `revalidationGate` to `website-improvement-source-bundle-provenance` JSON copy/export payloads.
+- Reports whether strict source-bundle revalidation is required, the normalized bundle status, validity, failure count, strict check command, and an operator message.
+- Keeps the existing `sourceBundle` payload intact so existing imports and wrappers remain backward-compatible.
+
+### Impact
+- Automation and follow-up tools can gate target-repo execution without parsing Markdown strings or browser UI copy.
+- Company website pilots can pass compact source-bundle provenance between tools while preserving a structured invalid-bundle stop signal.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 639 — Website Console Source Bundle Revalidation Markdown Gate (unreleased)
+
+Website Console copied/exported Markdown artifacts now preserve the same source-bundle revalidation gate shown in the browser UI.
+
+### Added
+- Added a `Source bundle revalidation` line to full and filtered Operator Runbook Markdown exports.
+- Added a `Revalidation gate` row to focused source-bundle provenance Markdown exports.
+- Reused one deterministic revalidation helper so UI warning blocks and Markdown exports agree on invalid/failing bundle state.
+
+### Impact
+- Company website pilots keep the strict source-bundle check gate visible even after copying or exporting runbooks outside the browser.
+- Operators can share provenance artifacts without losing the invalid-bundle stop signal.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 638 — Website Console Source Bundle Revalidation Warning Gate (unreleased)
+
+Website Console now surfaces invalid or failing source-bundle provenance as an explicit revalidation gate before target-repo execution.
+
+### Added
+- Added a Source Bundle warning block when imported provenance is not valid or reports bundle-check failures.
+- Shows the source-bundle status, failure count, and strict bundle-check command when available.
+- Keeps the warning visible for both full bundle handoff runbooks and provenance-only source-bundle imports.
+
+### Impact
+- Company website pilots get a clear stop signal before entering the target website repo with an invalid handoff bundle.
+- Operators can copy or rerun the strict bundle-check command without hunting through raw JSON or Markdown exports.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 637 — Website Console Operator Runbook Provenance-Only Markdown Markers (unreleased)
+
+Website Console copied/exported Operator Runbook Markdown now distinguishes provenance-only reviews from full bundle handoff runbooks.
+
+### Added
+- Added a `Provenance-only: yes/no` line to Operator Runbook Markdown headers.
+- Added a provenance-only empty-stage explanation when a full runbook export contains source-bundle metadata but no stage rows.
+- Kept filtered exports using the existing filtered-empty message because filtered output is only available when stage rows exist.
+
+### Impact
+- Archived runbook Markdown clearly communicates whether it is a compact source-bundle provenance artifact or a target-repo execution runbook.
+- Operators can share full runbook exports from provenance-only reviews without recipients mistaking missing stage rows for data loss.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 636 — Website Console Operator Runbook Filtered-Row Action Guard (unreleased)
+
+Website Console now guards filtered-row copy/export actions when an imported runbook has no stage rows.
+
+### Added
+- Disabled `Copy filtered rows` and `Export filtered .md` when `operatorRunbook.stageHumanLineDisplayRows` is empty.
+- Added click-handler fallbacks that report `Filtered runbook rows unavailable` instead of producing empty filtered artifacts.
+- Kept full runbook export and source-bundle Markdown/JSON export available for provenance-only reviews.
+
+### Impact
+- Provenance-only source-bundle imports no longer expose misleading filtered-row artifact actions.
+- Operators can still archive provenance while stage-specific actions remain available only for full bundle handoff runbooks.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 635 — Website Console Operator Runbook Next-Line Action Guard (unreleased)
+
+Website Console now guards the `Copy next line` action when an imported runbook has no next stage line.
+
+### Added
+- Disabled the `Copy next line` button when `operatorRunbook.nextStageHumanLine` is unavailable.
+- Added a click-handler fallback that reports `Next runbook line unavailable` instead of copying an empty string.
+- Added a shared disabled style for Website Console buttons so disabled actions are visually clear and keyboard-safe.
+
+### Impact
+- Provenance-only source-bundle imports no longer expose a misleading next-line copy action.
+- Operators get a clearer distinction between source-bundle provenance review and full target-repo execution runbooks.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 634 — Website Console Provenance-Only Runbook Review State (unreleased)
+
+Website Console now distinguishes source-bundle provenance-only imports from full bundle handoff runbooks.
+
+### Added
+- Added a provenance-only notice in the Operator Runbook panel when imported source-bundle JSON contains bundle identity and guard commands but no stage rows.
+- Hid row filter controls when a runbook has no display rows, avoiding irrelevant action/evidence filter UI for provenance-only reviews.
+- Kept source-bundle detail, Markdown/JSON copy/export, and strict source command copy available for provenance-only imports.
+
+### Impact
+- Company website pilots can tell the difference between a compact source-bundle provenance artifact and a full target-repo execution runbook.
+- Operators avoid mistaking a valid source-bundle JSON import for a broken or incomplete bundle handoff import.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 633 — Website Console Source Bundle JSON Import (unreleased)
+
+Website Console import now accepts focused source-bundle provenance JSON artifacts exported from Operator Runbook review.
+
+### Added
+- Added import detection for `website-improvement-source-bundle-provenance` JSON payloads.
+- Rehydrates source-bundle provenance into the current Operator Runbook when one is already loaded.
+- Creates a provenance-only Operator Runbook when no runbook exists, so the Report tab can still review bundle identity, diagnostics, and guard commands.
+
+### Impact
+- Company website pilots can round-trip source-bundle provenance as a compact JSON artifact without replacing the whole browser-local workspace.
+- Operators can refresh source-bundle identity after regenerating or revalidating a bundle while keeping existing workspace notes, tasks, and evidence intact.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 632 — Website Console Source Bundle JSON Export (unreleased)
+
+Website Console operator runbook review now lets operators copy or export source-bundle provenance as a focused portable JSON artifact.
+
+### Added
+- Added `Copy JSON` and `Export JSON` actions to the Operator Runbook Source Bundle detail block.
+- Added a dedicated source-bundle JSON payload with `type`, `version`, and normalized `sourceBundle` metadata.
+- Kept the JSON artifact separate from full workspace export and full/filtered operator runbook export so follow-up tools can ingest provenance without unrelated browser-local state.
+
+### Impact
+- Company website pilots can pass verified source-bundle identity and guard-command metadata into later local tooling without exposing the whole Website Console workspace.
+- Operators can choose between human-readable Markdown provenance and machine-readable JSON provenance from the same Report tab.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 631 — Website Console Source Bundle Markdown Export (unreleased)
+
+Website Console operator runbook review now lets operators archive source-bundle provenance as its own focused Markdown artifact.
+
+### Added
+- Added `Copy bundle` and `Export bundle` actions to the Operator Runbook Source Bundle detail block.
+- Added a dedicated source-bundle Markdown formatter with directory, source workspace, site name, status, workspace/MCP status, checksum digest, checksum/generated-file counts, diagnostics totals, and strict source commands.
+- Kept the artifact separate from full/filtered operator runbook Markdown so provenance can be attached to handoff notes or target-repo issues without all stage rows.
+
+### Impact
+- Company website pilots can preserve source bundle identity and guard commands as a compact audit artifact before target-repo execution.
+- Operators can share bundle provenance independently from the detailed implementation runbook.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 630 — Website Console Operator Runbook Source Bundle Detail Review (unreleased)
+
+Website Console operator runbook review now surfaces source-bundle diagnostics and strict source commands as copy-ready operator controls.
+
+### Added
+- Added a Source Bundle detail block to the Operator Runbook panel with status, workspace/MCP state, checksum digest, checksum-file counts, generated-file counts, and diagnostics totals.
+- Added copy-ready strict bundle check and strict bundle handoff command controls when those commands are present in imported `sourceBundle` metadata.
+- Added strict source commands to full and filtered operator runbook Markdown exports.
+
+### Impact
+- Company website pilots can revalidate the exact local handoff bundle before target-repo execution without opening raw JSON.
+- Operators can copy source-bundle guard commands from the same Report tab used for stage-by-stage handoff review.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 629 — Website Console Operator Runbook Source Bundle Provenance (unreleased)
+
+Website Console operator runbook review now preserves and displays source-bundle provenance from imported bundle handoff JSON.
+
+### Added
+- Preserved optional source bundle metadata during operator runbook normalization, including directory, source workspace, site name, bundle status, validity, workspace/MCP status, checksum algorithm, bundle digest, generated-file counts, issue counts, and strict source commands.
+- Imported sibling `sourceBundle` metadata from `design-ai site <bundle-dir> --bundle-handoff --json` output into the stored browser-local operator runbook.
+- Added source bundle status, digest, and generated-file count chips to the Operator Runbook panel.
+- Added source bundle status, digest, and directory to full and filtered runbook Markdown copy/export output.
+
+### Impact
+- Company website pilots can verify the exact source bundle identity and validation state before entering the target repo.
+- Operators can archive or paste runbook Markdown with bundle digest provenance, reducing ambiguity when multiple handoff bundles exist.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 628 — Website Console Operator Runbook Task Provenance Display (unreleased)
+
+Website Console operator runbook review now preserves and displays task/command provenance from imported bundle handoff JSON.
+
+### Added
+- Preserved optional `effectiveTaskId`, `effectiveStrictTaskCommandKey`, command/manual stage counts, read-only command stage counts, and local-output command stage counts during runbook normalization.
+- Added metadata chips for effective task, strict command key, command stages, manual stages, read-only stages, and local-output stages in the Operator Runbook panel.
+- Added effective task and strict task command key to full and filtered runbook Markdown copy/export output.
+
+### Impact
+- Company website pilots can confirm which bundled task and strict handoff command the imported runbook targets before moving into the target repo.
+- Operators can distinguish command-bearing, manual, read-only, and local-output stage shape without scanning every row.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 627 — Website Console Operator Runbook Row Markdown Export (unreleased)
+
+Website Console operator runbook review now lets operators save one structured handoff stage as its own Markdown file.
+
+### Added
+- Added per-row `Export row` actions beside `Copy row` and `Copy line` in the Operator Runbook table.
+- Reused the row Markdown formatter so exported row files include the same stage heading, key, action status, evidence status, optional next evidence item, and copy-ready line as copied row Markdown.
+- Added a small filename segment sanitizer so row exports use stable `website-operator-runbook.<stage-key>.md` filenames.
+
+### Impact
+- Company website pilots can attach one focused stage artifact to an issue, implementation note, or target-repo handoff without exporting the full or filtered runbook.
+- Operators can choose full export, filtered export, row export, row copy, or raw line copy depending on how much context the next tool needs.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 626 — Website Console Operator Runbook Row Markdown Copy (unreleased)
+
+Website Console operator runbook review now lets operators copy one stage as Markdown with metadata, not only the raw copy-ready line.
+
+### Added
+- Added per-row `Copy row` actions beside each `Copy line` action in the Operator Runbook table.
+- Added a shared row Markdown formatter that includes stage heading, stable key, action status, action label, evidence status, evidence progress label, optional next evidence item, and the copy-ready line.
+- Reused the same row formatter in full and filtered runbook Markdown output so row-level and document-level copy stay aligned.
+
+### Impact
+- Company website pilots can paste a single structured handoff stage into an issue, implementation note, or target-repo Codex prompt without copying the entire runbook.
+- Operators can choose between raw line copy for quick execution and row Markdown copy for context-rich handoff.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 625 — Website Console Operator Runbook Reset Filters (unreleased)
+
+Website Console operator runbook review now includes a one-step reset control for action/evidence row filters.
+
+### Added
+- Added a `Reset filters` button inside the Operator Runbook filter summary.
+- Disabled the reset button with `aria-disabled` when both action and evidence filters are already `all`.
+- Reset both browser-local runbook filters to `all` and re-render the full imported handoff row set in one action.
+- Added compact reset styling with a 44px minimum touch target.
+
+### Impact
+- Company website pilots can quickly return from a focused manual/evidence-blocked subset to the full handoff runbook.
+- Operators no longer need to click both filter groups back to `All` individually before copying or exporting the complete view.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 624 — Website Console Operator Runbook Row Line Copy (unreleased)
+
+Website Console operator runbook review now lets operators copy an individual stage line directly from the filtered runbook table.
+
+### Added
+- Added per-row `Copy line` actions beside each copy-ready operator runbook stage line.
+- Wired row copy through `stageHumanLineDisplayRowByKey` so filtered rows still copy the canonical imported row line by stable stage key.
+- Added compact row-action styling with a 44px minimum touch target for keyboard and mobile use.
+
+### Impact
+- Company website pilots can copy only one selected handoff stage without copying the next global line, the filtered subset, or the full runbook.
+- The action works with filtered views because it uses the row key instead of table position.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 623 — Website Console Operator Runbook Markdown Export (unreleased)
+
+Website Console operator runbook review now lets operators save full and filtered bundle handoff runbooks as Markdown files from the Report tab.
+
+### Added
+- Added `Export runbook .md` for the full imported operator runbook.
+- Added `Export filtered .md` for the currently visible action/evidence-filtered row subset.
+- Reused the same Markdown builder as the copy actions so saved files include source, stage count, included row count, active filters, next stage, next command, and copy-ready stage lines.
+
+### Impact
+- Company website pilots can archive the full handoff runbook or save a focused filtered runbook before moving into the target repo.
+- Operators can attach the filtered runbook to internal notes, issues, or implementation records without manually copying from the browser.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 622 — Website Console Operator Runbook Filtered Copy (unreleased)
+
+Website Console operator runbook review now lets operators copy only the currently visible action/evidence-filtered rows as Markdown while preserving full-runbook copy.
+
+### Added
+- Added a `Copy filtered rows` action beside the full runbook and next-line copy actions.
+- Added filtered Markdown output that records source, total stages, included row count, active action filter, active evidence filter, next stage, and next command.
+- Reset browser-local runbook filters to `all` when importing or clearing a runbook so stale filters do not hide newly imported bundle handoff rows.
+
+### Impact
+- Company website pilots can hand off only manual target-repo stages, evidence-blocked stages, or another focused filtered subset without copying the full runbook.
+- Operators keep the full-copy path for archival handoff while gaining a narrower copy path for immediate execution.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
+## Phase 621 — Website Console Operator Runbook Row Filters (unreleased)
+
+Website Console operator runbook review now exposes action-status and evidence-progress row filters backed by the existing bundle handoff status-index contract.
+
+### Added
+- Added browser-local runbook filter state for action status and evidence progress.
+- Added accessible filter chips with row counts for all, ready, optional, manual, blocked, and evidence-ready/evidence-blocked rows.
+- Updated the Operator Runbook table to render filtered rows while preserving all imported runbook data in localStorage/export JSON.
+- Added an empty filtered-state message when no rows match the selected filters.
+
+### Impact
+- Company website pilots can focus on manual target-repo actions or evidence-blocked rows before switching repositories.
+- The Website Console now consumes the `operatorRunbook.stageHumanLineDisplayRowKeysByActionStatus` and `stageHumanLineDisplayRowKeysByEvidenceProgressStatus` contract directly instead of only showing summary chips.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+
+## Phase 620 — Website Console Operator Runbook Import Handoff UX (unreleased)
+
+Website Console operator runbook import now guides the operator directly into the Report tab after importing bundle handoff JSON, making the browser-local review step easier to discover before target-repo execution.
+
+### Added
+- Updated the sidebar import copy to state that both workspace JSON and runbook JSON are accepted.
+- Added nested `bundle.operatorRunbook` fallback support when normalizing imported JSON.
+- Added Report-tab auto-navigation after a bundle handoff runbook import.
+- Added report navigation count support for imported runbook stages when implementation evidence is not recorded yet.
+- Documented the save-and-import workflow for `design-ai site <bundle-dir> --bundle-handoff --strict --json --out target-repo-handoff.json --force`.
+
+### Impact
+- Company website pilots can round-trip from CLI bundle handoff JSON back into the static console without hunting for the Report tab.
+- Operators can see that the Report section has imported runbook content even before target-repo verification evidence exists.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+
+## Phase 619 — Website Console Operator Runbook Import UI (unreleased)
+
+The static Website Console can now import `design-ai site <bundle-dir> --bundle-handoff --json` output and render the embedded `operatorRunbook` in the Report tab, turning the CLI handoff contract into a browser-local review surface before target-repo execution.
+
+### Added
+- Added optional `operatorRunbook` workspace persistence with normalization for bundle-handoff JSON imports.
+- Added Report-tab Operator Runbook metrics for stage count, manual steps, blocked evidence rows, next stage, and next command.
+- Added status-index chips for action status and evidence-progress status.
+- Added display-ready runbook row rendering with stage key, action status, evidence progress, and copy-ready line text.
+- Added copy actions for the full operator runbook Markdown and the next runbook line, plus a clear action.
+
+### Impact
+- Company website pilots can inspect the verified handoff bundle runbook in the same local console used for audit, MCP readiness, tasks, prompts, and final report notes.
+- CLI bundle handoff JSON now has a direct browser UI consumer, reducing the gap between machine-readable contract work and solo/company operator workflows.
+- The change stays browser-local, uses localStorage/export/import, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 618 — Website Bundle Handoff Runbook Human Line Display Row Status Indexes (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes status-key indexes for display-ready operator runbook human line rows, so wrappers can render action-status tabs and evidence-progress filters without reducing `stageHumanLineDisplayRows`.
+
+### Added
+- Added `operatorRunbook.stageHumanLineDisplayRowKeysByActionStatus` with stable row-key arrays for ready, optional, manual, and blocked action states.
+- Added `operatorRunbook.stageHumanLineDisplayRowKeysByEvidenceProgressStatus` with stable row-key arrays for blocked and ready evidence-progress states.
+- Added unit and packed-tarball smoke assertions for status index ordering and empty blocked-action semantics.
+
+### Impact
+- Website Console and VS Code wrappers can render runbook row filters from keyed indexes and then hydrate rows through `stageHumanLineDisplayRowByKey`.
+- Company website pilots keep the same local/read-only handoff flow while gaining simpler UI navigation for ready, optional, manual, and evidence-blocked stages.
+- The change is additive JSON metadata only; it adds no external MCP calls, no target repo mutation, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 617 — Website Bundle Handoff Runbook Human Line Display Row Summaries (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact summaries for display-ready operator runbook human line rows, so wrappers can render row totals, action-status chips, and evidence-progress summary badges without reducing `stageHumanLineDisplayRows`.
+
+### Added
+- Added `operatorRunbook.stageHumanLineDisplayRowSummary` with row counts, required/optional counts, command/manual counts, action-status counts, evidence-progress counts, and first-row keys.
+- Added action-summary display-row totals for blocked/ready evidence progress and ready/manual action rows.
+- Added unit and packed-tarball smoke assertions for the display-row summary contract.
+
+### Impact
+- Website Console and VS Code wrappers can render runbook summary chips from one object instead of reducing display rows.
+- Company website pilots keep the same local/read-only handoff flow while gaining a simpler row-summary UI contract.
+- The change is additive JSON metadata only; it adds no external MCP calls, no target repo mutation, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 616 — Website Bundle Handoff Runbook Human Line Display Rows (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes display-ready rows for copy-ready operator runbook human lines, so wrappers can render labels, action status, and evidence-progress badges without joining `stageHumanLines`, `stageActionRows`, and checklist summary maps.
+
+### Added
+- Added `operatorRunbook.stageHumanLineDisplayRows` with stage key, label, line, required/manual flags, command count, action status metadata, and evidence-progress display metadata.
+- Added `operatorRunbook.stageHumanLineDisplayRowByKey` so wrappers can retrieve display-ready rows by stable stage key.
+- Added `operatorRunbook.nextStageHumanLineDisplayRow` for the first strict source-bundle gate.
+- Added action-summary display-row totals for row count, keyed row count, and evidence-progress row count.
+- Added unit and packed-tarball smoke assertions for the display-row contract.
+
+### Impact
+- Website Console and VS Code wrappers can render runbook table rows and badges from one object per stage instead of joining parallel JSON arrays.
+- Company website pilots keep the same local/read-only source-bundle handoff flow while gaining a denser UI contract for the first gate.
+- The change is additive JSON metadata only; it adds no external MCP calls, no target repo mutation, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 615 — Website Bundle Handoff Runbook Human Line Summaries (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact summaries for copy-ready operator runbook human lines, so wrappers can render header counts, evidence-progress badges, and next-stage previews without reducing `stageHumanLines`.
+
+### Added
+- Added `operatorRunbook.stageHumanLineSummary` with line counts, required/optional counts, command/manual counts, evidence-progress counts, and first-stage keys.
+- Added `operatorRunbook.nextStageHumanLineSummary` so wrappers can render the first strict source-bundle gate line plus evidence progress status from one object.
+- Added action-summary human-line totals for line count, key count, evidence-progress line count, blocked evidence-progress line count, and ready evidence-progress line count.
+- Added unit and packed-tarball smoke assertions for the new summary contract.
+
+### Impact
+- Website Console and VS Code wrappers can render runbook count badges and first-action previews without scanning line arrays or parsing Markdown prompt text.
+- Company website pilots keep the same deterministic local handoff flow while gaining a simpler UI contract.
+- The change is additive JSON metadata only; it adds no external MCP calls, no target repo mutation, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 614 — Website Bundle Handoff Runbook Human Line JSON Mirrors (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes the same copy-ready operator runbook lines that human Markdown output uses, so Website Console and VS Code wrappers can render exact stage guidance without parsing the prompt string.
+
+### Added
+- Added ordered `operatorRunbook.stageHumanLines` entries for every bundle handoff runbook stage.
+- Added `operatorRunbook.stageHumanLineByKey` so wrappers can retrieve each stage's copy-ready line by stable stage key.
+- Added `operatorRunbook.nextStageHumanLine` as a direct mirror for the first strict source-bundle gate.
+- Reused the same formatter for JSON mirrors and human Markdown output so evidence checklist progress copy stays aligned.
+
+### Impact
+- Wrappers can show the same runbook copy as CLI Markdown while still consuming structured JSON.
+- Target-repo company pilots can render source-bundle, optional snapshot, prompt-output, target-repo, and evidence-recording guidance without prompt parsing.
+- The change is additive JSON metadata only; it adds no external MCP calls, no target repo mutation, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 613 — Website Bundle Handoff Runbook Human Evidence Checklist Progress (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff` now includes evidence checklist progress in the human-readable operator runbook lines, so target-repo operators can see first-render evidence completion state without opening the JSON contract.
+
+### Added
+- Added per-stage evidence progress text to human runbook lines when an action has evidence capture checklist metadata.
+- Included progress label, checklist status label, and the first unchecked evidence item label for blocked stages.
+- Added unit and packed-tarball human smoke assertions so installed-bin handoff prompts keep exposing source-bundle, optional snapshot, and target-repo evidence progress.
+
+### Impact
+- Operators can scan handoff prompts and immediately see which evidence item blocks each runbook stage.
+- Website Console wrappers still use the richer JSON contract, while CLI-only company pilots get the same checklist status in copy-ready Markdown.
+- The change is additive human-output metadata only; it adds no external MCP calls, no target repo mutation, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 612 — Website Bundle Handoff Runbook Action Evidence Capture Initial Validation Checklist Summaries (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact progress summaries for action evidence capture initial validation checklists in the Website bundle operator runbook, so wrappers and GUI surfaces can render checklist badges, progress labels, and first-unchecked guidance without reducing checklist rows.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey` so wrappers can consume per-action checklist status, label, tone, icon, CTA label, helper text, item counts, checked/unchecked counts, required/optional counts, blocking counts, completion percentage, progress label, initial completion booleans, and first unchecked item metadata.
+- Added row-level `actionEvidenceCaptureInitialValidationChecklistSummary` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for checklist-summary-bearing actions, blocked/ready checklist summaries, complete/incomplete initial checklist summaries, checked/unchecked items, and blocking unchecked items.
+- Added matching `nextActionEvidenceCaptureInitialValidationChecklistSummary` and `nextStageActionEvidenceCaptureInitialValidationChecklistSummary` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for checklist summary maps, optional/required checklist summary semantics, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render checklist progress from one compact summary object instead of recomputing progress from every checklist row.
+- Company website pilots get deterministic first-load checklist progress for source bundle verification, optional handoff snapshot refresh, prompt output, target-repo implementation evidence, and final evidence recording.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 611 — Website Bundle Handoff Runbook Action Evidence Capture Initial Validation Checklists (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes first-render checklist rows for action evidence capture initial validation states in the Website bundle operator runbook, so wrappers and GUI surfaces can render completion-oriented evidence checklists without reducing validation state arrays.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureInitialValidationChecklistByKey` so wrappers can consume per-action checklist rows with field key, label, status, display metadata, required/blocking state, completion-blocking state, initial checked state, disabled state, message, and payload path.
+- Added row-level `actionEvidenceCaptureInitialValidationChecklist` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for checklist-bearing actions, checklist item count, checked/unchecked initial rows, blocking/non-blocking rows, and required/optional rows.
+- Added matching `nextActionEvidenceCaptureInitialValidationChecklist` and `nextStageActionEvidenceCaptureInitialValidationChecklist` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for checklist maps, optional/required checklist semantics, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render checkbox-style evidence completion lists from one compact checklist array while preserving full validation states, display metadata, and summaries for more detailed form surfaces.
+- Company website pilots get deterministic initial checklist state for source bundle verification, optional handoff snapshot refresh, prompt output, target-repo implementation evidence, and final evidence recording.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 610 — Website Bundle Handoff Runbook Action Evidence Capture Initial Validation Summaries (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action-level initial validation summaries for evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can render blocked/ready form state without reducing per-field validation rows.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureInitialValidationSummaryByKey` so wrappers can consume per-action status, label, tone, icon, CTA label, helper text, field counts, required/optional counts, valid/invalid counts, blocking counts, missing-required counts, optional-empty counts, pristine state, completion gate, and first blocking field metadata.
+- Added row-level `actionEvidenceCaptureInitialValidationSummary` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for initial validation summary actions, blocked/ready summary actions, completable/non-completable actions, blocking fields, missing-required fields, and optional-empty fields.
+- Added matching `nextActionEvidenceCaptureInitialValidationSummary` and `nextStageActionEvidenceCaptureInitialValidationSummary` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for summary maps, optional/required summary semantics, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can gate action completion and render form-level status from one compact summary object instead of recomputing state from every evidence field.
+- Company website pilots get deterministic first-render action status for source bundle verification, optional handoff snapshot refresh, prompt output, target-repo implementation evidence, and final evidence recording.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 609 — Website Bundle Handoff Runbook Action Evidence Capture Initial Validation Display Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes display metadata for action evidence capture initial validation states in the Website bundle operator runbook, so wrappers and GUI surfaces can render first-load required/optional evidence states without maintaining a separate status-to-label or status-to-tone map.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey` so wrappers can consume per-action display rows with field key, label, status, status label, status tone, icon name, action label, helper text, blocking state, required state, and message.
+- Added row-level `actionEvidenceCaptureInitialValidationDisplayMetadata` to every `stageActionRows[]` item.
+- Added display metadata fields directly to each `actionEvidenceCaptureInitialValidationStates[]` row so full state consumers do not need to join a parallel display array.
+- Added `actionSummary` totals for initial validation display metadata actions, total display rows, danger/info tones, blocking rows, and non-blocking rows.
+- Added matching `nextActionEvidenceCaptureInitialValidationDisplayMetadata` and `nextStageActionEvidenceCaptureInitialValidationDisplayMetadata` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for display metadata maps, optional/required status display semantics, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render Website bundle handoff evidence forms with stable badges, icons, helper text, and CTA labels for `missing-required` and `optional-empty` states from the CLI JSON contract alone.
+- Company website pilots get consistent first-render evidence form copy for required strict bundle output, bundle digest, prompt output, selected task id, changed files, verification results, viewport/accessibility notes, final evidence, and remaining risks while optional handoff JSON remains visibly non-blocking.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 608 — Website Bundle Handoff Runbook Action Evidence Capture Initial Validation States (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes initial validation state objects for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can initialize form validity, blocking status, and empty-state messages without running a separate validator before first render.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureInitialValidationStatesByKey` so wrappers can consume per-action initial state rows with field key, label, rule id, status, validity, blocking state, severity, required state, empty-value policy, pristine flags, min length, value shape, payload path, and message.
+- Added row-level `actionEvidenceCaptureInitialValidationStates` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for initial validation-state actions, total states, valid/invalid states, blocking states, optional-empty states, missing-required states, and pristine states.
+- Added matching `nextActionEvidenceCaptureInitialValidationStates` and `nextStageActionEvidenceCaptureInitialValidationStates` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for initial validation-state maps, optional/required state semantics, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render Website bundle handoff evidence forms with deterministic first-render validity and blocking state from the CLI JSON contract alone.
+- Company website pilots get consistent required-field blocking for strict bundle output, bundle digest, prompt output, selected task id, changed files, verification results, viewport/accessibility notes, final evidence, and remaining risks while optional handoff JSON starts as non-blocking.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 607 — Website Bundle Handoff Runbook Action Evidence Capture Validation Specs (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact validation spec objects for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can validate required and optional evidence values without maintaining a separate rule schema.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureValidationSpecsByKey` so wrappers can consume per-action validation rows with field key, label, rule id, severity, required state, empty-value policy, min length, value shape, multiplicity, user-facing message, and failure message.
+- Added row-level `actionEvidenceCaptureValidationSpecs` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for validation-spec actions, total specs, required specs, optional specs, error/info specs, and multi-value specs.
+- Added matching `nextActionEvidenceCaptureValidationSpecs` and `nextStageActionEvidenceCaptureValidationSpecs` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for validation spec maps, optional spec severity, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can validate Website bundle handoff evidence forms from the CLI JSON contract without translating validation rule ids into separate local schema objects.
+- Company website pilots get deterministic form checks for strict bundle output, bundle digest, optional handoff JSON, prompt output, selected task id, changed files, verification results, viewport/accessibility notes, final evidence, and remaining risks.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 606 — Website Bundle Handoff Runbook Action Evidence Capture Payload Bindings (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact payload binding objects for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can bind controls to payload paths, value shapes, validation, sections, and accessible labels without zipping parallel arrays.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCapturePayloadBindingsByKey` so wrappers can consume per-action binding rows that join field key, label, payload namespace/path, input type, value shape, multiplicity, required state, empty value, validation rule, section metadata, and ARIA label.
+- Added row-level `actionEvidenceCapturePayloadBindings` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for payload-bound actions, total bindings, required bindings, optional bindings, and multi-value bindings.
+- Added matching `nextActionEvidenceCapturePayloadBindings` and `nextStageActionEvidenceCapturePayloadBindings` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for binding maps, row-level binding projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render and persist Website bundle handoff evidence forms from one compact binding array instead of recombining keys, labels, payload paths, validation rules, sections, and accessibility copy from separate arrays.
+- Company website pilots get a lower-risk handoff form contract for source bundle verification, prompt output, target-repo implementation evidence, viewport/accessibility QA, final evidence, and remaining risks.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 605 — Website Bundle Handoff Runbook Action Evidence Capture Payload Templates (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes nested and flat payload templates for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can initialize handoff evidence payload objects without constructing nested storage objects from field paths.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCapturePayloadTemplateByKey` so wrappers can initialize per-action nested evidence payloads such as `sourceBundle.verification`, `handoffPrompt`, `targetRepo`, and `handoffEvidence`.
+- Added `operatorRunbook.stageActionEvidenceCapturePayloadFlatTemplateByKey` so wrappers can also initialize path-keyed form stores with deterministic empty values.
+- Added row-level `actionEvidenceCapturePayloadTemplate` and `actionEvidenceCapturePayloadFlatTemplate` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for payload-template actions, total payload-template paths, and max payload-template paths per action.
+- Added matching `nextAction*` and `nextStageAction*` payload-template mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for nested templates, flat templates, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can bootstrap Website bundle handoff evidence form state directly from the CLI JSON contract without maintaining local nested-object construction logic.
+- Company website pilots can carry source bundle verification, refreshed handoff JSON, prompt output, target repo change/verification/QA values, final evidence, and remaining risks through a stable payload shape.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 604 — Website Bundle Handoff Runbook Action Evidence Capture Payload Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes payload metadata for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can persist evidence form values without hard-coding source-bundle, handoff prompt, target-repo, or final handoff record paths.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldPayloadNamespacesByKey` so wrappers can group evidence payload writes by stable namespaces such as `sourceBundle`, `handoffPrompt`, `targetRepo`, and `handoffEvidence`.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldPayloadPathsByKey` so evidence form values can be written to deterministic payload paths without deriving storage destinations from field keys.
+- Added `operatorRunbook.stageActionEvidenceCapturePayloadNamespacesByKey` and `stageActionEvidenceCapturePayloadNamespaceCountByKey` so compact dashboards can show per-action payload destinations without reducing field arrays.
+- Added row-level `actionEvidenceCaptureFieldPayload*` and `actionEvidenceCapturePayload*` arrays to every `stageActionRows[]` item.
+- Added `actionSummary` totals for payload-mapped fields, unique payload namespaces, multi-namespace actions, and max payload namespaces per action.
+- Added matching `nextAction*` and `nextStageAction*` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for payload namespace maps, payload path maps, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can save Website bundle handoff evidence into a consistent machine-readable payload without local field-key-to-path maps.
+- Company website pilots can carry strict bundle verification, prompt output, target repo implementation, viewport/accessibility QA, final evidence, and remaining-risk values across CLI, browser, or GUI wrappers with less glue code.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 603 — Website Bundle Handoff Runbook Action Evidence Capture Section Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes section metadata for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can group evidence inputs without hard-coding source-bundle, handoff-output, target-repo, QA, final-evidence, or risk sections.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldSectionKeysByKey` so wrappers can read per-field evidence section ids from stable stage keys.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldSectionLabelsByKey` so evidence forms can render section labels without local id-to-copy maps.
+- Added `operatorRunbook.stageActionEvidenceCaptureSectionKeysByKey` and `stageActionEvidenceCaptureSectionLabelsByKey` so wrappers can render unique per-action sections without reducing field-level arrays.
+- Added `operatorRunbook.stageActionEvidenceCaptureSectionCountByKey` plus row-level `actionEvidenceCaptureSection*` arrays and counts for compact dashboards.
+- Added `actionSummary` totals for sectioned fields, unique evidence sections, multi-section actions, and max sections per action.
+- Added matching `nextAction*` and `nextStageAction*` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for field section maps, unique section maps, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can group Website bundle handoff evidence forms into source bundle verification, handoff snapshot, prompt output, target repo changes, target repo verification, viewport/accessibility QA, final evidence, and risk sections from the CLI JSON contract alone.
+- Company website pilots get denser evidence capture layouts without duplicating section mapping rules outside design-ai.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 602 — Website Bundle Handoff Runbook Action Evidence Capture Display Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes display metadata for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can render accessible evidence forms without deriving placeholder text, required/optional copy, ARIA labels, or helper text from full field objects.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldPlaceholdersByKey` so wrappers can render per-action evidence field placeholders from stable stage keys.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldRequirementLabelsByKey` so evidence forms can show required/optional copy without local boolean-to-label maps.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldAriaLabelsByKey` so browser and GUI wrappers can wire accessible input labels directly from the JSON contract.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldHelpTextsByKey` so forms can show helper copy without reusing validation metadata implicitly.
+- Added row-level display arrays to every `stageActionRows[]` item.
+- Added `actionSummary` totals for placeholder, ARIA label, and helper-text evidence capture fields.
+- Added matching `nextAction*` and `nextStageAction*` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for display maps, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can build Website bundle handoff evidence forms from compact display maps without scanning full capture field objects.
+- Company website pilots get consistent accessible labels and helper copy for strict bundle output, bundle digest, prompt output, target-repo files, verification notes, viewport/accessibility notes, final evidence, and risk records.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 601 — Website Bundle Handoff Runbook Action Evidence Capture Default Value Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes default/empty-value metadata for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can initialize evidence forms without local value-shape default maps.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldDefaultValuesByKey` so wrappers can initialize per-action evidence form values from stable stage keys.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldEmptyValuesByKey` so wrappers can reset evidence form values without deriving defaults from `inputType` or `valueShape`.
+- Added row-level `actionEvidenceCaptureFieldDefaultValues` and `actionEvidenceCaptureFieldEmptyValues` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for empty-string and empty-list evidence capture fields.
+- Added matching `nextAction*` and `nextStageAction*` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for default-value maps, empty-value maps, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can create and reset Website bundle handoff evidence forms from the CLI JSON contract without duplicating `string-list -> []` and text/file-path -> `""` initialization rules.
+- Company website pilots can preserve list-shaped target-repo changed-file evidence while keeping text, file-path, and textarea fields initialized consistently.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 600 — Website Bundle Handoff Runbook Action Evidence Capture Value Shape Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes value-shape metadata for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can render text areas, short text inputs, file-path inputs, and multi-value lists without local `inputType` mapping.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldValueShapesByKey` so wrappers can read stable value shapes per action.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldAcceptsMultipleByKey` so evidence forms can distinguish single-value fields from list-style multi-value capture.
+- Added row-level `actionEvidenceCaptureFieldValueShapes` and `actionEvidenceCaptureFieldAcceptsMultiple` to every `stageActionRows[]` item.
+- Added `actionSummary` totals for long-text, short-text, file-path value, string-list, multi-value, single-value, and first multi-value action lookup.
+- Added matching `nextAction*` and `nextStageAction*` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for value-shape maps, accepts-multiple maps, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render Website bundle handoff evidence forms from the CLI JSON contract without duplicating `textarea`/`text`/`file-path`/`list` translation rules.
+- Company website pilots can capture target-repo changed files as an explicit string-list while keeping verification, viewport/accessibility, risk, and final evidence as long-text records.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 599 — Website Bundle Handoff Runbook Action Evidence Capture Validation Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes validation metadata for action evidence capture fields in the Website bundle operator runbook, so wrappers and GUI surfaces can validate evidence forms without scanning full field objects or carrying local schema maps.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldValidationRulesByKey` so wrappers can apply stable validation rule ids per action.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldMinLengthsByKey` so evidence forms can enforce minimum text length or list item count from the JSON contract.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldExamplesByKey` and `stageActionEvidenceCaptureFieldValidationHintsByKey` so forms can show compact operator guidance without hard-coded field copy.
+- Added row-level `actionEvidenceCaptureFieldValidationRules`, `actionEvidenceCaptureFieldMinLengths`, `actionEvidenceCaptureFieldExamples`, and `actionEvidenceCaptureFieldValidationHints`.
+- Added `actionSummary` validation totals for all, required, optional, total min-length, max min-length, and first validation-rule action lookup.
+- Added matching `nextAction*` and `nextStageAction*` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for validation rule maps, min-length maps, examples, hints, row-level projections, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can render and validate bundle handoff evidence capture forms from the CLI JSON contract alone.
+- Company website pilots get clearer validation for strict bundle output, digest, prompt output, target-repo files, verification results, viewport/accessibility notes, final evidence, and remaining risk records.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 598 — Website Bundle Handoff Runbook Action Evidence Capture Field Indexes (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action evidence capture field index metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render required-only, optional-only, and input-type-specific evidence forms without scanning full capture field arrays.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldLabelsByKey` so wrappers can render per-action field labels from stable stage keys.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldInputTypesByKey` so form layouts can distinguish textarea, text, file-path, and list fields without scanning full field objects.
+- Added `operatorRunbook.stageActionRequiredEvidenceCaptureFieldKeysByKey` and `stageActionOptionalEvidenceCaptureFieldKeysByKey` so wrappers can split required and optional evidence inputs directly.
+- Added `operatorRunbook.stageActionOptionalEvidenceCaptureFieldCountByKey` and row-level `actionOptionalEvidenceCaptureFieldCount` for compact optional-field summaries.
+- Added row-level `actionEvidenceCaptureFieldLabels`, `actionEvidenceCaptureFieldInputTypes`, `actionRequiredEvidenceCaptureFieldKeys`, and `actionOptionalEvidenceCaptureFieldKeys`.
+- Added `actionSummary` totals for required/optional capture fields plus textarea, text, file-path, and list field counts.
+- Added matching `nextAction*` and `nextStageAction*` mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for capture field index maps, row-level field indexes, summary totals, and next-stage mirrors.
+
+### Impact
+- Wrappers can build denser evidence capture UIs without local enum-to-form schema maps.
+- Company website pilots can separate optional refreshed handoff JSON evidence from required bundle, prompt, target-repo, and final evidence fields.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 597 — Website Bundle Handoff Runbook Action Evidence Capture Fields (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action evidence capture field metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render evidence input forms for command output, prompt files, target-repo implementation proof, verification results, viewport/accessibility notes, risks, and final handoff records without hard-coded field schemas.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldsByKey` so wrappers can render per-action evidence input schemas from stable stage keys.
+- Added `operatorRunbook.stageActionEvidenceCaptureFieldKeysByKey`, `stageActionEvidenceCaptureFieldCountByKey`, `stageActionRequiredEvidenceCaptureFieldCountByKey`, and `stageActionHasEvidenceCaptureFieldsByKey` for compact dashboards and conditional evidence form UI.
+- Added `actionEvidenceCaptureFields`, `actionEvidenceCaptureFieldKeys`, `actionEvidenceCaptureFieldCount`, `actionRequiredEvidenceCaptureFieldCount`, and `actionHasEvidenceCaptureFields` to each `stageActionRows[]` item.
+- Added `nextStageActionEvidenceCaptureFields`, `nextStageActionEvidenceCaptureFieldKeys`, `nextStageActionEvidenceCaptureFieldCount`, `nextStageActionRequiredEvidenceCaptureFieldCount`, and `nextStageActionHasEvidenceCaptureFields` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.actionWithEvidenceCaptureFieldCount`, `totalActionEvidenceCaptureFieldCount`, `totalRequiredActionEvidenceCaptureFieldCount`, `maxActionEvidenceCaptureFieldCount`, and first capture-field action keys for evidence dashboards.
+- Added unit and packed-tarball smoke assertions for capture field lookup maps, row-level capture metadata, summary fields, and next-stage mirrors.
+
+### Impact
+- Wrappers can render evidence capture textareas, file-path fields, text fields, and list fields directly from the JSON contract.
+- Company website pilots get clearer handoff evidence collection before target-repo changes are considered ready for review.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 596 — Website Bundle Handoff Runbook Action Evidence Targets (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action evidence target metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can distinguish local command output, local output files, target-repo working-tree evidence, and final handoff evidence records without hard-coded evidence source rules.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceTargetByKey` so wrappers can route each handoff action to the correct evidence source.
+- Added `operatorRunbook.stageActionEvidenceTargetLabelByKey` so compact dashboards can render source labels without local string maps.
+- Added `actionEvidenceTarget` and `actionEvidenceTargetLabel` to each `stageActionRows[]` item.
+- Added `nextStageActionEvidenceTarget` and `nextStageActionEvidenceTargetLabel` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.localCommandEvidenceActionCount`, `localOutputEvidenceActionCount`, `targetRepoEvidenceActionCount`, `handoffRecordEvidenceActionCount`, `firstTargetRepoEvidenceActionKey`, and `firstLocalOutputEvidenceActionKey` for evidence capture dashboards.
+- Added unit and packed-tarball smoke assertions for evidence target lookup maps, row-level evidence target metadata, summary fields, and next-stage mirrors.
+
+### Impact
+- Wrappers can render different evidence capture affordances for command output, local prompt files, target-repo implementation proof, and final handoff evidence records.
+- Company website pilots get clearer separation between design-ai repo evidence and target website repo evidence before implementation starts.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 595 — Website Bundle Handoff Runbook Action Evidence Requirements (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action evidence requirement metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render exactly what evidence should be captured after bundle validation, prompt output, target-repo implementation, and evidence recording without hard-coded company handoff rules.
+
+### Added
+- Added `operatorRunbook.stageActionEvidenceRequirementsByKey` so wrappers can render per-action evidence capture requirements from stable stage keys.
+- Added `operatorRunbook.stageActionEvidenceRequirementCountByKey` and `stageActionRequiresEvidenceByKey` so compact dashboards can show evidence counts and conditional evidence UI without counting arrays.
+- Added `actionEvidenceRequirements`, `actionEvidenceRequirementCount`, and `actionRequiresEvidence` to each `stageActionRows[]` item.
+- Added `nextStageActionEvidenceRequirements`, `nextStageActionEvidenceRequirementCount`, and `nextStageActionRequiresEvidence` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.actionRequiringEvidenceCount`, `totalActionEvidenceRequirementCount`, `maxActionEvidenceRequirementCount`, `firstActionRequiringEvidenceKey`, `firstManualActionRequiringEvidenceKey`, and `firstEvidenceRecordingActionKey` for evidence dashboards and manual-step summaries.
+- Added unit and packed-tarball smoke assertions for evidence requirement lookup maps, row-level evidence metadata, summary fields, and next-stage mirrors.
+
+### Impact
+- Wrappers can show what evidence must be captured for each handoff action before a company website pilot moves into target-repo work.
+- Target-repo implementation steps now carry explicit changed-file, verification-result, viewport, and accessibility evidence expectations.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 594 — Website Bundle Handoff Runbook Action Completion Criteria (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action completion criteria metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render deterministic done-checklists for bundle verification, prompt output, target-repo implementation, and evidence capture without hard-coded handoff rules.
+
+### Added
+- Added `operatorRunbook.stageActionCompletionCriteriaByKey` so wrappers can render per-action completion criteria from stable stage keys.
+- Added `operatorRunbook.stageActionCompletionCriteriaCountByKey` and `stageActionHasCompletionCriteriaByKey` so compact dashboards can show done-criteria counts and conditional UI without counting arrays.
+- Added `actionCompletionCriteria`, `actionCompletionCriteriaCount`, and `actionHasCompletionCriteria` to each `stageActionRows[]` item.
+- Added `nextStageActionCompletionCriteria`, `nextStageActionCompletionCriteriaCount`, and `nextStageActionHasCompletionCriteria` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.actionWithCompletionCriteriaCount`, `totalActionCompletionCriteriaCount`, `maxActionCompletionCriteriaCount`, `firstActionWithCompletionCriteriaKey`, and `firstManualActionWithCompletionCriteriaKey` for completion dashboards and manual-step summaries.
+- Added unit and packed-tarball smoke assertions for completion criteria lookup maps, row-level completion metadata, summary fields, and next-stage mirrors.
+
+### Impact
+- Wrappers can show exactly what marks each handoff action done before the operator moves into company target-repo work.
+- Company website pilots get clearer stop/go criteria for strict bundle validation, local prompt output, target-repo implementation, and evidence return.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 593 — Website Bundle Handoff Runbook Action Dependency Reasons (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action dependency reason and blocked-action count metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can explain why a handoff action depends on earlier steps and which downstream actions a completed stage unlocks without scanning row arrays.
+
+### Added
+- Added `operatorRunbook.stageActionDependencyReasonCodeByKey` so wrappers can distinguish prerequisite-driven dependency messages from disabled-command reasons.
+- Added `operatorRunbook.stageActionDependencyReasonByKey` so wrappers can render stable dependency copy for local prompt output, target-repo implementation, and evidence-return actions.
+- Added `operatorRunbook.stageActionBlockedStageCountByKey` and `stageActionBlocksStagesByKey` so wrappers can show unlock counts and conditional downstream dependency UI without counting blocked-stage arrays.
+- Added `actionDependencyReasonCode`, `actionDependencyReason`, `actionBlockedStageKeys`, `actionBlockedStageLabels`, `actionBlockedStageCount`, and `actionBlocksStages` to each `stageActionRows[]` item.
+- Added `nextStageActionDependencyReasonCode`, `nextStageActionDependencyReason`, `nextStageActionBlockedStageKeys`, `nextStageActionBlockedStageLabels`, `nextStageActionBlockedStageCount`, and `nextStageActionBlocksStages` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.actionWithDependencyReasonCount`, `actionBlockingOtherActionCount`, `maxActionBlockedStageCount`, `firstActionWithDependencyReasonKey`, and `firstActionBlockingOtherActionKey` for compact dependency dashboards.
+- Added unit and packed-tarball smoke assertions for dependency reason lookup maps, blocked-stage counts, row-level dependency metadata, summary fields, and next-stage mirrors.
+
+### Impact
+- Wrappers can render "do this first" copy and downstream unlock counts directly from the JSON contract.
+- Company website pilots get clearer operator guidance before moving from bundle validation to prompt output, target-repo work, and evidence capture.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 592 — Website Bundle Handoff Runbook Action Prerequisite Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action prerequisite metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render the strict bundle gate, selected prompt output, target-repo implementation, and evidence-return sequence without hard-coded stage dependency rules.
+
+### Added
+- Added `operatorRunbook.stageActionPrerequisiteKeysByKey` so wrappers can read the required upstream action keys for each handoff stage.
+- Added `operatorRunbook.stageActionPrerequisiteLabelsByKey` so dependency chips can render human-readable prerequisite labels without dereferencing stage objects.
+- Added `operatorRunbook.stageActionPrerequisiteCountByKey` and `stageActionHasPrerequisitesByKey` for compact dependency counts and conditional UI rendering.
+- Added `operatorRunbook.stageActionBlockedStageKeysByKey` and `stageActionBlockedStageLabelsByKey` so wrappers can show which downstream actions are blocked by a stage.
+- Added `actionPrerequisiteKeys`, `actionPrerequisiteLabels`, `actionPrerequisiteCount`, and `actionHasPrerequisites` to each `stageActionRows[]` item.
+- Added `nextStageActionPrerequisiteKeys`, `nextStageActionPrerequisiteLabels`, `nextStageActionPrerequisiteCount`, and `nextStageActionHasPrerequisites` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.actionWithPrerequisiteCount`, `maxActionPrerequisiteCount`, and first prerequisite-bearing action keys for local output, manual target-repo, and evidence stages.
+- Added unit and packed-tarball smoke assertions for prerequisite lookup maps, row metadata, blocked-stage inverse lookups, and next-stage mirrors.
+
+### Impact
+- Wrappers can render ordered handoff checklists and dependency chips from the JSON contract instead of hard-coding `verify -> write prompt -> target repo -> evidence`.
+- Company website pilots get clearer operator sequencing before moving from local bundle validation into target-repo implementation.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 591 — Website Bundle Handoff Runbook Action Readiness Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action readiness metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render enabled command buttons, optional action status, manual-step badges, disabled reasons, and status tones without recomputing command availability from lower-level stage fields.
+
+### Added
+- Added `operatorRunbook.stageActionEnabledByKey` so wrappers can distinguish local command actions from target-repo/manual evidence steps without scanning command arrays.
+- Added `operatorRunbook.stageActionStatusByKey`, `stageActionStatusLabelsByKey`, and `stageActionStatusToneByKey` with `ready`, `optional`, and `manual` action states for compact button/badge rendering.
+- Added `operatorRunbook.stageActionDisabledReasonCodeByKey` and `stageActionDisabledReasonByKey` so manual target-repo and evidence stages carry explicit no-local-command guidance.
+- Added `actionEnabled`, `actionStatus`, `actionStatusLabel`, `actionStatusTone`, `actionDisabledReasonCode`, and `actionDisabledReason` to each `stageActionRows[]` item.
+- Added `nextStageActionEnabled`, `nextStageActionStatus`, `nextStageActionStatusLabel`, `nextStageActionStatusTone`, `nextStageActionDisabledReasonCode`, and `nextStageActionDisabledReason` as top-level mirrors for the first strict source-bundle gate.
+- Added `actionSummary.enabledActionCount`, `disabledActionCount`, `manualDisabledActionCount`, and next-action readiness/status mirrors.
+- Added unit and packed-tarball smoke assertions for action readiness lookup maps, row metadata, disabled reasons, and next-stage mirrors.
+
+### Impact
+- Wrappers can render action buttons and manual checklist steps with consistent enabled state, badge labels, tones, and disabled copy from the JSON contract.
+- Company website pilots get clearer separation between local design-ai commands and target-repo/manual evidence work before handoff.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 590 — Website Bundle Handoff Runbook Action Affordance Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes action guidance and UI affordance metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render command buttons, optional refresh controls, local-output actions, manual target-repo steps, and evidence-return steps without hard-coded copy.
+
+### Added
+- Added `operatorRunbook.stageActionInstructionsByKey` for stable stage-key to operator guidance copy lookup.
+- Added `operatorRunbook.stageActionButtonLabelsByKey` so wrappers can render button labels for run, refresh, local output, target repo, and evidence actions without local string maps.
+- Added `operatorRunbook.stageActionAffordanceByKey` with `primary-command-button`, `secondary-command-button`, `local-output-button`, `manual-target-repo-step`, and `manual-evidence-step` values.
+- Added `actionInstruction`, `actionButtonLabel`, and `actionAffordance` to each `stageActionRows[]` item.
+- Added `nextStageActionInstruction`, `nextStageActionButtonLabel`, and `nextStageActionAffordance` as top-level mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for action guidance, button label, affordance, and next-stage mirror metadata.
+
+### Impact
+- Wrappers can render Website bundle handoff controls with consistent operator copy and affordance types from the JSON contract.
+- Company website pilots get clearer UI guidance for local validation, prompt output generation, target-repo work, and evidence return.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 589 — Website Bundle Handoff Runbook Action Summary (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes compact action metadata for the Website bundle operator runbook, so wrappers and GUI surfaces can render the local run gate, optional refresh, local prompt output, manual target-repo implementation, and evidence return actions without scanning ordered stage arrays.
+
+### Added
+- Added `operatorRunbook.stageActionRows`, a compact per-stage action list with action type, action label, required state, run policy, safety level, command keys, output files, and mutation boundary flags.
+- Added `operatorRunbook.stageActionTypeByKey` and `stageActionLabelByKey` for stable stage-key lookups covering `run-local-gate`, `refresh-local-preview`, `write-local-output`, `manual-target-repo`, and `manual-evidence`.
+- Added `operatorRunbook.actionSummary` with action counts, next action metadata, first local-output/manual/evidence stage keys, and target-repo/evidence-return requirements.
+- Added `nextStageActionType` and `nextStageActionLabel` as top-level mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for action row ordering, action summary counts, and next-stage action metadata.
+
+### Impact
+- Wrappers can render run buttons, refresh previews, output-file actions, manual target-repo steps, and evidence return affordances from one compact contract.
+- Company website pilots get clearer handoff UI state before moving from local bundle validation into the target repo.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 588 — Website Bundle Handoff Runbook Stage Command Lookups (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes stage command lookup maps, so wrappers and GUI surfaces can render copy-ready commands, execution argv, run policies, and command safety levels for each runbook stage without scanning ordered stage arrays.
+
+### Added
+- Added `operatorRunbook.stageCommandKeysByKey` for stable stage-key to command-key list lookup.
+- Added `operatorRunbook.stageCommandLabelsByKey` and `stageCommandStringsByKey` so wrappers can render stage command labels and copy-ready command text without opening stage objects.
+- Added `operatorRunbook.stageCommandArgsByKey` so automation can retrieve stage-level argv arrays without parsing command strings.
+- Added `operatorRunbook.stageCommandRunPoliciesByKey` and `stageCommandSafetyLevelsByKey` for command-level gate chips within each stage.
+- Added `nextStageCommandLabels`, `nextStageCommands`, `nextStageCommandArgsList`, `nextStageCommandRunPolicies`, and `nextStageCommandSafetyLevels` as top-level mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for stage command lookup parity against the command manifest.
+
+### Impact
+- Wrappers can render stage command rows, copy buttons, and execution previews directly from lookup maps.
+- Company website pilots get a clearer operator UI contract for the strict bundle-check gate and selected task handoff prompt generation.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 587 — Website Bundle Handoff Runbook Stage Capability Flags (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes stage capability flags as stable lookup maps, so wrappers and GUI surfaces can distinguish command-bearing stages, manual target-repo stages, local output writes, external calls, and target-repo mutation boundaries without scanning ordered stage arrays.
+
+### Added
+- Added `operatorRunbook.stageHasCommandsByKey` for stable stage-key to command-bearing boolean lookup.
+- Added `operatorRunbook.stageManualByKey` so wrappers can mark target-repo/manual stages without reducing `stages[]`.
+- Added `operatorRunbook.stageWritesLocalFileByKey`, `stageExternalCallsByKey`, and `stageTargetRepoMutationByKey` so wrappers can gate local output, external-call, and target-repo mutation affordances from compact maps.
+- Added `nextStageHasCommands`, `nextStageManual`, `nextStageWritesLocalFile`, `nextStageExternalCalls`, and `nextStageTargetRepoMutation` as top-level mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for stage capability lookup parity and next-stage capability metadata.
+
+### Impact
+- Wrappers can render action buttons, manual badges, local-output warnings, and mutation boundary chips without scanning `operatorRunbook.stages`.
+- Company website pilots get clearer stage capability metadata before moving a Website bundle task into the target repo.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 586 — Website Bundle Handoff Runbook Stage Gating Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes stage gating fields as stable lookup maps, so wrappers and GUI surfaces can render stage status, run policy, safety, command counts, and output targets without scanning ordered stage arrays.
+
+### Added
+- Added `operatorRunbook.stageKindByKey` for stable stage-key to stage-kind lookup.
+- Added `operatorRunbook.stageRequiredByKey` so wrappers can mark required and optional stages without reducing `stages[]`.
+- Added `operatorRunbook.stageRunPolicyByKey` and `stageSafetyLevelByKey` so local operators can gate read-only, local-output, and manual target-repo stages from compact maps.
+- Added `operatorRunbook.stageCommandCountByKey` and `stageOutputFilesByKey` for stage badge counts and local output-file previews.
+- Added `nextStageKind`, `nextStageRequired`, `nextStageRunPolicy`, `nextStageSafetyLevel`, `nextStageCommandCount`, and `nextStageOutputFiles` as top-level mirrors for the first strict source-bundle gate.
+- Added unit and packed-tarball smoke assertions for stage gating lookup parity and next-stage mirror metadata.
+
+### Impact
+- Wrappers can render stage chips, disabled/enabled state, safety badges, and output-file preview affordances without scanning `operatorRunbook.stages`.
+- Company website pilots get clearer local gate metadata before handing a selected Website bundle task into the target repo.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 585 — Website Bundle Handoff Runbook Display Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes stage display copy as stable lookup fields, so wrappers and GUI surfaces can render runbook labels and summaries without scanning or dereferencing full stage objects.
+
+### Added
+- Added `operatorRunbook.stageLabelByKey` for stable stage-key to display-label lookup.
+- Added `operatorRunbook.stageSummaryByKey` for stable stage-key to operator guidance summary lookup.
+- Added `operatorRunbook.nextStageLabel` and `nextStageSummary` so the first strict source-bundle gate can be rendered directly from top-level next-stage metadata.
+- Kept `operatorRunbook.stages`, `stageByKey`, `nextStage`, and existing command metadata intact for backward compatibility.
+- Added unit and packed-tarball smoke assertions for display-label parity, summary parity, and next-stage display metadata.
+
+### Impact
+- Wrappers can render stage tabs, checklist labels, and next-step descriptions without scanning `stages[]` or opening `stageByKey`.
+- Company website pilots get a simpler handoff UI contract for showing the next local read-only gate before target-repo work starts.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
+## Phase 584 — Website Bundle Handoff Runbook Lookup Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now makes the Website bundle operator runbook easier for wrappers and GUI surfaces to consume without scanning ordered arrays.
+
+### Added
+- Added `operatorRunbook.stageKeys` to preserve the validated stage order as a compact top-level list.
+- Added `operatorRunbook.stageByKey` so each runbook stage is addressable by stable key.
+- Added `operatorRunbook.commandStageKeys` and `operatorRunbook.manualStageKeys` so wrappers can separate executable local commands from manual target-repo stages.
+- Added `operatorRunbook.nextStage`, `nextStageCommandKeys`, `nextCommand`, `nextCommandArgs`, `nextCommandRunPolicy`, `nextCommandSafetyLevel`, `nextCommandSafety`, and `nextCommandEntry` for the first strict source-bundle gate.
+- Kept `operatorRunbook.stages`, `nextStageKey`, and `nextCommandKey` intact for backward compatibility.
+- Added unit and packed-tarball smoke assertions for lookup parity, next-command metadata, active task prompt stage lookup, and mirrored bundle JSON.
+
+### Impact
+- Wrappers can render or execute the first local read-only gate from one self-contained command object.
+- Company website pilots can distinguish stage-order display, command-bearing stages, and manual target-repo stages without rebuilding maps client-side.
+- The change is additive and remains local/read-only with respect to target repos; it adds no external MCP calls, no target repo mutation by design-ai, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 583 — Website Bundle Handoff Operator Runbook (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes an operator runbook derived from the unified command manifest, so wrappers and company website pilots can follow one staged handoff sequence.
+
+### Added
+- Added top-level `operatorRunbook` and mirrored `bundle.operatorRunbook` to bundle handoff JSON.
+- Added five stages: strict source-bundle verification, optional strict handoff JSON refresh, effective task prompt local output, manual target-repo execution, and manual evidence recording.
+- Added stage counts for command/manual stages, required/optional stages, read-only/local-output stages, and mutation boundary checks.
+- Linked the runbook to `commandManifest.effectiveStrictTaskCommandKey`, so default and explicit `--task` handoffs generate the correct active task prompt stage.
+- Added human target-repo prompt guidance under `## Operator Runbook`.
+- Added unit and packed-tarball smoke assertions for runbook shape, active command keys, local output files, and manual target-repo stage boundaries.
+
+### Impact
+- Wrappers, GUI surfaces, and operators can render a ready-to-follow sequence without deriving execution order from raw command lists.
+- Company website pilots get a clearer boundary between local design-ai validation/output commands and the manual implementation that happens in the target website repo.
+- The change is additive and keeps design-ai commands local: no external MCP calls, no target repo mutation by design-ai, no crawler/Lighthouse/axe execution, and no dependency changes.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 582 — Website Bundle Handoff Command Manifest (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes a unified command manifest for source-bundle revalidation and selectable task handoff commands.
+
+### Added
+- Added top-level `commandManifest` and mirrored `bundle.commandManifest` to bundle handoff JSON.
+- Added source command entries for default/strict bundle-check and default/strict bundle-handoff JSON generation.
+- Added task command entries for default/strict handoff prompt generation for every task in `bundle.taskCatalog.items[]`.
+- Added manifest-level command counts, source/task command counts, read-only/local-output counts, mutation boundary counts, default/selected/effective task ids, and active strict task command keys.
+- Preserved existing `sourceBundle`, `taskCatalog`, `defaultTask`, `selectedTask`, and `effectiveTask` command fields for backward compatibility.
+- Added unit and packed-tarball smoke assertions for command manifest shape and safety metadata.
+
+### Impact
+- Wrappers, GUI surfaces, and automation layers can render or execute handoff commands from one ordered manifest instead of scanning several JSON branches.
+- Company website pilots can distinguish source-bundle read-only commands from task-level local output-file commands before any target-repo work.
+- The change is additive and local/read-only with respect to target repos; it does not call external MCPs, mutate target repos, crawl pages, run Lighthouse/axe, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 581 — Website Bundle Source Command Safety Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes source-bundle command safety metadata alongside source command strings and argv arrays.
+
+### Added
+- Added `checkCommandRunPolicy`, `strictCheckCommandRunPolicy`, `handoffCommandRunPolicy`, and `strictHandoffCommandRunPolicy` to `sourceBundle` and its mirrored `bundle.sourceBundle`.
+- Added `checkCommandSafety`, `strictCheckCommandSafety`, `handoffCommandSafety`, and `strictHandoffCommandSafety` objects with read-only mutation boundaries, external-call flags, target-repo mutation flags, and strict-mode markers.
+- Kept the existing source command strings and command argument arrays for backward compatibility.
+- Added unit and packed-tarball smoke assertions for source-bundle read-only safety metadata.
+
+### Impact
+- Wrappers, GUI surfaces, and automation layers can gate source bundle revalidation and handoff prompt generation without inferring safety from command text.
+- Company website pilots can distinguish read-only bundle-check / bundle-handoff JSON generation from local output-file task handoff commands before target-repo work.
+- The change is additive and local/read-only; it does not call external MCPs, mutate target repos, crawl pages, run Lighthouse/axe, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 580 — Website Bundle Task Command Safety Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes task-level handoff command safety metadata alongside task command strings and argv arrays.
+
+### Added
+- Added `handoffCommandRunPolicy` and `strictHandoffCommandRunPolicy` to `bundle.taskCatalog.items[]`, `bundle.defaultTask`, `bundle.selectedTask`, and `bundle.effectiveTask`.
+- Added `handoffCommandSafety` and `strictHandoffCommandSafety` objects with local output-file mutation boundaries, external-call flags, target-repo mutation flags, output file names, and strict-mode markers.
+- Kept the existing task command strings and command argument arrays for backward compatibility.
+- Added unit and packed-tarball smoke assertions for task-level safety metadata.
+
+### Impact
+- Wrappers, GUI surfaces, and automation layers can gate task handoff execution without inferring safety from command text.
+- Company website pilots can distinguish local prompt-file generation from target-repo implementation work before running selected task handoffs.
+- The change is local/read-only with respect to target repos; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 579 — Website Bundle Task Command Args (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes structured task-level command argument arrays alongside the copy-ready task handoff command strings.
+
+### Added
+- Added `handoffCommandArgs` and `strictHandoffCommandArgs` to `bundle.taskCatalog.items[]`.
+- Added the same structured command argument arrays to `bundle.defaultTask`, `bundle.selectedTask`, and `bundle.effectiveTask`.
+- Kept the existing task `handoffCommand` and `strictHandoffCommand` strings for human copy/paste and backward compatibility.
+- Added unit and packed-tarball smoke assertions for task-level command argument contracts.
+
+### Impact
+- Wrappers, GUI surfaces, and automation layers can execute selected Website bundle task handoffs without parsing shell-quoted command strings.
+- Company website pilots can move from verified bundle review to one focused target-repo task with a stable argv payload.
+- The change is local/read-only; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 578 — Website Bundle Source Command Args (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes structured source-bundle command argument arrays alongside the copy-ready command strings.
+
+### Added
+- Added `sourceBundle.checkCommandArgs`, `sourceBundle.strictCheckCommandArgs`, `sourceBundle.handoffCommandArgs`, and `sourceBundle.strictHandoffCommandArgs`.
+- Mirrored the same structured command argument arrays under `bundle.sourceBundle`.
+- Kept the existing `sourceBundle.*Command` strings for human copy/paste and backward compatibility.
+- Added unit and packed-tarball smoke assertions for the command argument contract.
+
+### Impact
+- Wrappers, GUI surfaces, and automation layers can execute source-bundle revalidation without parsing shell-quoted strings.
+- Operators still get the same human-readable command strings in JSON and prompts.
+- The change is local/read-only; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 577 — Website Bundle Source Verification Commands (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now includes copy-ready source-bundle verification commands.
+
+### Added
+- Added `sourceBundle.checkCommand`, `sourceBundle.strictCheckCommand`, `sourceBundle.handoffCommand`, and `sourceBundle.strictHandoffCommand`.
+- Mirrored the same command metadata under `bundle.sourceBundle`.
+- Added the strict bundle-check command to the human target-repo handoff prompt.
+- Added unit and packed-tarball smoke assertions for source-bundle command metadata and prompt wording.
+
+### Impact
+- Wrappers can render reverify/rehandoff actions directly from the handoff payload without rebuilding shell commands from the bundle directory.
+- Operators can copy the strict source-bundle check from the target-repo prompt before implementation.
+- The change is local/read-only; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 576 — Website Bundle Handoff Source Provenance (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes the verified source bundle summary as first-class provenance metadata.
+
+### Added
+- Added top-level `sourceBundle` and mirrored `bundle.sourceBundle` metadata for bundle handoff reports.
+- Added source bundle provenance to the human target-repo handoff prompt.
+- Added unit and packed-tarball smoke assertions for source workspace, status, checksum counts, generated contract counts, and prompt provenance wording.
+
+### Impact
+- Wrappers and operators can confirm which verified bundle directory and digest/status produced the target-repo handoff without recomputing fields from separate report sections.
+- The change is local/read-only; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 575 — Website Bundle Effective Task Human Smoke Coverage (unreleased)
+
+Packed-tarball smoke now verifies human `--bundle-handoff` output keeps effective-task command metadata in both default and selected task flows.
+
+### Added
+- Added installed-bin human smoke coverage for default and explicit `--task` Website Console bundle handoff prompts.
+- Added one-shot `npm exec --package <tarball>` human smoke coverage for the same effective-task prompt contract.
+- Added focused unit assertions for human stdout and output-file handoff prompts.
+
+### Impact
+- Package smoke now catches regressions where JSON keeps `bundle.effectiveTask` but human target-repo prompts lose the copy-ready strict command.
+- The change only strengthens local verification; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 574 — Website Bundle Effective Task Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes the actual task used by the handoff prompt as `bundle.effectiveTask`.
+
+### Added
+- Added JSON `bundle.effectiveTask` for both bundled-default and explicit `--task` handoff flows.
+- Added an “Effective task strict command” line to the target-repo handoff prompt.
+- Added unit and packed-tarball smoke assertions for effective-task command metadata.
+
+### Impact
+- Operators and wrappers can read one field for the task that the handoff prompt will execute, instead of branching between `defaultTask` and `selectedTask`.
+- The output remains deterministic and local; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 573 — Website Bundle Default Task Command Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --json` now exposes the bundled default refactor task as a first-class JSON object.
+
+### Added
+- Added JSON `bundle.defaultTask` with `handoffOutFile`, `handoffCommand`, and `strictHandoffCommand`.
+- Added a “Default task strict command” line to the target-repo handoff prompt.
+- Added unit and packed-tarball smoke assertions for default-task command metadata.
+
+### Impact
+- Operators and wrappers can read the default implementation task directly without assuming `taskCatalog.items[0]` is the active default.
+- The output remains deterministic and local; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 572 — Website Bundle Selected Task Command Metadata (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --task <id-or-number> --json` now makes the selected refactor task self-contained for wrappers and company website pilots.
+
+### Added
+- Added `handoffOutFile`, `handoffCommand`, and `strictHandoffCommand` to JSON `bundle.selectedTask` when an explicit bundle handoff task is selected.
+- Added a “Selected task strict command” line to the target-repo handoff prompt for explicit task handoffs.
+- Added unit and packed-tarball smoke assertions for selected-task command metadata.
+
+### Impact
+- Operators and wrappers no longer need to cross-reference `bundle.taskCatalog.items[]` after selecting a specific task; the selected task carries its own copy-ready handoff command.
+- The change remains deterministic and local; it does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 571 — Website Bundle Handoff Task Commands (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff` now turns the bundle task catalog into copy-ready follow-up commands for each selectable refactor task.
+
+### Added
+- Added `handoffOutFile`, `handoffCommand`, and `strictHandoffCommand` to each JSON `bundle.taskCatalog.items[]` entry.
+- Added each task's strict handoff command to the “Available Bundle Tasks” section in the target-repo prompt.
+- Added unit and packed-tarball smoke assertions for the per-task handoff command contract.
+
+### Impact
+- Company website pilots can inspect one verified bundle handoff output and immediately copy the strict command for task 1, task 2, or a named task.
+- The command metadata is deterministic and local; it does not call external MCPs, mutate target repos, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 570 — Website Bundle Handoff Task Catalog (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff` now includes a task catalog before target-repo implementation, so company website pilots can choose the right refactor task without opening `website-workspace.tasks.json` manually.
+
+### Added
+- Added JSON `bundle.taskCatalog` metadata with task numbers, ids, priority, impact, effort, pages, recommended MCPs, default task id, selected task id, and selection mode.
+- Added an “Available Bundle Tasks” section to the target-repo handoff prompt.
+- Preserved default handoff behavior while making the implicit bundled default task visible.
+- Added unit and packed-tarball smoke assertion coverage for the task catalog contract.
+
+### Impact
+- Operators can generate one verified bundle, inspect the task catalog in the handoff output, then re-run `--bundle-handoff --task <number-or-id>` for the chosen implementation task.
+- The catalog is local/read-only and does not call external MCPs, mutate target repos, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `python3 -m py_compile tools/audit/package-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 569 — Website Bundle Handoff Task Selection (unreleased)
+
+`design-ai site <bundle-dir> --bundle-handoff --task <id-or-number>` now lets company website pilots choose a specific refactor task from a verified handoff bundle before pasting the target-repo Codex prompt.
+
+### Added
+- Allowed `--task` with `--bundle-handoff` while preserving the existing `--prompt codex-implementation --task` behavior.
+- Regenerated the handoff implementation prompt from bundled `website-workspace.tasks.json` when a task selector is provided.
+- Added `bundle.selectedTask` JSON metadata so wrappers can display which task was selected for target-repo execution.
+- Added command help, Website Improvement docs, company dogfood docs, and packed-tarball installed-bin/one-shot smoke coverage for selected-task bundle handoff.
+
+### Impact
+- Internal company website pilots can keep one verified bundle, then hand off task 1, task 2, or a named task without editing generated Markdown manually.
+- The flow remains deterministic and local: it does not call external MCPs, mutate the target website repo, run Lighthouse/axe, crawl pages, or add dependencies.
+
+### Verification Plan
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run audit:strict`
+- `git diff --check`
+
+## Phase 568 — Website From-Intake Task Bundle Command (unreleased)
+
+`design-ai site --from-intake file.md|--stdin --bundle --tasks --out <dir>` now gives company website pilots a task-explicit one-command path from filled intake Markdown to a local handoff bundle.
+
+### Added
+- Allowed `--from-intake ... --bundle --tasks` while keeping ordinary workspace `--bundle --tasks` rejected.
+- Updated command help, Website Improvement docs, company dogfood docs, and release-facing policy docs to show the task-explicit handoff bundle command.
+- Added installed-bin and one-shot `npm exec --package <tarball>` smoke coverage for file and stdin from-intake task handoff bundles.
+- Added release metadata guard wording so release-facing docs preserve the from-intake task handoff bundle package smoke contract.
+
+### Impact
+- Company website pilots can use one copy/paste command that communicates the intended output: a handoff bundle with generated refactor tasks from grounded intake findings.
+- The command still does not call external MCPs or mutate the target website repo; it only writes local handoff artifacts.
+
+### Verification Plan
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `git diff --check`
+
+## Phase 567 — Website From-Intake Task Generation (unreleased)
+
+`design-ai site --from-intake file.md|--stdin --tasks` now converts filled company website intake Markdown with grounded initial audit findings into a task-ready `website-workspace.tasks.json` workspace without requiring an intermediate workspace command.
+
+### Added
+- Added `--from-intake ... --tasks` as a deterministic local task generation mode for filled English/Korean intake Markdown.
+- Added command-specific help examples for file and stdin task output.
+- Added installed-bin and one-shot `npm exec --package <tarball>` smoke coverage for from-intake task JSON stdout and stdin task JSON `--out` file persistence.
+- Added release metadata guard wording so release-facing docs preserve the from-intake task generation package smoke contract.
+
+### Impact
+- Company website pilots can move from a completed intake document to starter refactor tasks in one command before target-repo implementation.
+- The flow still does not call external MCPs or mutate the target website repo; it only reads local intake Markdown and writes local operator artifacts.
+
+### Verification Plan
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py tools/audit/smoke_assertions.py`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run audit:strict`
+- `git diff --check`
+
+## Phase 566 — Website From-Intake Stdin Help Discovery Guard (unreleased)
+
+`design-ai site --help` now lists the piped from-intake commands for saving workspace JSON, creating the next-actions runbook, and writing a handoff bundle, so company website pilots can discover the stdin intake workflow without reading long-form docs first.
+
+### Added
+- Added command-specific help examples for `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`.
+- Added command-specific help examples for `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`.
+- Added command-specific help examples for `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`.
+- Added unit, shared smoke assertion, and release metadata guard coverage so release-facing docs keep the from-intake stdin help examples.
+
+### Impact
+- Operators can move from a filled Korean company intake Markdown file to workspace, runbook, or bundle commands from CLI help alone.
+- The change is documentation and smoke-guard only; it does not call external MCPs, mutate target repos, or change `site` command behavior.
+
+### Verification Plan
+- `node --test cli/lib/help-command.test.mjs cli/lib/site.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `git diff --check`
+
+## Phase 565 — Website From-Intake Stdin Next-Actions Smoke Coverage (unreleased)
+
+`design-ai site --from-intake --stdin --next-actions` now has packed-tarball smoke coverage for JSON stdout, JSON `--out`, and human Markdown `--out`, so piped intake workflows can produce a verified operator checklist before target-repo implementation.
+
+### Added
+- Added installed-bin and one-shot `npm exec --package <tarball>` smoke coverage for `--from-intake --stdin --next-actions --json`.
+- Added installed-bin and one-shot smoke coverage for `--from-intake --stdin --next-actions --json --out <file>`.
+- Added installed-bin and one-shot smoke coverage for `--from-intake --stdin --next-actions --out <file>` human Markdown output.
+- Added release metadata guard wording so release-facing docs preserve stdin next-actions JSON stdout, JSON output-file persistence, and human output-file persistence coverage.
+
+### Impact
+- Company website pilots can pipe a filled intake document and get a durable `website-next-actions.md` runbook without first writing an intake file.
+- The flow remains deterministic and local; it does not call external MCPs or mutate the target website repo.
+
+### Verification Plan
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `npm run audit:strict`
+- `git diff --check`
+
+## Phase 564 — Website From-Intake Stdin Artifact Smoke Coverage (unreleased)
+
+`design-ai site --from-intake --stdin` now has packed-tarball smoke coverage for saved workspace JSON and handoff bundle outputs, closing the remaining stdin artifact path before company website dogfood.
+
+### Added
+- Added installed-bin and one-shot `npm exec --package <tarball>` smoke coverage for `--from-intake --stdin --out <file>`.
+- Added installed-bin and one-shot smoke coverage for `--from-intake --stdin --bundle --out <dir>`.
+- Added release metadata guard wording so release-facing docs preserve stdin workspace JSON stdout, stdin output-file persistence, and stdin handoff bundle coverage.
+
+### Impact
+- Company website pilots can pipe intake Markdown from secure notes or generated streams and still produce durable `website-workspace.json` and handoff bundles from the packaged CLI.
+- The target website repo remains untouched; this phase only verifies local artifact generation and release documentation.
+
+### Verification Plan
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/release-metadata.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 563 — Website From-Intake Stdin Import (unreleased)
+
+`design-ai site --from-intake --stdin` now accepts filled company website intake Markdown from stdin, so operators can pipe a reviewed intake document directly into workspace JSON or next-actions generation before company dogfood.
+
+### Added
+- Added `--from-intake --stdin` as a deterministic local intake import source alongside `--from-intake file.md`.
+- Added stdin-aware provenance and next-actions commands so generated workspace notes and runbooks preserve the input path boundary.
+- Added unit coverage plus installed-bin and one-shot `npm exec --package <tarball>` package smoke coverage for stdin workspace JSON stdout.
+
+### Impact
+- Company website pilots can avoid temporary intake copies when working from secure notes or generated Markdown streams.
+- Existing workspace JSON `design-ai site --stdin` behavior remains unchanged; stdin is treated as intake Markdown only when combined with `--from-intake`.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `npm run package:smoke`
+- `npm run release:metadata`
+- `git diff --check`
+
+## Phase 562 — Website From-Intake Package Smoke Coverage (unreleased)
+
+`design-ai site --from-intake` now has packed-tarball smoke coverage and release metadata guard coverage, closing the gap between the filled intake import feature and the package paths used before company dogfood.
+
+### Added
+- Added installed-bin and one-shot `npm exec --package <tarball>` smoke coverage for filled Markdown intake import to workspace JSON stdout.
+- Added `--from-intake --out <file>` smoke coverage so workspace JSON output-file persistence is verified from the packed tarball.
+- Added `--from-intake --bundle --out <dir>` smoke coverage and release metadata phrase guards for from-intake handoff bundle generation.
+
+### Impact
+- Company website pilots can rely on the packaged CLI to turn filled intake documents into workspace JSON or handoff bundles before target-repo implementation.
+- Release-facing docs now fail metadata checks if they drop the from-intake package smoke contract.
+
+### Verification Plan
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke`
+- `git diff --check`
+
+## Phase 561 — Website Intake Markdown Import (unreleased)
+
+`design-ai site --from-intake file.md` now turns a filled company website intake Markdown file into a Website Improvement workspace, next-actions runbook, or handoff bundle without retyping the same project fields into `--init`.
+
+### Added
+- Added `--from-intake file.md` as a workspace-free Website Improvement mode that accepts English or Korean intake Markdown.
+- Parsed Site Profile fields, priority pages, primary user flows, brand/content notes, MCP readiness statuses, and initial audit findings into the existing workspace schema.
+- Added `--from-intake ... --next-actions` so operators get a save-first runbook, and `--from-intake ... --bundle --out <dir>` so filled intake files can create handoff bundles directly.
+
+### Impact
+- Company website pilots can move from a completed intake document to `website-workspace.json` and `website-handoff-bundle` without duplicating data entry.
+- The feature stays deterministic/local: it reads Markdown from disk, does not call external MCPs, and does not mutate the target website repo.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/smoke_assertions.py --self-test`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
+## Phase 560 — Korean Website Intake Template CLI Output (unreleased)
+
+`design-ai site --intake-template` now supports `--language ko` so Korean company pilots can generate the same intake artifact from the CLI without copying the docs template manually.
+
+### Added
+- Added `--language en|ko` to the workspace-free Website Improvement intake template mode.
+- Added Korean Markdown output, JSON `language` metadata, and `company-website-intake.ko.md` as the recommended Korean file name.
+- Added unit coverage plus packed-tarball installed-bin and one-shot smoke coverage for Korean JSON/Markdown output and Korean Markdown `--out`.
+
+### Impact
+- Company website pilots can start with a Korean intake artifact while preserving the deterministic local/no-external-MCP boundary.
+- Existing English intake-template output remains the default for compatibility.
+
+### Verification Plan
+- `node --check cli/lib/site.mjs cli/commands/site.mjs cli/commands/help.mjs`
+- `node --test cli/lib/site.test.mjs cli/lib/help-command.test.mjs`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/release-metadata.py --self-test`
+- `python3 -m py_compile tools/audit/package-smoke.py tools/audit/smoke_assertions.py tools/audit/release-metadata.py`
+- `npm run package:smoke`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 559 — Website Intake Template Release Metadata Guard (unreleased)
 
 Release-facing policy docs now preserve the `design-ai site --intake-template` package smoke contract alongside the packed-tarball coverage added in Phase 558.

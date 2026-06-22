@@ -85,6 +85,16 @@
 
 placeholder를 바꾼 뒤 `design-ai` repo에서 실행합니다.
 
+이 intake 파일을 채웠다면 그대로 사용합니다.
+
+```bash
+design-ai site --from-intake company-website-intake.ko.md --out website-workspace.json --force
+design-ai site --from-intake company-website-intake.ko.md --next-actions --out website-next-actions.md --force
+design-ai site --from-intake company-website-intake.ko.md --bundle --out website-handoff-bundle --strict --force
+```
+
+intake 파일이 없다면 direct field를 사용합니다.
+
 ```bash
 design-ai site --init \
   --name "<site name>" \

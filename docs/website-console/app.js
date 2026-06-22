@@ -110,6 +110,8 @@
     workspace: loadWorkspace(),
     activeTab: localStorage.getItem(ACTIVE_TAB_KEY) || "profile",
     selectedTemplate: localStorage.getItem(SELECTED_TEMPLATE_KEY) || "codex-repo-intake",
+    runbookActionFilter: "all",
+    runbookEvidenceFilter: "all",
     message: "",
   };
 
@@ -230,6 +232,7 @@
         ],
         nextActions: [],
       },
+      operatorRunbook: null,
       reportNotes: "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
     };
   }
@@ -263,12 +266,184 @@
       mcpReadiness: normalizeMcp(source.mcpReadiness || fallback.mcpReadiness),
       refactorTasks: normalizeTasks(source.refactorTasks || fallback.refactorTasks),
       implementationEvidence: normalizeImplementationEvidence(source.implementationEvidence || fallback.implementationEvidence),
+      operatorRunbook: normalizeOperatorRunbook(source.operatorRunbook || (source.bundle && source.bundle.operatorRunbook), source),
       reportNotes: String(source.reportNotes || ""),
     };
     if (workspace.siteProfile.viewports.length === 0) {
       workspace.siteProfile.viewports = ["desktop"];
     }
     return workspace;
+  }
+
+  function normalizeOperatorRunbook(value, container) {
+    if (!value || typeof value !== "object") return null;
+    var sourceBundle = normalizeRunbookSourceBundle(value.sourceBundle || (container && container.sourceBundle) || (container && container.bundle && container.bundle.sourceBundle));
+    var rows = Array.isArray(value.stageHumanLineDisplayRows)
+      ? value.stageHumanLineDisplayRows.map(normalizeRunbookRow).filter(function (row) { return row.key; })
+      : [];
+    var rowByKey = rows.reduce(function (acc, row) {
+      acc[row.key] = row;
+      return acc;
+    }, {});
+    var actionStatusKeys = ["ready", "optional", "manual", "blocked"];
+    var evidenceProgressStatusKeys = ["blocked", "ready"];
+    var actionStatusIndex = fillRunbookKeyIndexFromRows(
+      normalizeRunbookKeyIndex(value.stageHumanLineDisplayRowKeysByActionStatus, actionStatusKeys),
+      rows,
+      "actionStatus",
+      actionStatusKeys,
+    );
+    var evidenceProgressStatusIndex = fillRunbookKeyIndexFromRows(
+      normalizeRunbookKeyIndex(value.stageHumanLineDisplayRowKeysByEvidenceProgressStatus, evidenceProgressStatusKeys),
+      rows,
+      "evidenceProgressStatus",
+      evidenceProgressStatusKeys,
+    );
+    return {
+      version: Number(value.version || 1),
+      source: String(value.source || "bundle-handoff"),
+      stageCount: Number(value.stageCount || rows.length),
+      commandStageCount: Number(value.commandStageCount || 0),
+      manualStageCount: Number(value.manualStageCount || 0),
+      requiredStageCount: Number(value.requiredStageCount || 0),
+      optionalStageCount: Number(value.optionalStageCount || 0),
+      readOnlyCommandStageCount: Number(value.readOnlyCommandStageCount || 0),
+      localOutputCommandStageCount: Number(value.localOutputCommandStageCount || 0),
+      externalCallCommandStageCount: Number(value.externalCallCommandStageCount || 0),
+      targetRepoMutationCommandStageCount: Number(value.targetRepoMutationCommandStageCount || 0),
+      effectiveTaskId: String(value.effectiveTaskId || ""),
+      effectiveStrictTaskCommandKey: String(value.effectiveStrictTaskCommandKey || ""),
+      sourceBundle: sourceBundle,
+      nextStageKey: String(value.nextStageKey || ""),
+      nextCommandKey: String(value.nextCommandKey || ""),
+      nextStageHumanLine: String(value.nextStageHumanLine || ""),
+      nextStageHumanLineDisplayRow: normalizeRunbookRow(value.nextStageHumanLineDisplayRow || rowByKey[value.nextStageKey] || {}),
+      stageHumanLineDisplayRows: rows,
+      stageHumanLineDisplayRowByKey: rowByKey,
+      stageHumanLineDisplayRowSummary: normalizePlainObject(value.stageHumanLineDisplayRowSummary),
+      stageHumanLineDisplayRowKeysByActionStatus: actionStatusIndex,
+      stageHumanLineDisplayRowKeysByEvidenceProgressStatus: evidenceProgressStatusIndex,
+    };
+  }
+
+  function normalizeRunbookSourceBundle(value) {
+    if (!value || typeof value !== "object") return null;
+    return {
+      directory: String(value.directory || ""),
+      sourceWorkspace: String(value.sourceWorkspace || ""),
+      siteName: String(value.siteName || ""),
+      status: String(value.status || "unknown"),
+      valid: value.valid === true,
+      workspaceStatus: String(value.workspaceStatus || ""),
+      mcpStatus: String(value.mcpStatus || ""),
+      mcpProbeStatus: String(value.mcpProbeStatus || ""),
+      checksumAlgorithm: String(value.checksumAlgorithm || ""),
+      checksumBundleDigest: String(value.checksumBundleDigest || ""),
+      verifiedChecksumFiles: Number(value.verifiedChecksumFiles || 0),
+      expectedChecksumFiles: Number(value.expectedChecksumFiles || 0),
+      verifiedGeneratedFiles: Number(value.verifiedGeneratedFiles || 0),
+      expectedGeneratedFiles: Number(value.expectedGeneratedFiles || 0),
+      issueCount: Number(value.issueCount || 0),
+      warningCount: Number(value.warningCount || 0),
+      failureCount: Number(value.failureCount || 0),
+      strictCheckCommand: String(value.strictCheckCommand || ""),
+      strictHandoffCommand: String(value.strictHandoffCommand || ""),
+    };
+  }
+
+  function normalizeRunbookRow(value) {
+    var row = value && typeof value === "object" ? value : {};
+    return {
+      step: Number(row.step || 0),
+      key: String(row.key || ""),
+      label: String(row.label || ""),
+      line: String(row.line || ""),
+      required: row.required === true,
+      manual: row.manual === true,
+      commandCount: Number(row.commandCount || 0),
+      actionType: String(row.actionType || ""),
+      actionLabel: String(row.actionLabel || ""),
+      actionStatus: String(row.actionStatus || ""),
+      actionStatusLabel: String(row.actionStatusLabel || ""),
+      actionStatusTone: String(row.actionStatusTone || ""),
+      hasEvidenceProgress: row.hasEvidenceProgress === true,
+      evidenceProgressStatus: String(row.evidenceProgressStatus || ""),
+      evidenceProgressStatusLabel: String(row.evidenceProgressStatusLabel || ""),
+      evidenceProgressStatusTone: String(row.evidenceProgressStatusTone || ""),
+      evidenceProgressIconName: String(row.evidenceProgressIconName || ""),
+      evidenceProgressLabel: String(row.evidenceProgressLabel || ""),
+      evidenceCompletionPercent: Number(row.evidenceCompletionPercent || 0),
+      firstUncheckedEvidenceItemLabel: String(row.firstUncheckedEvidenceItemLabel || ""),
+    };
+  }
+
+  function normalizePlainObject(value) {
+    return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  }
+
+  function normalizeRunbookKeyIndex(value, keys) {
+    var source = normalizePlainObject(value);
+    return keys.reduce(function (acc, key) {
+      acc[key] = normalizeStringArray(source[key], []);
+      return acc;
+    }, {});
+  }
+
+  function fillRunbookKeyIndexFromRows(index, rows, statusField, keys) {
+    keys.forEach(function (key) {
+      if (index[key] && index[key].length) return;
+      index[key] = rows.filter(function (row) {
+        return row[statusField] === key;
+      }).map(function (row) {
+        return row.key;
+      });
+    });
+    return index;
+  }
+
+  function extractOperatorRunbookPayload(value) {
+    if (!value || typeof value !== "object") return null;
+    if (value.operatorRunbook) return value.operatorRunbook;
+    if (value.bundle && value.bundle.operatorRunbook) return value.bundle.operatorRunbook;
+    return null;
+  }
+
+  function extractSourceBundleProvenancePayload(value) {
+    if (!value || typeof value !== "object") return null;
+    if (value.type === "website-improvement-source-bundle-provenance") return value.sourceBundle;
+    if (!value.siteProfile && !value.operatorRunbook && !(value.bundle && value.bundle.operatorRunbook) && value.sourceBundle) {
+      return value.sourceBundle;
+    }
+    return null;
+  }
+
+  function extractSourceBundleRevalidationGatePayload(value) {
+    if (!value || typeof value !== "object") return null;
+    if (value.type !== "website-improvement-source-bundle-revalidation-gate") return null;
+    var sourceBundle = value.sourceBundle && typeof value.sourceBundle === "object" ? value.sourceBundle : {};
+    var gate = value.revalidationGate && typeof value.revalidationGate === "object" ? value.revalidationGate : {};
+    return {
+      directory: sourceBundle.directory || "",
+      sourceWorkspace: sourceBundle.sourceWorkspace || "",
+      siteName: sourceBundle.siteName || "",
+      checksumBundleDigest: sourceBundle.checksumBundleDigest || "",
+      status: sourceBundle.status || gate.status || "unknown",
+      valid: sourceBundle.valid === true || gate.valid === true,
+      failureCount: Number(gate.failureCount || 0),
+      warningCount: Number(gate.warningCount || 0),
+      issueCount: Number(gate.issueCount || 0),
+      strictCheckCommand: gate.strictCheckCommand || "",
+    };
+  }
+
+  function createSourceBundleOnlyRunbook(sourceBundle, source) {
+    return normalizeOperatorRunbook({
+      version: 1,
+      source: source || "source-bundle-provenance",
+      sourceBundle: sourceBundle,
+      stageCount: 0,
+      stageHumanLineDisplayRows: [],
+    });
   }
 
   function normalizeImplementationEvidence(value) {
@@ -412,6 +587,7 @@
     }).length;
     var evidence = appState.workspace.implementationEvidence;
     var evidenceCount = evidence.executedWork.length + evidence.verificationResults.length;
+    var runbook = appState.workspace.operatorRunbook;
     var graph = buildWorkflowGraph();
     return {
       pages: appState.workspace.siteProfile.pages.length,
@@ -420,6 +596,7 @@
       tasks: appState.workspace.refactorTasks.length,
       requiredMcp: requiredMcp,
       evidence: evidenceCount,
+      runbookStages: runbook ? runbook.stageCount || runbook.stageHumanLineDisplayRows.length : 0,
       graphNodes: graph.summary.nodeCount,
       graphEdges: graph.summary.edgeCount,
     };
@@ -458,7 +635,7 @@
           : id === "tasks" ? String(metrics.tasks)
             : id === "mcp" ? String(metrics.requiredMcp)
               : id === "graph" ? String(metrics.graphNodes)
-                : id === "report" && metrics.evidence ? String(metrics.evidence)
+                : id === "report" && (metrics.evidence || metrics.runbookStages) ? String(metrics.evidence || metrics.runbookStages)
                   : "";
         return [
           "<li>",
@@ -472,7 +649,7 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\">Import JSON</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\">Import workspace/runbook JSON</button>",
       "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
@@ -849,29 +1026,268 @@
   function renderReport() {
     var report = buildHandoffReport();
     var evidence = appState.workspace.implementationEvidence;
-    return panel("Handoff Report", "Draft the before/after and verification report after target repo implementation work.", [
-      "<div class=\"evidence-summary\" aria-label=\"Implementation evidence summary\">",
-      metric("Executed", evidence.executedWork.length, "Target repo changes"),
-      metric("Verified", evidence.verificationResults.length, "Checks recorded"),
-      metric("Risks", evidence.remainingRisks.length, "Open items"),
-      metric("Next", evidence.nextActions.length, "Follow-up steps"),
+    return [
+      renderOperatorRunbook(),
+      panel("Handoff Report", "Draft the before/after and verification report after target repo implementation work.", [
+        "<div class=\"evidence-summary\" aria-label=\"Implementation evidence summary\">",
+        metric("Executed", evidence.executedWork.length, "Target repo changes"),
+        metric("Verified", evidence.verificationResults.length, "Checks recorded"),
+        metric("Risks", evidence.remainingRisks.length, "Open items"),
+        metric("Next", evidence.nextActions.length, "Follow-up steps"),
+        "</div>",
+        "<div class=\"form-grid evidence-grid\">",
+        textareaField("Executed work", "implementationEvidence.executedWork", linesToText(evidence.executedWork), "", "One completed target-repo change per line."),
+        textareaField("Verification results", "implementationEvidence.verificationResults", linesToText(evidence.verificationResults), "", "One command, browser check, deployment check, or manual QA result per line."),
+        textareaField("Remaining risks", "implementationEvidence.remainingRisks", linesToText(evidence.remainingRisks), "", "One unresolved risk or dependency per line."),
+        textareaField("Next actions", "implementationEvidence.nextActions", linesToText(evidence.nextActions), "", "One follow-up task per line."),
+        "</div>",
+        "<div class=\"field field--wide\" style=\"margin-bottom: 12px;\">",
+        "<label for=\"reportNotes\">Report notes</label>",
+        "<textarea id=\"reportNotes\" data-field=\"reportNotes\">" + escapeHtml(appState.workspace.reportNotes) + "</textarea>",
+        "</div>",
+        "<div class=\"button-row\" style=\"margin-bottom: 8px;\">",
+        "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-report\">Copy report</button>",
+        "<button type=\"button\" class=\"button\" data-action=\"download-report\">Export .md</button>",
+        "</div>",
+        "<pre class=\"report-preview\" data-output=\"report\">" + escapeHtml(report) + "</pre>",
+      ].join("")),
+    ].join("");
+  }
+
+  function renderOperatorRunbook() {
+    var runbook = appState.workspace.operatorRunbook;
+    if (!runbook) {
+      return panel("Operator Runbook", "Import `design-ai site <bundle-dir> --bundle-handoff --json` to inspect the target-repo handoff stages in this console.", [
+        "<div class=\"empty-state\">No operator runbook imported. Use the sidebar Import JSON action with a bundle handoff JSON output.</div>",
+      ].join(""));
+    }
+    var summary = runbook.stageHumanLineDisplayRowSummary || {};
+    var rows = runbook.stageHumanLineDisplayRows || [];
+    var filteredRows = filterRunbookRows(runbook);
+    var rowActionsDisabled = rows.length ? "" : " disabled aria-disabled=\"true\"";
+    var nextLineDisabled = runbook.nextStageHumanLine ? "" : " disabled aria-disabled=\"true\"";
+    return panel("Operator Runbook", "Review the verified bundle handoff stages before switching into the target website repo.", [
+      "<div class=\"evidence-summary\" aria-label=\"Operator runbook summary\">",
+      metric("Stages", runbook.stageCount || rows.length, (runbook.requiredStageCount || 0) + " required"),
+      metric("Manual", summary.manualCount || 0, "Target-repo or evidence steps"),
+      metric("Blocked evidence", summary.blockedEvidenceProgressCount || 0, "Rows needing evidence"),
+      metric("Next", runbook.nextStageKey || "none", runbook.nextCommandKey || "No command"),
       "</div>",
-      "<div class=\"form-grid evidence-grid\">",
-      textareaField("Executed work", "implementationEvidence.executedWork", linesToText(evidence.executedWork), "", "One completed target-repo change per line."),
-      textareaField("Verification results", "implementationEvidence.verificationResults", linesToText(evidence.verificationResults), "", "One command, browser check, deployment check, or manual QA result per line."),
-      textareaField("Remaining risks", "implementationEvidence.remainingRisks", linesToText(evidence.remainingRisks), "", "One unresolved risk or dependency per line."),
-      textareaField("Next actions", "implementationEvidence.nextActions", linesToText(evidence.nextActions), "", "One follow-up task per line."),
+      renderRunbookMetadata(runbook),
+      renderRunbookSourceBundleDetails(runbook),
+      renderRunbookSourceBundleWarning(runbook),
+      renderRunbookProvenanceOnlyNotice(runbook, rows),
+      "<div class=\"button-row\" style=\"margin-bottom: 12px;\">",
+      "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-runbook\">Copy runbook</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"download-runbook\">Export runbook .md</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"copy-filtered-runbook\"" + rowActionsDisabled + ">Copy filtered rows</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"download-filtered-runbook\"" + rowActionsDisabled + ">Export filtered .md</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"copy-next-runbook-line\"" + nextLineDisabled + ">Copy next line</button>",
+      "<button type=\"button\" class=\"button button--danger\" data-action=\"clear-runbook\">Clear runbook</button>",
       "</div>",
-      "<div class=\"field field--wide\" style=\"margin-bottom: 12px;\">",
-      "<label for=\"reportNotes\">Report notes</label>",
-      "<textarea id=\"reportNotes\" data-field=\"reportNotes\">" + escapeHtml(appState.workspace.reportNotes) + "</textarea>",
+      rows.length ? renderRunbookStatusIndex(runbook, filteredRows.length, rows.length) : "",
+      renderRunbookRows(filteredRows, rows.length),
+    ].filter(Boolean).join(""));
+  }
+
+  function renderRunbookMetadata(runbook) {
+    var sourceBundle = runbook.sourceBundle || {};
+    var gateRequired = runbook.sourceBundle && sourceBundleNeedsRevalidation(runbook.sourceBundle);
+    return [
+      "<div class=\"graph-boundaries\" aria-label=\"Operator runbook metadata\">",
+      "<span class=\"pill\">Source: " + escapeHtml(runbook.source || "bundle-handoff") + "</span>",
+      "<span class=\"pill\">Task: " + escapeHtml(runbook.effectiveTaskId || "not specified") + "</span>",
+      "<span class=\"pill\">Strict command: " + escapeHtml(runbook.effectiveStrictTaskCommandKey || "not specified") + "</span>",
+      "<span class=\"pill\">Command stages: " + escapeHtml(String(runbook.commandStageCount || 0)) + "</span>",
+      "<span class=\"pill\">Manual stages: " + escapeHtml(String(runbook.manualStageCount || 0)) + "</span>",
+      "<span class=\"pill\">Read-only: " + escapeHtml(String(runbook.readOnlyCommandStageCount || 0)) + "</span>",
+      "<span class=\"pill\">Local output: " + escapeHtml(String(runbook.localOutputCommandStageCount || 0)) + "</span>",
+      sourceBundle.status ? "<span class=\"pill\">Bundle: " + escapeHtml(sourceBundle.status + "/" + (sourceBundle.valid ? "valid" : "invalid")) + "</span>" : "",
+      runbook.sourceBundle ? "<span class=\"badge badge--" + escapeAttr(gateRequired ? "warn" : "pass") + "\">Gate: " + escapeHtml(gateRequired ? "required" : "not required") + "</span>" : "",
+      sourceBundle.checksumBundleDigest ? "<span class=\"pill\">Digest: " + escapeHtml(shortDisplay(sourceBundle.checksumBundleDigest, 12)) + "</span>" : "",
+      sourceBundle.expectedGeneratedFiles ? "<span class=\"pill\">Generated: " + escapeHtml(String(sourceBundle.verifiedGeneratedFiles || 0) + "/" + String(sourceBundle.expectedGeneratedFiles)) + "</span>" : "",
       "</div>",
-      "<div class=\"button-row\" style=\"margin-bottom: 8px;\">",
-      "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-report\">Copy report</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"download-report\">Export .md</button>",
+    ].filter(Boolean).join("");
+  }
+
+  function renderRunbookSourceBundleDetails(runbook) {
+    var sourceBundle = runbook.sourceBundle;
+    if (!sourceBundle) return "";
+    var checkCommand = sourceBundle.strictCheckCommand || "";
+    var handoffCommand = sourceBundle.strictHandoffCommand || "";
+    return [
+      "<div class=\"runbook-source-bundle\" aria-label=\"Source bundle provenance\">",
+      "<div class=\"runbook-source-bundle__header\"><div><strong>Source Bundle</strong><span>" + escapeHtml(sourceBundle.directory || "No source directory recorded") + "</span></div><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-source-bundle\">Copy Markdown</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-source-bundle\">Export Markdown</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-source-bundle-json\">Copy provenance JSON</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-source-bundle-json\">Export provenance JSON</button></div></div>",
+      "<div class=\"table-wrap\">",
+      "<table>",
+      "<caption class=\"sr-only\">Source bundle provenance details</caption>",
+      "<tbody>",
+      sourceBundleCopyRow("Source", runbook.source || "source-bundle-provenance", "copy-runbook-source-marker"),
+      sourceBundleRow("Status", (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid")),
+      sourceBundleRow("Workspace", sourceBundle.workspaceStatus || "not recorded"),
+      sourceBundleRow("MCP", [sourceBundle.mcpStatus, sourceBundle.mcpProbeStatus].filter(Boolean).join(" / ") || "not recorded"),
+      sourceBundleRow("Checksum", sourceBundle.checksumBundleDigest || "not recorded"),
+      sourceBundleRow("Checksum files", String(sourceBundle.verifiedChecksumFiles || 0) + "/" + String(sourceBundle.expectedChecksumFiles || 0)),
+      sourceBundleRow("Generated files", String(sourceBundle.verifiedGeneratedFiles || 0) + "/" + String(sourceBundle.expectedGeneratedFiles || 0)),
+      sourceBundleRow("Diagnostics", String(sourceBundle.failureCount || 0) + " failures, " + String(sourceBundle.warningCount || 0) + " warnings, " + String(sourceBundle.issueCount || 0) + " issues"),
+      sourceBundleRevalidationRow(sourceBundle),
+      sourceBundleCommandRow("Strict check command", checkCommand, "copy-runbook-source-check-command"),
+      sourceBundleCommandRow("Strict handoff command", handoffCommand, "copy-runbook-source-handoff-command"),
+      "</tbody>",
+      "</table>",
       "</div>",
-      "<pre class=\"report-preview\" data-output=\"report\">" + escapeHtml(report) + "</pre>",
-    ].join(""));
+      "</div>",
+    ].join("");
+  }
+
+  function sourceBundleRow(label, value) {
+    return [
+      "<tr>",
+      "<th scope=\"row\">" + escapeHtml(label) + "</th>",
+      "<td>" + escapeHtml(value || "not recorded") + "</td>",
+      "</tr>",
+    ].join("");
+  }
+
+  function sourceBundleCopyRow(label, value, action) {
+    return [
+      "<tr>",
+      "<th scope=\"row\">" + escapeHtml(label) + "</th>",
+      "<td class=\"runbook-line-cell\">",
+      "<code>" + escapeHtml(value || "not recorded") + "</code>",
+      "<div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"" + escapeAttr(action) + "\">Copy source</button></div>",
+      "</td>",
+      "</tr>",
+    ].join("");
+  }
+
+  function sourceBundleCommandRow(label, command, action) {
+    return [
+      "<tr>",
+      "<th scope=\"row\">" + escapeHtml(label) + "</th>",
+      "<td class=\"runbook-line-cell\">",
+      command ? "<code>" + escapeHtml(command) + "</code><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"" + escapeAttr(action) + "\">Copy command</button></div>" : "<span class=\"muted\">not recorded</span>",
+      "</td>",
+      "</tr>",
+    ].join("");
+  }
+
+  function sourceBundleRevalidationRow(sourceBundle) {
+    var required = sourceBundleNeedsRevalidation(sourceBundle);
+    var label = required ? "required" : "not required";
+    var tone = required ? "warn" : "pass";
+    return [
+      "<tr>",
+      "<th scope=\"row\">Revalidation gate</th>",
+      "<td class=\"runbook-line-cell\">",
+      "<span class=\"badge badge--" + escapeAttr(tone) + "\">" + escapeHtml(label) + "</span>",
+      "<span class=\"runbook-revalidation-detail\">" + escapeHtml(formatSourceBundleRevalidationSummary(sourceBundle)) + "</span>",
+      "<div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-source-revalidation-gate\">Copy gate JSON</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-source-revalidation-gate\">Export gate JSON</button></div>",
+      "</td>",
+      "</tr>",
+    ].join("");
+  }
+
+  function renderRunbookSourceBundleWarning(runbook) {
+    var sourceBundle = runbook.sourceBundle;
+    if (!sourceBundle) return "";
+    var failureCount = Number(sourceBundle.failureCount || 0);
+    if (!sourceBundleNeedsRevalidation(sourceBundle)) return "";
+    return [
+      "<div class=\"runbook-source-bundle-warning\" role=\"alert\">",
+      "<strong>Source bundle needs revalidation</strong>",
+      "<span>Status is " + escapeHtml((sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid")) + " with " + escapeHtml(String(failureCount)) + " failures. Run the strict bundle check before target-repo execution.</span>",
+      sourceBundle.strictCheckCommand ? "<code>" + escapeHtml(sourceBundle.strictCheckCommand) + "</code>" : "",
+      "</div>",
+    ].filter(Boolean).join("");
+  }
+
+  function renderRunbookProvenanceOnlyNotice(runbook, rows) {
+    if (rows.length || !runbook.sourceBundle) return "";
+    var message = runbook.source === "source-bundle-revalidation-gate"
+      ? "This gate-only import contains source-bundle identity, diagnostics, and guard commands only. Import a full bundle handoff JSON when you need stage rows for target-repo execution."
+      : "This import contains source-bundle identity, diagnostics, and guard commands only. Import a full bundle handoff JSON when you need stage rows for target-repo execution.";
+    return [
+      "<div class=\"runbook-provenance-only\" role=\"status\">",
+      "<strong>Provenance-only review</strong>",
+      "<span>Source: <code>" + escapeHtml(runbook.source || "source-bundle-provenance") + "</code></span>",
+      "<span>" + escapeHtml(message) + "</span>",
+      "</div>",
+    ].join("");
+  }
+
+  function renderRunbookStatusIndex(runbook, visibleCount, totalCount) {
+    var actionIndex = runbook.stageHumanLineDisplayRowKeysByActionStatus || {};
+    var evidenceIndex = runbook.stageHumanLineDisplayRowKeysByEvidenceProgressStatus || {};
+    var actionOptions = [["all", totalCount], ["ready", (actionIndex.ready || []).length], ["optional", (actionIndex.optional || []).length], ["manual", (actionIndex.manual || []).length], ["blocked", (actionIndex.blocked || []).length]];
+    var evidenceOptions = [["all", totalCount], ["blocked", (evidenceIndex.blocked || []).length], ["ready", (evidenceIndex.ready || []).length]];
+    var filtersActive = appState.runbookActionFilter !== "all" || appState.runbookEvidenceFilter !== "all";
+    return [
+      "<div class=\"runbook-filter\" aria-label=\"Operator runbook row filters\">",
+      "<div class=\"runbook-filter__summary\"><span><strong>" + escapeHtml(String(visibleCount)) + "</strong> of " + escapeHtml(String(totalCount)) + " rows shown</span><button type=\"button\" class=\"button reset-filter-button\" data-action=\"reset-runbook-filters\"" + (filtersActive ? "" : " disabled aria-disabled=\"true\"") + ">Reset filters</button></div>",
+      "<div class=\"runbook-filter__group\" role=\"group\" aria-label=\"Filter by action status\">",
+      "<span class=\"runbook-filter__label\">Action</span>",
+      actionOptions.map(function (option) {
+        return renderRunbookFilterButton("action", option[0], option[1], appState.runbookActionFilter === option[0]);
+      }).join(""),
+      "</div>",
+      "<div class=\"runbook-filter__group\" role=\"group\" aria-label=\"Filter by evidence progress\">",
+      "<span class=\"runbook-filter__label\">Evidence</span>",
+      evidenceOptions.map(function (option) {
+        return renderRunbookFilterButton("evidence", option[0], option[1], appState.runbookEvidenceFilter === option[0]);
+      }).join(""),
+      "</div>",
+      "</div>",
+    ].join("");
+  }
+
+  function renderRunbookFilterButton(type, value, count, selected) {
+    var label = value === "all" ? "All" : labelize(value);
+    return [
+      "<button type=\"button\" class=\"filter-chip\" data-runbook-filter-type=\"" + escapeAttr(type) + "\" data-runbook-filter-value=\"" + escapeAttr(value) + "\" aria-pressed=\"" + (selected ? "true" : "false") + "\">",
+      "<span>" + escapeHtml(label) + "</span>",
+      "<strong>" + escapeHtml(String(count)) + "</strong>",
+      "</button>",
+    ].join("");
+  }
+
+  function filterRunbookRows(runbook) {
+    var rows = runbook.stageHumanLineDisplayRows || [];
+    var actionFilter = appState.runbookActionFilter || "all";
+    var evidenceFilter = appState.runbookEvidenceFilter || "all";
+    var actionKeys = actionFilter === "all" ? null : (runbook.stageHumanLineDisplayRowKeysByActionStatus || {})[actionFilter] || [];
+    var evidenceKeys = evidenceFilter === "all" ? null : (runbook.stageHumanLineDisplayRowKeysByEvidenceProgressStatus || {})[evidenceFilter] || [];
+    return rows.filter(function (row) {
+      return (!actionKeys || actionKeys.indexOf(row.key) !== -1) && (!evidenceKeys || evidenceKeys.indexOf(row.key) !== -1);
+    });
+  }
+
+  function renderRunbookRows(rows, totalRows) {
+    if (!rows.length) {
+      return totalRows
+        ? "<div class=\"empty-state\">No operator runbook rows match the selected filters.</div>"
+        : "<div class=\"empty-state\">The imported runbook did not include display-ready rows.</div>";
+    }
+    return [
+      "<div class=\"table-wrap\">",
+      "<table>",
+      "<caption class=\"sr-only\">Filtered operator runbook stages</caption>",
+      "<thead><tr><th>Stage</th><th>Action</th><th>Evidence</th><th>Copy-ready line</th></tr></thead>",
+      "<tbody>",
+      rows.map(function (row) {
+        return [
+          "<tr>",
+          "<td><strong>" + escapeHtml(row.step + ". " + row.label) + "</strong><br><code>" + escapeHtml(row.key) + "</code></td>",
+          "<td>" + badge(row.actionStatus || "planned") + "<br><small>" + escapeHtml(row.actionLabel || row.actionType) + "</small></td>",
+          "<td>" + badge(row.evidenceProgressStatus || "planned") + "<br><small>" + escapeHtml(row.evidenceProgressLabel || "No progress") + "</small></td>",
+          "<td class=\"runbook-line-cell\"><small>" + escapeHtml(row.line) + "</small><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-row-markdown\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Copy row</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-row-markdown\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Export row</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-row-line\" data-runbook-row-key=\"" + escapeAttr(row.key) + "\">Copy line</button></div></td>",
+          "</tr>",
+        ].join("");
+      }).join(""),
+      "</tbody>",
+      "</table>",
+      "</div>",
+    ].join("");
   }
 
   function syncReportPreview() {
@@ -1563,6 +1979,194 @@
     ].join("\n");
   }
 
+  function buildOperatorRunbookMarkdown(options) {
+    var runbook = appState.workspace.operatorRunbook;
+    if (!runbook) return "No operator runbook imported.";
+    var settings = options && typeof options === "object" ? options : {};
+    var allRows = runbook.stageHumanLineDisplayRows || [];
+    var rows = settings.filtered ? filterRunbookRows(runbook) : allRows;
+    var actionFilter = appState.runbookActionFilter || "all";
+    var evidenceFilter = appState.runbookEvidenceFilter || "all";
+    var provenanceOnly = allRows.length === 0 && !!runbook.sourceBundle;
+    return [
+      settings.filtered ? "# Website improvement operator runbook - filtered rows" : "# Website improvement operator runbook",
+      "",
+      "- Source: " + runbook.source,
+      "- Provenance-only: " + (provenanceOnly ? "yes" : "no"),
+      "- Stages: " + (runbook.stageCount || allRows.length),
+      "- Rows included: " + rows.length + " of " + allRows.length,
+      "- Effective task: " + (runbook.effectiveTaskId || "not specified"),
+      "- Strict task command key: " + (runbook.effectiveStrictTaskCommandKey || "not specified"),
+      "- Source bundle status: " + formatSourceBundleMarkdownStatus(runbook.sourceBundle),
+      "- Strict bundle check command: " + formatSourceBundleMarkdownCommand(runbook.sourceBundle, "strictCheckCommand"),
+      "- Strict bundle handoff command: " + formatSourceBundleMarkdownCommand(runbook.sourceBundle, "strictHandoffCommand"),
+      "- Source bundle revalidation: " + formatSourceBundleRevalidationMarkdown(runbook.sourceBundle),
+      "- Action filter: " + (settings.filtered ? actionFilter : "all"),
+      "- Evidence filter: " + (settings.filtered ? evidenceFilter : "all"),
+      "- Next stage: " + (runbook.nextStageKey || "none"),
+      "- Next command: " + (runbook.nextCommandKey || "none"),
+      "",
+      "## Stages",
+      "",
+      rows.length ? rows.map(buildOperatorRunbookRowMarkdown).join("\n\n") : formatEmptyRunbookRowsMessage(settings, provenanceOnly, runbook.source),
+    ].join("\n");
+  }
+
+  function formatEmptyRunbookRowsMessage(settings, provenanceOnly, source) {
+    if (settings.filtered) return "No operator runbook rows match the selected filters.";
+    if (provenanceOnly) return "This provenance-only artifact (source: " + (source || "source-bundle-provenance") + ") contains source-bundle identity, diagnostics, and guard commands only. Import a full bundle handoff JSON when target-repo execution stage rows are required.";
+    return "No display-ready rows included.";
+  }
+
+  function buildSourceBundleMarkdown(sourceBundle, source) {
+    if (!sourceBundle) return "No source bundle provenance recorded.";
+    return [
+      "# Website improvement source bundle provenance",
+      "",
+      sourceBundleMarkdownRow("Source", source || "source-bundle-provenance"),
+      sourceBundleMarkdownRow("Directory", sourceBundle.directory),
+      sourceBundleMarkdownRow("Source workspace", sourceBundle.sourceWorkspace),
+      sourceBundleMarkdownRow("Site name", sourceBundle.siteName),
+      sourceBundleMarkdownRow("Status", (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid")),
+      sourceBundleMarkdownRow("Workspace status", sourceBundle.workspaceStatus),
+      sourceBundleMarkdownRow("MCP status", sourceBundle.mcpStatus),
+      sourceBundleMarkdownRow("MCP probe status", sourceBundle.mcpProbeStatus),
+      sourceBundleMarkdownRow("Checksum algorithm", sourceBundle.checksumAlgorithm),
+      sourceBundleMarkdownRow("Checksum bundle digest", sourceBundle.checksumBundleDigest),
+      sourceBundleMarkdownRow("Checksum files", String(sourceBundle.verifiedChecksumFiles || 0) + "/" + String(sourceBundle.expectedChecksumFiles || 0)),
+      sourceBundleMarkdownRow("Generated files", String(sourceBundle.verifiedGeneratedFiles || 0) + "/" + String(sourceBundle.expectedGeneratedFiles || 0)),
+      sourceBundleMarkdownRow("Diagnostics", String(sourceBundle.failureCount || 0) + " failures, " + String(sourceBundle.warningCount || 0) + " warnings, " + String(sourceBundle.issueCount || 0) + " issues"),
+      sourceBundleMarkdownRow("Strict bundle check command", sourceBundle.strictCheckCommand),
+      sourceBundleMarkdownRow("Strict bundle handoff command", sourceBundle.strictHandoffCommand),
+      sourceBundleMarkdownRow("Revalidation gate", formatSourceBundleRevalidationMarkdown(sourceBundle)),
+    ].join("\n");
+  }
+
+  function buildSourceBundleJson(sourceBundle) {
+    return JSON.stringify({
+      type: "website-improvement-source-bundle-provenance",
+      version: 1,
+      source: "source-bundle-provenance",
+      sourceBundle: sourceBundle || null,
+      revalidationGate: buildSourceBundleRevalidationGate(sourceBundle),
+    }, null, 2);
+  }
+
+  function buildSourceBundleRevalidationGateJson(sourceBundle) {
+    return JSON.stringify({
+      type: "website-improvement-source-bundle-revalidation-gate",
+      version: 1,
+      source: "source-bundle-revalidation-gate",
+      sourceBundle: sourceBundle ? {
+        directory: sourceBundle.directory || "",
+        sourceWorkspace: sourceBundle.sourceWorkspace || "",
+        siteName: sourceBundle.siteName || "",
+        checksumBundleDigest: sourceBundle.checksumBundleDigest || "",
+        status: sourceBundle.status || "unknown",
+        valid: sourceBundle.valid === true,
+      } : null,
+      revalidationGate: buildSourceBundleRevalidationGate(sourceBundle),
+    }, null, 2);
+  }
+
+  function sourceBundleMarkdownRow(label, value) {
+    return "- " + label + ": " + (value || "not recorded");
+  }
+
+  function buildOperatorRunbookRowMarkdown(row) {
+    return [
+      "### " + row.step + ". " + row.label,
+      "",
+      "- Key: `" + row.key + "`",
+      "- Action: " + (row.actionStatusLabel || row.actionStatus || "unknown") + " / " + (row.actionLabel || row.actionType || "unknown"),
+      "- Evidence: " + (row.evidenceProgressStatusLabel || row.evidenceProgressStatus || "unknown") + " / " + (row.evidenceProgressLabel || "No progress"),
+      row.firstUncheckedEvidenceItemLabel ? "- Next evidence item: " + row.firstUncheckedEvidenceItemLabel : "",
+      "",
+      row.line,
+    ].filter(Boolean).join("\n");
+  }
+
+  function formatSourceBundleMarkdownStatus(sourceBundle) {
+    if (!sourceBundle) return "not provided";
+    var status = (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid");
+    var digest = sourceBundle.checksumBundleDigest ? "; digest " + sourceBundle.checksumBundleDigest : "";
+    var directory = sourceBundle.directory ? "; directory " + sourceBundle.directory : "";
+    return status + digest + directory;
+  }
+
+  function formatSourceBundleMarkdownCommand(sourceBundle, key) {
+    if (!sourceBundle || !sourceBundle[key]) return "not provided";
+    return sourceBundle[key];
+  }
+
+  function sourceBundleNeedsRevalidation(sourceBundle) {
+    if (!sourceBundle) return false;
+    return sourceBundle.valid !== true || Number(sourceBundle.failureCount || 0) > 0;
+  }
+
+  function formatSourceBundleRevalidationMarkdown(sourceBundle) {
+    if (!sourceBundle) return "not provided";
+    if (!sourceBundleNeedsRevalidation(sourceBundle)) return "not required";
+    var failureCount = Number(sourceBundle.failureCount || 0);
+    var status = (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid");
+    var command = sourceBundle.strictCheckCommand ? "; run " + sourceBundle.strictCheckCommand : "";
+    return "required; status " + status + "; failures " + String(failureCount) + command;
+  }
+
+  function formatSourceBundleRevalidationSummary(sourceBundle) {
+    if (!sourceBundle) return "not provided";
+    if (!sourceBundleNeedsRevalidation(sourceBundle)) return "not required";
+    return sourceBundle.strictCheckCommand
+      ? "required - run strict check before target-repo execution"
+      : "required - strict check command not recorded";
+  }
+
+  function buildSourceBundleRevalidationGate(sourceBundle) {
+    if (!sourceBundle) {
+      return {
+        required: false,
+        status: "not-provided",
+        valid: false,
+        failureCount: 0,
+        warningCount: 0,
+        issueCount: 0,
+        strictCheckCommand: "",
+        strictCheckCommandAvailable: false,
+        reason: "source-bundle-not-provided",
+        message: "No source bundle provenance recorded.",
+      };
+    }
+    var failureCount = Number(sourceBundle.failureCount || 0);
+    var warningCount = Number(sourceBundle.warningCount || 0);
+    var issueCount = Number(sourceBundle.issueCount || 0);
+    var required = sourceBundleNeedsRevalidation(sourceBundle);
+    var status = (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid");
+    var strictCheckCommandAvailable = Boolean(sourceBundle.strictCheckCommand);
+    return {
+      required: required,
+      status: status,
+      valid: sourceBundle.valid === true,
+      failureCount: failureCount,
+      warningCount: warningCount,
+      issueCount: issueCount,
+      strictCheckCommand: String(sourceBundle.strictCheckCommand || ""),
+      strictCheckCommandAvailable: strictCheckCommandAvailable,
+      reason: required
+        ? strictCheckCommandAvailable ? "revalidation-required" : "revalidation-required-command-missing"
+        : "revalidation-not-required",
+      message: required
+        ? "Run the strict bundle check before target-repo execution."
+        : "Source bundle revalidation is not required.",
+    };
+  }
+
+  function shortDisplay(value, maxLength) {
+    var text = String(value || "");
+    var limit = Number(maxLength || 12);
+    if (text.length <= limit) return text;
+    return text.slice(0, limit) + "...";
+  }
+
   function copyText(text, successMessage) {
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard.writeText(text).then(function () {
@@ -1602,6 +2206,15 @@
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  }
+
+  function safeFileSegment(value) {
+    return String(value || "row")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || "row";
   }
 
   function handleInput(event) {
@@ -1677,6 +2290,16 @@
       return;
     }
 
+    if (button.dataset.runbookFilterType) {
+      if (button.dataset.runbookFilterType === "action") {
+        appState.runbookActionFilter = button.dataset.runbookFilterValue || "all";
+      } else if (button.dataset.runbookFilterType === "evidence") {
+        appState.runbookEvidenceFilter = button.dataset.runbookFilterValue || "all";
+      }
+      render();
+      return;
+    }
+
     var action = button.dataset.action;
     if (!action) return;
     if (action === "export-workspace") {
@@ -1713,6 +2336,125 @@
     } else if (action === "download-report") {
       downloadFile("website-improvement-handoff.md", buildHandoffReport(), "text/markdown");
       setMessage("Handoff report exported.");
+    } else if (action === "copy-runbook") {
+      copyText(buildOperatorRunbookMarkdown(), "Operator runbook copied.");
+    } else if (action === "download-runbook") {
+      downloadFile("website-operator-runbook.md", buildOperatorRunbookMarkdown(), "text/markdown");
+      setMessage("Operator runbook exported.");
+    } else if (action === "copy-filtered-runbook") {
+      var filteredCopyRunbook = appState.workspace.operatorRunbook;
+      if (filteredCopyRunbook && (filteredCopyRunbook.stageHumanLineDisplayRows || []).length) {
+        copyText(buildOperatorRunbookMarkdown({ filtered: true }), "Filtered operator runbook rows copied.");
+      } else {
+        setMessage("Filtered runbook rows unavailable.");
+      }
+    } else if (action === "download-filtered-runbook") {
+      var filteredExportRunbook = appState.workspace.operatorRunbook;
+      if (filteredExportRunbook && (filteredExportRunbook.stageHumanLineDisplayRows || []).length) {
+        downloadFile("website-operator-runbook.filtered.md", buildOperatorRunbookMarkdown({ filtered: true }), "text/markdown");
+        setMessage("Filtered operator runbook exported.");
+      } else {
+        setMessage("Filtered runbook rows unavailable.");
+      }
+    } else if (action === "copy-runbook-row-markdown") {
+      var markdownRunbook = appState.workspace.operatorRunbook;
+      var markdownRow = markdownRunbook && markdownRunbook.stageHumanLineDisplayRowByKey
+        ? markdownRunbook.stageHumanLineDisplayRowByKey[button.dataset.runbookRowKey]
+        : null;
+      if (markdownRow && markdownRow.line) {
+        copyText(buildOperatorRunbookRowMarkdown(markdownRow), "Runbook row Markdown copied.");
+      } else {
+        setMessage("Runbook row Markdown unavailable.");
+      }
+    } else if (action === "download-runbook-row-markdown") {
+      var exportRunbook = appState.workspace.operatorRunbook;
+      var exportRow = exportRunbook && exportRunbook.stageHumanLineDisplayRowByKey
+        ? exportRunbook.stageHumanLineDisplayRowByKey[button.dataset.runbookRowKey]
+        : null;
+      if (exportRow && exportRow.line) {
+        downloadFile("website-operator-runbook." + safeFileSegment(exportRow.key) + ".md", buildOperatorRunbookRowMarkdown(exportRow), "text/markdown");
+        setMessage("Runbook row Markdown exported.");
+      } else {
+        setMessage("Runbook row Markdown unavailable.");
+      }
+    } else if (action === "copy-runbook-row-line") {
+      var rowRunbook = appState.workspace.operatorRunbook;
+      var row = rowRunbook && rowRunbook.stageHumanLineDisplayRowByKey
+        ? rowRunbook.stageHumanLineDisplayRowByKey[button.dataset.runbookRowKey]
+        : null;
+      if (row && row.line) {
+        copyText(row.line, "Runbook row line copied.");
+      } else {
+        setMessage("Runbook row line unavailable.");
+      }
+    } else if (action === "copy-next-runbook-line") {
+      var runbook = appState.workspace.operatorRunbook;
+      if (runbook && runbook.nextStageHumanLine) {
+        copyText(runbook.nextStageHumanLine, "Next runbook line copied.");
+      } else {
+        setMessage("Next runbook line unavailable.");
+      }
+    } else if (action === "copy-runbook-source-check-command") {
+      var checkRunbook = appState.workspace.operatorRunbook;
+      var checkSourceBundle = checkRunbook && checkRunbook.sourceBundle;
+      if (checkSourceBundle && checkSourceBundle.strictCheckCommand) {
+        copyText(checkSourceBundle.strictCheckCommand, "Strict bundle check command copied.");
+      } else {
+        setMessage("Strict bundle check command unavailable.");
+      }
+    } else if (action === "copy-runbook-source-handoff-command") {
+      var handoffRunbook = appState.workspace.operatorRunbook;
+      var handoffSourceBundle = handoffRunbook && handoffRunbook.sourceBundle;
+      if (handoffSourceBundle && handoffSourceBundle.strictHandoffCommand) {
+        copyText(handoffSourceBundle.strictHandoffCommand, "Strict bundle handoff command copied.");
+      } else {
+        setMessage("Strict bundle handoff command unavailable.");
+      }
+    } else if (action === "copy-runbook-source-marker") {
+      var sourceMarkerRunbook = appState.workspace.operatorRunbook;
+      copyText((sourceMarkerRunbook && sourceMarkerRunbook.source) || "source-bundle-provenance", "Runbook source marker copied.");
+    } else if (action === "copy-runbook-source-bundle") {
+      var sourceBundleRunbook = appState.workspace.operatorRunbook;
+      copyText(buildSourceBundleMarkdown(sourceBundleRunbook && sourceBundleRunbook.sourceBundle, sourceBundleRunbook && sourceBundleRunbook.source), "Source bundle Markdown copied.");
+    } else if (action === "download-runbook-source-bundle") {
+      var exportSourceBundleRunbook = appState.workspace.operatorRunbook;
+      downloadFile("website-source-bundle-provenance.md", buildSourceBundleMarkdown(exportSourceBundleRunbook && exportSourceBundleRunbook.sourceBundle, exportSourceBundleRunbook && exportSourceBundleRunbook.source), "text/markdown");
+      setMessage("Source bundle Markdown exported.");
+    } else if (action === "copy-runbook-source-bundle-json") {
+      var sourceBundleJsonRunbook = appState.workspace.operatorRunbook;
+      copyText(buildSourceBundleJson(sourceBundleJsonRunbook && sourceBundleJsonRunbook.sourceBundle), "Source bundle JSON copied.");
+    } else if (action === "download-runbook-source-bundle-json") {
+      var exportSourceBundleJsonRunbook = appState.workspace.operatorRunbook;
+      downloadFile("website-source-bundle-provenance.json", buildSourceBundleJson(exportSourceBundleJsonRunbook && exportSourceBundleJsonRunbook.sourceBundle), "application/json");
+      setMessage("Source bundle JSON exported.");
+    } else if (action === "copy-runbook-source-revalidation-gate") {
+      var sourceBundleGateRunbook = appState.workspace.operatorRunbook;
+      var sourceBundleGate = sourceBundleGateRunbook && sourceBundleGateRunbook.sourceBundle;
+      if (sourceBundleGate) {
+        copyText(buildSourceBundleRevalidationGateJson(sourceBundleGate), "Source bundle gate JSON copied.");
+      } else {
+        setMessage("Source bundle gate unavailable.");
+      }
+    } else if (action === "download-runbook-source-revalidation-gate") {
+      var exportSourceBundleGateRunbook = appState.workspace.operatorRunbook;
+      var exportSourceBundleGate = exportSourceBundleGateRunbook && exportSourceBundleGateRunbook.sourceBundle;
+      if (exportSourceBundleGate) {
+        downloadFile("website-source-bundle-revalidation-gate.json", buildSourceBundleRevalidationGateJson(exportSourceBundleGate), "application/json");
+        setMessage("Source bundle gate JSON exported.");
+      } else {
+        setMessage("Source bundle gate unavailable.");
+      }
+    } else if (action === "clear-runbook") {
+      appState.workspace.operatorRunbook = null;
+      appState.runbookActionFilter = "all";
+      appState.runbookEvidenceFilter = "all";
+      saveWorkspace();
+      setMessage("Operator runbook cleared.");
+    } else if (action === "reset-runbook-filters") {
+      appState.runbookActionFilter = "all";
+      appState.runbookEvidenceFilter = "all";
+      render();
+      setMessage("Runbook filters reset.");
     } else if (action === "copy-graph-json") {
       copyText(JSON.stringify(buildWorkflowGraph(), null, 2), "Workflow graph JSON copied.");
     } else if (action === "download-graph-json") {
@@ -1727,7 +2469,53 @@
     var reader = new FileReader();
     reader.onload = function () {
       try {
-        appState.workspace = normalizeWorkspace(JSON.parse(String(reader.result || "")));
+        var parsed = JSON.parse(String(reader.result || ""));
+        var importedRunbook = normalizeOperatorRunbook(extractOperatorRunbookPayload(parsed), parsed);
+        if (importedRunbook && !parsed.siteProfile) {
+          appState.workspace.operatorRunbook = importedRunbook;
+          appState.runbookActionFilter = "all";
+          appState.runbookEvidenceFilter = "all";
+          appState.activeTab = "report";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveWorkspace();
+          setMessage("Bundle handoff operator runbook imported. Report tab opened.");
+          return;
+        }
+        var importedGateSourceBundle = normalizeRunbookSourceBundle(extractSourceBundleRevalidationGatePayload(parsed));
+        if (importedGateSourceBundle && !parsed.siteProfile) {
+          if (appState.workspace.operatorRunbook) {
+            appState.workspace.operatorRunbook.sourceBundle = importedGateSourceBundle;
+            if (!(appState.workspace.operatorRunbook.stageHumanLineDisplayRows || []).length) {
+              appState.workspace.operatorRunbook.source = "source-bundle-revalidation-gate";
+            }
+          } else {
+            appState.workspace.operatorRunbook = createSourceBundleOnlyRunbook(importedGateSourceBundle, "source-bundle-revalidation-gate");
+          }
+          appState.activeTab = "report";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveWorkspace();
+          setMessage("Source bundle revalidation gate JSON imported. Report tab opened.");
+          return;
+        }
+        var importedSourceBundle = normalizeRunbookSourceBundle(extractSourceBundleProvenancePayload(parsed));
+        if (importedSourceBundle && !parsed.siteProfile) {
+          if (appState.workspace.operatorRunbook) {
+            appState.workspace.operatorRunbook.sourceBundle = importedSourceBundle;
+            if (!(appState.workspace.operatorRunbook.stageHumanLineDisplayRows || []).length) {
+              appState.workspace.operatorRunbook.source = "source-bundle-provenance";
+            }
+          } else {
+            appState.workspace.operatorRunbook = createSourceBundleOnlyRunbook(importedSourceBundle);
+          }
+          appState.activeTab = "report";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveWorkspace();
+          setMessage("Source bundle provenance JSON imported. Report tab opened.");
+          return;
+        }
+        appState.workspace = normalizeWorkspace(parsed);
+        appState.runbookActionFilter = "all";
+        appState.runbookEvidenceFilter = "all";
         saveWorkspace();
         setMessage("Workspace JSON imported.");
       } catch (error) {

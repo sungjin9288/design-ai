@@ -29,3 +29,6 @@ node_modules/
 # mkdocs build artifacts
 site/
 site-src/
+
+# Portfolio/export bundles generated for handoff.
+_portfolio_export/

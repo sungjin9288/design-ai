@@ -1,0 +1,45 @@
+$ node cli/bin/design-ai.mjs list commands
+
+  design-ai catalog
+
+ℹ  Plugin: design-ai v4.55.0
+
+
+commands (17)
+────────────────────────────────────────
+  design-from-brief
+    Generate a complete design system from a one-paragraph product brief.
+  iterate
+    Apply a critique to an existing artifact, produce a revision + changelog.
+  document-from-brief
+    Generate documentation from a brief.
+  slide-deck
+    Generate a slide deck outline from a brief.
+  design-review
+    Run UX audit + a11y review + design critique in parallel and combine.
+  website-improvement
+    Plan a website improvement project with profile, audits, MCP readiness, prompts, and ha...
+  palette-from-brand
+    Generate a full palette from a brand input.
+  component-spec
+    Spec a single component using the component-spec-writer skill.
+  extract-tokens
+    Run the token extractor pipeline.
+  motion-design
+    Spec motion for a screen / component / page.
+  illustration
+    Design or spec an illustration system or piece.
+  print
+    Spec a print piece.
+  video
+    Spec video for marketing, social, or in-product.
+  game-ui
+    Spec game UI.
+  conversational
+    Spec a chatbot / voice / AI chat / live agent.
+  spatial
+    Spec a VR / AR / MR / WebXR experience.
+  stability-review
+    Run the quarterly stability review report. Surfaces promotion candidates + stale files.
+
+[exit_code] 0

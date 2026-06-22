@@ -26,6 +26,17 @@ Use the [Company Website Intake Template](COMPANY-WEBSITE-INTAKE-TEMPLATE.md) wh
 
 Run this from the `design-ai` repository:
 
+If the intake template is already filled, convert it first:
+
+```bash
+design-ai site --from-intake company-website-intake.md --out website-workspace.json --force
+design-ai site --from-intake company-website-intake.md --next-actions --out website-next-actions.md --force
+design-ai site --from-intake company-website-intake.md --tasks --out website-workspace.tasks.json --force
+design-ai site --from-intake company-website-intake.md --bundle --tasks --out website-handoff-bundle --strict --force
+```
+
+Use direct `--init` fields when no intake file exists yet:
+
 ```bash
 design-ai site --init \
   --name "Company marketing site" \
@@ -40,6 +51,17 @@ design-ai site --init \
 ```
 
 Then create the portable handoff bundle:
+
+```bash
+design-ai site --from-intake company-website-intake.md \
+  --bundle \
+  --tasks \
+  --out website-handoff-bundle \
+  --strict \
+  --force
+```
+
+Or create it from direct fields:
 
 ```bash
 design-ai site --init \
@@ -62,6 +84,7 @@ If the target repo is already cloned locally, prefer `--local-path /absolute/pat
 ```bash
 design-ai site website-handoff-bundle --bundle-check --strict --json --out website-bundle-check.json
 design-ai site website-handoff-bundle --bundle-handoff --strict --out target-repo-handoff.md
+design-ai site website-handoff-bundle --bundle-handoff --task 1 --strict --out target-repo-task-accessibility-handoff.md
 ```
 
 The bundle is ready for implementation only when `bundle-check` passes. The handoff prompt must carry:
@@ -72,9 +95,11 @@ The bundle is ready for implementation only when `bundle-check` passes. The hand
 - quality gate commands to run in the target repo
 - implementation evidence and remaining-risk requirements
 
+Use the plain `--bundle-handoff` command when the top-priority bundled implementation prompt is correct. The generated handoff now includes an “Available Bundle Tasks” catalog with each task number, id, priority, impact, effort, pages, recommended MCPs, and a copy-ready strict handoff command. JSON output exposes that top-priority choice as `bundle.defaultTask` and the actual prompt target as `bundle.effectiveTask`. Add `--task <id-or-number>` when the company pilot has chosen a specific task from that catalog or from `website-workspace.tasks.json`; JSON output also includes the selected task's own `handoffOutFile`, `handoffCommand`, and `strictHandoffCommand`, while `bundle.effectiveTask` switches to that selected task.
+
 ## Step 3: Execute In The Target Website Repo
 
-Open the target website repository in Codex or Claude Code and paste `target-repo-handoff.md`.
+Open the target website repository in Codex or Claude Code and paste `target-repo-handoff.md` or the task-selected `target-repo-task-accessibility-handoff.md`.
 
 The implementation agent must:
 

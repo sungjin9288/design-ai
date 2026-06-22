@@ -955,10 +955,106 @@ RELEASE_SITE_INTAKE_TEMPLATE_PACKAGE_SMOKE_TERM_GROUPS = (
         "Website Console intake template export",
     ),
     (
+        "JSON stdout, Markdown stdout, Markdown `--out`, JSON `--out`",
+        "JSON stdout, Markdown stdout, Markdown --out, JSON --out",
         "JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out`",
         "JSON stdout, Markdown stdout, Markdown --out, and JSON --out",
         "JSON/Markdown stdout and output-file paths",
         "JSON, Markdown, and output-file paths",
+    ),
+    (
+        "`--language ko` Korean JSON/Markdown",
+        "--language ko Korean JSON/Markdown",
+        "`--language ko`",
+        "Korean JSON/Markdown",
+        "한국어",
+    ),
+    (
+        "installed-bin and one-shot",
+        "installed-bin plus one-shot",
+        "both installed-bin and one-shot",
+        "installed-bin과 one-shot",
+    ),
+)
+RELEASE_SITE_FROM_INTAKE_PACKAGE_SMOKE_TERM_GROUPS = (
+    (
+        "`design-ai site --from-intake`",
+        "design-ai site --from-intake",
+        "site --from-intake",
+    ),
+    (
+        "Website Console from-intake",
+        "Website Improvement from-intake",
+        "filled intake import",
+        "Markdown intake import",
+        "site from-intake",
+    ),
+    (
+        "workspace JSON stdout",
+        "workspace JSON output",
+        "JSON stdout",
+    ),
+    (
+        "stdin workspace JSON stdout",
+        "stdin JSON stdout",
+        "--stdin workspace JSON",
+    ),
+    (
+        "stdin next-actions JSON stdout",
+        "stdin next-actions JSON",
+        "--stdin --next-actions --json",
+    ),
+    (
+        "stdin next-actions JSON `--out`",
+        "stdin next-actions JSON --out",
+        "stdin next-actions JSON output-file persistence",
+    ),
+    (
+        "stdin next-actions human `--out`",
+        "stdin next-actions human --out",
+        "stdin next-actions human output-file persistence",
+    ),
+    (
+        "stdin workspace JSON `--out`",
+        "stdin workspace JSON --out",
+        "stdin JSON `--out`",
+        "stdin output-file persistence",
+    ),
+    (
+        "workspace JSON `--out`",
+        "workspace JSON --out",
+        "output-file persistence",
+        "`--out` file",
+    ),
+    (
+        "from-intake task generation",
+        "from-intake tasks JSON",
+        "--from-intake task generation",
+    ),
+    (
+        "stdin from-intake task JSON `--out`",
+        "stdin from-intake task JSON --out",
+        "stdin from-intake task output-file persistence",
+    ),
+    (
+        "from-intake task handoff bundle",
+        "from-intake task handoff bundle generation",
+        "--from-intake --bundle --tasks",
+    ),
+    (
+        "stdin from-intake task handoff bundle",
+        "stdin from-intake task handoff bundle generation",
+        "--from-intake --stdin --bundle --tasks",
+    ),
+    (
+        "stdin handoff bundle",
+        "stdin handoff bundle generation",
+        "--stdin handoff bundle",
+    ),
+    (
+        "handoff bundle",
+        "handoff bundle generation",
+        "from-intake handoff bundle",
     ),
     (
         "installed-bin and one-shot",
@@ -1956,9 +2052,9 @@ RELEASE_SITE_NEXT_ACTIONS_HELP_EXAMPLE_TERM_GROUPS = (
         "design-ai site website-workspace.json --next-actions --out website-next-actions.md",
     ),
     (
-        "next-actions Markdown help example",
-        "next-actions Markdown help example coverage",
-        "next-actions Markdown 도움말 예시",
+        "next-actions Markdown help example plus from-intake stdin help examples (`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`)",
+        "next-actions Markdown help example plus from-intake stdin help examples (`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`) coverage",
+        "next-actions Markdown 도움말 예시 plus from-intake stdin help examples (`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`)",
         "next-actions Markdown help 예시",
     ),
     (
@@ -1966,6 +2062,30 @@ RELEASE_SITE_NEXT_ACTIONS_HELP_EXAMPLE_TERM_GROUPS = (
         "help topic example",
         "help-topic",
         "도움말 예시",
+    ),
+)
+RELEASE_SITE_FROM_INTAKE_STDIN_HELP_EXAMPLE_TERM_GROUPS = (
+    (
+        "`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`",
+        "cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force",
+    ),
+    (
+        "`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`",
+        "cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force",
+    ),
+    (
+        "`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`",
+        "cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force",
+    ),
+    (
+        "`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`",
+        "cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle",
+    ),
+    (
+        "from-intake stdin help examples",
+        "from-intake stdin help example coverage",
+        "stdin intake help examples",
+        "stdin intake 도움말 예시",
     ),
 )
 RELEASE_COMMAND_ALIAS_SMOKE_TERM_GROUPS = (
@@ -3036,6 +3156,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site JSON package smoke phrase",
     "site sample package smoke phrase",
     "site intake-template package smoke phrase",
+    "site from-intake package smoke phrase",
     "site init package smoke phrase",
     "site init handoff bundle package smoke phrase",
     "site prompt-list package smoke phrase",
@@ -3101,6 +3222,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "site help usage phrase",
     "site help topic example phrase",
     "site next-actions help example phrase",
+    "site from-intake stdin help example phrase",
     "alias smoke phrase",
     "command alias smoke phrase",
     "functional alias smoke phrase",
@@ -3335,6 +3457,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
         RELEASE_SITE_INTAKE_TEMPLATE_PACKAGE_SMOKE_TERM_GROUPS,
     ),
     (
+        "site from-intake package smoke phrase",
+        RELEASE_SITE_FROM_INTAKE_PACKAGE_SMOKE_TERM_GROUPS,
+    ),
+    (
         "site init package smoke phrase",
         RELEASE_SITE_INIT_PACKAGE_SMOKE_TERM_GROUPS,
     ),
@@ -3518,6 +3644,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     (
         "site next-actions help example phrase",
         RELEASE_SITE_NEXT_ACTIONS_HELP_EXAMPLE_TERM_GROUPS,
+    ),
+    (
+        "site from-intake stdin help example phrase",
+        RELEASE_SITE_FROM_INTAKE_STDIN_HELP_EXAMPLE_TERM_GROUPS,
     ),
     ("alias smoke phrase", RELEASE_ALIAS_SMOKE_TERM_GROUPS),
     ("command alias smoke phrase", RELEASE_COMMAND_ALIAS_SMOKE_TERM_GROUPS),
@@ -4079,7 +4209,8 @@ including `design-ai workspace` workspace learning restore-backups readiness wit
 `design-ai site --stdin --next-actions --json --out file --force` Website Console next-action operator checklist output-file persistence in installed-bin and one-shot paths,
 `design-ai site --stdin --next-actions --out file --force` Website Console next-action human checklist output-file persistence in installed-bin and one-shot paths,
 `design-ai site --sample` Website Console sample workspace coverage,
-`design-ai site --intake-template` Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out` in installed-bin and one-shot paths,
+`design-ai site --intake-template` Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, JSON `--out`, and `--language ko` Korean JSON/Markdown plus Korean Markdown `--out` in installed-bin and one-shot paths,
+`design-ai site --from-intake` Website Console from-intake filled Markdown intake import coverage for workspace JSON stdout, stdin workspace JSON stdout, stdin next-actions JSON stdout, stdin next-actions JSON `--out` file output-file persistence, stdin next-actions human `--out` file output-file persistence, stdin workspace JSON `--out` file output-file persistence, workspace JSON `--out` file output-file persistence, from-intake task generation, stdin from-intake task JSON `--out` output-file persistence, from-intake task handoff bundle generation, stdin from-intake task handoff bundle generation, stdin handoff bundle generation, and from-intake handoff bundle generation in installed-bin and one-shot paths,
 `design-ai site --init` Website Console project init workspace coverage in installed-bin and one-shot paths,
 `design-ai site --init --bundle --out <dir>` Website Console init handoff bundle coverage in package bin path and one-shot paths,
 `design-ai site --prompt-list --json` Website Console prompt template listing,
@@ -4149,7 +4280,7 @@ human / JSON `design-ai learn --audit` cleanup suggestion output plus learn audi
 `design-ai help` top-level help output,
 `design-ai help --json` topic catalog with probe-capable Website Console site help usage output,
 command alias help and functional alias output,
-command-specific help topic output, shared Website Console site help topic example smoke assertions including the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown help example,
+command-specific help topic output, shared Website Console site help topic example smoke assertions including the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown help example plus from-intake stdin help examples (`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`),
 all three `list` catalog domains in human and JSON mode,
 human / JSON corpus discovery output,
 route JSON output, route catalog output, and route stdin input,
@@ -4186,7 +4317,8 @@ packed-tarball installed-bin 경로도 확인하고,
 `design-ai site --stdin --next-actions --json --out file --force` Website Console next-action operator checklist `--out` file 저장 확인도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --stdin --next-actions --out file --force` Website Console next-action human checklist `--out` file 저장 확인도 installed-bin과 one-shot 경로에서 확인하고,
 `design-ai site --sample` Website Console sample workspace 생성도 확인하고,
-`design-ai site --intake-template` Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out` in installed-bin and one-shot paths도 확인하고,
+`design-ai site --intake-template` Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, JSON `--out`, and `--language ko` Korean JSON/Markdown plus Korean Markdown `--out` in installed-bin and one-shot paths도 확인하고,
+`design-ai site --from-intake` Website Console from-intake filled Markdown intake import coverage for workspace JSON stdout, stdin workspace JSON stdout, stdin next-actions JSON stdout, stdin next-actions JSON `--out` file output-file persistence, stdin next-actions human `--out` file output-file persistence, stdin workspace JSON `--out` file output-file persistence, workspace JSON `--out` file output-file persistence, from-intake task generation, stdin from-intake task JSON `--out` output-file persistence, from-intake task handoff bundle generation, stdin from-intake task handoff bundle generation, stdin handoff bundle generation, and from-intake handoff bundle generation in installed-bin과 one-shot paths도 확인하고,
 `design-ai site --init` Website Console project init workspace coverage in installed-bin and one-shot paths도 확인하고,
 `design-ai site --init --bundle --out <dir>` Website Console init handoff bundle도 설치된 binary와 one-shot 경로에서 확인하고,
 `design-ai site --prompt-list --json` Website Console prompt template 목록도 확인하고,
@@ -4256,7 +4388,7 @@ human / JSON `design-ai learn --audit` cleanup suggestion output과 learn audit 
 `design-ai help` top-level help 출력도 확인하며,
 `design-ai help --json` topic catalog with probe-capable Website Console site help usage output도 확인하며,
 command alias help와 functional alias 출력도 확인해요.
-command-specific help topic 출력과 shared Website Console site help topic example smoke assertions 및 `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown 도움말 예시도 확인해요.
+command-specific help topic 출력과 shared Website Console site help topic example smoke assertions 및 `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown 도움말 예시 plus from-intake stdin help examples (`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`)도 확인해요.
 세 가지 `list` catalog domain의 human/JSON 출력도 확인해요.
 human / JSON corpus discovery 출력도 확인해요.
 route JSON 출력, route catalog 출력, route stdin 입력도 확인해요.
@@ -4581,8 +4713,11 @@ Product readiness covers Website Console handoff bundle compare through `design-
                 "Website Console project init workspace coverage in installed-bin and one-shot paths",
                 "Website Console project init workspace coverage in packaged paths",
             ).replace(
-                "Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out` in installed-bin and one-shot paths",
+                "Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, JSON `--out`, and `--language ko` Korean JSON/Markdown plus Korean Markdown `--out` in installed-bin and one-shot paths",
                 "Website Console intake template package coverage",
+            ).replace(
+                "Website Console from-intake filled Markdown intake import coverage for workspace JSON stdout, stdin workspace JSON stdout, stdin next-actions JSON stdout, stdin next-actions JSON `--out` file output-file persistence, stdin next-actions human `--out` file output-file persistence, stdin workspace JSON `--out` file output-file persistence, workspace JSON `--out` file output-file persistence, from-intake task generation, stdin from-intake task JSON `--out` output-file persistence, from-intake task handoff bundle generation, stdin from-intake task handoff bundle generation, stdin handoff bundle generation, and from-intake handoff bundle generation in installed-bin and one-shot paths",
+                "Website Console from-intake package coverage",
             ).replace(
                 "checkpoint summaries in installed-bin and one-shot paths",
                 "checkpoint summaries in packaged paths",
@@ -5218,11 +5353,15 @@ Product readiness covers Website Console handoff bundle compare through `design-
         changelog_text=changelog,
         roadmap_text=roadmap,
         release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "learn skill proposals JSON `--out` file-write confirmations, ",
-                "",
-            ),
+            name: text
+            .replace("learn skill proposals JSON `--out` file-write confirmations, ", "")
+            .replace("learn skill proposals JSON `--out` file-write confirmation plus ", "")
+            .replace("learn skill proposals JSON `--out` file-write confirmation, ", "")
+            .replace("learn skill proposals JSON `--out` file-write confirmation", "")
+            .replace("learn skill proposals JSON --out file-write confirmation", "")
+            .replace("learn skill proposals JSON `--out` output", "")
+            .replace("JSON `--out` output", "")
+            for name, text in release_policy_docs.items()
         },
         audit_count=8,
     )
@@ -5505,7 +5644,7 @@ Product readiness covers Website Console handoff bundle compare through `design-
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                "`design-ai site --intake-template` Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, and JSON `--out` in installed-bin and one-shot paths,",
+                "`design-ai site --intake-template` Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, JSON `--out`, and `--language ko` Korean JSON/Markdown plus Korean Markdown `--out` in installed-bin and one-shot paths,",
                 "Website Console intake template package smoke coverage,",
             ),
         },
@@ -5520,6 +5659,31 @@ Product readiness covers Website Console handoff bundle compare through `design-
             in site_intake_template_package_smoke_drift_errors
         ),
         "release policy docs should mention Website Console intake template package smoke",
+    )
+
+    site_from_intake_package_smoke_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs={
+            **release_policy_docs,
+            "README.md": english_policy_doc.replace(
+                "`design-ai site --from-intake` Website Console from-intake filled Markdown intake import coverage for workspace JSON stdout, stdin workspace JSON stdout, stdin next-actions JSON stdout, stdin next-actions JSON `--out` file output-file persistence, stdin next-actions human `--out` file output-file persistence, stdin workspace JSON `--out` file output-file persistence, workspace JSON `--out` file output-file persistence, from-intake task generation, stdin from-intake task JSON `--out` output-file persistence, from-intake task handoff bundle generation, stdin from-intake task handoff bundle generation, stdin handoff bundle generation, and from-intake handoff bundle generation in installed-bin and one-shot paths,",
+                "Website Console filled intake import coverage,",
+            ),
+        },
+        audit_count=8,
+    )
+    site_from_intake_package_smoke_drift_errors = "\n".join(
+        site_from_intake_package_smoke_drift["errors"]
+    )
+    assert_condition(
+        (
+            "README.md is missing site from-intake package smoke phrase"
+            in site_from_intake_package_smoke_drift_errors
+        ),
+        "release policy docs should mention Website Console from-intake package smoke",
     )
 
     site_registry_smoke_drift = release_metadata_summary(
@@ -7612,7 +7776,7 @@ Product readiness covers Website Console handoff bundle compare through `design-
         release_policy_docs={
             **release_policy_docs,
             "README.md": english_policy_doc.replace(
-                " including the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown help example",
+                " including the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown help example plus from-intake stdin help examples (`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`)",
                 "",
             ),
         },
@@ -7624,7 +7788,7 @@ Product readiness covers Website Console handoff bundle compare through `design-
     assert_condition(
         "README.md is missing site next-actions help example phrase"
         in site_next_actions_help_example_drift_errors,
-        "release policy docs should mention Website Console next-actions Markdown help example",
+        "release policy docs should mention Website Console next-actions Markdown help example plus from-intake stdin help examples (`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`)",
     )
 
     alias_smoke_drift = release_metadata_summary(

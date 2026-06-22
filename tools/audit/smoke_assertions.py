@@ -109,7 +109,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
-    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --intake-template [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
 }
@@ -226,7 +226,8 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]",
         "design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]",
         "design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]",
-        "design-ai site --intake-template [--json] [--out file] [--force]",
+        "design-ai site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] [--strict] [--force]",
+        "design-ai site --intake-template [--language en|ko] [--json] [--out file] [--force]",
         "design-ai site --sample [--out file] [--force]",
         "design-ai site --prompt-list [--json] [--out file] [--force]",
         "design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]",
@@ -237,13 +238,17 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai site <workspace.json> --bundle --out dir [--strict] [--force]",
         "design-ai site <bundle-dir> --bundle-check [--strict] [--json] [--out file] [--force]",
         "design-ai site <bundle-dir> --bundle-compare other-bundle-dir [--strict] [--json] [--out file] [--force]",
-        "design-ai site <bundle-dir> --bundle-handoff [--strict] [--json] [--out file] [--force]",
+        "design-ai site <bundle-dir> --bundle-handoff [--task id-or-number] [--strict] [--json] [--out file] [--force]",
         "design-ai site <bundle-dir> --bundle-repair [--yes] [--strict] [--json] [--out file] [--force]",
         "design-ai site <workspace.json> --prompt template-id [--task id-or-number] [--out file] [--force]",
         "design-ai site website-workspace.json --mcp-check --probes --json --out mcp-check-probes.json",
         "design-ai site website-workspace.json --mcp-plan --probes --json --out mcp-action-plan-probes.json",
         "design-ai site website-workspace.json --next-actions --json",
         "design-ai site website-workspace.json --next-actions --out website-next-actions.md",
+        "cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force",
+        "cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force",
+        "cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force",
+        "cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle",
         "design-ai site --init --name \"Company marketing site\"",
         "design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --next-actions --out website-next-actions.md",
         "design-ai site --init --name \"Company marketing site\" --live-url https://example.com --repo-url https://github.com/acme/site --bundle --out website-handoff-bundle",
@@ -1033,6 +1038,7 @@ EXPECTED_SITE_INTAKE_TEMPLATE_KEYS = [
     "kind",
     "version",
     "format",
+    "language",
     "recommendedFileName",
     "sections",
     "privacy",
@@ -4148,7 +4154,7 @@ def passing_main_help_output() -> str:
         "    Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization",
         "  workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
         "    Show read-only local dogfood readiness: git, repository, learning usage, eval checkpoints, and release scripts",
-        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --intake-template [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
         "    Validate Website Improvement Console exports and generate handoff artifacts",
         "",
         "Environment overrides:",
@@ -4489,13 +4495,84 @@ def passing_site_next_actions_human() -> str:
     )
 
 
-def passing_site_intake_template_json() -> str:
+def passing_site_intake_template_json(language: str = "en") -> str:
+    if language == "ko":
+        recommended_file_name = "company-website-intake.ko.md"
+        content = "\n".join(
+            [
+                "# 회사 웹사이트 Intake Template",
+                "",
+                "## Site Profile",
+                "- 사이트 이름:",
+                "- Live URL:",
+                "- 대상 repo URL 또는 local path:",
+                "",
+                "## 우선순위 페이지",
+                "- /",
+                "",
+                "## 주요 사용자 흐름",
+                "- 방문자가 가치를 비교하고 signup을 시작",
+                "",
+                "## MCP Readiness Notes",
+                "- GitHub: required",
+                "",
+                "## 초기 Audit Findings",
+                "- Visual Design: todo",
+                "",
+                "## 첫 Bundle Commands",
+                "design-ai site --init \\",
+                "  --bundle \\",
+                "  --out website-handoff-bundle \\",
+                "",
+                "## Target Repo Verification Plan",
+                "- target repo에서 lint, typecheck, build, visual QA를 실행합니다.",
+                "",
+                "## Stop Conditions",
+                "- production secret, 고객 데이터, live deployment 수정 전 멈춥니다.",
+            ]
+        )
+    else:
+        recommended_file_name = "company-website-intake.md"
+        content = "\n".join(
+            [
+                "# Company Website Intake Template",
+                "",
+                "## Site Profile",
+                "- Site name:",
+                "- Live URL:",
+                "- Target repo URL or local path:",
+                "",
+                "## Priority Pages",
+                "- /",
+                "",
+                "## Primary User Flows",
+                "- Visitor evaluates value and starts signup",
+                "",
+                "## MCP Readiness Notes",
+                "- GitHub: required",
+                "",
+                "## Initial Audit Findings",
+                "- Visual Design: todo",
+                "",
+                "## First Bundle Commands",
+                "design-ai site --init \\",
+                "  --bundle \\",
+                "  --out website-handoff-bundle \\",
+                "",
+                "## Target Repo Verification Plan",
+                "- Run lint, typecheck, build, and visual QA in the target repo.",
+                "",
+                "## Stop Conditions",
+                "- Stop before mutating production secrets, customer data, or live deployments.",
+            ]
+        )
     return json.dumps(
         {
             "kind": "website-improvement-intake-template",
             "version": 1,
             "format": "markdown",
-            "recommendedFileName": "company-website-intake.md",
+            "language": language,
+            "recommendedFileName": recommended_file_name,
             "sections": [
                 "site-profile",
                 "priority-pages",
@@ -4518,39 +4595,7 @@ def passing_site_intake_template_json() -> str:
                 "bundleCheck": "design-ai site website-handoff-bundle --bundle-check --strict --json --out website-bundle-check.json --force",
                 "bundleHandoff": "design-ai site website-handoff-bundle --bundle-handoff --strict --out target-repo-handoff.md --force",
             },
-            "content": "\n".join(
-                [
-                    "# Company Website Intake Template",
-                    "",
-                    "## Site Profile",
-                    "- Site name:",
-                    "- Live URL:",
-                    "- Target repo URL or local path:",
-                    "",
-                    "## Priority Pages",
-                    "- /",
-                    "",
-                    "## Primary User Flows",
-                    "- Visitor evaluates value and starts signup",
-                    "",
-                    "## MCP Readiness Notes",
-                    "- GitHub: required",
-                    "",
-                    "## Initial Audit Findings",
-                    "- Visual Design: todo",
-                    "",
-                    "## First Bundle Commands",
-                    "design-ai site --init \\",
-                    "  --bundle \\",
-                    "  --out website-handoff-bundle \\",
-                    "",
-                    "## Target Repo Verification Plan",
-                    "- Run lint, typecheck, build, and visual QA in the target repo.",
-                    "",
-                    "## Stop Conditions",
-                    "- Stop before mutating production secrets, customer data, or live deployments.",
-                ]
-            ),
+            "content": content,
         },
         ensure_ascii=False,
         indent=2,
@@ -4725,6 +4770,17 @@ def passing_site_init_json() -> str:
         ensure_ascii=False,
         indent=2,
     )
+
+
+def passing_site_from_intake_json() -> str:
+    payload = json.loads(passing_site_init_json())
+    payload["siteProfile"]["viewports"] = ["desktop", "tablet", "mobile"]
+    payload["auditChecklist"]["responsive"]["notes"] = "Verify configured viewports: desktop, tablet, mobile."
+    payload["reportNotes"] = (
+        "Generated by `design-ai site --from-intake company-website-intake.md` from a local company website "
+        "intake Markdown file. Actual target repo code changes happen outside this design-ai repository."
+    )
+    return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
 def passing_site_tasks_json() -> str:
@@ -6776,32 +6832,40 @@ def assert_site_sample_json(raw: str, *, context: str, cmd: list[str]) -> None:
         raise SystemExit(f"site sample JSON after {context} reportNotes must preserve target repo boundary")
 
 
-def assert_site_init_json(raw: str, *, context: str, cmd: list[str]) -> None:
+def assert_site_project_workspace_json(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+    command_label: str,
+    provenance_fragment: str,
+    expected_viewports: list[str],
+) -> None:
     assert_no_ansi(raw, cmd)
 
     try:
         payload = json.loads(raw)
     except json.JSONDecodeError as error:
-        raise SystemExit(f"site init JSON after {context} is not valid JSON: {error}") from error
+        raise SystemExit(f"{command_label} after {context} is not valid JSON: {error}") from error
 
     payload = assert_smoke_json_keys(
         payload,
         EXPECTED_SITE_SAMPLE_KEYS,
         label="top-level",
         context=context,
-        command_label="site init JSON",
+        command_label=command_label,
     )
     if payload.get("version") != 1:
-        raise SystemExit(f"site init JSON after {context} expected workspace version 1")
+        raise SystemExit(f"{command_label} after {context} expected workspace version 1")
     if not isinstance(payload.get("updatedAt"), str) or not payload["updatedAt"]:
-        raise SystemExit(f"site init JSON after {context} updatedAt is missing")
+        raise SystemExit(f"{command_label} after {context} updatedAt is missing")
 
     profile = assert_smoke_json_keys(
         payload.get("siteProfile"),
         EXPECTED_SITE_SAMPLE_PROFILE_KEYS,
         label="siteProfile",
         context=context,
-        command_label="site init JSON",
+        command_label=command_label,
     )
     expected_profile = {
         "id": "company-marketing-site",
@@ -6817,27 +6881,27 @@ def assert_site_init_json(raw: str, *, context: str, cmd: list[str]) -> None:
     }
     for key, expected in expected_profile.items():
         if profile.get(key) != expected:
-            raise SystemExit(f"site init JSON after {context} profile {key} differs from expected project init workspace")
+            raise SystemExit(f"{command_label} after {context} profile {key} differs from expected project workspace")
     if profile.get("pages") != ["/", "/pricing"]:
-        raise SystemExit(f"site init JSON after {context} pages differ from expected project init workspace")
+        raise SystemExit(f"{command_label} after {context} pages differ from expected project workspace")
     if profile.get("userFlows") != ["Visitor compares plans and starts signup"]:
-        raise SystemExit(f"site init JSON after {context} user flows differ from expected project init workspace")
-    if profile.get("viewports") != ["desktop", "mobile"]:
-        raise SystemExit(f"site init JSON after {context} viewports differ from expected project init workspace")
+        raise SystemExit(f"{command_label} after {context} user flows differ from expected project workspace")
+    if profile.get("viewports") != expected_viewports:
+        raise SystemExit(f"{command_label} after {context} viewports differ from expected project workspace")
     if not isinstance(profile.get("brandNotes"), str):
-        raise SystemExit(f"site init JSON after {context} brand notes must be a string")
+        raise SystemExit(f"{command_label} after {context} brand notes must be a string")
 
     checklist = payload.get("auditChecklist")
     if not isinstance(checklist, dict) or len(checklist) != 9:
-        raise SystemExit(f"site init JSON after {context} auditChecklist must contain all nine audit categories")
+        raise SystemExit(f"{command_label} after {context} auditChecklist must contain all nine audit categories")
     if any(row.get("status") != "todo" for row in checklist.values() if isinstance(row, dict)):
-        raise SystemExit(f"site init JSON after {context} checklist rows should start in todo state")
+        raise SystemExit(f"{command_label} after {context} checklist rows should start in todo state")
     if "Visitor compares plans" not in checklist.get("ux-flow", {}).get("notes", ""):
-        raise SystemExit(f"site init JSON after {context} UX flow notes should include the provided flow")
+        raise SystemExit(f"{command_label} after {context} UX flow notes should include the provided flow")
 
     readiness = payload.get("mcpReadiness")
     if not isinstance(readiness, dict):
-        raise SystemExit(f"site init JSON after {context} mcpReadiness must be an object")
+        raise SystemExit(f"{command_label} after {context} mcpReadiness must be an object")
     expected_readiness = {
         "github": "required",
         "browser": "required",
@@ -6848,26 +6912,48 @@ def assert_site_init_json(raw: str, *, context: str, cmd: list[str]) -> None:
     }
     for key, expected in expected_readiness.items():
         if readiness.get(key) != expected:
-            raise SystemExit(f"site init JSON after {context} MCP readiness {key} differs from expected project init workspace")
+            raise SystemExit(f"{command_label} after {context} MCP readiness {key} differs from expected project workspace")
 
     tasks = payload.get("refactorTasks")
     if tasks != []:
-        raise SystemExit(f"site init JSON after {context} refactorTasks should start empty")
+        raise SystemExit(f"{command_label} after {context} refactorTasks should start empty")
 
     evidence = payload.get("implementationEvidence")
     if not isinstance(evidence, dict):
-        raise SystemExit(f"site init JSON after {context} implementationEvidence must be an object")
+        raise SystemExit(f"{command_label} after {context} implementationEvidence must be an object")
     if evidence.get("executedWork") or evidence.get("verificationResults"):
-        raise SystemExit(f"site init JSON after {context} implementation evidence should start empty")
+        raise SystemExit(f"{command_label} after {context} implementation evidence should start empty")
     if len(evidence.get("remainingRisks", [])) != 3:
-        raise SystemExit(f"site init JSON after {context} remaining risks should use the default risk set")
+        raise SystemExit(f"{command_label} after {context} remaining risks should use the default risk set")
     if not any("--mcp-check --probes --json" in item for item in evidence.get("nextActions", [])):
-        raise SystemExit(f"site init JSON after {context} nextActions should include the MCP probe command")
-    if not isinstance(payload.get("reportNotes"), str) or "design-ai site --init" not in payload["reportNotes"]:
-        raise SystemExit(f"site init JSON after {context} reportNotes must preserve init provenance")
+        raise SystemExit(f"{command_label} after {context} nextActions should include the MCP probe command")
+    if not isinstance(payload.get("reportNotes"), str) or provenance_fragment not in payload["reportNotes"]:
+        raise SystemExit(f"{command_label} after {context} reportNotes must preserve command provenance")
 
 
-def assert_site_intake_template_json(raw: str, *, context: str, cmd: list[str]) -> None:
+def assert_site_init_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_site_project_workspace_json(
+        raw,
+        context=context,
+        cmd=cmd,
+        command_label="site init JSON",
+        provenance_fragment="design-ai site --init",
+        expected_viewports=["desktop", "mobile"],
+    )
+
+
+def assert_site_from_intake_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_site_project_workspace_json(
+        raw,
+        context=context,
+        cmd=cmd,
+        command_label="site from-intake JSON",
+        provenance_fragment="design-ai site --from-intake",
+        expected_viewports=["desktop", "tablet", "mobile"],
+    )
+
+
+def assert_site_intake_template_json(raw: str, *, context: str, cmd: list[str], language: str = "en") -> None:
     assert_no_ansi(raw, cmd)
 
     try:
@@ -6888,7 +6974,10 @@ def assert_site_intake_template_json(raw: str, *, context: str, cmd: list[str]) 
         raise SystemExit(f"site intake template JSON after {context} expected version 1")
     if payload.get("format") != "markdown":
         raise SystemExit(f"site intake template JSON after {context} expected markdown format")
-    if payload.get("recommendedFileName") != "company-website-intake.md":
+    if payload.get("language") != language:
+        raise SystemExit(f"site intake template JSON after {context} expected language {language}")
+    expected_file_name = "company-website-intake.ko.md" if language == "ko" else "company-website-intake.md"
+    if payload.get("recommendedFileName") != expected_file_name:
         raise SystemExit(f"site intake template JSON after {context} recommended file name changed")
 
     sections = payload.get("sections")
@@ -6922,29 +7011,45 @@ def assert_site_intake_template_json(raw: str, *, context: str, cmd: list[str]) 
         raise SystemExit(f"site intake template JSON after {context} bundle check command changed")
 
     content = payload.get("content")
-    assert_site_intake_template_markdown(content, context=context, cmd=cmd)
+    assert_site_intake_template_markdown(content, context=context, cmd=cmd, language=language)
 
 
-def assert_site_intake_template_markdown(raw: object, *, context: str, cmd: list[str]) -> None:
+def assert_site_intake_template_markdown(raw: object, *, context: str, cmd: list[str], language: str = "en") -> None:
     if not isinstance(raw, str):
         raise SystemExit(f"site intake template Markdown after {context} did not emit text")
     assert_no_ansi(raw, cmd)
     if raw.lstrip().startswith("{"):
         raise SystemExit(f"site intake template Markdown after {context} unexpectedly emitted JSON")
-    required_fragments = [
-        "# Company Website Intake Template",
-        "## Site Profile",
-        "## Priority Pages",
-        "## Primary User Flows",
-        "## MCP Readiness Notes",
-        "## Initial Audit Findings",
-        "## First Bundle Commands",
-        "## Target Repo Verification Plan",
-        "## Stop Conditions",
-        "design-ai site --init",
-        "--bundle",
-        "--out website-handoff-bundle",
-    ]
+    if language == "ko":
+        required_fragments = [
+            "# 회사 웹사이트 Intake Template",
+            "## Site Profile",
+            "## 우선순위 페이지",
+            "## 주요 사용자 흐름",
+            "## MCP Readiness Notes",
+            "## 초기 Audit Findings",
+            "## 첫 Bundle Commands",
+            "## Target Repo Verification Plan",
+            "## Stop Conditions",
+            "design-ai site --init",
+            "--bundle",
+            "--out website-handoff-bundle",
+        ]
+    else:
+        required_fragments = [
+            "# Company Website Intake Template",
+            "## Site Profile",
+            "## Priority Pages",
+            "## Primary User Flows",
+            "## MCP Readiness Notes",
+            "## Initial Audit Findings",
+            "## First Bundle Commands",
+            "## Target Repo Verification Plan",
+            "## Stop Conditions",
+            "design-ai site --init",
+            "--bundle",
+            "--out website-handoff-bundle",
+        ]
     for fragment in required_fragments:
         if fragment not in raw:
             raise SystemExit(f"site intake template Markdown after {context} missing fragment: {fragment!r}")
@@ -6957,12 +7062,14 @@ def assert_site_intake_template_markdown_file_output(
     output_path: str,
     context: str,
     cmd: list[str],
+    language: str = "en",
 ) -> None:
     assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
     assert_site_intake_template_markdown(
         file_contents,
         context=f"{context} out file",
         cmd=cmd,
+        language=language,
     )
 
 
@@ -6973,12 +7080,14 @@ def assert_site_intake_template_json_file_output(
     output_path: str,
     context: str,
     cmd: list[str],
+    language: str = "en",
 ) -> None:
     assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
     assert_site_intake_template_json(
         file_contents,
         context=f"{context} out file",
         cmd=cmd,
+        language=language,
     )
 
 
@@ -10325,7 +10434,7 @@ def run_self_test() -> None:
         "[--json|--mcp-check|--mcp-plan|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] "
         "[--out file] | site <bundle-dir> --bundle-check [--json] | "
         "site <bundle-dir> --bundle-compare other-bundle-dir [--json] | "
-        "site <bundle-dir> --bundle-handoff [--json] | "
+        "site <bundle-dir> --bundle-handoff [--task id] [--json] | "
         "site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | "
         "site --init --name name --live-url url [--next-actions] [--out file] | "
         "site --sample [--out file] | site --prompt-list [--json]"
@@ -11003,6 +11112,13 @@ def run_self_test() -> None:
         context=context,
         cmd=site_intake_template_cmd,
     )
+    site_intake_template_ko_cmd = ["design-ai", "site", "--intake-template", "--language", "ko", "--json"]
+    assert_site_intake_template_json(
+        passing_site_intake_template_json(language="ko"),
+        context=context,
+        cmd=site_intake_template_ko_cmd,
+        language="ko",
+    )
     expect_self_test_failure(
         lambda: assert_site_intake_template_json(
             passing_site_intake_template_json().replace('"storesCredentials": false', '"storesCredentials": true'),
@@ -11021,8 +11137,20 @@ def run_self_test() -> None:
         expected="missing fragment",
         scope="smoke assertions",
     )
+    expect_self_test_failure(
+        lambda: assert_site_intake_template_json(
+            passing_site_intake_template_json(language="ko").replace('"recommendedFileName": "company-website-intake.ko.md"', '"recommendedFileName": "company-website-intake.md"'),
+            context=context,
+            cmd=site_intake_template_ko_cmd,
+            language="ko",
+        ),
+        expected="recommended file name changed",
+        scope="smoke assertions",
+    )
     site_init_cmd = ["design-ai", "site", "--init", "--name", "Company marketing site", "--live-url", "https://example.com"]
     assert_site_init_json(passing_site_init_json(), context=context, cmd=site_init_cmd)
+    site_from_intake_cmd = ["design-ai", "site", "--from-intake", "company-website-intake.md", "--json"]
+    assert_site_from_intake_json(passing_site_from_intake_json(), context=context, cmd=site_from_intake_cmd)
     site_tasks_cmd = ["design-ai", "site", "--stdin", "--tasks"]
     assert_site_tasks_json(passing_site_tasks_json(), context=context, cmd=site_tasks_cmd)
     site_prompt_cmd = ["design-ai", "site", "--stdin", "--prompt", "codex-implementation", "--task", "task-homepage-cta"]
@@ -11446,7 +11574,18 @@ def run_self_test() -> None:
             context=context,
             cmd=site_init_cmd,
         ),
-        expected="project init workspace",
+        expected="project workspace",
+        scope="smoke assertions",
+    )
+    stale_site_from_intake_payload = json.loads(passing_site_from_intake_json())
+    stale_site_from_intake_payload["reportNotes"] = "Generated by `design-ai site --init`."
+    expect_self_test_failure(
+        lambda: assert_site_from_intake_json(
+            json.dumps(stale_site_from_intake_payload),
+            context=context,
+            cmd=site_from_intake_cmd,
+        ),
+        expected="command provenance",
         scope="smoke assertions",
     )
     missing_site_sample_task_payload = json.loads(passing_site_sample_json())

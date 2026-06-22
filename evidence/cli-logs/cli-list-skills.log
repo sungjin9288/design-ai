@@ -1,0 +1,116 @@
+$ node cli/bin/design-ai.mjs list skills --json
+{
+  "name": "design-ai",
+  "version": "4.55.0",
+  "kind": "skills",
+  "sections": [
+    {
+      "kind": "skills",
+      "count": 20,
+      "items": [
+        {
+          "name": "design-system-builder",
+          "path": "skills/design-system-builder/SKILL.md",
+          "description": "Bootstrap a complete design system from a brand brief or single brand color."
+        },
+        {
+          "name": "component-spec-writer",
+          "path": "skills/component-spec-writer/SKILL.md",
+          "description": "Produce a developer-ready spec sheet for a single component."
+        },
+        {
+          "name": "color-palette",
+          "path": "skills/color-palette/SKILL.md",
+          "description": "Generate a full palette (ramps + semantic aliases + dark mode) from inputs."
+        },
+        {
+          "name": "ux-audit",
+          "path": "skills/ux-audit/SKILL.md",
+          "description": "Audit a screen, flow, or page against UX best practices and a11y."
+        },
+        {
+          "name": "design-critique",
+          "path": "skills/design-critique/SKILL.md",
+          "description": "Senior-designer feedback on a design proposal."
+        },
+        {
+          "name": "handoff-spec",
+          "path": "skills/handoff-spec/SKILL.md",
+          "description": "Produce a developer handoff document from a finalized design."
+        },
+        {
+          "name": "design-system-qa",
+          "path": "skills/design-system-qa/SKILL.md",
+          "description": "Audit a design system across 5 testing layers (types / tokens / contract / a11y / visual)."
+        },
+        {
+          "name": "design-pr-review",
+          "path": "skills/design-pr-review/SKILL.md",
+          "description": "Review a GitHub PR for design system compliance. Uses GitHub MCP."
+        },
+        {
+          "name": "website-improvement",
+          "path": "skills/website-improvement/SKILL.md",
+          "description": "Plan website audits, Site Profiles, MCP readiness, refactor tasks, prompts, and handoff reports."
+        },
+        {
+          "name": "figma-token-sync",
+          "path": "skills/figma-token-sync/SKILL.md",
+          "description": "Sync tokens between Figma and code. Uses Figma MCP."
+        },
+        {
+          "name": "design-broadcast",
+          "path": "skills/design-broadcast/SKILL.md",
+          "description": "Post artifacts to Slack / Notion. Uses Slack + Notion MCPs."
+        },
+        {
+          "name": "document-author",
+          "path": "skills/document-author/SKILL.md",
+          "description": "Write technical / product documentation. Diátaxis-aware. Korean-aware."
+        },
+        {
+          "name": "slide-deck-author",
+          "path": "skills/slide-deck-author/SKILL.md",
+          "description": "Outline a slide deck (talk / pitch / reading). Message-led titles."
+        },
+        {
+          "name": "motion-designer",
+          "path": "skills/motion-designer/SKILL.md",
+          "description": "Spec motion for a screen / component / page. Picks tool, durations, easings; reduced-motion-safe."
+        },
+        {
+          "name": "illustration-designer",
+          "path": "skills/illustration-designer/SKILL.md",
+          "description": "Design or spec an illustration system or piece. Style, voice, format; Korean-market-aware."
+        },
+        {
+          "name": "print-designer",
+          "path": "skills/print-designer/SKILL.md",
+          "description": "Spec a print piece. CMYK + Pantone, bleed, finish; Korean print conventions."
+        },
+        {
+          "name": "video-designer",
+          "path": "skills/video-designer/SKILL.md",
+          "description": "Spec video for marketing, social, or in-product use. Korean ad disclosure + KFDA."
+        },
+        {
+          "name": "game-ui-designer",
+          "path": "skills/game-ui-designer/SKILL.md",
+          "description": "Spec game UI — HUD, menus, inventory, store. Korean conventions (확률 표시, 본인인증, PC bang)."
+        },
+        {
+          "name": "conversational-ui-designer",
+          "path": "skills/conversational-ui-designer/SKILL.md",
+          "description": "Spec a conversational UI — voice, chatbot, AI chat. Korean conventions (해요체 / 합쇼체)."
+        },
+        {
+          "name": "spatial-designer",
+          "path": "skills/spatial-designer/SKILL.md",
+          "description": "Spec spatial / AR / VR / MR experiences. Comfort, accessibility, Korean Galaxy XR."
+        }
+      ]
+    }
+  ]
+}
+
+[exit_code] 0

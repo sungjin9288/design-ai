@@ -26,6 +26,15 @@
 
 `design-ai` repo에서 실행합니다.
 
+intake template을 이미 작성했다면 먼저 workspace로 변환합니다.
+
+```bash
+design-ai site --from-intake company-website-intake.ko.md --out website-workspace.json --force
+design-ai site --from-intake company-website-intake.ko.md --next-actions --out website-next-actions.md --force
+```
+
+intake 파일이 아직 없다면 direct `--init` field를 사용합니다.
+
 ```bash
 design-ai site --init \
   --name "Company marketing site" \
@@ -40,6 +49,16 @@ design-ai site --init \
 ```
 
 이어서 portable handoff bundle을 생성합니다.
+
+```bash
+design-ai site --from-intake company-website-intake.ko.md \
+  --bundle \
+  --out website-handoff-bundle \
+  --strict \
+  --force
+```
+
+또는 direct field로 bundle을 생성합니다.
 
 ```bash
 design-ai site --init \

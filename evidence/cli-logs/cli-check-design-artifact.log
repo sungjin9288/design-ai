@@ -1,0 +1,78 @@
+$ node cli/bin/design-ai.mjs check evidence/output-artifacts/button-component-prompt.md --json
+{
+  "filePath": "/Users/sungjin/dev/design/evidence/output-artifacts/button-component-prompt.md",
+  "status": "warn",
+  "passes": 8,
+  "warnings": 1,
+  "failures": 0,
+  "total": 9,
+  "score": "8/9",
+  "results": [
+    {
+      "id": "content-depth",
+      "title": "Meaningful artifact depth",
+      "level": "pass",
+      "passed": true,
+      "message": "Artifact has enough content to audit.",
+      "evidence": "2413 characters"
+    },
+    {
+      "id": "unresolved-markers",
+      "title": "No unresolved placeholders",
+      "level": "pass",
+      "passed": true,
+      "message": "No TODO/TBD/FIXME or template placeholders detected."
+    },
+    {
+      "id": "source-grounding",
+      "title": "Knowledge/source grounding",
+      "level": "pass",
+      "passed": true,
+      "message": "Artifact cites checked knowledge or reference files."
+    },
+    {
+      "id": "contrast",
+      "title": "Explicit contrast handling",
+      "level": "pass",
+      "passed": true,
+      "message": "Contrast handling is explicit."
+    },
+    {
+      "id": "keyboard-focus",
+      "title": "Keyboard and focus behavior",
+      "level": "pass",
+      "passed": true,
+      "message": "Keyboard/focus behavior is mentioned."
+    },
+    {
+      "id": "responsive",
+      "title": "Responsive behavior",
+      "level": "pass",
+      "passed": true,
+      "message": "Responsive behavior is mentioned."
+    },
+    {
+      "id": "screen-reader",
+      "title": "Screen-reader semantics",
+      "level": "pass",
+      "passed": true,
+      "message": "Screen-reader or ARIA behavior is mentioned."
+    },
+    {
+      "id": "dont-section",
+      "title": "Misuse guidance",
+      "level": "warn",
+      "passed": false,
+      "message": "No Don't/avoid/anti-pattern guidance detected."
+    },
+    {
+      "id": "korean-context",
+      "title": "Korean context when relevant",
+      "level": "pass",
+      "passed": true,
+      "message": "No Korean text detected; rule is not applicable."
+    }
+  ]
+}
+
+[exit_code] 0

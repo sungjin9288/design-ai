@@ -87,6 +87,7 @@ from smoke_assertions import (
     assert_status_json,
     assert_status_output,
     assert_smoke_json_keys,
+    assert_site_from_intake_json,
     assert_site_json,
     assert_site_init_json,
     assert_site_intake_template_json,
@@ -210,6 +211,106 @@ SITE_INIT_SMOKE_ARGS = [
     "--viewport",
     "mobile",
 ]
+SITE_FROM_INTAKE_SMOKE_MARKDOWN = """# Company Website Intake Template
+
+## Site Profile
+
+| Field | Value |
+|---|---|
+| Site name | Company marketing site |
+| Live URL | https://example.com |
+| Target repo URL | https://github.com/acme/site |
+| Target repo local path | |
+| Figma URL | |
+| Deploy provider | vercel |
+| Sentry project | |
+| CMS | none |
+| Database | none |
+
+## Priority Pages
+
+| Priority | Path or URL | Why it matters |
+|---:|---|---|
+| 1 | / | Primary conversion |
+| 2 | /pricing | Pricing comparison |
+
+## Primary User Flows
+
+| Priority | Flow | Success signal |
+|---:|---|---|
+| 1 | Visitor compares plans and starts signup | Signup intent |
+
+## Brand And Content Notes
+
+| Area | Notes |
+|---|---|
+| Brand tone | |
+
+## MCP Readiness Notes
+
+| System | Status | Evidence or fallback |
+|---|---|---|
+| GitHub | required | repo reference |
+| Figma | unused | no file |
+| Browser / Playwright | required | live URL |
+| Chrome DevTools | optional | manual debugging if needed |
+| Deploy provider | required | vercel |
+| Sentry | unused | none |
+| Database | unused | none |
+| CMS | unused | none |
+| Collaboration tool | optional | internal review |
+| Research tool | optional | competitor review |
+
+## Initial Audit Findings
+
+| Category | Finding | Evidence | Page |
+|---|---|---|---|
+| Visual design | | | |
+"""
+
+SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN = """# Company Website Intake Template
+
+## Site Profile
+
+| Field | Value |
+|---|---|
+| Site name | Company marketing site |
+| Live URL | https://example.com |
+| Target repo URL | https://github.com/acme/site |
+| Target repo local path | |
+| Figma URL | |
+| Deploy provider | vercel |
+| Sentry project | |
+| CMS | none |
+| Database | none |
+
+## Priority Pages
+
+| Priority | Path or URL | Why it matters |
+|---:|---|---|
+| 1 | / | Primary conversion |
+| 2 | /pricing | Pricing comparison |
+
+## Primary User Flows
+
+| Priority | Flow | Success signal |
+|---:|---|---|
+| 1 | Visitor compares plans and starts signup | Signup intent |
+
+## MCP Readiness Notes
+
+| System | Status | Evidence or fallback |
+|---|---|---|
+| GitHub | required | repo reference |
+| Browser / Playwright | required | live URL |
+| Deploy provider | required | vercel |
+
+## Initial Audit Findings
+
+| Category | Finding | Evidence | Page |
+|---|---|---|---|
+| Accessibility | Mobile nav focus is unclear | Keyboard focus ring is missing from the menu trigger | / |
+"""
 
 
 def assert_site_mcp_probe_counts(
@@ -823,9 +924,10 @@ def assert_site_intake_template_json_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    language: str = "en",
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_site_intake_template_json(result.stdout, context=context, cmd=cmd)
+    assert_site_intake_template_json(result.stdout, context=context, cmd=cmd, language=language)
 
 
 def assert_site_intake_template_markdown_smoke(
@@ -834,9 +936,10 @@ def assert_site_intake_template_markdown_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    language: str = "en",
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_site_intake_template_markdown(result.stdout, context=context, cmd=cmd)
+    assert_site_intake_template_markdown(result.stdout, context=context, cmd=cmd, language=language)
 
 
 def assert_site_intake_template_json_file_smoke(
@@ -846,6 +949,7 @@ def assert_site_intake_template_json_file_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    language: str = "en",
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     try:
@@ -858,6 +962,7 @@ def assert_site_intake_template_json_file_smoke(
         output_path=str(out_file),
         context=context,
         cmd=cmd,
+        language=language,
     )
 
 
@@ -868,6 +973,7 @@ def assert_site_intake_template_markdown_file_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    language: str = "en",
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     try:
@@ -880,6 +986,7 @@ def assert_site_intake_template_markdown_file_smoke(
         output_path=str(out_file),
         context=context,
         cmd=cmd,
+        language=language,
     )
 
 
@@ -894,6 +1001,322 @@ def assert_site_init_json_smoke(
     assert_site_init_json(result.stdout, context=context, cmd=cmd)
 
 
+def write_site_from_intake_fixture(root: Path, *, filename: str = "company-website-intake.filled.md") -> Path:
+    path = root / filename
+    path.write_text(SITE_FROM_INTAKE_SMOKE_MARKDOWN, encoding="utf-8")
+    return path
+
+
+def write_site_from_intake_tasks_fixture(root: Path, *, filename: str = "company-website-intake.tasks.md") -> Path:
+    path = root / filename
+    path.write_text(SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN, encoding="utf-8")
+    return path
+
+
+def assert_site_from_intake_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_site_from_intake_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_from_intake_stdin_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_from_intake_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_from_intake_json_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site from-intake JSON out file after {context}: {out_file}") from error
+    assert_output_write_success(result.stdout, expected_path=str(out_file), context=context, cmd=cmd)
+    assert_site_from_intake_json(contents, context=context, cmd=cmd)
+
+
+def assert_site_from_intake_stdin_json_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site from-intake stdin JSON out file after {context}: {out_file}") from error
+    assert_output_write_success(result.stdout, expected_path=str(out_file), context=context, cmd=cmd)
+    assert_site_from_intake_json(contents, context=context, cmd=cmd)
+
+
+def assert_site_from_intake_tasks_payload(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"site from-intake tasks JSON after {context} is not valid JSON: {error}") from error
+
+    profile = payload.get("siteProfile")
+    if not isinstance(profile, dict) or profile.get("name") != "Company marketing site":
+        raise SystemExit(f"site from-intake tasks JSON after {context} site profile changed")
+    if profile.get("liveUrl") != "https://example.com" or profile.get("repoUrl") != "https://github.com/acme/site":
+        raise SystemExit(f"site from-intake tasks JSON after {context} site URLs changed")
+
+    tasks = payload.get("refactorTasks")
+    if not isinstance(tasks, list) or len(tasks) != 1:
+        raise SystemExit(f"site from-intake tasks JSON after {context} expected one generated task")
+    task = tasks[0]
+    if not isinstance(task, dict):
+        raise SystemExit(f"site from-intake tasks JSON after {context} task is not an object")
+    expected = {
+        "id": "task-accessibility",
+        "category": "accessibility",
+        "priority": "p0",
+        "impact": "high",
+        "effort": "medium",
+    }
+    for key, value in expected.items():
+        if task.get(key) != value:
+            raise SystemExit(f"site from-intake tasks JSON after {context} task {key} changed: {task.get(key)!r}")
+    if "Mobile nav focus is unclear" not in task.get("problem", ""):
+        raise SystemExit(f"site from-intake tasks JSON after {context} task problem missing intake finding")
+    if task.get("pages") != ["/", "/pricing"]:
+        raise SystemExit(f"site from-intake tasks JSON after {context} task pages changed")
+    if "chromeDevtools" not in task.get("recommendedMcp", []):
+        raise SystemExit(f"site from-intake tasks JSON after {context} accessibility task should recommend Chrome DevTools")
+    if "target website repo" not in task.get("codexPrompt", ""):
+        raise SystemExit(f"site from-intake tasks JSON after {context} generated prompt must preserve target repo boundary")
+    if "design-ai site --from-intake" not in payload.get("reportNotes", ""):
+        raise SystemExit(f"site from-intake tasks JSON after {context} reportNotes provenance changed")
+
+
+def assert_site_from_intake_tasks_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_site_from_intake_tasks_payload(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_from_intake_stdin_tasks_json_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site from-intake stdin tasks JSON out file after {context}: {out_file}") from error
+    assert_output_write_success(result.stdout, expected_path=str(out_file), context=context, cmd=cmd)
+    assert_site_from_intake_tasks_payload(contents, context=f"{context} out file", cmd=cmd)
+
+
+def assert_site_from_intake_next_actions_json_payload(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} is not valid JSON: {error}") from error
+
+    if payload.get("kind") != "website-improvement-next-actions" or payload.get("version") != 1:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} kind/version changed")
+    if payload.get("mode") != "from-intake-next-actions" or payload.get("intakePath") != "--stdin":
+        raise SystemExit(f"site from-intake next-actions JSON after {context} source mode changed")
+    for key in ("status", "workspaceStatus", "mcpStatus", "mcpProbeStatus"):
+        if payload.get(key) != "pass":
+            raise SystemExit(f"site from-intake next-actions JSON after {context} expected pass {key}")
+    if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} boundary flags must remain false")
+
+    site = payload.get("site")
+    if not isinstance(site, dict) or site.get("name") != "Company marketing site":
+        raise SystemExit(f"site from-intake next-actions JSON after {context} site summary changed")
+    if site.get("liveUrl") != "https://example.com" or site.get("repoUrl") != "https://github.com/acme/site":
+        raise SystemExit(f"site from-intake next-actions JSON after {context} site URLs changed")
+
+    counts = payload.get("counts")
+    if not isinstance(counts, dict):
+        raise SystemExit(f"site from-intake next-actions JSON after {context} counts missing")
+    expected_counts = {
+        "actions": 4,
+        "blocking": 0,
+        "warnings": 0,
+        "tasks": 0,
+        "requiredMcpMissing": 0,
+        "taskGaps": 0,
+        "probeGaps": 0,
+    }
+    for key, expected in expected_counts.items():
+        if counts.get(key) != expected:
+            raise SystemExit(f"site from-intake next-actions JSON after {context} count {key} changed: {counts.get(key)!r}")
+
+    if payload.get("mcpProbeCounts") != {"count": 3, "pass": 3, "warn": 0, "fail": 0}:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} MCP probe counts changed: {payload.get('mcpProbeCounts')!r}")
+    if payload.get("topTasks") != []:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} topTasks should start empty")
+
+    actions = payload.get("actions")
+    if not isinstance(actions, list) or len(actions) != 4:
+        raise SystemExit(f"site from-intake next-actions JSON after {context} actions changed")
+    expected_action_fragments = [
+        "--from-intake --stdin --out website-workspace.json --force",
+        "--tasks --out website-workspace.tasks.json",
+        "--report --out website-handoff.md",
+        "--bundle --out website-handoff-bundle",
+    ]
+    for index, fragment in enumerate(expected_action_fragments):
+        action = actions[index]
+        if not isinstance(action, dict) or action.get("rank") != index + 1:
+            raise SystemExit(f"site from-intake next-actions JSON after {context} action rank changed")
+        command = action.get("command")
+        if not isinstance(command, str) or fragment not in command:
+            raise SystemExit(f"site from-intake next-actions JSON after {context} action command missing {fragment!r}: {command!r}")
+
+    commands = payload.get("commands")
+    if not isinstance(commands, dict):
+        raise SystemExit(f"site from-intake next-actions JSON after {context} commands missing")
+    if "--from-intake --stdin --out website-workspace.json --force" not in commands.get("createWorkspace", ""):
+        raise SystemExit(f"site from-intake next-actions JSON after {context} createWorkspace command changed")
+    for key, fragment in (
+        ("tasks", "--tasks --out website-workspace.tasks.json"),
+        ("handoffReport", "--report --out website-handoff.md"),
+        ("handoffBundle", "--bundle --out website-handoff-bundle"),
+    ):
+        if fragment not in commands.get(key, ""):
+            raise SystemExit(f"site from-intake next-actions JSON after {context} command {key} changed")
+
+    boundary_text = "\n".join(str(item) for item in payload.get("boundaries", []))
+    for fragment in ("intake next-action report is deterministic and local", "does not call external MCPs", "mutate the target website repo"):
+        if fragment not in boundary_text:
+            raise SystemExit(f"site from-intake next-actions JSON after {context} boundary guidance missing {fragment!r}")
+
+
+def assert_site_from_intake_next_actions_human_payload(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    required_fragments = (
+        "Website Improvement next actions: Company marketing site",
+        "Status: pass",
+        "MCP probes: 3/3 passing, 0 warning, 0 failing",
+        "Actions: 4 (0 blocking, 0 warning)",
+        "Save the parsed Website Improvement workspace",
+        "--from-intake --stdin --out website-workspace.json --force",
+        "--tasks --out website-workspace.tasks.json",
+        "--report --out website-handoff.md",
+        "--bundle --out website-handoff-bundle",
+        "Boundaries:",
+        "deterministic and local",
+        "does not call external MCPs",
+        "mutate the target website repo",
+    )
+    for fragment in required_fragments:
+        if fragment not in raw:
+            raise SystemExit(f"site from-intake next-actions human after {context} missing fragment: {fragment!r}")
+    if '"kind": "website-improvement-next-actions"' in raw:
+        raise SystemExit(f"site from-intake next-actions human after {context} unexpectedly emitted JSON")
+
+
+def assert_site_from_intake_stdin_next_actions_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    assert_site_from_intake_next_actions_json_payload(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_from_intake_stdin_next_actions_json_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site from-intake stdin next-actions JSON out file after {context}: {out_file}") from error
+    assert_output_write_success(result.stdout, expected_path=str(out_file), context=context, cmd=cmd)
+    assert_site_from_intake_next_actions_json_payload(contents, context=f"{context} out file", cmd=cmd)
+
+
+def assert_site_from_intake_stdin_next_actions_human_file_smoke(
+    cmd: list[str],
+    out_file: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain_with_input(
+        cmd,
+        input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        cwd=cwd,
+        env=env,
+    )
+    try:
+        contents = out_file.read_text(encoding="utf-8")
+    except OSError as error:
+        raise SystemExit(f"failed to read site from-intake stdin next-actions human out file after {context}: {out_file}") from error
+    assert_output_write_success(result.stdout, expected_path=str(out_file), context=context, cmd=cmd)
+    assert_site_from_intake_next_actions_human_payload(contents, context=f"{context} out file", cmd=cmd)
+
+
 def assert_site_init_bundle_smoke(
     cmd: list[str],
     *,
@@ -901,8 +1324,14 @@ def assert_site_init_bundle_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    input_text: str | None = None,
+    expected_refactor_task_ids: list[str] | None = None,
 ) -> None:
-    result = run_plain(cmd, cwd=cwd, env=env)
+    result = (
+        run_plain_with_input(cmd, input_text=input_text, cwd=cwd, env=env)
+        if input_text is not None
+        else run_plain(cmd, cwd=cwd, env=env)
+    )
     assert_no_ansi(result.stdout, cmd)
     assert_output_write_success(result.stdout, expected_path=str(out_dir), context=context, cmd=cmd)
 
@@ -927,8 +1356,15 @@ def assert_site_init_bundle_smoke(
         raise SystemExit(f"site init bundle after {context} site name changed")
     if summary.get("source") != "website-workspace.json":
         raise SystemExit(f"site init bundle after {context} source changed: {summary.get('source')!r}")
-    if summary.get("counts", {}).get("refactorTasks") != 0 or summary.get("taskGeneration", {}).get("totalTasks") != 0:
-        raise SystemExit(f"site init bundle after {context} expected zero starter tasks")
+    expected_refactor_task_ids = expected_refactor_task_ids or []
+    expected_refactor_task_count = len(expected_refactor_task_ids)
+    if (
+        summary.get("counts", {}).get("refactorTasks") != expected_refactor_task_count
+        or summary.get("taskGeneration", {}).get("totalTasks") != expected_refactor_task_count
+    ):
+        raise SystemExit(
+            f"site init bundle after {context} expected {expected_refactor_task_count} starter task(s)"
+        )
     if summary.get("files") != expected_files:
         raise SystemExit(f"site init bundle after {context} file manifest changed")
     handoff = summary.get("handoff")
@@ -996,8 +1432,11 @@ def assert_site_init_bundle_smoke(
     workspace = json.loads((out_dir / "website-workspace.tasks.json").read_text(encoding="utf-8"))
     if workspace.get("siteProfile", {}).get("name") != "Company marketing site":
         raise SystemExit(f"site init bundle after {context} workspace site name changed")
-    if workspace.get("refactorTasks") != []:
-        raise SystemExit(f"site init bundle after {context} expected no starter refactor tasks")
+    refactor_task_ids = [task.get("id") for task in workspace.get("refactorTasks", []) if isinstance(task, dict)]
+    if refactor_task_ids != expected_refactor_task_ids:
+        raise SystemExit(
+            f"site init bundle after {context} expected refactor tasks {expected_refactor_task_ids!r}, got {refactor_task_ids!r}"
+        )
 
 
 def assert_site_tasks_json_smoke(
@@ -1687,6 +2126,8 @@ def assert_site_bundle_handoff_json_smoke(
     cwd: Path | None = None,
     context: str,
     expected_evidence_counts: dict[str, int] | None = None,
+    expected_task_id: str = "task-accessibility",
+    expected_selected_task_id: str | None = None,
 ) -> None:
     if expected_evidence_counts is None:
         expected_evidence_counts = {
@@ -1712,12 +2153,2101 @@ def assert_site_bundle_handoff_json_smoke(
     if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
         raise SystemExit(f"site bundle handoff after {context} boundary flags changed")
     bundle = payload.get("bundle", {})
+    source_bundle = payload.get("sourceBundle")
+    if not isinstance(source_bundle, dict):
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance missing")
+    if bundle.get("sourceBundle") != source_bundle:
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance is not mirrored under bundle")
+    if (
+        source_bundle.get("status") != "pass"
+        or source_bundle.get("valid") is not True
+        or source_bundle.get("sourceWorkspace") != "stdin"
+        or source_bundle.get("siteName") != "Korean SaaS marketing site"
+    ):
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance summary changed: {source_bundle!r}")
+    if (
+        source_bundle.get("verifiedGeneratedFiles") != 8
+        or source_bundle.get("expectedGeneratedFiles") != 8
+        or source_bundle.get("verifiedChecksumFiles") != 8
+        or source_bundle.get("expectedChecksumFiles") != 8
+    ):
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance verification counts changed: {source_bundle!r}")
+    for key, expected_fragment in {
+        "checkCommand": "--bundle-check --json",
+        "strictCheckCommand": "--bundle-check --strict --json",
+        "handoffCommand": "--bundle-handoff --json",
+        "strictHandoffCommand": "--bundle-handoff --strict --json",
+    }.items():
+        command = source_bundle.get(key)
+        if not isinstance(command, str) or expected_fragment not in command:
+            raise SystemExit(f"site bundle handoff after {context} source bundle {key} changed: {command!r}")
+    for key, expected_tail in {
+        "checkCommandArgs": ["--bundle-check", "--json"],
+        "strictCheckCommandArgs": ["--bundle-check", "--strict", "--json"],
+        "handoffCommandArgs": ["--bundle-handoff", "--json"],
+        "strictHandoffCommandArgs": ["--bundle-handoff", "--strict", "--json"],
+    }.items():
+        command_args = source_bundle.get(key)
+        if (
+            not isinstance(command_args, list)
+            or len(command_args) != len(expected_tail) + 3
+            or command_args[:2] != ["design-ai", "site"]
+            or not isinstance(command_args[2], str)
+            or command_args[-len(expected_tail):] != expected_tail
+        ):
+            raise SystemExit(f"site bundle handoff after {context} source bundle {key} changed: {command_args!r}")
+    for policy_key in [
+        "checkCommandRunPolicy",
+        "strictCheckCommandRunPolicy",
+        "handoffCommandRunPolicy",
+        "strictHandoffCommandRunPolicy",
+    ]:
+        if source_bundle.get(policy_key) != "read-only":
+            raise SystemExit(f"site bundle handoff after {context} source bundle {policy_key} changed: {source_bundle.get(policy_key)!r}")
+    for key, expected_strict in {
+        "checkCommandSafety": False,
+        "strictCheckCommandSafety": True,
+        "handoffCommandSafety": False,
+        "strictHandoffCommandSafety": True,
+    }.items():
+        safety = source_bundle.get(key)
+        if (
+            not isinstance(safety, dict)
+            or safety.get("runPolicy") != "read-only"
+            or safety.get("safetyLevel") != "local-read-only"
+            or safety.get("writesLocalFile") is not False
+            or safety.get("outputFile") != ""
+            or safety.get("mutates") != "none"
+            or safety.get("externalCalls") is not False
+            or safety.get("targetRepoMutation") is not False
+            or safety.get("requiresCleanWorkspace") is not False
+            or safety.get("requiresReviewBeforeMutation") is not False
+            or safety.get("strict") is not expected_strict
+        ):
+            raise SystemExit(f"site bundle handoff after {context} source bundle {key} changed: {safety!r}")
     if bundle.get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle handoff after {context} site name changed")
     if bundle.get("boundaries") != expected_boundaries:
         raise SystemExit(f"site bundle handoff after {context} bundle boundary list changed: {bundle.get('boundaries')!r}")
     if bundle.get("externalCalls") is not False or bundle.get("targetRepoMutation") is not False:
         raise SystemExit(f"site bundle handoff after {context} bundle boundary flags changed")
+    command_manifest = payload.get("commandManifest")
+    if not isinstance(command_manifest, dict) or bundle.get("commandManifest") != command_manifest:
+        raise SystemExit(f"site bundle handoff after {context} command manifest missing or not mirrored")
+    expected_effective_task_id = expected_selected_task_id or "task-accessibility"
+    expected_command_keys = [
+        "source.bundleCheck",
+        "source.bundleCheck.strict",
+        "source.bundleHandoff",
+        "source.bundleHandoff.strict",
+        "task.task-accessibility.handoff.default",
+        "task.task-accessibility.handoff.strict",
+        "task.task-homepage-cta.handoff.default",
+        "task.task-homepage-cta.handoff.strict",
+        "task.task-content-quality.handoff.default",
+        "task.task-content-quality.handoff.strict",
+    ]
+    manifest_commands = command_manifest.get("commands")
+    if (
+        command_manifest.get("version") != 1
+        or command_manifest.get("source") != "bundle-handoff"
+        or command_manifest.get("commandCount") != 10
+        or command_manifest.get("sourceCommandCount") != 4
+        or command_manifest.get("taskCommandCount") != 6
+        or command_manifest.get("readOnlyCount") != 4
+        or command_manifest.get("localOutputFileCount") != 6
+        or command_manifest.get("externalCallCount") != 0
+        or command_manifest.get("targetRepoMutationCount") != 0
+        or command_manifest.get("requiresCleanWorkspaceCount") != 0
+        or command_manifest.get("requiresReviewBeforeMutationCount") != 0
+        or command_manifest.get("defaultTaskId") != "task-accessibility"
+        or command_manifest.get("selectedTaskId") != (expected_selected_task_id or "")
+        or command_manifest.get("effectiveTaskId") != expected_effective_task_id
+        or command_manifest.get("defaultStrictTaskCommandKey") != "task.task-accessibility.handoff.strict"
+        or command_manifest.get("selectedStrictTaskCommandKey") != (f"task.{expected_selected_task_id}.handoff.strict" if expected_selected_task_id else "")
+        or command_manifest.get("effectiveStrictTaskCommandKey") != f"task.{expected_effective_task_id}.handoff.strict"
+        or not isinstance(manifest_commands, list)
+        or [command.get("key") for command in manifest_commands] != expected_command_keys
+    ):
+        raise SystemExit(f"site bundle handoff after {context} command manifest summary changed: {command_manifest!r}")
+    source_manifest_command = manifest_commands[0]
+    effective_manifest_command = next(
+        (command for command in manifest_commands if command.get("key") == f"task.{expected_effective_task_id}.handoff.strict"),
+        None,
+    )
+    if (
+        source_manifest_command.get("scope") != "source-bundle"
+        or source_manifest_command.get("runPolicy") != "read-only"
+        or source_manifest_command.get("strict") is not False
+        or source_manifest_command.get("taskId") != ""
+        or source_manifest_command.get("outputFile") != ""
+        or not isinstance(source_manifest_command.get("commandArgs"), list)
+        or source_manifest_command["commandArgs"][-2:] != ["--bundle-check", "--json"]
+        or not isinstance(source_manifest_command.get("safety"), dict)
+        or source_manifest_command["safety"].get("safetyLevel") != "local-read-only"
+    ):
+        raise SystemExit(f"site bundle handoff after {context} source command manifest entry changed: {source_manifest_command!r}")
+    if (
+        not isinstance(effective_manifest_command, dict)
+        or effective_manifest_command.get("scope") != "task-handoff"
+        or effective_manifest_command.get("runPolicy") != "writes-local-file"
+        or effective_manifest_command.get("strict") is not True
+        or effective_manifest_command.get("taskId") != expected_effective_task_id
+        or effective_manifest_command.get("outputFile") != f"target-repo-{expected_effective_task_id}-handoff.md"
+        or effective_manifest_command.get("effectiveTask") is not True
+        or effective_manifest_command.get("selectedTask") is not bool(expected_selected_task_id)
+        or effective_manifest_command.get("defaultTask") is not (expected_effective_task_id == "task-accessibility")
+        or not isinstance(effective_manifest_command.get("safety"), dict)
+        or effective_manifest_command["safety"].get("outputFile") != f"target-repo-{expected_effective_task_id}-handoff.md"
+        or effective_manifest_command["safety"].get("targetRepoMutation") is not False
+    ):
+        raise SystemExit(f"site bundle handoff after {context} effective command manifest entry changed: {effective_manifest_command!r}")
+    operator_runbook = payload.get("operatorRunbook")
+    if not isinstance(operator_runbook, dict) or bundle.get("operatorRunbook") != operator_runbook:
+        raise SystemExit(f"site bundle handoff after {context} operator runbook missing or not mirrored")
+    runbook_stages = operator_runbook.get("stages")
+    expected_stage_keys = [
+        "verifySourceBundle",
+        "refreshHandoffSnapshot",
+        "writeEffectiveTaskPrompt",
+        "executeInTargetRepo",
+        "recordEvidence",
+    ]
+    expected_capture_field_keys = {
+        "verifySourceBundle": ["strictBundleCheckOutput", "bundleDigest"],
+        "refreshHandoffSnapshot": ["handoffJsonSnapshot"],
+        "writeEffectiveTaskPrompt": ["promptOutputFile", "selectedTaskId"],
+        "executeInTargetRepo": [
+            "targetRepoChangedFiles",
+            "targetRepoVerificationResults",
+            "viewportAccessibilityNotes",
+        ],
+        "recordEvidence": ["finalEvidenceRecord", "remainingRisks"],
+    }
+    expected_capture_field_input_types = {
+        "verifySourceBundle": ["textarea", "text"],
+        "refreshHandoffSnapshot": ["textarea"],
+        "writeEffectiveTaskPrompt": ["file-path", "text"],
+        "executeInTargetRepo": ["list", "textarea", "textarea"],
+        "recordEvidence": ["textarea", "textarea"],
+    }
+    expected_capture_field_value_shapes = {
+        "verifySourceBundle": ["long-text", "short-text"],
+        "refreshHandoffSnapshot": ["long-text"],
+        "writeEffectiveTaskPrompt": ["file-path", "short-text"],
+        "executeInTargetRepo": ["string-list", "long-text", "long-text"],
+        "recordEvidence": ["long-text", "long-text"],
+    }
+    expected_capture_field_accepts_multiple = {
+        "verifySourceBundle": [False, False],
+        "refreshHandoffSnapshot": [False],
+        "writeEffectiveTaskPrompt": [False, False],
+        "executeInTargetRepo": [True, False, False],
+        "recordEvidence": [False, False],
+    }
+    expected_capture_field_default_values = {
+        "verifySourceBundle": ["", ""],
+        "refreshHandoffSnapshot": [""],
+        "writeEffectiveTaskPrompt": ["", ""],
+        "executeInTargetRepo": [[], "", ""],
+        "recordEvidence": ["", ""],
+    }
+    expected_capture_field_empty_values = {
+        "verifySourceBundle": ["", ""],
+        "refreshHandoffSnapshot": [""],
+        "writeEffectiveTaskPrompt": ["", ""],
+        "executeInTargetRepo": [[], "", ""],
+        "recordEvidence": ["", ""],
+    }
+    expected_capture_field_placeholders = {
+        "verifySourceBundle": [
+            "Paste the strict bundle-check pass output or JSON status.",
+            "Record the bundle digest or checksum summary.",
+        ],
+        "refreshHandoffSnapshot": ["Paste or link the refreshed strict handoff JSON snapshot when used."],
+        "writeEffectiveTaskPrompt": ["target-repo-task-...-handoff.md", "task-..."],
+        "executeInTargetRepo": [
+            "List changed files from the target website repo.",
+            "Record lint, typecheck, build, test, or equivalent command results.",
+            "Record desktop/tablet/mobile checks, keyboard focus, contrast, and screen-reader notes.",
+        ],
+        "recordEvidence": [
+            "Summarize changed files, verification, viewport/accessibility checks, risks, and digest.",
+            "List unresolved risks, skipped checks, or follow-up tasks.",
+        ],
+    }
+    expected_capture_field_requirement_labels = {
+        "verifySourceBundle": ["Required", "Required"],
+        "refreshHandoffSnapshot": ["Optional"],
+        "writeEffectiveTaskPrompt": ["Required", "Required"],
+        "executeInTargetRepo": ["Required", "Required", "Required"],
+        "recordEvidence": ["Required", "Required"],
+    }
+    expected_capture_field_aria_labels = {
+        "verifySourceBundle": [
+            "Strict bundle-check output evidence (required)",
+            "Bundle digest evidence (required)",
+        ],
+        "refreshHandoffSnapshot": ["Strict handoff JSON snapshot evidence (optional)"],
+        "writeEffectiveTaskPrompt": [
+            "Prompt output file evidence (required)",
+            "Selected task id evidence (required)",
+        ],
+        "executeInTargetRepo": [
+            "Target repo changed files evidence (required)",
+            "Target repo verification results evidence (required)",
+            "Viewport and accessibility notes evidence (required)",
+        ],
+        "recordEvidence": [
+            "Final evidence record evidence (required)",
+            "Remaining risks evidence (required)",
+        ],
+    }
+    expected_capture_field_help_texts = {
+        "verifySourceBundle": [
+            "Required: paste a passing strict bundle-check result.",
+            "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+        ],
+        "refreshHandoffSnapshot": ["Optional: paste the refreshed strict handoff JSON snapshot when available."],
+        "writeEffectiveTaskPrompt": [
+            "Required: record the local Markdown prompt file path generated for the selected task.",
+            "Required: record the bundle task id used for the target-repo handoff prompt.",
+        ],
+        "executeInTargetRepo": [
+            "Required: list at least one changed target-repo file or a no-change justification.",
+            "Required: record target-repo verification commands and results.",
+            "Required: document viewport coverage plus keyboard, contrast, and screen-reader notes.",
+        ],
+        "recordEvidence": [
+            "Required: summarize changes, verification, viewport/accessibility checks, risks, and digest.",
+            "Required: record unresolved risks, skipped checks, or confirm none remain.",
+        ],
+    }
+    expected_capture_field_section_keys = {
+        "verifySourceBundle": ["source-bundle-verification", "source-bundle-verification"],
+        "refreshHandoffSnapshot": ["handoff-snapshot"],
+        "writeEffectiveTaskPrompt": ["handoff-prompt-output", "handoff-prompt-output"],
+        "executeInTargetRepo": [
+            "target-repo-changes",
+            "target-repo-verification",
+            "viewport-accessibility-qa",
+        ],
+        "recordEvidence": ["final-handoff-evidence", "risk-record"],
+    }
+    expected_capture_field_section_labels = {
+        "verifySourceBundle": ["Source bundle verification", "Source bundle verification"],
+        "refreshHandoffSnapshot": ["Handoff snapshot"],
+        "writeEffectiveTaskPrompt": ["Handoff prompt output", "Handoff prompt output"],
+        "executeInTargetRepo": [
+            "Target repo changes",
+            "Target repo verification",
+            "Viewport and accessibility QA",
+        ],
+        "recordEvidence": ["Final handoff evidence", "Risk record"],
+    }
+    expected_capture_section_keys = {
+        "verifySourceBundle": ["source-bundle-verification"],
+        "refreshHandoffSnapshot": ["handoff-snapshot"],
+        "writeEffectiveTaskPrompt": ["handoff-prompt-output"],
+        "executeInTargetRepo": [
+            "target-repo-changes",
+            "target-repo-verification",
+            "viewport-accessibility-qa",
+        ],
+        "recordEvidence": ["final-handoff-evidence", "risk-record"],
+    }
+    expected_capture_section_labels = {
+        "verifySourceBundle": ["Source bundle verification"],
+        "refreshHandoffSnapshot": ["Handoff snapshot"],
+        "writeEffectiveTaskPrompt": ["Handoff prompt output"],
+        "executeInTargetRepo": [
+            "Target repo changes",
+            "Target repo verification",
+            "Viewport and accessibility QA",
+        ],
+        "recordEvidence": ["Final handoff evidence", "Risk record"],
+    }
+    expected_capture_field_payload_namespaces = {
+        "verifySourceBundle": ["sourceBundle", "sourceBundle"],
+        "refreshHandoffSnapshot": ["handoffSnapshot"],
+        "writeEffectiveTaskPrompt": ["handoffPrompt", "handoffPrompt"],
+        "executeInTargetRepo": ["targetRepo", "targetRepo", "targetRepo"],
+        "recordEvidence": ["handoffEvidence", "handoffEvidence"],
+    }
+    expected_capture_field_payload_paths = {
+        "verifySourceBundle": [
+            "sourceBundle.verification.strictBundleCheckOutput",
+            "sourceBundle.verification.bundleDigest",
+        ],
+        "refreshHandoffSnapshot": ["handoffSnapshot.strictJson"],
+        "writeEffectiveTaskPrompt": ["handoffPrompt.outputFile", "handoffPrompt.selectedTaskId"],
+        "executeInTargetRepo": [
+            "targetRepo.changedFiles",
+            "targetRepo.verificationResults",
+            "targetRepo.viewportAccessibilityNotes",
+        ],
+        "recordEvidence": ["handoffEvidence.finalRecord", "handoffEvidence.remainingRisks"],
+    }
+    expected_capture_payload_namespaces = {
+        "verifySourceBundle": ["sourceBundle"],
+        "refreshHandoffSnapshot": ["handoffSnapshot"],
+        "writeEffectiveTaskPrompt": ["handoffPrompt"],
+        "executeInTargetRepo": ["targetRepo"],
+        "recordEvidence": ["handoffEvidence"],
+    }
+    expected_capture_payload_templates = {
+        "verifySourceBundle": {
+            "sourceBundle": {
+                "verification": {
+                    "strictBundleCheckOutput": "",
+                    "bundleDigest": "",
+                },
+            },
+        },
+        "refreshHandoffSnapshot": {
+            "handoffSnapshot": {
+                "strictJson": "",
+            },
+        },
+        "writeEffectiveTaskPrompt": {
+            "handoffPrompt": {
+                "outputFile": "",
+                "selectedTaskId": "",
+            },
+        },
+        "executeInTargetRepo": {
+            "targetRepo": {
+                "changedFiles": [],
+                "verificationResults": "",
+                "viewportAccessibilityNotes": "",
+            },
+        },
+        "recordEvidence": {
+            "handoffEvidence": {
+                "finalRecord": "",
+                "remainingRisks": "",
+            },
+        },
+    }
+    expected_capture_payload_flat_templates = {
+        "verifySourceBundle": {
+            "sourceBundle.verification.strictBundleCheckOutput": "",
+            "sourceBundle.verification.bundleDigest": "",
+        },
+        "refreshHandoffSnapshot": {
+            "handoffSnapshot.strictJson": "",
+        },
+        "writeEffectiveTaskPrompt": {
+            "handoffPrompt.outputFile": "",
+            "handoffPrompt.selectedTaskId": "",
+        },
+        "executeInTargetRepo": {
+            "targetRepo.changedFiles": [],
+            "targetRepo.verificationResults": "",
+            "targetRepo.viewportAccessibilityNotes": "",
+        },
+        "recordEvidence": {
+            "handoffEvidence.finalRecord": "",
+            "handoffEvidence.remainingRisks": "",
+        },
+    }
+    expected_capture_field_validation_rules = {
+        "verifySourceBundle": ["non-empty-text", "checksum-or-digest-text"],
+        "refreshHandoffSnapshot": ["optional-json-snapshot"],
+        "writeEffectiveTaskPrompt": ["local-markdown-file-path", "task-id"],
+        "executeInTargetRepo": ["non-empty-file-list", "verification-results", "viewport-accessibility-notes"],
+        "recordEvidence": ["final-evidence-record", "risk-notes"],
+    }
+    expected_capture_field_min_lengths = {
+        "verifySourceBundle": [20, 8],
+        "refreshHandoffSnapshot": [0],
+        "writeEffectiveTaskPrompt": [12, 5],
+        "executeInTargetRepo": [1, 20, 20],
+        "recordEvidence": [30, 10],
+    }
+    expected_required_capture_field_keys = {
+        "verifySourceBundle": ["strictBundleCheckOutput", "bundleDigest"],
+        "refreshHandoffSnapshot": [],
+        "writeEffectiveTaskPrompt": ["promptOutputFile", "selectedTaskId"],
+        "executeInTargetRepo": [
+            "targetRepoChangedFiles",
+            "targetRepoVerificationResults",
+            "viewportAccessibilityNotes",
+        ],
+        "recordEvidence": ["finalEvidenceRecord", "remainingRisks"],
+    }
+    expected_optional_capture_field_keys = {
+        "verifySourceBundle": [],
+        "refreshHandoffSnapshot": ["handoffJsonSnapshot"],
+        "writeEffectiveTaskPrompt": [],
+        "executeInTargetRepo": [],
+        "recordEvidence": [],
+    }
+    expected_next_capture_fields = [
+        {
+            "key": "strictBundleCheckOutput",
+            "label": "Strict bundle-check output",
+            "inputType": "textarea",
+            "required": True,
+            "evidenceTarget": "local-command-output",
+            "placeholder": "Paste the strict bundle-check pass output or JSON status.",
+            "validationRule": "non-empty-text",
+            "minLength": 20,
+            "example": "Status: pass; checksumFailures: 0; generatedFailures: 0",
+            "validationHint": "Required: paste a passing strict bundle-check result.",
+            "valueShape": "long-text",
+            "acceptsMultiple": False,
+            "defaultValue": "",
+            "emptyValue": "",
+            "requirementLabel": "Required",
+            "ariaLabel": "Strict bundle-check output evidence (required)",
+            "helpText": "Required: paste a passing strict bundle-check result.",
+            "sectionKey": "source-bundle-verification",
+            "sectionLabel": "Source bundle verification",
+            "payloadNamespace": "sourceBundle",
+            "payloadPath": "sourceBundle.verification.strictBundleCheckOutput",
+        },
+        {
+            "key": "bundleDigest",
+            "label": "Bundle digest",
+            "inputType": "text",
+            "required": True,
+            "evidenceTarget": "local-command-output",
+            "placeholder": "Record the bundle digest or checksum summary.",
+            "validationRule": "checksum-or-digest-text",
+            "minLength": 8,
+            "example": "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+            "validationHint": "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+            "valueShape": "short-text",
+            "acceptsMultiple": False,
+            "defaultValue": "",
+            "emptyValue": "",
+            "requirementLabel": "Required",
+            "ariaLabel": "Bundle digest evidence (required)",
+            "helpText": "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+            "sectionKey": "source-bundle-verification",
+            "sectionLabel": "Source bundle verification",
+            "payloadNamespace": "sourceBundle",
+            "payloadPath": "sourceBundle.verification.bundleDigest",
+        },
+    ]
+    binding_keys = [
+        "key",
+        "label",
+        "payloadNamespace",
+        "payloadPath",
+        "inputType",
+        "valueShape",
+        "acceptsMultiple",
+        "required",
+        "requirementLabel",
+        "emptyValue",
+        "validationRule",
+        "minLength",
+        "sectionKey",
+        "sectionLabel",
+        "ariaLabel",
+    ]
+    expected_next_capture_payload_bindings = [
+        {key: field[key] for key in binding_keys}
+        for field in expected_next_capture_fields
+    ]
+    expected_target_repo_changed_files_binding = {
+        "key": "targetRepoChangedFiles",
+        "label": "Target repo changed files",
+        "payloadNamespace": "targetRepo",
+        "payloadPath": "targetRepo.changedFiles",
+        "inputType": "list",
+        "valueShape": "string-list",
+        "acceptsMultiple": True,
+        "required": True,
+        "requirementLabel": "Required",
+        "emptyValue": [],
+        "validationRule": "non-empty-file-list",
+        "minLength": 1,
+        "sectionKey": "target-repo-changes",
+        "sectionLabel": "Target repo changes",
+        "ariaLabel": "Target repo changed files evidence (required)",
+    }
+    expected_next_capture_validation_specs = [
+        {
+            **{key: field[key] for key in ["key", "label", "required", "minLength", "valueShape", "acceptsMultiple", "emptyValue"]},
+            "rule": field["validationRule"],
+            "severity": "error" if field["required"] else "info",
+            "allowsEmpty": not field["required"],
+            "message": field["validationHint"],
+            "failureMessage": (
+                f"Provide {field['label'].lower()} before marking this action complete."
+                if field["required"]
+                else f"Optional: provide {field['label'].lower()} when available."
+            ),
+        }
+        for field in expected_next_capture_fields
+    ]
+    expected_next_initial_validation_states = [
+        {
+            "key": field["key"],
+            "label": field["label"],
+            "rule": field["validationRule"],
+            "status": "missing-required" if field["required"] else "optional-empty",
+            "statusLabel": "Missing required" if field["required"] else "Optional empty",
+            "statusTone": "danger" if field["required"] else "info",
+            "iconName": "alert-circle" if field["required"] else "info",
+            "actionLabel": "Provide evidence" if field["required"] else "Add optional evidence",
+            "helperText": "Required before completion" if field["required"] else "Can remain empty",
+            "valid": not field["required"],
+            "blocking": field["required"],
+            "severity": "error" if field["required"] else "info",
+            "required": field["required"],
+            "allowsEmpty": not field["required"],
+            "touched": False,
+            "dirty": False,
+            "valuePresent": False,
+            "valueLength": 0,
+            "minLength": field["minLength"],
+            "valueShape": field["valueShape"],
+            "acceptsMultiple": field["acceptsMultiple"],
+            "emptyValue": field["emptyValue"],
+            "payloadPath": field["payloadPath"],
+            "message": (
+                f"Provide {field['label'].lower()} before marking this action complete."
+                if field["required"]
+                else field["validationHint"]
+            ),
+        }
+        for field in expected_next_capture_fields
+    ]
+    expected_next_initial_validation_display_metadata = [
+        {
+            "key": state["key"],
+            "label": state["label"],
+            "status": state["status"],
+            "statusLabel": state["statusLabel"],
+            "statusTone": state["statusTone"],
+            "iconName": state["iconName"],
+            "actionLabel": state["actionLabel"],
+            "helperText": state["helperText"],
+            "blocking": state["blocking"],
+            "required": state["required"],
+            "message": state["message"],
+        }
+        for state in expected_next_initial_validation_states
+    ]
+    expected_next_initial_validation_checklist = [
+        {
+            "key": state["key"],
+            "label": state["label"],
+            "status": state["status"],
+            "statusLabel": state["statusLabel"],
+            "statusTone": state["statusTone"],
+            "iconName": state["iconName"],
+            "actionLabel": state["actionLabel"],
+            "helperText": state["helperText"],
+            "required": state["required"],
+            "blocking": state["blocking"],
+            "completionBlocking": state["blocking"],
+            "checkedInitially": state["valid"],
+            "disabled": False,
+            "message": state["message"],
+            "payloadPath": state["payloadPath"],
+        }
+        for state in expected_next_initial_validation_states
+    ]
+
+    def expected_initial_validation_checklist_summary(checklist):
+        checked_items = [item for item in checklist if item["checkedInitially"]]
+        unchecked_items = [item for item in checklist if not item["checkedInitially"]]
+        blocking_items = [item for item in checklist if item["completionBlocking"]]
+        blocking_unchecked_items = [
+            item for item in checklist if item["completionBlocking"] and not item["checkedInitially"]
+        ]
+        first_unchecked_item = unchecked_items[0] if unchecked_items else {}
+        status = "blocked" if blocking_unchecked_items else "ready"
+        return {
+            "status": status,
+            "statusLabel": "Checklist blocked" if status == "blocked" else "Checklist ready",
+            "statusTone": "danger" if status == "blocked" else "success",
+            "iconName": "list-x" if status == "blocked" else "list-checks",
+            "actionLabel": "Complete required evidence" if status == "blocked" else "Continue",
+            "helperText": (
+                f"{len(blocking_unchecked_items)} required checklist item(s) need evidence before completion."
+                if status == "blocked"
+                else "No required checklist items are unchecked on first render."
+            ),
+            "itemCount": len(checklist),
+            "checkedCount": len(checked_items),
+            "uncheckedCount": len(unchecked_items),
+            "requiredCount": len([item for item in checklist if item["required"]]),
+            "optionalCount": len([item for item in checklist if not item["required"]]),
+            "blockingCount": len(blocking_items),
+            "blockingUncheckedCount": len(blocking_unchecked_items),
+            "nonBlockingCount": len([item for item in checklist if not item["completionBlocking"]]),
+            "completionPercent": round((len(checked_items) / len(checklist)) * 100) if checklist else 100,
+            "progressLabel": f"{len(checked_items)}/{len(checklist)} complete",
+            "allCheckedInitially": len(unchecked_items) == 0,
+            "hasUncheckedItems": len(unchecked_items) > 0,
+            "hasBlockingUncheckedItems": len(blocking_unchecked_items) > 0,
+            "canCompleteInitially": len(blocking_unchecked_items) == 0,
+            "firstUncheckedItemKey": first_unchecked_item.get("key", ""),
+            "firstUncheckedItemLabel": first_unchecked_item.get("label", ""),
+            "firstUncheckedItemMessage": first_unchecked_item.get("message", ""),
+        }
+
+    expected_next_initial_validation_checklist_summary = expected_initial_validation_checklist_summary(
+        expected_next_initial_validation_checklist
+    )
+
+    def expected_initial_validation_summary(states):
+        blocking_states = [state for state in states if state["blocking"]]
+        first_blocking = blocking_states[0] if blocking_states else {}
+        status = "blocked" if blocking_states else "ready"
+        return {
+            "status": status,
+            "statusLabel": "Blocked by required evidence" if status == "blocked" else "Ready for completion",
+            "statusTone": "danger" if status == "blocked" else "success",
+            "iconName": "alert-circle" if status == "blocked" else "check-circle",
+            "actionLabel": "Provide required evidence" if status == "blocked" else "Continue",
+            "helperText": (
+                f"{len(blocking_states)} required evidence field(s) need input before completion."
+                if status == "blocked"
+                else "No required evidence is missing on first render."
+            ),
+            "fieldCount": len(states),
+            "requiredCount": len([state for state in states if state["required"]]),
+            "optionalCount": len([state for state in states if not state["required"]]),
+            "validCount": len([state for state in states if state["valid"]]),
+            "invalidCount": len([state for state in states if not state["valid"]]),
+            "blockingCount": len(blocking_states),
+            "nonBlockingCount": len([state for state in states if not state["blocking"]]),
+            "missingRequiredCount": len([state for state in states if state["status"] == "missing-required"]),
+            "optionalEmptyCount": len([state for state in states if state["status"] == "optional-empty"]),
+            "dangerDisplayCount": len([state for state in states if state["statusTone"] == "danger"]),
+            "infoDisplayCount": len([state for state in states if state["statusTone"] == "info"]),
+            "allFieldsPristine": all(not state["dirty"] and not state["touched"] for state in states),
+            "canCompleteInitially": len(blocking_states) == 0,
+            "firstBlockingFieldKey": first_blocking.get("key", ""),
+            "firstBlockingFieldLabel": first_blocking.get("label", ""),
+            "firstBlockingMessage": first_blocking.get("message", ""),
+        }
+
+    expected_next_initial_validation_summary = expected_initial_validation_summary(
+        expected_next_initial_validation_states
+    )
+    expected_optional_handoff_validation_spec = {
+        "key": "handoffJsonSnapshot",
+        "label": "Strict handoff JSON snapshot",
+        "rule": "optional-json-snapshot",
+        "severity": "info",
+        "required": False,
+        "allowsEmpty": True,
+        "minLength": 0,
+        "valueShape": "long-text",
+        "acceptsMultiple": False,
+        "emptyValue": "",
+        "message": "Optional: paste the refreshed strict handoff JSON snapshot when available.",
+        "failureMessage": "Optional: provide strict handoff json snapshot when available.",
+    }
+    expected_target_repo_changed_files_validation_spec = {
+        "key": "targetRepoChangedFiles",
+        "label": "Target repo changed files",
+        "rule": "non-empty-file-list",
+        "severity": "error",
+        "required": True,
+        "allowsEmpty": False,
+        "minLength": 1,
+        "valueShape": "string-list",
+        "acceptsMultiple": True,
+        "emptyValue": [],
+        "message": "Required: list at least one changed target-repo file or a no-change justification.",
+        "failureMessage": "Provide target repo changed files before marking this action complete.",
+    }
+    expected_optional_handoff_initial_validation_state = {
+        "key": "handoffJsonSnapshot",
+        "label": "Strict handoff JSON snapshot",
+        "rule": "optional-json-snapshot",
+        "status": "optional-empty",
+        "statusLabel": "Optional empty",
+        "statusTone": "info",
+        "iconName": "info",
+        "actionLabel": "Add optional evidence",
+        "helperText": "Can remain empty",
+        "valid": True,
+        "blocking": False,
+        "severity": "info",
+        "required": False,
+        "allowsEmpty": True,
+        "touched": False,
+        "dirty": False,
+        "valuePresent": False,
+        "valueLength": 0,
+        "minLength": 0,
+        "valueShape": "long-text",
+        "acceptsMultiple": False,
+        "emptyValue": "",
+        "payloadPath": "handoffSnapshot.strictJson",
+        "message": "Optional: paste the refreshed strict handoff JSON snapshot when available.",
+    }
+    expected_optional_handoff_initial_validation_display_metadata = {
+        "key": "handoffJsonSnapshot",
+        "label": "Strict handoff JSON snapshot",
+        "status": "optional-empty",
+        "statusLabel": "Optional empty",
+        "statusTone": "info",
+        "iconName": "info",
+        "actionLabel": "Add optional evidence",
+        "helperText": "Can remain empty",
+        "blocking": False,
+        "required": False,
+        "message": "Optional: paste the refreshed strict handoff JSON snapshot when available.",
+    }
+    expected_optional_handoff_initial_validation_checklist = {
+        "key": "handoffJsonSnapshot",
+        "label": "Strict handoff JSON snapshot",
+        "status": "optional-empty",
+        "statusLabel": "Optional empty",
+        "statusTone": "info",
+        "iconName": "info",
+        "actionLabel": "Add optional evidence",
+        "helperText": "Can remain empty",
+        "required": False,
+        "blocking": False,
+        "completionBlocking": False,
+        "checkedInitially": True,
+        "disabled": False,
+        "message": "Optional: paste the refreshed strict handoff JSON snapshot when available.",
+        "payloadPath": "handoffSnapshot.strictJson",
+    }
+    expected_optional_handoff_initial_validation_checklist_summary = expected_initial_validation_checklist_summary(
+        [expected_optional_handoff_initial_validation_checklist]
+    )
+    expected_optional_handoff_initial_validation_summary = expected_initial_validation_summary(
+        [expected_optional_handoff_initial_validation_state]
+    )
+    expected_target_repo_changed_files_initial_validation_state = {
+        "key": "targetRepoChangedFiles",
+        "label": "Target repo changed files",
+        "rule": "non-empty-file-list",
+        "status": "missing-required",
+        "statusLabel": "Missing required",
+        "statusTone": "danger",
+        "iconName": "alert-circle",
+        "actionLabel": "Provide evidence",
+        "helperText": "Required before completion",
+        "valid": False,
+        "blocking": True,
+        "severity": "error",
+        "required": True,
+        "allowsEmpty": False,
+        "touched": False,
+        "dirty": False,
+        "valuePresent": False,
+        "valueLength": 0,
+        "minLength": 1,
+        "valueShape": "string-list",
+        "acceptsMultiple": True,
+        "emptyValue": [],
+        "payloadPath": "targetRepo.changedFiles",
+        "message": "Provide target repo changed files before marking this action complete.",
+    }
+    expected_target_repo_changed_files_initial_validation_display_metadata = {
+        "key": "targetRepoChangedFiles",
+        "label": "Target repo changed files",
+        "status": "missing-required",
+        "statusLabel": "Missing required",
+        "statusTone": "danger",
+        "iconName": "alert-circle",
+        "actionLabel": "Provide evidence",
+        "helperText": "Required before completion",
+        "blocking": True,
+        "required": True,
+        "message": "Provide target repo changed files before marking this action complete.",
+    }
+    expected_target_repo_changed_files_initial_validation_checklist = {
+        "key": "targetRepoChangedFiles",
+        "label": "Target repo changed files",
+        "status": "missing-required",
+        "statusLabel": "Missing required",
+        "statusTone": "danger",
+        "iconName": "alert-circle",
+        "actionLabel": "Provide evidence",
+        "helperText": "Required before completion",
+        "required": True,
+        "blocking": True,
+        "completionBlocking": True,
+        "checkedInitially": False,
+        "disabled": False,
+        "message": "Provide target repo changed files before marking this action complete.",
+        "payloadPath": "targetRepo.changedFiles",
+    }
+    expected_target_repo_initial_validation_checklist_summary = {
+        "status": "blocked",
+        "statusLabel": "Checklist blocked",
+        "statusTone": "danger",
+        "iconName": "list-x",
+        "actionLabel": "Complete required evidence",
+        "helperText": "3 required checklist item(s) need evidence before completion.",
+        "itemCount": 3,
+        "checkedCount": 0,
+        "uncheckedCount": 3,
+        "requiredCount": 3,
+        "optionalCount": 0,
+        "blockingCount": 3,
+        "blockingUncheckedCount": 3,
+        "nonBlockingCount": 0,
+        "completionPercent": 0,
+        "progressLabel": "0/3 complete",
+        "allCheckedInitially": False,
+        "hasUncheckedItems": True,
+        "hasBlockingUncheckedItems": True,
+        "canCompleteInitially": False,
+        "firstUncheckedItemKey": "targetRepoChangedFiles",
+        "firstUncheckedItemLabel": "Target repo changed files",
+        "firstUncheckedItemMessage": "Provide target repo changed files before marking this action complete.",
+    }
+    expected_target_repo_initial_validation_summary = {
+        **expected_initial_validation_summary(
+            [
+                expected_target_repo_changed_files_initial_validation_state,
+                {
+                    **expected_target_repo_changed_files_initial_validation_state,
+                    "key": "targetRepoVerificationResults",
+                    "label": "Target repo verification results",
+                    "minLength": 20,
+                    "valueShape": "long-text",
+                    "acceptsMultiple": False,
+                    "emptyValue": "",
+                    "payloadPath": "targetRepo.verificationResults",
+                    "message": "Provide target repo verification results before marking this action complete.",
+                },
+                {
+                    **expected_target_repo_changed_files_initial_validation_state,
+                    "key": "viewportAccessibilityNotes",
+                    "label": "Viewport and accessibility notes",
+                    "minLength": 20,
+                    "valueShape": "long-text",
+                    "acceptsMultiple": False,
+                    "emptyValue": "",
+                    "payloadPath": "targetRepo.viewportAccessibilityNotes",
+                    "message": "Provide viewport and accessibility notes before marking this action complete.",
+                },
+            ]
+        )
+    }
+    if (
+        operator_runbook.get("version") != 1
+        or operator_runbook.get("source") != "bundle-handoff"
+        or operator_runbook.get("stageCount") != 5
+        or operator_runbook.get("commandStageCount") != 3
+        or operator_runbook.get("manualStageCount") != 2
+        or operator_runbook.get("requiredStageCount") != 4
+        or operator_runbook.get("optionalStageCount") != 1
+        or operator_runbook.get("readOnlyCommandStageCount") != 2
+        or operator_runbook.get("localOutputCommandStageCount") != 1
+        or operator_runbook.get("externalCallCommandStageCount") != 0
+        or operator_runbook.get("targetRepoMutationCommandStageCount") != 0
+        or operator_runbook.get("effectiveTaskId") != expected_effective_task_id
+        or operator_runbook.get("effectiveStrictTaskCommandKey") != f"task.{expected_effective_task_id}.handoff.strict"
+        or operator_runbook.get("stageKeys") != expected_stage_keys
+        or operator_runbook.get("stageLabelByKey") != {
+            "verifySourceBundle": "Verify source bundle integrity",
+            "refreshHandoffSnapshot": "Refresh strict handoff JSON snapshot",
+            "writeEffectiveTaskPrompt": "Write effective task handoff prompt",
+            "executeInTargetRepo": "Execute the task in the target website repo",
+            "recordEvidence": "Record implementation evidence",
+        }
+        or operator_runbook.get("stageKindByKey") != {
+            "verifySourceBundle": "read-only-gate",
+            "refreshHandoffSnapshot": "read-only-preview",
+            "writeEffectiveTaskPrompt": "local-output",
+            "executeInTargetRepo": "manual-target-repo",
+            "recordEvidence": "manual-reporting",
+        }
+        or operator_runbook.get("stageRequiredByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": True,
+            "recordEvidence": True,
+        }
+        or operator_runbook.get("stageRunPolicyByKey") != {
+            "verifySourceBundle": "read-only",
+            "refreshHandoffSnapshot": "read-only",
+            "writeEffectiveTaskPrompt": "writes-local-file",
+            "executeInTargetRepo": "manual-target-repo",
+            "recordEvidence": "manual-target-repo",
+        }
+        or operator_runbook.get("stageSafetyLevelByKey") != {
+            "verifySourceBundle": "local-read-only",
+            "refreshHandoffSnapshot": "local-read-only",
+            "writeEffectiveTaskPrompt": "local-output-file",
+            "executeInTargetRepo": "operator-controlled-target-repo",
+            "recordEvidence": "operator-controlled-target-repo",
+        }
+        or operator_runbook.get("stageCommandCountByKey") != {
+            "verifySourceBundle": 1,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 1,
+            "executeInTargetRepo": 0,
+            "recordEvidence": 0,
+        }
+        or operator_runbook.get("stageCommandKeysByKey") != {
+            "verifySourceBundle": ["source.bundleCheck.strict"],
+            "refreshHandoffSnapshot": ["source.bundleHandoff.strict"],
+            "writeEffectiveTaskPrompt": [f"task.{expected_effective_task_id}.handoff.strict"],
+            "executeInTargetRepo": [],
+            "recordEvidence": [],
+        }
+        or operator_runbook.get("stageCommandLabelsByKey") != {
+            "verifySourceBundle": ["Strict bundle check JSON"],
+            "refreshHandoffSnapshot": ["Strict bundle handoff JSON"],
+            "writeEffectiveTaskPrompt": [f"Strict Task handoff: {expected_effective_task_id}"],
+            "executeInTargetRepo": [],
+            "recordEvidence": [],
+        }
+        or operator_runbook.get("stageCommandRunPoliciesByKey") != {
+            "verifySourceBundle": ["read-only"],
+            "refreshHandoffSnapshot": ["read-only"],
+            "writeEffectiveTaskPrompt": ["writes-local-file"],
+            "executeInTargetRepo": [],
+            "recordEvidence": [],
+        }
+        or operator_runbook.get("stageCommandSafetyLevelsByKey") != {
+            "verifySourceBundle": ["local-read-only"],
+            "refreshHandoffSnapshot": ["local-read-only"],
+            "writeEffectiveTaskPrompt": ["local-output-file"],
+            "executeInTargetRepo": [],
+            "recordEvidence": [],
+        }
+        or operator_runbook.get("stageActionTypeByKey") != {
+            "verifySourceBundle": "run-local-gate",
+            "refreshHandoffSnapshot": "refresh-local-preview",
+            "writeEffectiveTaskPrompt": "write-local-output",
+            "executeInTargetRepo": "manual-target-repo",
+            "recordEvidence": "manual-evidence",
+        }
+        or operator_runbook.get("stageActionLabelByKey") != {
+            "verifySourceBundle": "Run strict bundle check",
+            "refreshHandoffSnapshot": "Refresh strict handoff JSON",
+            "writeEffectiveTaskPrompt": "Write selected task prompt",
+            "executeInTargetRepo": "Implement in target repo",
+            "recordEvidence": "Record verification evidence",
+        }
+        or operator_runbook.get("stageActionButtonLabelsByKey") != {
+            "verifySourceBundle": "Run Check",
+            "refreshHandoffSnapshot": "Refresh JSON",
+            "writeEffectiveTaskPrompt": "Write Prompt",
+            "executeInTargetRepo": "Open Target Repo",
+            "recordEvidence": "Record Evidence",
+        }
+        or operator_runbook.get("stageActionAffordanceByKey") != {
+            "verifySourceBundle": "primary-command-button",
+            "refreshHandoffSnapshot": "secondary-command-button",
+            "writeEffectiveTaskPrompt": "local-output-button",
+            "executeInTargetRepo": "manual-target-repo-step",
+            "recordEvidence": "manual-evidence-step",
+        }
+        or operator_runbook.get("stageActionEnabledByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": True,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": False,
+            "recordEvidence": False,
+        }
+        or operator_runbook.get("stageActionStatusByKey") != {
+            "verifySourceBundle": "ready",
+            "refreshHandoffSnapshot": "optional",
+            "writeEffectiveTaskPrompt": "ready",
+            "executeInTargetRepo": "manual",
+            "recordEvidence": "manual",
+        }
+        or operator_runbook.get("stageActionStatusLabelsByKey") != {
+            "verifySourceBundle": "Ready",
+            "refreshHandoffSnapshot": "Optional",
+            "writeEffectiveTaskPrompt": "Ready",
+            "executeInTargetRepo": "Manual",
+            "recordEvidence": "Manual",
+        }
+        or operator_runbook.get("stageActionStatusToneByKey") != {
+            "verifySourceBundle": "success",
+            "refreshHandoffSnapshot": "neutral",
+            "writeEffectiveTaskPrompt": "success",
+            "executeInTargetRepo": "info",
+            "recordEvidence": "info",
+        }
+        or operator_runbook.get("stageActionDisabledReasonCodeByKey") != {
+            "verifySourceBundle": "",
+            "refreshHandoffSnapshot": "",
+            "writeEffectiveTaskPrompt": "",
+            "executeInTargetRepo": "manual-target-repo-step",
+            "recordEvidence": "manual-evidence-step",
+        }
+        or not isinstance(operator_runbook.get("stageActionDisabledReasonByKey"), dict)
+        or operator_runbook["stageActionDisabledReasonByKey"].get("executeInTargetRepo")
+        != "No local design-ai command is available for this stage; execute the generated prompt inside the target website repo."
+        or operator_runbook["stageActionDisabledReasonByKey"].get("recordEvidence")
+        != "No local design-ai command is available for this stage; record evidence after target-repo implementation and verification."
+        or operator_runbook.get("stageActionPrerequisiteKeysByKey") != {
+            "verifySourceBundle": [],
+            "refreshHandoffSnapshot": [],
+            "writeEffectiveTaskPrompt": ["verifySourceBundle"],
+            "executeInTargetRepo": ["verifySourceBundle", "writeEffectiveTaskPrompt"],
+            "recordEvidence": ["executeInTargetRepo"],
+        }
+        or operator_runbook.get("stageActionPrerequisiteCountByKey") != {
+            "verifySourceBundle": 0,
+            "refreshHandoffSnapshot": 0,
+            "writeEffectiveTaskPrompt": 1,
+            "executeInTargetRepo": 2,
+            "recordEvidence": 1,
+        }
+        or operator_runbook.get("stageActionHasPrerequisitesByKey") != {
+            "verifySourceBundle": False,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": True,
+            "recordEvidence": True,
+        }
+        or operator_runbook.get("stageActionDependencyReasonCodeByKey") != {
+            "verifySourceBundle": "",
+            "refreshHandoffSnapshot": "",
+            "writeEffectiveTaskPrompt": "requires-prerequisite-actions",
+            "executeInTargetRepo": "requires-prerequisite-actions",
+            "recordEvidence": "requires-prerequisite-actions",
+        }
+        or not isinstance(operator_runbook.get("stageActionDependencyReasonByKey"), dict)
+        or operator_runbook["stageActionDependencyReasonByKey"].get("executeInTargetRepo")
+        != "Complete Verify source bundle integrity and Write effective task handoff prompt before implementing in the target website repo."
+        or not isinstance(operator_runbook.get("stageActionPrerequisiteLabelsByKey"), dict)
+        or operator_runbook["stageActionPrerequisiteLabelsByKey"].get("executeInTargetRepo")
+        != ["Verify source bundle integrity", "Write effective task handoff prompt"]
+        or operator_runbook.get("stageActionBlockedStageKeysByKey") != {
+            "verifySourceBundle": ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
+            "refreshHandoffSnapshot": [],
+            "writeEffectiveTaskPrompt": ["executeInTargetRepo"],
+            "executeInTargetRepo": ["recordEvidence"],
+            "recordEvidence": [],
+        }
+        or not isinstance(operator_runbook.get("stageActionBlockedStageLabelsByKey"), dict)
+        or operator_runbook["stageActionBlockedStageLabelsByKey"].get("executeInTargetRepo")
+        != ["Record implementation evidence"]
+        or operator_runbook.get("stageActionBlockedStageCountByKey") != {
+            "verifySourceBundle": 2,
+            "refreshHandoffSnapshot": 0,
+            "writeEffectiveTaskPrompt": 1,
+            "executeInTargetRepo": 1,
+            "recordEvidence": 0,
+        }
+        or operator_runbook.get("stageActionBlocksStagesByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": True,
+            "recordEvidence": False,
+        }
+        or not isinstance(operator_runbook.get("stageActionCompletionCriteriaByKey"), dict)
+        or operator_runbook["stageActionCompletionCriteriaByKey"].get("verifySourceBundle")
+        != ["Strict bundle check status is pass.", "Checksum and generated-file drift counts are zero."]
+        or operator_runbook["stageActionCompletionCriteriaByKey"].get("executeInTargetRepo")
+        != [
+            "Target website repo has scoped implementation changes for the selected task.",
+            "Target repo lint/typecheck/build or equivalent verification has been run.",
+        ]
+        or operator_runbook.get("stageActionCompletionCriteriaCountByKey") != {
+            "verifySourceBundle": 2,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 2,
+            "executeInTargetRepo": 2,
+            "recordEvidence": 1,
+        }
+        or operator_runbook.get("stageActionHasCompletionCriteriaByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": True,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": True,
+            "recordEvidence": True,
+        }
+        or not isinstance(operator_runbook.get("stageActionEvidenceRequirementsByKey"), dict)
+        or operator_runbook["stageActionEvidenceRequirementsByKey"].get("verifySourceBundle")
+        != ["Strict bundle-check command output or JSON status.", "Bundle digest and zero drift counts."]
+        or operator_runbook["stageActionEvidenceRequirementsByKey"].get("executeInTargetRepo")
+        != [
+            "Target repo changed file list.",
+            "Target repo verification command results.",
+            "Viewport and accessibility check notes for affected pages.",
+        ]
+        or operator_runbook.get("stageActionEvidenceRequirementCountByKey") != {
+            "verifySourceBundle": 2,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 2,
+            "executeInTargetRepo": 3,
+            "recordEvidence": 1,
+        }
+        or operator_runbook.get("stageActionRequiresEvidenceByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": True,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": True,
+            "recordEvidence": True,
+        }
+        or operator_runbook.get("stageActionEvidenceTargetByKey") != {
+            "verifySourceBundle": "local-command-output",
+            "refreshHandoffSnapshot": "local-command-output",
+            "writeEffectiveTaskPrompt": "local-output-file",
+            "executeInTargetRepo": "target-repo-working-tree",
+            "recordEvidence": "handoff-evidence-record",
+        }
+        or operator_runbook.get("stageActionEvidenceTargetLabelByKey") != {
+            "verifySourceBundle": "Local command output",
+            "refreshHandoffSnapshot": "Local command output",
+            "writeEffectiveTaskPrompt": "Local output file",
+            "executeInTargetRepo": "Target repo working tree",
+            "recordEvidence": "Handoff evidence record",
+        }
+        or operator_runbook.get("stageActionEvidenceCaptureFieldKeysByKey") != expected_capture_field_keys
+        or operator_runbook.get("stageActionEvidenceCaptureFieldLabelsByKey", {}).get("verifySourceBundle")
+        != ["Strict bundle-check output", "Bundle digest"]
+        or operator_runbook.get("stageActionEvidenceCaptureFieldInputTypesByKey") != expected_capture_field_input_types
+        or operator_runbook.get("stageActionEvidenceCaptureFieldValueShapesByKey") != expected_capture_field_value_shapes
+        or operator_runbook.get("stageActionEvidenceCaptureFieldAcceptsMultipleByKey") != expected_capture_field_accepts_multiple
+        or operator_runbook.get("stageActionEvidenceCaptureFieldDefaultValuesByKey") != expected_capture_field_default_values
+        or operator_runbook.get("stageActionEvidenceCaptureFieldEmptyValuesByKey") != expected_capture_field_empty_values
+        or operator_runbook.get("stageActionEvidenceCaptureFieldPlaceholdersByKey") != expected_capture_field_placeholders
+        or operator_runbook.get("stageActionEvidenceCaptureFieldRequirementLabelsByKey") != expected_capture_field_requirement_labels
+        or operator_runbook.get("stageActionEvidenceCaptureFieldAriaLabelsByKey") != expected_capture_field_aria_labels
+        or operator_runbook.get("stageActionEvidenceCaptureFieldHelpTextsByKey") != expected_capture_field_help_texts
+        or operator_runbook.get("stageActionEvidenceCaptureFieldSectionKeysByKey") != expected_capture_field_section_keys
+        or operator_runbook.get("stageActionEvidenceCaptureFieldSectionLabelsByKey") != expected_capture_field_section_labels
+        or operator_runbook.get("stageActionEvidenceCaptureSectionKeysByKey") != expected_capture_section_keys
+        or operator_runbook.get("stageActionEvidenceCaptureSectionLabelsByKey") != expected_capture_section_labels
+        or operator_runbook.get("stageActionEvidenceCaptureSectionCountByKey") != {
+            "verifySourceBundle": 1,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 1,
+            "executeInTargetRepo": 3,
+            "recordEvidence": 2,
+        }
+        or operator_runbook.get("stageActionEvidenceCaptureFieldPayloadNamespacesByKey")
+        != expected_capture_field_payload_namespaces
+        or operator_runbook.get("stageActionEvidenceCaptureFieldPayloadPathsByKey")
+        != expected_capture_field_payload_paths
+        or operator_runbook.get("stageActionEvidenceCapturePayloadNamespacesByKey")
+        != expected_capture_payload_namespaces
+        or operator_runbook.get("stageActionEvidenceCapturePayloadNamespaceCountByKey")
+        != {
+            "verifySourceBundle": 1,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 1,
+            "executeInTargetRepo": 1,
+            "recordEvidence": 1,
+        }
+        or operator_runbook.get("stageActionEvidenceCapturePayloadTemplateByKey")
+        != expected_capture_payload_templates
+        or operator_runbook.get("stageActionEvidenceCapturePayloadFlatTemplateByKey")
+        != expected_capture_payload_flat_templates
+        or operator_runbook.get("stageActionEvidenceCapturePayloadBindingsByKey", {}).get("verifySourceBundle")
+        != expected_next_capture_payload_bindings
+        or operator_runbook.get("stageActionEvidenceCapturePayloadBindingsByKey", {})
+        .get("executeInTargetRepo", [{}])[0]
+        != expected_target_repo_changed_files_binding
+        or operator_runbook.get("stageActionEvidenceCaptureValidationSpecsByKey", {}).get("verifySourceBundle")
+        != expected_next_capture_validation_specs
+        or operator_runbook.get("stageActionEvidenceCaptureValidationSpecsByKey", {})
+        .get("refreshHandoffSnapshot", [{}])[0]
+        != expected_optional_handoff_validation_spec
+        or operator_runbook.get("stageActionEvidenceCaptureValidationSpecsByKey", {})
+        .get("executeInTargetRepo", [{}])[0]
+        != expected_target_repo_changed_files_validation_spec
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationStatesByKey", {}).get("verifySourceBundle")
+        != expected_next_initial_validation_states
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey", {}).get(
+            "verifySourceBundle"
+        )
+        != expected_next_initial_validation_display_metadata
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationChecklistByKey", {}).get(
+            "verifySourceBundle"
+        )
+        != expected_next_initial_validation_checklist
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey", {}).get(
+            "verifySourceBundle"
+        )
+        != expected_next_initial_validation_checklist_summary
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationSummaryByKey", {}).get(
+            "verifySourceBundle"
+        )
+        != expected_next_initial_validation_summary
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationStatesByKey", {})
+        .get("refreshHandoffSnapshot", [{}])[0]
+        != expected_optional_handoff_initial_validation_state
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey", {})
+        .get("refreshHandoffSnapshot", [{}])[0]
+        != expected_optional_handoff_initial_validation_display_metadata
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationChecklistByKey", {})
+        .get("refreshHandoffSnapshot", [{}])[0]
+        != expected_optional_handoff_initial_validation_checklist
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey", {}).get(
+            "refreshHandoffSnapshot"
+        )
+        != expected_optional_handoff_initial_validation_checklist_summary
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationSummaryByKey", {}).get(
+            "refreshHandoffSnapshot"
+        )
+        != expected_optional_handoff_initial_validation_summary
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationStatesByKey", {})
+        .get("executeInTargetRepo", [{}])[0]
+        != expected_target_repo_changed_files_initial_validation_state
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationDisplayMetadataByKey", {})
+        .get("executeInTargetRepo", [{}])[0]
+        != expected_target_repo_changed_files_initial_validation_display_metadata
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationChecklistByKey", {})
+        .get("executeInTargetRepo", [{}])[0]
+        != expected_target_repo_changed_files_initial_validation_checklist
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationChecklistSummaryByKey", {}).get(
+            "executeInTargetRepo"
+        )
+        != expected_target_repo_initial_validation_checklist_summary
+        or operator_runbook.get("stageActionEvidenceCaptureInitialValidationSummaryByKey", {}).get(
+            "executeInTargetRepo"
+        )
+        != expected_target_repo_initial_validation_summary
+        or operator_runbook.get("stageActionEvidenceCaptureFieldValidationRulesByKey") != expected_capture_field_validation_rules
+        or operator_runbook.get("stageActionEvidenceCaptureFieldMinLengthsByKey") != expected_capture_field_min_lengths
+        or operator_runbook.get("stageActionEvidenceCaptureFieldExamplesByKey", {}).get("verifySourceBundle")
+        != [
+            "Status: pass; checksumFailures: 0; generatedFailures: 0",
+            "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+        ]
+        or operator_runbook.get("stageActionEvidenceCaptureFieldValidationHintsByKey", {}).get("verifySourceBundle")
+        != [
+            "Required: paste a passing strict bundle-check result.",
+            "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+        ]
+        or operator_runbook.get("stageActionRequiredEvidenceCaptureFieldKeysByKey") != expected_required_capture_field_keys
+        or operator_runbook.get("stageActionOptionalEvidenceCaptureFieldKeysByKey") != expected_optional_capture_field_keys
+        or operator_runbook.get("stageActionEvidenceCaptureFieldCountByKey") != {
+            "verifySourceBundle": 2,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 2,
+            "executeInTargetRepo": 3,
+            "recordEvidence": 2,
+        }
+        or operator_runbook.get("stageActionRequiredEvidenceCaptureFieldCountByKey") != {
+            "verifySourceBundle": 2,
+            "refreshHandoffSnapshot": 0,
+            "writeEffectiveTaskPrompt": 2,
+            "executeInTargetRepo": 3,
+            "recordEvidence": 2,
+        }
+        or operator_runbook.get("stageActionOptionalEvidenceCaptureFieldCountByKey") != {
+            "verifySourceBundle": 0,
+            "refreshHandoffSnapshot": 1,
+            "writeEffectiveTaskPrompt": 0,
+            "executeInTargetRepo": 0,
+            "recordEvidence": 0,
+        }
+        or operator_runbook.get("stageActionHasEvidenceCaptureFieldsByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": True,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": True,
+            "recordEvidence": True,
+        }
+        or not isinstance(operator_runbook.get("stageActionEvidenceCaptureFieldsByKey"), dict)
+        or operator_runbook["stageActionEvidenceCaptureFieldsByKey"].get("verifySourceBundle") != expected_next_capture_fields
+        or operator_runbook["stageActionEvidenceCaptureFieldsByKey"].get("executeInTargetRepo", [{}])[2].get("key")
+        != "viewportAccessibilityNotes"
+        or not isinstance(operator_runbook.get("stageActionInstructionsByKey"), dict)
+        or operator_runbook["stageActionInstructionsByKey"].get("verifySourceBundle")
+        != "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff."
+        or operator_runbook["stageActionInstructionsByKey"].get("writeEffectiveTaskPrompt")
+        != "Write the selected task prompt to a local Markdown file before switching into the target website repo."
+        or operator_runbook["stageActionInstructionsByKey"].get("executeInTargetRepo")
+        != "Manual: open the generated prompt in the target website repo, inspect architecture, implement the scoped task, and run target-repo verification."
+        or operator_runbook.get("actionSummary") != {
+            "totalActionCount": 5,
+            "commandActionCount": 3,
+            "manualActionCount": 2,
+            "enabledActionCount": 3,
+            "disabledActionCount": 2,
+            "manualDisabledActionCount": 2,
+            "actionWithPrerequisiteCount": 3,
+            "maxActionPrerequisiteCount": 2,
+            "actionWithDependencyReasonCount": 3,
+            "actionBlockingOtherActionCount": 3,
+            "maxActionBlockedStageCount": 2,
+            "actionWithCompletionCriteriaCount": 5,
+            "totalActionCompletionCriteriaCount": 8,
+            "maxActionCompletionCriteriaCount": 2,
+            "actionRequiringEvidenceCount": 5,
+            "totalActionEvidenceRequirementCount": 9,
+            "maxActionEvidenceRequirementCount": 3,
+            "localCommandEvidenceActionCount": 2,
+            "localOutputEvidenceActionCount": 1,
+            "targetRepoEvidenceActionCount": 1,
+            "handoffRecordEvidenceActionCount": 1,
+            "actionWithEvidenceCaptureFieldCount": 5,
+            "actionWithRequiredEvidenceCaptureFieldCount": 4,
+            "actionWithOptionalEvidenceCaptureFieldCount": 1,
+            "totalActionEvidenceCaptureFieldCount": 10,
+            "totalRequiredActionEvidenceCaptureFieldCount": 9,
+            "totalOptionalActionEvidenceCaptureFieldCount": 1,
+            "maxActionEvidenceCaptureFieldCount": 3,
+            "textareaEvidenceCaptureFieldCount": 6,
+            "textEvidenceCaptureFieldCount": 2,
+            "filePathEvidenceCaptureFieldCount": 1,
+            "listEvidenceCaptureFieldCount": 1,
+            "longTextEvidenceCaptureFieldCount": 6,
+            "shortTextEvidenceCaptureFieldCount": 2,
+            "filePathValueEvidenceCaptureFieldCount": 1,
+            "stringListEvidenceCaptureFieldCount": 1,
+            "multiValueEvidenceCaptureFieldCount": 1,
+            "singleValueEvidenceCaptureFieldCount": 9,
+            "emptyStringEvidenceCaptureFieldCount": 9,
+            "emptyListEvidenceCaptureFieldCount": 1,
+            "placeholderEvidenceCaptureFieldCount": 10,
+            "ariaLabelEvidenceCaptureFieldCount": 10,
+            "helpTextEvidenceCaptureFieldCount": 10,
+            "sectionedEvidenceCaptureFieldCount": 10,
+            "uniqueEvidenceCaptureSectionCount": 8,
+            "actionWithMultipleEvidenceCaptureSectionCount": 2,
+            "maxActionEvidenceCaptureSectionCount": 3,
+            "payloadMappedEvidenceCaptureFieldCount": 10,
+            "uniqueEvidenceCapturePayloadNamespaceCount": 5,
+            "actionWithMultipleEvidenceCapturePayloadNamespaceCount": 0,
+            "maxActionEvidenceCapturePayloadNamespaceCount": 1,
+            "actionWithEvidenceCapturePayloadTemplateCount": 5,
+            "evidenceCapturePayloadTemplatePathCount": 10,
+            "maxActionEvidenceCapturePayloadTemplatePathCount": 3,
+            "actionWithEvidenceCapturePayloadBindingCount": 5,
+            "evidenceCapturePayloadBindingCount": 10,
+            "requiredEvidenceCapturePayloadBindingCount": 9,
+            "optionalEvidenceCapturePayloadBindingCount": 1,
+            "multiValueEvidenceCapturePayloadBindingCount": 1,
+            "actionWithEvidenceCaptureValidationSpecCount": 5,
+            "evidenceCaptureValidationSpecCount": 10,
+            "requiredEvidenceCaptureValidationSpecCount": 9,
+            "optionalEvidenceCaptureValidationSpecCount": 1,
+            "errorEvidenceCaptureValidationSpecCount": 9,
+            "infoEvidenceCaptureValidationSpecCount": 1,
+            "multiValueEvidenceCaptureValidationSpecCount": 1,
+            "actionWithEvidenceCaptureInitialValidationStateCount": 5,
+            "evidenceCaptureInitialValidationStateCount": 10,
+            "validInitialEvidenceCaptureStateCount": 1,
+            "invalidInitialEvidenceCaptureStateCount": 9,
+            "blockingInitialEvidenceCaptureStateCount": 9,
+            "optionalEmptyInitialEvidenceCaptureStateCount": 1,
+            "missingRequiredInitialEvidenceCaptureStateCount": 9,
+            "pristineInitialEvidenceCaptureStateCount": 10,
+            "actionWithEvidenceCaptureInitialValidationDisplayMetadataCount": 5,
+            "evidenceCaptureInitialValidationDisplayMetadataCount": 10,
+            "dangerInitialEvidenceCaptureDisplayMetadataCount": 9,
+            "infoInitialEvidenceCaptureDisplayMetadataCount": 1,
+            "blockingInitialEvidenceCaptureDisplayMetadataCount": 9,
+            "nonBlockingInitialEvidenceCaptureDisplayMetadataCount": 1,
+            "actionWithEvidenceCaptureInitialValidationSummaryCount": 5,
+            "blockedInitialEvidenceCaptureSummaryActionCount": 4,
+            "readyInitialEvidenceCaptureSummaryActionCount": 1,
+            "completableInitialEvidenceCaptureSummaryActionCount": 1,
+            "nonCompletableInitialEvidenceCaptureSummaryActionCount": 4,
+            "initialEvidenceCaptureSummaryBlockingFieldCount": 9,
+            "initialEvidenceCaptureSummaryMissingRequiredFieldCount": 9,
+            "initialEvidenceCaptureSummaryOptionalEmptyFieldCount": 1,
+            "actionWithEvidenceCaptureInitialValidationChecklistCount": 5,
+            "evidenceCaptureInitialValidationChecklistItemCount": 10,
+            "checkedInitialEvidenceCaptureChecklistItemCount": 1,
+            "uncheckedInitialEvidenceCaptureChecklistItemCount": 9,
+            "blockingInitialEvidenceCaptureChecklistItemCount": 9,
+            "nonBlockingInitialEvidenceCaptureChecklistItemCount": 1,
+            "requiredInitialEvidenceCaptureChecklistItemCount": 9,
+            "optionalInitialEvidenceCaptureChecklistItemCount": 1,
+            "actionWithEvidenceCaptureInitialValidationChecklistSummaryCount": 5,
+            "blockedInitialEvidenceCaptureChecklistSummaryActionCount": 4,
+            "readyInitialEvidenceCaptureChecklistSummaryActionCount": 1,
+            "completeInitialEvidenceCaptureChecklistSummaryActionCount": 1,
+            "incompleteInitialEvidenceCaptureChecklistSummaryActionCount": 4,
+            "initialEvidenceCaptureChecklistSummaryCheckedItemCount": 1,
+            "initialEvidenceCaptureChecklistSummaryUncheckedItemCount": 9,
+            "initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount": 9,
+            "humanLineCount": 5,
+            "humanLineByKeyCount": 5,
+            "humanLineWithEvidenceProgressCount": 5,
+            "humanLineWithBlockedEvidenceProgressCount": 4,
+            "humanLineWithReadyEvidenceProgressCount": 1,
+            "humanLineDisplayRowCount": 5,
+            "humanLineDisplayRowByKeyCount": 5,
+            "humanLineDisplayRowWithEvidenceProgressCount": 5,
+            "humanLineDisplayRowWithBlockedEvidenceProgressCount": 4,
+            "humanLineDisplayRowWithReadyEvidenceProgressCount": 1,
+            "humanLineDisplayRowReadyActionCount": 2,
+            "humanLineDisplayRowManualActionCount": 2,
+            "validatedEvidenceCaptureFieldCount": 10,
+            "requiredValidatedEvidenceCaptureFieldCount": 9,
+            "optionalValidatedEvidenceCaptureFieldCount": 1,
+            "minEvidenceCaptureFieldLengthTotal": 126,
+            "maxEvidenceCaptureFieldMinLength": 30,
+            "requiredActionCount": 4,
+            "optionalActionCount": 1,
+            "readOnlyActionCount": 2,
+            "localOutputActionCount": 1,
+            "outputFileActionCount": 1,
+            "externalCallActionCount": 0,
+            "targetRepoMutationActionCount": 0,
+            "nextActionKey": "verifySourceBundle",
+            "nextActionType": "run-local-gate",
+            "nextActionLabel": "Run strict bundle check",
+            "nextActionEnabled": True,
+            "nextActionStatus": "ready",
+            "nextActionStatusLabel": "Ready",
+            "nextActionStatusTone": "success",
+            "nextActionDisabledReasonCode": "",
+            "nextActionPrerequisiteKeys": [],
+            "nextActionPrerequisiteLabels": [],
+            "nextActionPrerequisiteCount": 0,
+            "nextActionHasPrerequisites": False,
+            "nextActionDependencyReasonCode": "",
+            "nextActionDependencyReason": "",
+            "nextActionBlockedStageKeys": ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
+            "nextActionBlockedStageLabels": [
+                "Write effective task handoff prompt",
+                "Execute the task in the target website repo",
+            ],
+            "nextActionBlockedStageCount": 2,
+            "nextActionBlocksStages": True,
+            "nextActionCompletionCriteria": [
+                "Strict bundle check status is pass.",
+                "Checksum and generated-file drift counts are zero.",
+            ],
+            "nextActionCompletionCriteriaCount": 2,
+            "nextActionHasCompletionCriteria": True,
+            "nextActionEvidenceRequirements": [
+                "Strict bundle-check command output or JSON status.",
+                "Bundle digest and zero drift counts.",
+            ],
+            "nextActionEvidenceRequirementCount": 2,
+            "nextActionRequiresEvidence": True,
+            "nextActionEvidenceTarget": "local-command-output",
+            "nextActionEvidenceTargetLabel": "Local command output",
+            "nextActionEvidenceCaptureFields": expected_next_capture_fields,
+            "nextActionEvidenceCaptureFieldKeys": ["strictBundleCheckOutput", "bundleDigest"],
+            "nextActionEvidenceCaptureFieldLabels": ["Strict bundle-check output", "Bundle digest"],
+            "nextActionEvidenceCaptureFieldPlaceholders": [
+                "Paste the strict bundle-check pass output or JSON status.",
+                "Record the bundle digest or checksum summary.",
+            ],
+            "nextActionEvidenceCaptureFieldRequirementLabels": ["Required", "Required"],
+            "nextActionEvidenceCaptureFieldAriaLabels": [
+                "Strict bundle-check output evidence (required)",
+                "Bundle digest evidence (required)",
+            ],
+            "nextActionEvidenceCaptureFieldHelpTexts": [
+                "Required: paste a passing strict bundle-check result.",
+                "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+            ],
+            "nextActionEvidenceCaptureFieldSectionKeys": [
+                "source-bundle-verification",
+                "source-bundle-verification",
+            ],
+            "nextActionEvidenceCaptureFieldSectionLabels": [
+                "Source bundle verification",
+                "Source bundle verification",
+            ],
+            "nextActionEvidenceCaptureSectionKeys": ["source-bundle-verification"],
+            "nextActionEvidenceCaptureSectionLabels": ["Source bundle verification"],
+            "nextActionEvidenceCaptureSectionCount": 1,
+            "nextActionEvidenceCaptureFieldPayloadNamespaces": ["sourceBundle", "sourceBundle"],
+            "nextActionEvidenceCaptureFieldPayloadPaths": [
+                "sourceBundle.verification.strictBundleCheckOutput",
+                "sourceBundle.verification.bundleDigest",
+            ],
+            "nextActionEvidenceCapturePayloadNamespaces": ["sourceBundle"],
+            "nextActionEvidenceCapturePayloadNamespaceCount": 1,
+            "nextActionEvidenceCapturePayloadTemplate": expected_capture_payload_templates["verifySourceBundle"],
+            "nextActionEvidenceCapturePayloadFlatTemplate": expected_capture_payload_flat_templates["verifySourceBundle"],
+            "nextActionEvidenceCapturePayloadBindings": expected_next_capture_payload_bindings,
+            "nextActionEvidenceCaptureValidationSpecs": expected_next_capture_validation_specs,
+            "nextActionEvidenceCaptureInitialValidationStates": expected_next_initial_validation_states,
+            "nextActionEvidenceCaptureInitialValidationDisplayMetadata": expected_next_initial_validation_display_metadata,
+            "nextActionEvidenceCaptureInitialValidationChecklist": expected_next_initial_validation_checklist,
+            "nextActionEvidenceCaptureInitialValidationChecklistSummary": expected_next_initial_validation_checklist_summary,
+            "nextActionEvidenceCaptureInitialValidationSummary": expected_next_initial_validation_summary,
+            "nextActionEvidenceCaptureFieldInputTypes": ["textarea", "text"],
+            "nextActionEvidenceCaptureFieldValueShapes": ["long-text", "short-text"],
+            "nextActionEvidenceCaptureFieldAcceptsMultiple": [False, False],
+            "nextActionEvidenceCaptureFieldDefaultValues": ["", ""],
+            "nextActionEvidenceCaptureFieldEmptyValues": ["", ""],
+            "nextActionEvidenceCaptureFieldValidationRules": ["non-empty-text", "checksum-or-digest-text"],
+            "nextActionEvidenceCaptureFieldMinLengths": [20, 8],
+            "nextActionEvidenceCaptureFieldExamples": [
+                "Status: pass; checksumFailures: 0; generatedFailures: 0",
+                "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+            ],
+            "nextActionEvidenceCaptureFieldValidationHints": [
+                "Required: paste a passing strict bundle-check result.",
+                "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+            ],
+            "nextActionRequiredEvidenceCaptureFieldKeys": ["strictBundleCheckOutput", "bundleDigest"],
+            "nextActionOptionalEvidenceCaptureFieldKeys": [],
+            "nextActionEvidenceCaptureFieldCount": 2,
+            "nextActionRequiredEvidenceCaptureFieldCount": 2,
+            "nextActionOptionalEvidenceCaptureFieldCount": 0,
+            "nextActionHasEvidenceCaptureFields": True,
+            "nextActionRunPolicy": "read-only",
+            "nextActionSafetyLevel": "local-read-only",
+            "firstRequiredCommandStageKey": "verifySourceBundle",
+            "firstLocalOutputStageKey": "writeEffectiveTaskPrompt",
+            "firstManualStageKey": "executeInTargetRepo",
+            "firstRequiredManualStageKey": "executeInTargetRepo",
+            "firstEvidenceStageKey": "recordEvidence",
+            "firstActionWithPrerequisiteKey": "writeEffectiveTaskPrompt",
+            "firstManualActionWithPrerequisiteKey": "executeInTargetRepo",
+            "firstEvidenceActionWithPrerequisiteKey": "recordEvidence",
+            "firstActionWithDependencyReasonKey": "writeEffectiveTaskPrompt",
+            "firstActionBlockingOtherActionKey": "verifySourceBundle",
+            "firstActionWithCompletionCriteriaKey": "verifySourceBundle",
+            "firstManualActionWithCompletionCriteriaKey": "executeInTargetRepo",
+            "firstActionRequiringEvidenceKey": "verifySourceBundle",
+            "firstManualActionRequiringEvidenceKey": "executeInTargetRepo",
+            "firstEvidenceRecordingActionKey": "recordEvidence",
+            "firstTargetRepoEvidenceActionKey": "executeInTargetRepo",
+            "firstLocalOutputEvidenceActionKey": "writeEffectiveTaskPrompt",
+            "firstActionWithEvidenceCaptureFieldKey": "verifySourceBundle",
+            "firstActionWithOptionalEvidenceCaptureFieldKey": "refreshHandoffSnapshot",
+            "firstManualActionWithEvidenceCaptureFieldKey": "executeInTargetRepo",
+            "firstTextareaEvidenceCaptureActionKey": "verifySourceBundle",
+            "firstMultiValueEvidenceCaptureActionKey": "executeInTargetRepo",
+            "firstValidationRuleEvidenceCaptureActionKey": "verifySourceBundle",
+            "requiresTargetRepoWork": True,
+            "requiresEvidenceReturn": True,
+            "externalCalls": False,
+            "targetRepoMutation": False,
+        }
+        or operator_runbook.get("stageHasCommandsByKey") != {
+            "verifySourceBundle": True,
+            "refreshHandoffSnapshot": True,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": False,
+            "recordEvidence": False,
+        }
+        or operator_runbook.get("stageManualByKey") != {
+            "verifySourceBundle": False,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": False,
+            "executeInTargetRepo": True,
+            "recordEvidence": True,
+        }
+        or operator_runbook.get("stageWritesLocalFileByKey") != {
+            "verifySourceBundle": False,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": True,
+            "executeInTargetRepo": False,
+            "recordEvidence": False,
+        }
+        or operator_runbook.get("stageExternalCallsByKey") != {
+            "verifySourceBundle": False,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": False,
+            "executeInTargetRepo": False,
+            "recordEvidence": False,
+        }
+        or operator_runbook.get("stageTargetRepoMutationByKey") != {
+            "verifySourceBundle": False,
+            "refreshHandoffSnapshot": False,
+            "writeEffectiveTaskPrompt": False,
+            "executeInTargetRepo": False,
+            "recordEvidence": False,
+        }
+        or operator_runbook.get("commandStageKeys") != [
+            "verifySourceBundle",
+            "refreshHandoffSnapshot",
+            "writeEffectiveTaskPrompt",
+        ]
+        or operator_runbook.get("manualStageKeys") != [
+            "executeInTargetRepo",
+            "recordEvidence",
+        ]
+        or operator_runbook.get("nextStageKey") != "verifySourceBundle"
+        or operator_runbook.get("nextStageLabel") != "Verify source bundle integrity"
+        or operator_runbook.get("nextStageActionType") != "run-local-gate"
+        or operator_runbook.get("nextStageActionLabel") != "Run strict bundle check"
+        or operator_runbook.get("nextStageActionInstruction")
+        != "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff."
+        or operator_runbook.get("nextStageActionButtonLabel") != "Run Check"
+        or operator_runbook.get("nextStageActionAffordance") != "primary-command-button"
+        or operator_runbook.get("nextStageActionEnabled") is not True
+        or operator_runbook.get("nextStageActionStatus") != "ready"
+        or operator_runbook.get("nextStageActionStatusLabel") != "Ready"
+        or operator_runbook.get("nextStageActionStatusTone") != "success"
+        or operator_runbook.get("nextStageActionDisabledReasonCode") != ""
+        or operator_runbook.get("nextStageActionDisabledReason") != ""
+        or operator_runbook.get("nextStageActionPrerequisiteKeys") != []
+        or operator_runbook.get("nextStageActionPrerequisiteLabels") != []
+        or operator_runbook.get("nextStageActionPrerequisiteCount") != 0
+        or operator_runbook.get("nextStageActionHasPrerequisites") is not False
+        or operator_runbook.get("nextStageActionDependencyReasonCode") != ""
+        or operator_runbook.get("nextStageActionDependencyReason") != ""
+        or operator_runbook.get("nextStageActionBlockedStageKeys") != ["writeEffectiveTaskPrompt", "executeInTargetRepo"]
+        or operator_runbook.get("nextStageActionBlockedStageLabels")
+        != ["Write effective task handoff prompt", "Execute the task in the target website repo"]
+        or operator_runbook.get("nextStageActionBlockedStageCount") != 2
+        or operator_runbook.get("nextStageActionBlocksStages") is not True
+        or operator_runbook.get("nextStageActionCompletionCriteria")
+        != ["Strict bundle check status is pass.", "Checksum and generated-file drift counts are zero."]
+        or operator_runbook.get("nextStageActionCompletionCriteriaCount") != 2
+        or operator_runbook.get("nextStageActionHasCompletionCriteria") is not True
+        or operator_runbook.get("nextStageActionEvidenceRequirements")
+        != ["Strict bundle-check command output or JSON status.", "Bundle digest and zero drift counts."]
+        or operator_runbook.get("nextStageActionEvidenceRequirementCount") != 2
+        or operator_runbook.get("nextStageActionRequiresEvidence") is not True
+        or operator_runbook.get("nextStageActionEvidenceTarget") != "local-command-output"
+        or operator_runbook.get("nextStageActionEvidenceTargetLabel") != "Local command output"
+        or operator_runbook.get("nextStageActionEvidenceCaptureFields") != expected_next_capture_fields
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldKeys") != ["strictBundleCheckOutput", "bundleDigest"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldLabels") != ["Strict bundle-check output", "Bundle digest"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldPlaceholders")
+        != [
+            "Paste the strict bundle-check pass output or JSON status.",
+            "Record the bundle digest or checksum summary.",
+        ]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldRequirementLabels") != ["Required", "Required"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldAriaLabels")
+        != [
+            "Strict bundle-check output evidence (required)",
+            "Bundle digest evidence (required)",
+        ]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldHelpTexts")
+        != [
+            "Required: paste a passing strict bundle-check result.",
+            "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+        ]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldSectionKeys")
+        != ["source-bundle-verification", "source-bundle-verification"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldSectionLabels")
+        != ["Source bundle verification", "Source bundle verification"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureSectionKeys") != ["source-bundle-verification"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureSectionLabels") != ["Source bundle verification"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureSectionCount") != 1
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldPayloadNamespaces")
+        != ["sourceBundle", "sourceBundle"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldPayloadPaths")
+        != [
+            "sourceBundle.verification.strictBundleCheckOutput",
+            "sourceBundle.verification.bundleDigest",
+        ]
+        or operator_runbook.get("nextStageActionEvidenceCapturePayloadNamespaces") != ["sourceBundle"]
+        or operator_runbook.get("nextStageActionEvidenceCapturePayloadNamespaceCount") != 1
+        or operator_runbook.get("nextStageActionEvidenceCapturePayloadTemplate")
+        != expected_capture_payload_templates["verifySourceBundle"]
+        or operator_runbook.get("nextStageActionEvidenceCapturePayloadFlatTemplate")
+        != expected_capture_payload_flat_templates["verifySourceBundle"]
+        or operator_runbook.get("nextStageActionEvidenceCapturePayloadBindings")
+        != expected_next_capture_payload_bindings
+        or operator_runbook.get("nextStageActionEvidenceCaptureValidationSpecs")
+        != expected_next_capture_validation_specs
+        or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationStates")
+        != expected_next_initial_validation_states
+        or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationDisplayMetadata")
+        != expected_next_initial_validation_display_metadata
+        or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationChecklist")
+        != expected_next_initial_validation_checklist
+        or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationChecklistSummary")
+        != expected_next_initial_validation_checklist_summary
+        or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationSummary")
+        != expected_next_initial_validation_summary
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldDefaultValues") != ["", ""]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldEmptyValues") != ["", ""]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldValidationRules")
+        != ["non-empty-text", "checksum-or-digest-text"]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldMinLengths") != [20, 8]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldExamples")
+        != [
+            "Status: pass; checksumFailures: 0; generatedFailures: 0",
+            "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+        ]
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldValidationHints")
+        != [
+            "Required: paste a passing strict bundle-check result.",
+            "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+        ]
+        or operator_runbook.get("nextStageActionRequiredEvidenceCaptureFieldKeys") != ["strictBundleCheckOutput", "bundleDigest"]
+        or operator_runbook.get("nextStageActionOptionalEvidenceCaptureFieldKeys") != []
+        or operator_runbook.get("nextStageActionEvidenceCaptureFieldCount") != 2
+        or operator_runbook.get("nextStageActionRequiredEvidenceCaptureFieldCount") != 2
+        or operator_runbook.get("nextStageActionOptionalEvidenceCaptureFieldCount") != 0
+        or operator_runbook.get("nextStageActionHasEvidenceCaptureFields") is not True
+        or operator_runbook.get("nextStageKind") != "read-only-gate"
+        or operator_runbook.get("nextStageRequired") is not True
+        or operator_runbook.get("nextStageRunPolicy") != "read-only"
+        or operator_runbook.get("nextStageSafetyLevel") != "local-read-only"
+        or operator_runbook.get("nextStageCommandCount") != 1
+        or operator_runbook.get("nextStageCommandLabels") != ["Strict bundle check JSON"]
+        or operator_runbook.get("nextStageCommandRunPolicies") != ["read-only"]
+        or operator_runbook.get("nextStageCommandSafetyLevels") != ["local-read-only"]
+        or operator_runbook.get("nextStageOutputFiles") != []
+        or operator_runbook.get("nextStageHasCommands") is not True
+        or operator_runbook.get("nextStageManual") is not False
+        or operator_runbook.get("nextStageWritesLocalFile") is not False
+        or operator_runbook.get("nextStageExternalCalls") is not False
+        or operator_runbook.get("nextStageTargetRepoMutation") is not False
+        or operator_runbook.get("nextStageCommandKeys") != ["source.bundleCheck.strict"]
+        or operator_runbook.get("nextCommandKey") != "source.bundleCheck.strict"
+        or not isinstance(operator_runbook.get("stageByKey"), dict)
+        or not isinstance(operator_runbook.get("stageSummaryByKey"), dict)
+        or not isinstance(operator_runbook.get("stageCommandStringsByKey"), dict)
+        or not isinstance(operator_runbook.get("stageCommandArgsByKey"), dict)
+        or not isinstance(operator_runbook.get("stageActionRows"), list)
+        or not isinstance(operator_runbook.get("stageOutputFilesByKey"), dict)
+        or not isinstance(runbook_stages, list)
+        or [stage.get("key") for stage in runbook_stages] != expected_stage_keys
+    ):
+        raise SystemExit(f"site bundle handoff after {context} operator runbook summary changed: {operator_runbook!r}")
+    verify_stage = runbook_stages[0]
+    task_prompt_stage = runbook_stages[2]
+    manual_stage = runbook_stages[3]
+    action_rows = operator_runbook["stageActionRows"]
+    stage_by_key = operator_runbook["stageByKey"]
+    stage_human_lines = operator_runbook.get("stageHumanLines")
+    stage_human_line_by_key = operator_runbook.get("stageHumanLineByKey")
+    stage_human_line_display_rows = operator_runbook.get("stageHumanLineDisplayRows")
+    stage_human_line_display_row_by_key = operator_runbook.get("stageHumanLineDisplayRowByKey")
+    stage_human_line_display_row_keys_by_action_status = operator_runbook.get(
+        "stageHumanLineDisplayRowKeysByActionStatus"
+    )
+    stage_human_line_display_row_keys_by_evidence_progress_status = operator_runbook.get(
+        "stageHumanLineDisplayRowKeysByEvidenceProgressStatus"
+    )
+    stage_human_line_display_row_summary = operator_runbook.get("stageHumanLineDisplayRowSummary")
+    stage_human_line_summary = operator_runbook.get("stageHumanLineSummary")
+    next_stage_human_line_summary = operator_runbook.get("nextStageHumanLineSummary")
+    if (
+        stage_by_key.get("verifySourceBundle") != verify_stage
+        or stage_by_key.get("writeEffectiveTaskPrompt") != task_prompt_stage
+        or not isinstance(stage_human_lines, list)
+        or len(stage_human_lines) != len(expected_stage_keys)
+        or not isinstance(stage_human_line_by_key, dict)
+        or not isinstance(stage_human_line_display_rows, list)
+        or len(stage_human_line_display_rows) != len(expected_stage_keys)
+        or not isinstance(stage_human_line_display_row_by_key, dict)
+        or stage_human_line_display_rows[0]
+        != {
+            "step": 1,
+            "key": "verifySourceBundle",
+            "label": "Verify source bundle integrity",
+            "line": stage_human_lines[0],
+            "required": True,
+            "manual": False,
+            "commandCount": 1,
+            "actionType": "run-local-gate",
+            "actionLabel": "Run strict bundle check",
+            "actionStatus": "ready",
+            "actionStatusLabel": "Ready",
+            "actionStatusTone": "success",
+            "hasEvidenceProgress": True,
+            "evidenceProgressStatus": "blocked",
+            "evidenceProgressStatusLabel": "Checklist blocked",
+            "evidenceProgressStatusTone": "danger",
+            "evidenceProgressIconName": "list-x",
+            "evidenceProgressLabel": "0/2 complete",
+            "evidenceCompletionPercent": 0,
+            "firstUncheckedEvidenceItemLabel": "Strict bundle-check output",
+        }
+        or stage_human_line_display_row_by_key.get("verifySourceBundle") != stage_human_line_display_rows[0]
+        or operator_runbook.get("nextStageHumanLineDisplayRow") != stage_human_line_display_rows[0]
+        or stage_human_line_display_row_keys_by_action_status
+        != {
+            "ready": ["verifySourceBundle", "writeEffectiveTaskPrompt"],
+            "optional": ["refreshHandoffSnapshot"],
+            "manual": ["executeInTargetRepo", "recordEvidence"],
+            "blocked": [],
+        }
+        or stage_human_line_display_row_keys_by_evidence_progress_status
+        != {
+            "blocked": ["verifySourceBundle", "writeEffectiveTaskPrompt", "executeInTargetRepo", "recordEvidence"],
+            "ready": ["refreshHandoffSnapshot"],
+        }
+        or stage_human_line_display_row_summary
+        != {
+            "count": 5,
+            "byKeyCount": 5,
+            "requiredCount": 4,
+            "optionalCount": 1,
+            "commandCount": 3,
+            "manualCount": 2,
+            "readyActionStatusCount": 2,
+            "optionalActionStatusCount": 1,
+            "manualActionStatusCount": 2,
+            "blockedActionStatusCount": 0,
+            "evidenceProgressCount": 5,
+            "blockedEvidenceProgressCount": 4,
+            "readyEvidenceProgressCount": 1,
+            "firstRowKey": "verifySourceBundle",
+            "firstReadyActionRowKey": "verifySourceBundle",
+            "firstOptionalActionRowKey": "refreshHandoffSnapshot",
+            "firstManualActionRowKey": "executeInTargetRepo",
+            "firstBlockedEvidenceProgressRowKey": "verifySourceBundle",
+            "firstReadyEvidenceProgressRowKey": "refreshHandoffSnapshot",
+        }
+        or stage_human_line_summary
+        != {
+            "count": 5,
+            "byKeyCount": 5,
+            "requiredCount": 4,
+            "optionalCount": 1,
+            "commandCount": 3,
+            "manualCount": 2,
+            "evidenceProgressCount": 5,
+            "blockedEvidenceProgressCount": 4,
+            "readyEvidenceProgressCount": 1,
+            "firstStageKey": "verifySourceBundle",
+            "firstLine": stage_human_lines[0],
+            "firstEvidenceProgressStageKey": "verifySourceBundle",
+            "firstBlockedEvidenceProgressStageKey": "verifySourceBundle",
+        }
+        or next_stage_human_line_summary
+        != {
+            "stageKey": "verifySourceBundle",
+            "line": stage_human_lines[0],
+            "hasEvidenceProgress": True,
+            "evidenceProgressStatus": "blocked",
+            "evidenceProgressLabel": "0/2 complete",
+            "firstUncheckedEvidenceItemLabel": "Strict bundle-check output",
+        }
+        or stage_human_line_by_key.get("verifySourceBundle") != stage_human_lines[0]
+        or stage_human_line_by_key.get("executeInTargetRepo") != stage_human_lines[3]
+        or operator_runbook.get("nextStageHumanLine") != stage_human_lines[0]
+        or "evidence: 0/2 complete, Checklist blocked; next: Strict bundle-check output" not in stage_human_lines[0]
+        or "evidence: 1/1 complete, Checklist ready" not in stage_human_line_by_key.get("refreshHandoffSnapshot", "")
+        or "evidence: 0/3 complete, Checklist blocked; next: Target repo changed files" not in stage_human_lines[3]
+        or [stage.get("key") for stage in action_rows] != expected_stage_keys
+        or action_rows[0].get("actionType") != "run-local-gate"
+        or action_rows[0].get("actionLabel") != "Run strict bundle check"
+        or action_rows[0].get("actionButtonLabel") != "Run Check"
+        or action_rows[0].get("actionAffordance") != "primary-command-button"
+        or action_rows[0].get("actionEnabled") is not True
+        or action_rows[0].get("actionStatus") != "ready"
+        or action_rows[0].get("actionStatusTone") != "success"
+        or action_rows[0].get("actionPrerequisiteKeys") != []
+        or action_rows[0].get("actionPrerequisiteCount") != 0
+        or action_rows[0].get("actionHasPrerequisites") is not False
+        or action_rows[0].get("actionDependencyReasonCode") != ""
+        or action_rows[0].get("actionBlockedStageKeys") != ["writeEffectiveTaskPrompt", "executeInTargetRepo"]
+        or action_rows[0].get("actionBlockedStageCount") != 2
+        or action_rows[0].get("actionBlocksStages") is not True
+        or action_rows[0].get("actionCompletionCriteriaCount") != 2
+        or action_rows[0].get("actionHasCompletionCriteria") is not True
+        or action_rows[0].get("actionEvidenceRequirementCount") != 2
+        or action_rows[0].get("actionRequiresEvidence") is not True
+        or action_rows[0].get("actionEvidenceTarget") != "local-command-output"
+        or action_rows[0].get("actionEvidenceTargetLabel") != "Local command output"
+        or action_rows[0].get("actionEvidenceCaptureFieldKeys") != ["strictBundleCheckOutput", "bundleDigest"]
+        or action_rows[0].get("actionEvidenceCaptureFieldLabels") != ["Strict bundle-check output", "Bundle digest"]
+        or action_rows[0].get("actionEvidenceCaptureFieldSectionKeys")
+        != ["source-bundle-verification", "source-bundle-verification"]
+        or action_rows[0].get("actionEvidenceCaptureSectionKeys") != ["source-bundle-verification"]
+        or action_rows[0].get("actionEvidenceCaptureSectionCount") != 1
+        or action_rows[0].get("actionEvidenceCaptureFieldPayloadNamespaces") != ["sourceBundle", "sourceBundle"]
+        or action_rows[0].get("actionEvidenceCaptureFieldPayloadPaths")
+        != [
+            "sourceBundle.verification.strictBundleCheckOutput",
+            "sourceBundle.verification.bundleDigest",
+        ]
+        or action_rows[0].get("actionEvidenceCapturePayloadNamespaces") != ["sourceBundle"]
+        or action_rows[0].get("actionEvidenceCapturePayloadNamespaceCount") != 1
+        or action_rows[0].get("actionEvidenceCapturePayloadTemplate")
+        != expected_capture_payload_templates["verifySourceBundle"]
+        or action_rows[0].get("actionEvidenceCapturePayloadFlatTemplate")
+        != expected_capture_payload_flat_templates["verifySourceBundle"]
+        or action_rows[0].get("actionEvidenceCapturePayloadBindings")
+        != expected_next_capture_payload_bindings
+        or action_rows[0].get("actionEvidenceCaptureValidationSpecs")
+        != expected_next_capture_validation_specs
+        or action_rows[0].get("actionEvidenceCaptureInitialValidationStates")
+        != expected_next_initial_validation_states
+        or action_rows[0].get("actionEvidenceCaptureInitialValidationDisplayMetadata")
+        != expected_next_initial_validation_display_metadata
+        or action_rows[0].get("actionEvidenceCaptureInitialValidationChecklist")
+        != expected_next_initial_validation_checklist
+        or action_rows[0].get("actionEvidenceCaptureInitialValidationChecklistSummary")
+        != expected_next_initial_validation_checklist_summary
+        or action_rows[0].get("actionEvidenceCaptureInitialValidationSummary")
+        != expected_next_initial_validation_summary
+        or action_rows[0].get("actionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
+        or action_rows[0].get("actionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
+        or action_rows[0].get("actionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
+        or action_rows[0].get("actionEvidenceCaptureFieldValidationRules")
+        != ["non-empty-text", "checksum-or-digest-text"]
+        or action_rows[0].get("actionEvidenceCaptureFieldMinLengths") != [20, 8]
+        or action_rows[0].get("actionRequiredEvidenceCaptureFieldKeys") != ["strictBundleCheckOutput", "bundleDigest"]
+        or action_rows[0].get("actionOptionalEvidenceCaptureFieldKeys") != []
+        or action_rows[0].get("actionEvidenceCaptureFieldCount") != 2
+        or action_rows[0].get("actionRequiredEvidenceCaptureFieldCount") != 2
+        or action_rows[0].get("actionOptionalEvidenceCaptureFieldCount") != 0
+        or action_rows[0].get("actionHasEvidenceCaptureFields") is not True
+        or action_rows[0].get("actionEvidenceCaptureFields") != expected_next_capture_fields
+        or action_rows[0].get("commandKeys") != verify_stage.get("commandKeys")
+        or action_rows[0].get("manual") is not False
+        or action_rows[2].get("actionType") != "write-local-output"
+        or action_rows[2].get("actionButtonLabel") != "Write Prompt"
+        or action_rows[2].get("actionAffordance") != "local-output-button"
+        or action_rows[2].get("actionEnabled") is not True
+        or action_rows[2].get("actionStatus") != "ready"
+        or action_rows[2].get("actionPrerequisiteKeys") != ["verifySourceBundle"]
+        or action_rows[2].get("actionPrerequisiteCount") != 1
+        or action_rows[2].get("actionDependencyReasonCode") != "requires-prerequisite-actions"
+        or action_rows[2].get("actionBlockedStageKeys") != ["executeInTargetRepo"]
+        or action_rows[2].get("actionBlockedStageCount") != 1
+        or action_rows[2].get("actionBlocksStages") is not True
+        or action_rows[2].get("actionCompletionCriteriaCount") != 2
+        or action_rows[2].get("actionHasCompletionCriteria") is not True
+        or action_rows[2].get("actionEvidenceRequirementCount") != 2
+        or action_rows[2].get("actionRequiresEvidence") is not True
+        or action_rows[2].get("actionEvidenceTarget") != "local-output-file"
+        or action_rows[2].get("actionEvidenceTargetLabel") != "Local output file"
+        or action_rows[2].get("actionEvidenceCaptureFieldKeys") != ["promptOutputFile", "selectedTaskId"]
+        or action_rows[2].get("actionEvidenceCaptureFieldSectionKeys")
+        != ["handoff-prompt-output", "handoff-prompt-output"]
+        or action_rows[2].get("actionEvidenceCaptureSectionKeys") != ["handoff-prompt-output"]
+        or action_rows[2].get("actionEvidenceCaptureSectionCount") != 1
+        or action_rows[2].get("actionEvidenceCaptureFieldPayloadNamespaces") != ["handoffPrompt", "handoffPrompt"]
+        or action_rows[2].get("actionEvidenceCaptureFieldPayloadPaths")
+        != ["handoffPrompt.outputFile", "handoffPrompt.selectedTaskId"]
+        or action_rows[2].get("actionEvidenceCapturePayloadNamespaces") != ["handoffPrompt"]
+        or action_rows[2].get("actionEvidenceCapturePayloadNamespaceCount") != 1
+        or action_rows[2].get("actionEvidenceCapturePayloadTemplate")
+        != expected_capture_payload_templates["writeEffectiveTaskPrompt"]
+        or action_rows[2].get("actionEvidenceCapturePayloadFlatTemplate")
+        != expected_capture_payload_flat_templates["writeEffectiveTaskPrompt"]
+        or action_rows[2].get("actionEvidenceCaptureFieldInputTypes") != ["file-path", "text"]
+        or action_rows[2].get("actionEvidenceCaptureFieldValueShapes") != ["file-path", "short-text"]
+        or action_rows[2].get("actionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
+        or action_rows[2].get("actionEvidenceCaptureFieldValidationRules") != ["local-markdown-file-path", "task-id"]
+        or action_rows[2].get("actionEvidenceCaptureFieldMinLengths") != [12, 5]
+        or action_rows[2].get("actionRequiredEvidenceCaptureFieldKeys") != ["promptOutputFile", "selectedTaskId"]
+        or action_rows[2].get("actionOptionalEvidenceCaptureFieldKeys") != []
+        or action_rows[2].get("actionEvidenceCaptureFieldCount") != 2
+        or action_rows[2].get("actionRequiredEvidenceCaptureFieldCount") != 2
+        or action_rows[2].get("actionOptionalEvidenceCaptureFieldCount") != 0
+        or action_rows[2].get("actionHasEvidenceCaptureFields") is not True
+        or action_rows[2].get("outputFiles") != task_prompt_stage.get("outputFiles")
+        or action_rows[2].get("writesLocalFile") != task_prompt_stage.get("writesLocalFile")
+        or action_rows[3].get("actionType") != "manual-target-repo"
+        or action_rows[3].get("actionButtonLabel") != "Open Target Repo"
+        or action_rows[3].get("actionAffordance") != "manual-target-repo-step"
+        or action_rows[3].get("actionEnabled") is not False
+        or action_rows[3].get("actionStatus") != "manual"
+        or action_rows[3].get("actionDisabledReasonCode") != "manual-target-repo-step"
+        or action_rows[3].get("actionPrerequisiteKeys") != ["verifySourceBundle", "writeEffectiveTaskPrompt"]
+        or action_rows[3].get("actionPrerequisiteCount") != 2
+        or action_rows[3].get("actionDependencyReasonCode") != "requires-prerequisite-actions"
+        or action_rows[3].get("actionBlockedStageKeys") != ["recordEvidence"]
+        or action_rows[3].get("actionBlockedStageCount") != 1
+        or action_rows[3].get("actionBlocksStages") is not True
+        or action_rows[3].get("actionCompletionCriteriaCount") != 2
+        or action_rows[3].get("actionHasCompletionCriteria") is not True
+        or action_rows[3].get("actionEvidenceRequirementCount") != 3
+        or action_rows[3].get("actionRequiresEvidence") is not True
+        or action_rows[3].get("actionEvidenceTarget") != "target-repo-working-tree"
+        or action_rows[3].get("actionEvidenceTargetLabel") != "Target repo working tree"
+        or action_rows[3].get("actionEvidenceCaptureFieldKeys")
+        != ["targetRepoChangedFiles", "targetRepoVerificationResults", "viewportAccessibilityNotes"]
+        or action_rows[3].get("actionEvidenceCaptureFieldSectionKeys")
+        != ["target-repo-changes", "target-repo-verification", "viewport-accessibility-qa"]
+        or action_rows[3].get("actionEvidenceCaptureSectionKeys")
+        != ["target-repo-changes", "target-repo-verification", "viewport-accessibility-qa"]
+        or action_rows[3].get("actionEvidenceCaptureSectionCount") != 3
+        or action_rows[3].get("actionEvidenceCaptureFieldPayloadNamespaces")
+        != ["targetRepo", "targetRepo", "targetRepo"]
+        or action_rows[3].get("actionEvidenceCaptureFieldPayloadPaths")
+        != [
+            "targetRepo.changedFiles",
+            "targetRepo.verificationResults",
+            "targetRepo.viewportAccessibilityNotes",
+        ]
+        or action_rows[3].get("actionEvidenceCapturePayloadNamespaces") != ["targetRepo"]
+        or action_rows[3].get("actionEvidenceCapturePayloadNamespaceCount") != 1
+        or action_rows[3].get("actionEvidenceCapturePayloadTemplate")
+        != expected_capture_payload_templates["executeInTargetRepo"]
+        or action_rows[3].get("actionEvidenceCapturePayloadFlatTemplate")
+        != expected_capture_payload_flat_templates["executeInTargetRepo"]
+        or action_rows[3].get("actionEvidenceCapturePayloadBindings", [{}])[0]
+        != expected_target_repo_changed_files_binding
+        or action_rows[3].get("actionEvidenceCaptureValidationSpecs", [{}])[0]
+        != expected_target_repo_changed_files_validation_spec
+        or action_rows[3].get("actionEvidenceCaptureInitialValidationSummary")
+        != expected_target_repo_initial_validation_summary
+        or action_rows[3].get("actionEvidenceCaptureInitialValidationChecklist", [{}])[0]
+        != expected_target_repo_changed_files_initial_validation_checklist
+        or action_rows[3].get("actionEvidenceCaptureInitialValidationChecklistSummary")
+        != expected_target_repo_initial_validation_checklist_summary
+        or action_rows[3].get("actionEvidenceCaptureFieldInputTypes") != ["list", "textarea", "textarea"]
+        or action_rows[3].get("actionEvidenceCaptureFieldValueShapes") != ["string-list", "long-text", "long-text"]
+        or action_rows[3].get("actionEvidenceCaptureFieldAcceptsMultiple") != [True, False, False]
+        or action_rows[3].get("actionEvidenceCaptureFieldValidationRules")
+        != ["non-empty-file-list", "verification-results", "viewport-accessibility-notes"]
+        or action_rows[3].get("actionEvidenceCaptureFieldMinLengths") != [1, 20, 20]
+        or action_rows[3].get("actionRequiredEvidenceCaptureFieldKeys")
+        != ["targetRepoChangedFiles", "targetRepoVerificationResults", "viewportAccessibilityNotes"]
+        or action_rows[3].get("actionOptionalEvidenceCaptureFieldKeys") != []
+        or action_rows[3].get("actionEvidenceCaptureFieldCount") != 3
+        or action_rows[3].get("actionRequiredEvidenceCaptureFieldCount") != 3
+        or action_rows[3].get("actionOptionalEvidenceCaptureFieldCount") != 0
+        or action_rows[3].get("actionHasEvidenceCaptureFields") is not True
+        or action_rows[3].get("manual") is not True
+        or operator_runbook.get("nextStage") != verify_stage
+        or operator_runbook.get("nextStageSummary") != verify_stage.get("reason")
+        or operator_runbook["stageSummaryByKey"].get("verifySourceBundle") != verify_stage.get("reason")
+        or operator_runbook["stageSummaryByKey"].get("writeEffectiveTaskPrompt") != task_prompt_stage.get("reason")
+        or operator_runbook["stageCommandStringsByKey"].get("verifySourceBundle") != [verify_stage["commands"][0].get("command")]
+        or operator_runbook["stageCommandStringsByKey"].get("writeEffectiveTaskPrompt") != [task_prompt_stage["commands"][0].get("command")]
+        or operator_runbook["stageCommandArgsByKey"].get("verifySourceBundle") != [verify_stage["commands"][0].get("commandArgs")]
+        or operator_runbook["stageCommandArgsByKey"].get("writeEffectiveTaskPrompt") != [task_prompt_stage["commands"][0].get("commandArgs")]
+        or operator_runbook.get("nextStageCommands") != [verify_stage["commands"][0].get("command")]
+        or operator_runbook.get("nextStageCommandArgsList") != [verify_stage["commands"][0].get("commandArgs")]
+        or operator_runbook["stageOutputFilesByKey"].get("writeEffectiveTaskPrompt") != task_prompt_stage.get("outputFiles")
+        or operator_runbook["stageOutputFilesByKey"].get("verifySourceBundle") != []
+        or operator_runbook["stageHasCommandsByKey"].get("verifySourceBundle") != (verify_stage.get("commandCount") > 0)
+        or operator_runbook["stageHasCommandsByKey"].get("executeInTargetRepo") != (manual_stage.get("commandCount") > 0)
+        or operator_runbook["stageManualByKey"].get("executeInTargetRepo") != (manual_stage.get("commandCount") == 0)
+        or operator_runbook["stageWritesLocalFileByKey"].get("writeEffectiveTaskPrompt") != task_prompt_stage.get("writesLocalFile")
+        or operator_runbook["stageExternalCallsByKey"].get("verifySourceBundle") != verify_stage.get("externalCalls")
+        or operator_runbook["stageTargetRepoMutationByKey"].get("executeInTargetRepo") != manual_stage.get("targetRepoMutation")
+        or not isinstance(operator_runbook.get("nextCommandEntry"), dict)
+        or operator_runbook["nextCommandEntry"].get("key") != "source.bundleCheck.strict"
+        or operator_runbook.get("nextCommand") != operator_runbook["nextCommandEntry"].get("command")
+        or operator_runbook.get("nextCommandArgs") != operator_runbook["nextCommandEntry"].get("commandArgs")
+        or operator_runbook.get("nextCommandRunPolicy") != "read-only"
+        or operator_runbook.get("nextCommandSafetyLevel") != "local-read-only"
+        or operator_runbook.get("nextCommandSafety") != operator_runbook["nextCommandEntry"].get("safety")
+    ):
+        raise SystemExit(f"site bundle handoff after {context} operator runbook lookup fields changed: {operator_runbook!r}")
+    if (
+        verify_stage.get("commandKeys") != ["source.bundleCheck.strict"]
+        or verify_stage.get("runPolicy") != "read-only"
+        or verify_stage.get("safetyLevel") != "local-read-only"
+        or verify_stage.get("commandCount") != 1
+        or verify_stage.get("externalCalls") is not False
+        or verify_stage.get("targetRepoMutation") is not False
+    ):
+        raise SystemExit(f"site bundle handoff after {context} operator runbook verify stage changed: {verify_stage!r}")
+    if (
+        task_prompt_stage.get("commandKeys") != [f"task.{expected_effective_task_id}.handoff.strict"]
+        or task_prompt_stage.get("runPolicy") != "writes-local-file"
+        or task_prompt_stage.get("safetyLevel") != "local-output-file"
+        or task_prompt_stage.get("outputFiles") != [f"target-repo-{expected_effective_task_id}-handoff.md"]
+        or task_prompt_stage.get("commandCount") != 1
+        or not isinstance(task_prompt_stage.get("commands"), list)
+        or task_prompt_stage["commands"][0].get("key") != f"task.{expected_effective_task_id}.handoff.strict"
+    ):
+        raise SystemExit(f"site bundle handoff after {context} operator runbook task prompt stage changed: {task_prompt_stage!r}")
+    if (
+        manual_stage.get("runPolicy") != "manual-target-repo"
+        or manual_stage.get("safetyLevel") != "operator-controlled-target-repo"
+        or manual_stage.get("commandCount") != 0
+        or manual_stage.get("commands") != []
+        or manual_stage.get("required") is not True
+    ):
+        raise SystemExit(f"site bundle handoff after {context} operator runbook manual stage changed: {manual_stage!r}")
     execution_checklist = bundle.get("executionChecklist")
     if not isinstance(execution_checklist, list) or [item.get("id") for item in execution_checklist] != [
         "confirm-target-repo",
@@ -1740,6 +4270,105 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract verification changed")
     if bundle.get("generatedDriftFiles") != []:
         raise SystemExit(f"site bundle handoff after {context} generated bundle contract drift changed")
+
+    def assert_task_command_args(task, task_id, label):
+        expected_out_file = f"target-repo-{task_id}-handoff.md"
+        for key, expected_tail in {
+            "handoffCommandArgs": ["--bundle-handoff", "--task", task_id, "--out", expected_out_file],
+            "strictHandoffCommandArgs": ["--bundle-handoff", "--task", task_id, "--strict", "--out", expected_out_file],
+        }.items():
+            command_args = task.get(key) if isinstance(task, dict) else None
+            if (
+                not isinstance(command_args, list)
+                or len(command_args) != len(expected_tail) + 3
+                or command_args[:2] != ["design-ai", "site"]
+                or not isinstance(command_args[2], str)
+                or command_args[-len(expected_tail):] != expected_tail
+            ):
+                raise SystemExit(f"site bundle handoff after {context} {label} {key} changed: {command_args!r}")
+        for policy_key in ["handoffCommandRunPolicy", "strictHandoffCommandRunPolicy"]:
+            if task.get(policy_key) != "writes-local-file":
+                raise SystemExit(f"site bundle handoff after {context} {label} {policy_key} changed: {task.get(policy_key)!r}")
+        for key, expected_strict in {
+            "handoffCommandSafety": False,
+            "strictHandoffCommandSafety": True,
+        }.items():
+            safety = task.get(key) if isinstance(task, dict) else None
+            if (
+                not isinstance(safety, dict)
+                or safety.get("runPolicy") != "writes-local-file"
+                or safety.get("safetyLevel") != "local-output-file"
+                or safety.get("writesLocalFile") is not True
+                or safety.get("outputFile") != expected_out_file
+                or safety.get("mutates") != "local-output-file-only"
+                or safety.get("externalCalls") is not False
+                or safety.get("targetRepoMutation") is not False
+                or safety.get("requiresCleanWorkspace") is not False
+                or safety.get("requiresReviewBeforeMutation") is not False
+                or safety.get("strict") is not expected_strict
+            ):
+                raise SystemExit(f"site bundle handoff after {context} {label} {key} changed: {safety!r}")
+
+    default_task = bundle.get("defaultTask")
+    if (
+        not isinstance(default_task, dict)
+        or default_task.get("id") != "task-accessibility"
+        or default_task.get("handoffOutFile") != "target-repo-task-accessibility-handoff.md"
+        or not isinstance(default_task.get("strictHandoffCommand"), str)
+        or "--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff.md" not in default_task.get("strictHandoffCommand")
+    ):
+        raise SystemExit(f"site bundle handoff after {context} default task command metadata changed: {default_task!r}")
+    assert_task_command_args(default_task, "task-accessibility", "default task")
+    selected_task = bundle.get("selectedTask")
+    effective_task = bundle.get("effectiveTask")
+    if (
+        not isinstance(effective_task, dict)
+        or effective_task.get("id") != expected_effective_task_id
+        or effective_task.get("handoffOutFile") != f"target-repo-{expected_effective_task_id}-handoff.md"
+        or not isinstance(effective_task.get("strictHandoffCommand"), str)
+        or f"--bundle-handoff --task {expected_effective_task_id} --strict --out target-repo-{expected_effective_task_id}-handoff.md" not in effective_task.get("strictHandoffCommand")
+    ):
+        raise SystemExit(f"site bundle handoff after {context} effective task command metadata changed: {effective_task!r}")
+    assert_task_command_args(effective_task, expected_effective_task_id, "effective task")
+    if expected_selected_task_id is None:
+        if selected_task is not None:
+            raise SystemExit(f"site bundle handoff after {context} default selected task should be null: {selected_task!r}")
+    elif not isinstance(selected_task, dict) or selected_task.get("id") != expected_selected_task_id:
+        raise SystemExit(f"site bundle handoff after {context} selected task changed: {selected_task!r}")
+    elif (
+        selected_task.get("handoffOutFile") != f"target-repo-{expected_selected_task_id}-handoff.md"
+        or not isinstance(selected_task.get("strictHandoffCommand"), str)
+        or f"--bundle-handoff --task {expected_selected_task_id} --strict --out target-repo-{expected_selected_task_id}-handoff.md" not in selected_task.get("strictHandoffCommand")
+    ):
+        raise SystemExit(f"site bundle handoff after {context} selected task command metadata changed: {selected_task!r}")
+    elif expected_selected_task_id:
+        assert_task_command_args(selected_task, expected_selected_task_id, "selected task")
+    task_catalog = bundle.get("taskCatalog")
+    if not isinstance(task_catalog, dict):
+        raise SystemExit(f"site bundle handoff after {context} task catalog missing")
+    if task_catalog.get("count") != 3 or task_catalog.get("defaultTaskId") != "task-accessibility":
+        raise SystemExit(f"site bundle handoff after {context} task catalog summary changed: {task_catalog!r}")
+    if task_catalog.get("selectedTaskId") != (expected_selected_task_id or ""):
+        raise SystemExit(f"site bundle handoff after {context} task catalog selected id changed: {task_catalog!r}")
+    if task_catalog.get("selectionMode") != ("explicit" if expected_selected_task_id else "bundled-default"):
+        raise SystemExit(f"site bundle handoff after {context} task catalog selection mode changed: {task_catalog!r}")
+    task_items = task_catalog.get("items")
+    if not isinstance(task_items, list) or [f"{item.get('number')}:{item.get('id')}" for item in task_items] != [
+        "1:task-accessibility",
+        "2:task-homepage-cta",
+        "3:task-content-quality",
+    ]:
+        raise SystemExit(f"site bundle handoff after {context} task catalog items changed: {task_items!r}")
+    first_task = task_items[0]
+    if first_task.get("handoffOutFile") != "target-repo-task-accessibility-handoff.md":
+        raise SystemExit(f"site bundle handoff after {context} task catalog out file changed: {first_task!r}")
+    strict_handoff_command = first_task.get("strictHandoffCommand")
+    if (
+        not isinstance(strict_handoff_command, str)
+        or "--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff.md" not in strict_handoff_command
+    ):
+        raise SystemExit(f"site bundle handoff after {context} task catalog strict command changed: {strict_handoff_command!r}")
+    assert_task_command_args(first_task, "task-accessibility", "task catalog first task")
     repair_guidance = bundle.get("repairGuidance")
     if not isinstance(repair_guidance, dict) or repair_guidance.get("available") is not True:
         raise SystemExit(f"site bundle handoff after {context} repair guidance missing")
@@ -1765,8 +4394,17 @@ def assert_site_bundle_handoff_json_smoke(
     for fragment in (
         "Website improvement target-repo handoff prompt",
         "You are Codex working in the target website repository, not in the design-ai repository.",
+        "Source bundle provenance: pass/valid from ",
+        "Source bundle strict check command: `",
+        "--bundle-check --strict --json",
         "Primary Codex Implementation Prompt",
-        "Task ID: task-accessibility",
+        "Available Bundle Tasks",
+        "Default task: task-accessibility",
+        "Default task strict command: `",
+        f"Effective task: {expected_effective_task_id}",
+        "Effective task strict command: `",
+        "--bundle-handoff --task task-accessibility --strict --out target-repo-task-accessibility-handoff.md",
+        f"Task ID: {expected_task_id}",
         "MCP probes: 4/4 passing, 0 warning, 0 failing",
         "Generated files: 8/8 match the current CLI bundle contract",
         "Generated drift files: none",
@@ -1781,6 +4419,8 @@ def assert_site_bundle_handoff_json_smoke(
     ):
         if fragment not in prompt:
             raise SystemExit(f"site bundle handoff after {context} prompt missing fragment: {fragment!r}")
+    if expected_selected_task_id and f"Selected task strict command: `" not in prompt:
+        raise SystemExit(f"site bundle handoff after {context} prompt missing selected task strict command")
     included = {
         item.get("path")
         for item in payload.get("files", [])
@@ -1788,6 +4428,49 @@ def assert_site_bundle_handoff_json_smoke(
     }
     if "codex-implementation.md" not in included or "website-handoff.md" not in included:
         raise SystemExit(f"site bundle handoff after {context} included files changed: {sorted(included)!r}")
+
+
+def assert_site_bundle_handoff_human_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+    expected_task_id: str = "task-accessibility",
+    expected_selected_task_id: str | None = None,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    output = result.stdout
+    expected_effective_task_id = expected_selected_task_id or "task-accessibility"
+    fragments = [
+        "Website improvement target-repo handoff prompt",
+        "You are Codex working in the target website repository, not in the design-ai repository.",
+        "Source bundle provenance: pass/valid from ",
+        "Source bundle strict check command: `",
+        "--bundle-check --strict --json",
+        "Available Bundle Tasks",
+        "Default task: task-accessibility",
+        "Default task strict command: `",
+        f"Effective task: {expected_effective_task_id}",
+        "Effective task strict command: `",
+        f"--bundle-handoff --task {expected_effective_task_id} --strict --out target-repo-{expected_effective_task_id}-handoff.md",
+        f"Task ID: {expected_task_id}",
+        "Target Repo Execution Checklist",
+        "Required Final Response",
+        "evidence: 0/2 complete, Checklist blocked; next: Strict bundle-check output",
+        "evidence: 1/1 complete, Checklist ready",
+        "evidence: 0/3 complete, Checklist blocked; next: Target repo changed files",
+    ]
+    if expected_selected_task_id:
+        fragments.extend([
+            f"Selected task: {expected_selected_task_id}",
+            "Selected task strict command: `",
+        ])
+    else:
+        fragments.append("Selected task: none")
+    for fragment in fragments:
+        if fragment not in output:
+            raise SystemExit(f"site bundle handoff human after {context} missing fragment: {fragment!r}")
 
 
 def assert_site_bundle_repair_json_smoke(
@@ -17076,6 +19759,20 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site intake template Markdown",
         )
+        assert_site_intake_template_json_smoke(
+            [str(bin_path), "site", "--intake-template", "--language", "ko", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site intake template Korean JSON",
+            language="ko",
+        )
+        assert_site_intake_template_markdown_smoke(
+            [str(bin_path), "site", "--intake-template", "--language", "ko"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site intake template Korean Markdown",
+            language="ko",
+        )
         installed_site_intake_markdown_out = install_root / "company-website-intake.md"
         assert_site_intake_template_markdown_file_smoke(
             [
@@ -17090,6 +19787,24 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site intake template Markdown out file",
+        )
+        installed_site_intake_korean_markdown_out = install_root / "company-website-intake.ko.md"
+        assert_site_intake_template_markdown_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--intake-template",
+                "--language",
+                "ko",
+                "--out",
+                str(installed_site_intake_korean_markdown_out),
+                "--force",
+            ],
+            installed_site_intake_korean_markdown_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site intake template Korean Markdown out file",
+            language="ko",
         )
         installed_site_intake_json_out = install_root / "company-website-intake.json"
         assert_site_intake_template_json_file_smoke(
@@ -17112,6 +19827,186 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site init JSON",
+        )
+        installed_site_from_intake = write_site_from_intake_fixture(install_root)
+        assert_site_from_intake_json_smoke(
+            [str(bin_path), "site", "--from-intake", str(installed_site_from_intake), "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake JSON",
+        )
+        assert_site_from_intake_stdin_json_smoke(
+            [str(bin_path), "site", "--from-intake", "--stdin", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin JSON",
+        )
+        installed_site_from_intake_tasks = write_site_from_intake_tasks_fixture(install_root)
+        assert_site_from_intake_tasks_json_smoke(
+            [str(bin_path), "site", "--from-intake", str(installed_site_from_intake_tasks), "--tasks"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake tasks JSON",
+        )
+        installed_site_from_intake_stdin_tasks_out = install_root / "site-from-intake-stdin-tasks.json"
+        assert_site_from_intake_stdin_tasks_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--tasks",
+                "--out",
+                str(installed_site_from_intake_stdin_tasks_out),
+                "--force",
+            ],
+            installed_site_from_intake_stdin_tasks_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin tasks JSON out file",
+        )
+        assert_site_from_intake_stdin_next_actions_json_smoke(
+            [str(bin_path), "site", "--from-intake", "--stdin", "--next-actions", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin next-actions JSON",
+        )
+        installed_site_from_intake_stdin_next_actions_json_out = install_root / "site-from-intake-stdin-next-actions.json"
+        assert_site_from_intake_stdin_next_actions_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--next-actions",
+                "--json",
+                "--out",
+                str(installed_site_from_intake_stdin_next_actions_json_out),
+                "--force",
+            ],
+            installed_site_from_intake_stdin_next_actions_json_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin next-actions JSON out file",
+        )
+        installed_site_from_intake_stdin_next_actions_human_out = install_root / "site-from-intake-stdin-next-actions.md"
+        assert_site_from_intake_stdin_next_actions_human_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--next-actions",
+                "--out",
+                str(installed_site_from_intake_stdin_next_actions_human_out),
+                "--force",
+            ],
+            installed_site_from_intake_stdin_next_actions_human_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin next-actions human out file",
+        )
+        installed_site_from_intake_json_out = install_root / "site-from-intake-workspace.json"
+        assert_site_from_intake_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                str(installed_site_from_intake),
+                "--out",
+                str(installed_site_from_intake_json_out),
+                "--force",
+            ],
+            installed_site_from_intake_json_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake JSON out file",
+        )
+        installed_site_from_intake_stdin_json_out = install_root / "site-from-intake-stdin-workspace.json"
+        assert_site_from_intake_stdin_json_file_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--out",
+                str(installed_site_from_intake_stdin_json_out),
+                "--force",
+            ],
+            installed_site_from_intake_stdin_json_out,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin JSON out file",
+        )
+        installed_site_from_intake_bundle_dir = install_root / "site-from-intake-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                str(installed_site_from_intake),
+                "--bundle",
+                "--out",
+                str(installed_site_from_intake_bundle_dir),
+            ],
+            out_dir=installed_site_from_intake_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake handoff bundle",
+        )
+        installed_site_from_intake_task_bundle_dir = install_root / "site-from-intake-task-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                str(installed_site_from_intake_tasks),
+                "--bundle",
+                "--tasks",
+                "--out",
+                str(installed_site_from_intake_task_bundle_dir),
+            ],
+            out_dir=installed_site_from_intake_task_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake task handoff bundle",
+            expected_refactor_task_ids=["task-accessibility"],
+        )
+        installed_site_from_intake_stdin_bundle_dir = install_root / "site-from-intake-stdin-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--bundle",
+                "--out",
+                str(installed_site_from_intake_stdin_bundle_dir),
+            ],
+            out_dir=installed_site_from_intake_stdin_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin handoff bundle",
+            input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        )
+        installed_site_from_intake_stdin_task_bundle_dir = install_root / "site-from-intake-stdin-task-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            [
+                str(bin_path),
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--bundle",
+                "--tasks",
+                "--out",
+                str(installed_site_from_intake_stdin_task_bundle_dir),
+            ],
+            out_dir=installed_site_from_intake_stdin_task_bundle_dir,
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site from-intake stdin task handoff bundle",
+            input_text=SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN,
+            expected_refactor_task_ids=["task-accessibility"],
         )
         installed_site_init_bundle_dir = install_root / "site-init-handoff-bundle"
         assert_site_init_bundle_smoke(
@@ -17385,6 +20280,28 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site bundle-handoff JSON",
+        )
+        assert_site_bundle_handoff_human_smoke(
+            [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-handoff", "--strict"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site bundle-handoff human",
+        )
+        assert_site_bundle_handoff_json_smoke(
+            [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site bundle-handoff selected task JSON",
+            expected_task_id="task-content-quality",
+            expected_selected_task_id="task-content-quality",
+        )
+        assert_site_bundle_handoff_human_smoke(
+            [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site bundle-handoff selected task human",
+            expected_task_id="task-content-quality",
+            expected_selected_task_id="task-content-quality",
         )
         assert_site_bundle_repair_json_smoke(
             [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-repair", "--json"],
@@ -18221,6 +21138,20 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site intake template Markdown",
         )
+        assert_site_intake_template_json_smoke(
+            npm_exec_cmd(tarball, "site", "--intake-template", "--language", "ko", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site intake template Korean JSON",
+            language="ko",
+        )
+        assert_site_intake_template_markdown_smoke(
+            npm_exec_cmd(tarball, "site", "--intake-template", "--language", "ko"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site intake template Korean Markdown",
+            language="ko",
+        )
         npx_site_intake_markdown_out = npx_root / "company-website-intake.md"
         assert_site_intake_template_markdown_file_smoke(
             npm_exec_cmd(
@@ -18257,6 +21188,186 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site init JSON",
+        )
+        npx_site_from_intake = write_site_from_intake_fixture(npx_root)
+        assert_site_from_intake_json_smoke(
+            npm_exec_cmd(tarball, "site", "--from-intake", str(npx_site_from_intake), "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake JSON",
+        )
+        assert_site_from_intake_stdin_json_smoke(
+            npm_exec_cmd(tarball, "site", "--from-intake", "--stdin", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin JSON",
+        )
+        npx_site_from_intake_tasks = write_site_from_intake_tasks_fixture(npx_root)
+        assert_site_from_intake_tasks_json_smoke(
+            npm_exec_cmd(tarball, "site", "--from-intake", str(npx_site_from_intake_tasks), "--tasks"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake tasks JSON",
+        )
+        npx_site_from_intake_stdin_tasks_out = npx_root / "site-from-intake-stdin-tasks.json"
+        assert_site_from_intake_stdin_tasks_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--tasks",
+                "--out",
+                str(npx_site_from_intake_stdin_tasks_out),
+                "--force",
+            ),
+            npx_site_from_intake_stdin_tasks_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin tasks JSON out file",
+        )
+        assert_site_from_intake_stdin_next_actions_json_smoke(
+            npm_exec_cmd(tarball, "site", "--from-intake", "--stdin", "--next-actions", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin next-actions JSON",
+        )
+        npx_site_from_intake_stdin_next_actions_json_out = npx_root / "site-from-intake-stdin-next-actions.json"
+        assert_site_from_intake_stdin_next_actions_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--next-actions",
+                "--json",
+                "--out",
+                str(npx_site_from_intake_stdin_next_actions_json_out),
+                "--force",
+            ),
+            npx_site_from_intake_stdin_next_actions_json_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin next-actions JSON out file",
+        )
+        npx_site_from_intake_stdin_next_actions_human_out = npx_root / "site-from-intake-stdin-next-actions.md"
+        assert_site_from_intake_stdin_next_actions_human_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--next-actions",
+                "--out",
+                str(npx_site_from_intake_stdin_next_actions_human_out),
+                "--force",
+            ),
+            npx_site_from_intake_stdin_next_actions_human_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin next-actions human out file",
+        )
+        npx_site_from_intake_json_out = npx_root / "site-from-intake-workspace.json"
+        assert_site_from_intake_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                str(npx_site_from_intake),
+                "--out",
+                str(npx_site_from_intake_json_out),
+                "--force",
+            ),
+            npx_site_from_intake_json_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake JSON out file",
+        )
+        npx_site_from_intake_stdin_json_out = npx_root / "site-from-intake-stdin-workspace.json"
+        assert_site_from_intake_stdin_json_file_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--out",
+                str(npx_site_from_intake_stdin_json_out),
+                "--force",
+            ),
+            npx_site_from_intake_stdin_json_out,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin JSON out file",
+        )
+        npx_site_from_intake_bundle_dir = npx_root / "site-from-intake-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                str(npx_site_from_intake),
+                "--bundle",
+                "--out",
+                str(npx_site_from_intake_bundle_dir),
+            ),
+            out_dir=npx_site_from_intake_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake handoff bundle",
+        )
+        npx_site_from_intake_task_bundle_dir = npx_root / "site-from-intake-task-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                str(npx_site_from_intake_tasks),
+                "--bundle",
+                "--tasks",
+                "--out",
+                str(npx_site_from_intake_task_bundle_dir),
+            ),
+            out_dir=npx_site_from_intake_task_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake task handoff bundle",
+            expected_refactor_task_ids=["task-accessibility"],
+        )
+        npx_site_from_intake_stdin_bundle_dir = npx_root / "site-from-intake-stdin-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--bundle",
+                "--out",
+                str(npx_site_from_intake_stdin_bundle_dir),
+            ),
+            out_dir=npx_site_from_intake_stdin_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin handoff bundle",
+            input_text=SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+        )
+        npx_site_from_intake_stdin_task_bundle_dir = npx_root / "site-from-intake-stdin-task-handoff-bundle"
+        assert_site_init_bundle_smoke(
+            npm_exec_cmd(
+                tarball,
+                "site",
+                "--from-intake",
+                "--stdin",
+                "--bundle",
+                "--tasks",
+                "--out",
+                str(npx_site_from_intake_stdin_task_bundle_dir),
+            ),
+            out_dir=npx_site_from_intake_stdin_task_bundle_dir,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site from-intake stdin task handoff bundle",
+            input_text=SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN,
+            expected_refactor_task_ids=["task-accessibility"],
         )
         npx_site_init_bundle_dir = npx_root / "site-init-handoff-bundle"
         assert_site_init_bundle_smoke(
@@ -18530,6 +21641,28 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site bundle-handoff JSON",
+        )
+        assert_site_bundle_handoff_human_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-handoff", "--strict"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site bundle-handoff human",
+        )
+        assert_site_bundle_handoff_json_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site bundle-handoff selected task JSON",
+            expected_task_id="task-content-quality",
+            expected_selected_task_id="task-content-quality",
+        )
+        assert_site_bundle_handoff_human_smoke(
+            npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site bundle-handoff selected task human",
+            expected_task_id="task-content-quality",
+            expected_selected_task_id="task-content-quality",
         )
         assert_site_bundle_repair_json_smoke(
             npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-repair", "--json"),

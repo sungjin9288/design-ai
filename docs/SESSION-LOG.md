@@ -5,6 +5,108 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 661 (unreleased)** — Improved Website Console revalidation gate JSON action labels.
+- **Phase 660 (unreleased)** — Improved Website Console Source Bundle artifact action labels.
+- **Phase 659 (unreleased)** — Added Website Console Source Bundle source copy action.
+- **Phase 658 (unreleased)** — Added Website Console source-aware empty runbook Markdown.
+- **Phase 657 (unreleased)** — Added Website Console focused provenance import source refresh.
+- **Phase 656 (unreleased)** — Added Website Console provenance-only notice source marker.
+- **Phase 655 (unreleased)** — Added Website Console Operator Runbook metadata source pill.
+- **Phase 654 (unreleased)** — Added Website Console Source Bundle detail source marker.
+- **Phase 653 (unreleased)** — Added Website Console source-bundle Markdown source marker.
+- **Phase 652 (unreleased)** — Added Website Console focused provenance JSON source marker export.
+- **Phase 651 (unreleased)** — Added Website Console gate-only JSON source marker export.
+- **Phase 650 (unreleased)** — Added Website Console gate-only import source marker.
+- **Phase 649 (unreleased)** — Added Website Console gate-only JSON diagnostic count preservation.
+- **Phase 648 (unreleased)** — Added Website Console gate-only JSON source context preservation.
+- **Phase 647 (unreleased)** — Added Website Console source-bundle revalidation gate JSON import.
+- **Phase 646 (unreleased)** — Added Website Console source-bundle revalidation gate JSON copy/export.
+- **Phase 645 (unreleased)** — Added Website Console Operator Runbook source-bundle gate metadata badge.
+- **Phase 644 (unreleased)** — Added Website Console source-bundle JSON gate reason metadata.
+- **Phase 643 (unreleased)** — Added Website Console Source Bundle revalidation gate badges.
+- **Phase 642 (unreleased)** — Added Website Console Source Bundle revalidation gate detail row.
+- **Phase 641 (unreleased)** — Added Website Console source-bundle strict command copy guards.
+- **Phase 640 (unreleased)** — Added Website Console source-bundle JSON revalidation gate metadata.
+- **Phase 639 (unreleased)** — Added Website Console source-bundle revalidation gates to Markdown exports.
+- **Phase 638 (unreleased)** — Added Website Console source-bundle revalidation warning gate.
+- **Phase 637 (unreleased)** — Added Website Console Operator Runbook provenance-only Markdown markers.
+- **Phase 636 (unreleased)** — Added Website Console Operator Runbook filtered-row action guard.
+- **Phase 635 (unreleased)** — Added Website Console Operator Runbook next-line action guard.
+- **Phase 634 (unreleased)** — Added Website Console provenance-only Operator Runbook review state.
+- **Phase 633 (unreleased)** — Added Website Console source-bundle provenance JSON import for Operator Runbook review.
+- **Phase 632 (unreleased)** — Added Website Console source-bundle JSON copy/export from Operator Runbook review.
+- **Phase 631 (unreleased)** — Added Website Console source-bundle Markdown copy/export from Operator Runbook review.
+- **Phase 630 (unreleased)** — Added Website Console operator runbook source-bundle detail review and strict source command copy.
+- **Phase 629 (unreleased)** — Added Website Console operator runbook source-bundle provenance display.
+- **Phase 628 (unreleased)** — Added Website Console operator runbook task and command provenance metadata display.
+- **Phase 627 (unreleased)** — Added row-level Markdown export for Website Console operator runbook stages.
+- **Phase 626 (unreleased)** — Added row-level Markdown copy for Website Console operator runbook stages.
+- **Phase 625 (unreleased)** — Added a reset control for Website Console operator runbook action/evidence filters.
+- **Phase 624 (unreleased)** — Added row-level copy actions for Website Console operator runbook stage lines.
+- **Phase 623 (unreleased)** — Added full and filtered Markdown export actions for Website Console operator runbooks.
+- **Phase 622 (unreleased)** — Added filtered-copy output for Website Console operator runbook rows.
+- **Phase 621 (unreleased)** — Added Website Console operator runbook row filters for action status and evidence progress.
+- **Phase 620 (unreleased)** — Improved Website Console operator runbook import handoff UX and documented the JSON round-trip.
+- **Phase 619 (unreleased)** — Added Website Console import and review UI for bundle handoff operator runbooks.
+- **Phase 618 (unreleased)** — Added status indexes for Website Console bundle handoff operator runbook human line display rows.
+- **Phase 617 (unreleased)** — Added summary metadata for Website Console bundle handoff operator runbook human line display rows.
+- **Phase 616 (unreleased)** — Added display-ready rows for Website Console bundle handoff operator runbook human lines.
+- **Phase 615 (unreleased)** — Added summary metadata for Website Console bundle handoff operator runbook human lines.
+- **Phase 614 (unreleased)** — Added JSON mirrors for Website Console bundle handoff operator runbook human lines.
+- **Phase 613 (unreleased)** — Added human-readable evidence checklist progress to Website Console bundle handoff operator runbook prompts.
+- **Phase 612 (unreleased)** — Added action evidence capture initial validation checklist summaries to the Website Console bundle handoff operator runbook.
+- **Phase 611 (unreleased)** — Added action evidence capture initial validation checklist metadata to the Website Console bundle handoff operator runbook.
+- **Phase 610 (unreleased)** — Added action evidence capture initial validation summaries to the Website Console bundle handoff operator runbook.
+- **Phase 609 (unreleased)** — Added action evidence capture initial validation display metadata to the Website Console bundle handoff operator runbook.
+- **Phase 608 (unreleased)** — Added action evidence capture initial validation states to the Website Console bundle handoff operator runbook.
+- **Phase 607 (unreleased)** — Added action evidence capture validation specs to the Website Console bundle handoff operator runbook.
+- **Phase 606 (unreleased)** — Added action evidence capture payload bindings to the Website Console bundle handoff operator runbook.
+- **Phase 605 (unreleased)** — Added action evidence capture payload templates to the Website Console bundle handoff operator runbook.
+- **Phase 604 (unreleased)** — Added action evidence capture payload metadata to the Website Console bundle handoff operator runbook.
+- **Phase 603 (unreleased)** — Added action evidence capture section metadata to the Website Console bundle handoff operator runbook.
+- **Phase 602 (unreleased)** — Added action evidence capture display metadata to the Website Console bundle handoff operator runbook.
+- **Phase 601 (unreleased)** — Added action evidence capture default/empty-value metadata to the Website Console bundle handoff operator runbook.
+- **Phase 600 (unreleased)** — Added action evidence capture value-shape metadata to the Website Console bundle handoff operator runbook.
+- **Phase 599 (unreleased)** — Added action evidence capture validation metadata to the Website Console bundle handoff operator runbook.
+- **Phase 598 (unreleased)** — Added action evidence capture field index metadata to the Website Console bundle handoff operator runbook.
+- **Phase 597 (unreleased)** — Added action evidence capture field metadata to the Website Console bundle handoff operator runbook.
+- **Phase 596 (unreleased)** — Added action evidence target metadata to the Website Console bundle handoff operator runbook.
+- **Phase 595 (unreleased)** — Added action evidence requirement metadata to the Website Console bundle handoff operator runbook.
+- **Phase 594 (unreleased)** — Added action completion criteria metadata to the Website Console bundle handoff operator runbook.
+- **Phase 593 (unreleased)** — Added action dependency reason metadata to the Website Console bundle handoff operator runbook.
+- **Phase 592 (unreleased)** — Added action prerequisite metadata to the Website Console bundle handoff operator runbook.
+- **Phase 591 (unreleased)** — Added action readiness metadata to the Website Console bundle handoff operator runbook.
+- **Phase 590 (unreleased)** — Added action guidance and affordance metadata to the Website Console bundle handoff operator runbook.
+- **Phase 589 (unreleased)** — Added action summary metadata to the Website Console bundle handoff operator runbook.
+- **Phase 588 (unreleased)** — Added stage command lookup metadata to the Website Console bundle handoff operator runbook.
+- **Phase 587 (unreleased)** — Added stage capability lookup metadata to the Website Console bundle handoff operator runbook.
+- **Phase 586 (unreleased)** — Added stage gating lookup metadata to the Website Console bundle handoff operator runbook.
+- **Phase 585 (unreleased)** — Added display-label and summary lookup metadata to the Website Console bundle handoff operator runbook.
+- **Phase 584 (unreleased)** — Added lookup and next-command metadata to the Website Console bundle handoff operator runbook.
+- **Phase 583 (unreleased)** — Added a Website Console bundle handoff operator runbook derived from the command manifest.
+- **Phase 582 (unreleased)** — Added a unified Website Console bundle handoff command manifest for source and task commands.
+- **Phase 581 (unreleased)** — Added source-bundle command safety metadata to Website Console bundle handoff JSON.
+- **Phase 580 (unreleased)** — Added task-level handoff command safety metadata to Website Console bundle handoff JSON.
+- **Phase 579 (unreleased)** — Added structured task-level command argument arrays to Website Console bundle handoff JSON.
+- **Phase 578 (unreleased)** — Added structured source-bundle command argument arrays to Website Console bundle handoff JSON.
+- **Phase 577 (unreleased)** — Added source-bundle verification command metadata to Website Console bundle handoff JSON and human prompts.
+- **Phase 576 (unreleased)** — Added Website Console bundle handoff source provenance metadata in JSON and human target-repo prompts.
+- **Phase 575 (unreleased)** — Added human-output package smoke coverage for Website Console bundle handoff effective-task command metadata.
+- **Phase 574 (unreleased)** — Added effective-task Website Console bundle handoff command metadata so wrappers can read the actual handoff task from one field.
+- **Phase 573 (unreleased)** — Added default-task Website Console bundle handoff command metadata in JSON and target-repo prompts.
+- **Phase 572 (unreleased)** — Added selected-task Website Console bundle handoff command metadata in JSON and target-repo prompts.
+- **Phase 571 (unreleased)** — Added copy-ready per-task Website Console bundle handoff commands in JSON and target-repo prompts.
+- **Phase 570 (unreleased)** — Added Website Console bundle handoff task catalogs so target-repo prompts expose selectable task numbers, ids, priorities, pages, and recommended MCPs before implementation.
+- **Phase 569 (unreleased)** — Added `design-ai site <bundle-dir> --bundle-handoff --task <id-or-number>` so verified Website Console bundles can generate target-repo prompts for a selected refactor task.
+- **Phase 568 (unreleased)** — Added explicit `design-ai site --from-intake file.md|--stdin --bundle --tasks --out <dir>` task handoff bundle commands with package smoke and release metadata guard coverage.
+- **Phase 567 (unreleased)** — Added `design-ai site --from-intake file.md|--stdin --tasks` so filled company website intake Markdown can generate task-ready workspace JSON directly, with package smoke and release metadata guard coverage.
+- **Phase 566 (unreleased)** — Added `design-ai site --help` examples and release metadata guard coverage for from-intake stdin workspace, next-actions, and bundle commands.
+- **Phase 565 (unreleased)** — Added packed-tarball smoke and release metadata guard coverage for `design-ai site --from-intake --stdin --next-actions` JSON stdout, JSON `--out`, and human Markdown `--out`.
+- **Phase 564 (unreleased)** — Added packed-tarball smoke and release metadata guard coverage for `design-ai site --from-intake --stdin --out <file>` and stdin handoff bundle generation.
+- **Phase 563 (unreleased)** — Added `design-ai site --from-intake --stdin` so filled company website intake Markdown can be piped into workspace JSON or next-actions generation with package smoke coverage.
+- **Phase 562 (unreleased)** — Added packed-tarball smoke and release metadata guard coverage for `design-ai site --from-intake` workspace JSON stdout, JSON `--out`, and handoff bundle generation.
+- **Phase 561 (unreleased)** — Added `design-ai site --from-intake file.md` so filled English/Korean company website intake Markdown can generate workspace JSON, next-actions runbooks, or handoff bundles.
+- **Phase 560 (unreleased)** — Added `design-ai site --intake-template --language ko` Korean intake template output with JSON metadata and packed-tarball smoke coverage.
 - **Phase 559 (unreleased)** — Added release metadata guard coverage for `design-ai site --intake-template` package smoke wording across release-facing docs.
 - **Phase 558 (unreleased)** — Added packed-tarball installed-bin and `npm exec --package` smoke coverage for `design-ai site --intake-template` JSON, Markdown, and output-file paths.
 - **Phase 557 (unreleased)** — Added `design-ai site --intake-template` Markdown/JSON output so company pilot intake can start from the CLI.

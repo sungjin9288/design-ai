@@ -1,0 +1,7 @@
+$ npm --prefix vscode-extension run compile
+
+> design-ai-vscode@0.4.0 compile
+> tsc -p ./
+
+
+[exit_code] 0

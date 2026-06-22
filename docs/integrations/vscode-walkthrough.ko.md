@@ -5,14 +5,12 @@
 ## 사전 준비
 
 ```bash
-# design-ai 소스 설치 (어떤 방법이든 하나)
-npx @design-ai/cli install
-# 또는
-brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git && brew install design-ai
-# 또는
+# design-ai 소스 설치 (현재 추천)
 git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai && cd ~/dev/design-ai && ./install.sh
 
-# VS Code 확장 설치 (마켓플레이스 출시 후)
+# public publish 이후에는 npm/Homebrew 설치 경로로 local clone을 대체할 수 있어요.
+
+# VS Code 확장 설치 (Marketplace publish 이후)
 # code --install-extension sungjin.design-ai-vscode
 # 또는 개발 중에는 .vsix 사이드로드
 ```
@@ -20,7 +18,7 @@ git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai && cd ~/d
 ## 설치 (60초)
 
 1. design-ai 소스 설치 (위).
-2. design-ai VS Code 확장 설치.
+2. design-ai VS Code 확장 설치 또는 sideload.
 3. VS Code 열기; design-ai 활동 표시줄 항목 표시 (아이콘: gradient "D").
 4. 클릭 — 4개 사이드바 트리가 Skills / Knowledge / Component specs / Walkthroughs로 채워져요.
 
