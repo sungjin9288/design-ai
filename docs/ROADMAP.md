@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 650 — Website Console Gate-Only Import Source Marker (unreleased)
+
+Website Console gate-only revalidation JSON imports now preserve a distinct Operator Runbook source marker.
+
+### Added
+- Added `source-bundle-revalidation-gate` as the provenance-only source for imported `website-improvement-source-bundle-revalidation-gate` artifacts.
+- Updates existing provenance-only runbooks to the gate-only source marker when a compact gate artifact is imported.
+- Keeps full bundle handoff runbook sources unchanged when stage rows already exist.
+- Clarifies the provenance-only notice for gate-only imports.
+
+### Impact
+- Operators can distinguish compact gate-only imports from focused source-bundle provenance imports in UI state and Markdown exports.
+- Company website pilots can track whether a Report tab review came from a full handoff, focused provenance JSON, or compact revalidation gate JSON.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 649 — Website Console Gate-Only JSON Diagnostic Count Preservation (unreleased)
 
 Website Console gate-only revalidation JSON now preserves warning and issue counts during compact export/import roundtrips.

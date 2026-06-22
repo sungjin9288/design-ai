@@ -436,10 +436,10 @@
     };
   }
 
-  function createSourceBundleOnlyRunbook(sourceBundle) {
+  function createSourceBundleOnlyRunbook(sourceBundle, source) {
     return normalizeOperatorRunbook({
       version: 1,
-      source: "source-bundle-provenance",
+      source: source || "source-bundle-provenance",
       sourceBundle: sourceBundle,
       stageCount: 0,
       stageHumanLineDisplayRows: [],
@@ -1190,10 +1190,13 @@
 
   function renderRunbookProvenanceOnlyNotice(runbook, rows) {
     if (rows.length || !runbook.sourceBundle) return "";
+    var message = runbook.source === "source-bundle-revalidation-gate"
+      ? "This gate-only import contains source-bundle identity, diagnostics, and guard commands only. Import a full bundle handoff JSON when you need stage rows for target-repo execution."
+      : "This import contains source-bundle identity, diagnostics, and guard commands only. Import a full bundle handoff JSON when you need stage rows for target-repo execution.";
     return [
       "<div class=\"runbook-provenance-only\" role=\"status\">",
       "<strong>Provenance-only review</strong>",
-      "<span>This import contains source-bundle identity, diagnostics, and guard commands only. Import a full bundle handoff JSON when you need stage rows for target-repo execution.</span>",
+      "<span>" + escapeHtml(message) + "</span>",
       "</div>",
     ].join("");
   }
@@ -2461,8 +2464,11 @@
         if (importedGateSourceBundle && !parsed.siteProfile) {
           if (appState.workspace.operatorRunbook) {
             appState.workspace.operatorRunbook.sourceBundle = importedGateSourceBundle;
+            if (!(appState.workspace.operatorRunbook.stageHumanLineDisplayRows || []).length) {
+              appState.workspace.operatorRunbook.source = "source-bundle-revalidation-gate";
+            }
           } else {
-            appState.workspace.operatorRunbook = createSourceBundleOnlyRunbook(importedGateSourceBundle);
+            appState.workspace.operatorRunbook = createSourceBundleOnlyRunbook(importedGateSourceBundle, "source-bundle-revalidation-gate");
           }
           appState.activeTab = "report";
           localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
