@@ -1073,6 +1073,7 @@
 
   function renderRunbookMetadata(runbook) {
     var sourceBundle = runbook.sourceBundle || {};
+    var gateRequired = runbook.sourceBundle && sourceBundleNeedsRevalidation(runbook.sourceBundle);
     return [
       "<div class=\"graph-boundaries\" aria-label=\"Operator runbook metadata\">",
       "<span class=\"pill\">Task: " + escapeHtml(runbook.effectiveTaskId || "not specified") + "</span>",
@@ -1082,6 +1083,7 @@
       "<span class=\"pill\">Read-only: " + escapeHtml(String(runbook.readOnlyCommandStageCount || 0)) + "</span>",
       "<span class=\"pill\">Local output: " + escapeHtml(String(runbook.localOutputCommandStageCount || 0)) + "</span>",
       sourceBundle.status ? "<span class=\"pill\">Bundle: " + escapeHtml(sourceBundle.status + "/" + (sourceBundle.valid ? "valid" : "invalid")) + "</span>" : "",
+      runbook.sourceBundle ? "<span class=\"badge badge--" + escapeAttr(gateRequired ? "warn" : "pass") + "\">Gate: " + escapeHtml(gateRequired ? "required" : "not required") + "</span>" : "",
       sourceBundle.checksumBundleDigest ? "<span class=\"pill\">Digest: " + escapeHtml(shortDisplay(sourceBundle.checksumBundleDigest, 12)) + "</span>" : "",
       sourceBundle.expectedGeneratedFiles ? "<span class=\"pill\">Generated: " + escapeHtml(String(sourceBundle.verifiedGeneratedFiles || 0) + "/" + String(sourceBundle.expectedGeneratedFiles)) + "</span>" : "",
       "</div>",

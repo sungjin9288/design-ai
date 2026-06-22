@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 645 — Website Console Operator Runbook Gate Metadata Badge (unreleased)
+
+Website Console Operator Runbook metadata now shows source-bundle revalidation state before the detail table.
+
+### Added
+- Added a `Gate: not required` pass badge when imported source-bundle provenance is valid and failure-free.
+- Added a `Gate: required` warn badge when imported source-bundle provenance is invalid or has bundle-check failures.
+- Reused the existing source-bundle revalidation predicate so metadata badges, detail rows, warning blocks, Markdown, and JSON gate metadata stay aligned.
+
+### Impact
+- Operators can see source-bundle gate state immediately in the runbook metadata strip.
+- Provenance-only imports and full bundle handoff imports now expose the same first-scan revalidation signal.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 644 — Website Console Source Bundle JSON Gate Reason Metadata (unreleased)
 
 Website Console source-bundle JSON exports now include explicit revalidation reason and strict-check command availability metadata.
