@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 658 — Website Console Source-Aware Empty Runbook Markdown (unreleased)
+
+Website Console provenance-only Operator Runbook Markdown now keeps the source marker in the empty stage message.
+
+### Added
+- Added source-aware text to the provenance-only empty `Stages` section.
+- Keeps the existing filtered-empty message unchanged.
+
+### Impact
+- Markdown snippets that include only the `Stages` section still identify whether the artifact came from focused provenance or gate-only import state.
+- Source marker consistency now covers metadata, notices, detail rows, compact JSON, focused Markdown, and empty runbook Markdown.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 657 — Website Console Focused Provenance Import Source Refresh (unreleased)
 
 Website Console focused source-bundle provenance imports now refresh provenance-only runbook source markers.

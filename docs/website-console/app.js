@@ -1996,13 +1996,13 @@
       "",
       "## Stages",
       "",
-      rows.length ? rows.map(buildOperatorRunbookRowMarkdown).join("\n\n") : formatEmptyRunbookRowsMessage(settings, provenanceOnly),
+      rows.length ? rows.map(buildOperatorRunbookRowMarkdown).join("\n\n") : formatEmptyRunbookRowsMessage(settings, provenanceOnly, runbook.source),
     ].join("\n");
   }
 
-  function formatEmptyRunbookRowsMessage(settings, provenanceOnly) {
+  function formatEmptyRunbookRowsMessage(settings, provenanceOnly, source) {
     if (settings.filtered) return "No operator runbook rows match the selected filters.";
-    if (provenanceOnly) return "This artifact contains source-bundle identity, diagnostics, and guard commands only. Import a full bundle handoff JSON when target-repo execution stage rows are required.";
+    if (provenanceOnly) return "This provenance-only artifact (source: " + (source || "source-bundle-provenance") + ") contains source-bundle identity, diagnostics, and guard commands only. Import a full bundle handoff JSON when target-repo execution stage rows are required.";
     return "No display-ready rows included.";
   }
 
