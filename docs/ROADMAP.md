@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 659 — Website Console Source Bundle Source Copy Action (unreleased)
+
+Website Console Source Bundle detail review now lets operators copy the current runbook source marker directly.
+
+### Added
+- Added a copy-ready `Source` row in the Source Bundle provenance detail table.
+- Added a `copy-runbook-source-marker` action that copies the normalized Operator Runbook source with a provenance fallback.
+
+### Impact
+- Operators can pass source marker evidence to follow-up notes, QA logs, or wrapper tools without copying a larger Markdown/JSON artifact.
+- The source marker workflow now supports scan, export, import, and single-value copy paths.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 658 — Website Console Source-Aware Empty Runbook Markdown (unreleased)
 
 Website Console provenance-only Operator Runbook Markdown now keeps the source marker in the empty stage message.

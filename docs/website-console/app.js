@@ -1122,7 +1122,7 @@
       "<table>",
       "<caption class=\"sr-only\">Source bundle provenance details</caption>",
       "<tbody>",
-      sourceBundleRow("Source", runbook.source || "source-bundle-provenance"),
+      sourceBundleCopyRow("Source", runbook.source || "source-bundle-provenance", "copy-runbook-source-marker"),
       sourceBundleRow("Status", (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid")),
       sourceBundleRow("Workspace", sourceBundle.workspaceStatus || "not recorded"),
       sourceBundleRow("MCP", [sourceBundle.mcpStatus, sourceBundle.mcpProbeStatus].filter(Boolean).join(" / ") || "not recorded"),
@@ -1145,6 +1145,18 @@
       "<tr>",
       "<th scope=\"row\">" + escapeHtml(label) + "</th>",
       "<td>" + escapeHtml(value || "not recorded") + "</td>",
+      "</tr>",
+    ].join("");
+  }
+
+  function sourceBundleCopyRow(label, value, action) {
+    return [
+      "<tr>",
+      "<th scope=\"row\">" + escapeHtml(label) + "</th>",
+      "<td class=\"runbook-line-cell\">",
+      "<code>" + escapeHtml(value || "not recorded") + "</code>",
+      "<div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"" + escapeAttr(action) + "\">Copy source</button></div>",
+      "</td>",
       "</tr>",
     ].join("");
   }
@@ -2398,6 +2410,9 @@
       } else {
         setMessage("Strict bundle handoff command unavailable.");
       }
+    } else if (action === "copy-runbook-source-marker") {
+      var sourceMarkerRunbook = appState.workspace.operatorRunbook;
+      copyText((sourceMarkerRunbook && sourceMarkerRunbook.source) || "source-bundle-provenance", "Runbook source marker copied.");
     } else if (action === "copy-runbook-source-bundle") {
       var sourceBundleRunbook = appState.workspace.operatorRunbook;
       copyText(buildSourceBundleMarkdown(sourceBundleRunbook && sourceBundleRunbook.sourceBundle, sourceBundleRunbook && sourceBundleRunbook.source), "Source bundle Markdown copied.");
