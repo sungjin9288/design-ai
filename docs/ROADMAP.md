@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 642 — Website Console Source Bundle Revalidation Detail Row (unreleased)
+
+Website Console Source Bundle detail review now shows revalidation gate state in the provenance table.
+
+### Added
+- Added a `Revalidation gate` row to the Operator Runbook Source Bundle detail table.
+- Shows `not required` for valid/failure-free source bundles.
+- Shows a required strict-check summary when imported provenance is invalid, failing, or missing the strict check command.
+
+### Impact
+- Operators can confirm normal source-bundle gate state without relying on the absence of a warning block.
+- Incomplete provenance still surfaces a clear strict-check requirement in the same detail table as diagnostics and commands.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 641 — Website Console Source Bundle Strict Command Copy Guards (unreleased)
 
 Website Console now guards source-bundle strict command copy actions when imported provenance lacks command strings.

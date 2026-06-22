@@ -1107,6 +1107,7 @@
       sourceBundleRow("Checksum files", String(sourceBundle.verifiedChecksumFiles || 0) + "/" + String(sourceBundle.expectedChecksumFiles || 0)),
       sourceBundleRow("Generated files", String(sourceBundle.verifiedGeneratedFiles || 0) + "/" + String(sourceBundle.expectedGeneratedFiles || 0)),
       sourceBundleRow("Diagnostics", String(sourceBundle.failureCount || 0) + " failures, " + String(sourceBundle.warningCount || 0) + " warnings, " + String(sourceBundle.issueCount || 0) + " issues"),
+      sourceBundleRow("Revalidation gate", formatSourceBundleRevalidationSummary(sourceBundle)),
       sourceBundleCommandRow("Strict check command", checkCommand, "copy-runbook-source-check-command"),
       sourceBundleCommandRow("Strict handoff command", handoffCommand, "copy-runbook-source-handoff-command"),
       "</tbody>",
@@ -2036,6 +2037,14 @@
     var status = (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid");
     var command = sourceBundle.strictCheckCommand ? "; run " + sourceBundle.strictCheckCommand : "";
     return "required; status " + status + "; failures " + String(failureCount) + command;
+  }
+
+  function formatSourceBundleRevalidationSummary(sourceBundle) {
+    if (!sourceBundle) return "not provided";
+    if (!sourceBundleNeedsRevalidation(sourceBundle)) return "not required";
+    return sourceBundle.strictCheckCommand
+      ? "required - run strict check before target-repo execution"
+      : "required - strict check command not recorded";
   }
 
   function buildSourceBundleRevalidationGate(sourceBundle) {
