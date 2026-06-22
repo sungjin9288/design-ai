@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 648 (unreleased)** — Added Website Console gate-only JSON source context preservation.
 - **Phase 647 (unreleased)** — Added Website Console source-bundle revalidation gate JSON import.
 - **Phase 646 (unreleased)** — Added Website Console source-bundle revalidation gate JSON copy/export.
 - **Phase 645 (unreleased)** — Added Website Console Operator Runbook source-bundle gate metadata badge.

@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 648 — Website Console Gate-Only JSON Source Context Preservation (unreleased)
+
+Website Console gate-only revalidation JSON now preserves source workspace and site name context during export/import roundtrips.
+
+### Added
+- Added `sourceBundle.sourceWorkspace` to `website-improvement-source-bundle-revalidation-gate` JSON exports.
+- Added `sourceBundle.siteName` to the same compact gate-only JSON exports.
+- Rehydrates those fields during gate-only JSON import so provenance-only review keeps source context.
+
+### Impact
+- Operators can inspect compact gate artifacts without losing the source workspace or site name in the Source Bundle detail table.
+- Automation and wrapper layers can keep a small gate-only payload while retaining enough human context for review.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 647 — Website Console Source Bundle Revalidation Gate JSON Import (unreleased)
 
 Website Console now imports compact source-bundle revalidation gate JSON artifacts back into Operator Runbook review.

@@ -424,6 +424,8 @@
     var gate = value.revalidationGate && typeof value.revalidationGate === "object" ? value.revalidationGate : {};
     return {
       directory: sourceBundle.directory || "",
+      sourceWorkspace: sourceBundle.sourceWorkspace || "",
+      siteName: sourceBundle.siteName || "",
       checksumBundleDigest: sourceBundle.checksumBundleDigest || "",
       status: sourceBundle.status || gate.status || "unknown",
       valid: sourceBundle.valid === true || gate.valid === true,
@@ -2034,6 +2036,8 @@
       version: 1,
       sourceBundle: sourceBundle ? {
         directory: sourceBundle.directory || "",
+        sourceWorkspace: sourceBundle.sourceWorkspace || "",
+        siteName: sourceBundle.siteName || "",
         checksumBundleDigest: sourceBundle.checksumBundleDigest || "",
         status: sourceBundle.status || "unknown",
         valid: sourceBundle.valid === true,
