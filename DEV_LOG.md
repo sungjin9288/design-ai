@@ -1,0 +1,181 @@
+# Development Log
+
+## Portfolio Package Evidence Refresh - 2026-06-22
+
+- 진행한 작업:
+  - `_portfolio_export/design_ai_portfolio_pack/`를 evidence 포함 구조로 갱신했습니다.
+  - `_portfolio_export/design_ai_portfolio_pack.zip`을 재생성했습니다.
+  - `evidence/cli-logs/`, `evidence/screenshots/`, `evidence/output-artifacts/`, `evidence/architecture/`, `evidence/audit-results/`, `evidence/api-responses/`를 패키지에 포함했습니다.
+  - `npm run release:check`를 실행하고 `evidence/cli-logs/release-check.log`에 전체 gate 로그를 저장했습니다.
+  - `npm run ci:local`를 실행하고 `evidence/cli-logs/ci-local.log`에 local CI parity 로그를 저장했습니다.
+  - `git diff --check`, zip contents, zip integrity, secret pattern scan 결과를 `evidence/cli-logs/`에 별도 로그로 저장했습니다.
+  - `_portfolio_export/design_ai_portfolio_pack.zip.sha256` checksum 파일을 생성했습니다.
+  - npm registry, GitHub Pages, VS Code Marketplace 공개 상태를 확인하고 `docs/external-status.md`에 정리했습니다.
+  - portfolio docs와 links에서 public 배포 완료처럼 읽히는 문구를 local release-ready / public 미배포 상태로 정리했습니다.
+  - `README.md`와 `README.ko.md`의 Docs badge, 언어 전환 링크, 설치 경로, VS Code Marketplace 표현을 현재 외부 공개 상태와 일치하도록 정리했습니다.
+  - README가 연결하는 `docs/DISTRIBUTION*`, `docs/QUICKSTART.ko.md`, `docs/USING.ko.md`, VS Code walkthrough, release announcement template의 설치/배포 문구를 같은 기준으로 정리했습니다.
+  - MkDocs local build에서 새 portfolio/evidence 문서와 README 언어 전환 링크가 warning policy를 깨지 않도록 `tools/build-docs.sh`를 보정했습니다.
+- 검증 결과:
+  - `npm run release:check` 통과(exit 0)
+  - `npm run ci:local` 통과(exit 0)
+  - release gate 세부 범위: `npm test`, `npm run audit:strict`, `git diff --check`, `npm run package:check`, `npm run release:metadata`, `npm run release:self-test`, `npm run package:smoke`
+  - local CI 세부 범위: release gate, Python syntax compile, workflow policy checks, VS Code Extension `npm run compile`, VS Code Extension `npm run test:unit`, MkDocs build, MkDocs warning policy
+  - `npm run audit:strict` 8개 audit 통과
+  - package smoke 통과
+  - MkDocs warning policy 통과: refs-only warning `632/632`, non-refs warning 0
+  - zip 크기: 약 2.8 MB
+  - zip 항목 수: 81개
+  - zip SHA-256 checksum은 `_portfolio_export/design_ai_portfolio_pack.zip.sha256`에 별도 기록
+  - `unzip -t _portfolio_export/design_ai_portfolio_pack.zip` 통과
+  - zip contents log와 secret scan log를 evidence에 포함
+  - 대표 evidence 파일 존재 확인 완료: npm test log, Website Console screenshot, next-actions artifact, link audit detail
+  - export 대상에서 실제 API key, GitHub token, Slack token, AWS key, private key 패턴 검색 결과 없음
+  - 외부 공개 상태: `@design-ai/cli` npm registry E404, GitHub Pages URL HTTP 404, `sungjin.design-ai-vscode` Marketplace listing 없음
+- 남은 리스크:
+  - live VS Code Extension screenshot과 실제 사용자 피드백/성과 수치는 아직 별도 근거가 필요합니다.
+
+## Portfolio Package Export - 2026-06-09
+
+- 프로젝트 현재 상태: 고도화 중인 model-agnostic design intelligence toolkit입니다. Node.js CLI, Markdown corpus, Website Console, VS Code Extension, audit tooling이 코드와 문서로 확인됩니다.
+- 구현 완료 기능:
+  - `design-ai` CLI entrypoint와 command dispatcher
+  - deterministic route mapping
+  - prompt/pack/check/audit/workspace/site/learn workflows
+  - Website Improvement Console static app
+  - local learning preference profile
+  - VS Code Extension command/tree surface
+  - Python audit runner와 npm release scripts
+- 개발 중 기능:
+  - external launch readiness
+  - public registry smoke 이후 운영 안정화
+  - Website Console automation 확장
+  - real MCP connection check 설계
+- 미구현 기능:
+  - backend API
+  - auth
+  - database sync
+  - multi-user collaboration
+  - model training, fine-tuning, embedding index
+  - automatic crawling, Lighthouse, axe, screenshot capture
+- 검증 필요 기능:
+  - 최신 public deployment 상태
+  - npm registry publish 상태
+  - 실제 사용자 피드백과 사용량
+  - 개인 기여 범위
+  - 최신 CI 실행 결과와 demo evidence
+- 이력서 반영 가능 내용:
+  - Node.js CLI 기반 agent workflow toolkit
+  - Markdown knowledge base와 skill/playbook 구조화
+  - Website Console local-first handoff workflow
+  - Python audit/release quality gate
+  - VS Code Extension 탐색 UI
+- README 보완 필요:
+  - 구현 완료/개발 중/미구현 범위 분리
+  - demo screenshot/GIF 추가
+  - shipped scope / not shipped scope 상단 명시
+  - backend/model-training 미구현 boundary 상단 명시
+- 면접 대비 필요 사항:
+  - `cli/lib/route.mjs`, `cli/lib/site.mjs`, `cli/lib/learn.mjs`, `tools/audit/run-all.py`, `vscode-extension/src/commands.ts`를 코드 수준으로 설명할 수 있어야 합니다.
+  - local learning이 model training이 아니라 explicit local JSON preference라는 점을 명확히 설명해야 합니다.
+- 다음 작업:
+  - README 개선안 반영 여부 결정
+  - 주요 CLI 명령 실행 캡처
+  - Website Console과 VS Code Extension screenshot 추가
+  - 최신 `npm test`와 `npm run audit:strict` 결과 기록
+- 분석 기준 파일:
+  - `README.md`
+  - `package.json`
+  - `mkdocs.yml`
+  - `docs/ARCHITECTURE.md`
+  - `docs/PRODUCT-READINESS.md`
+  - `docs/AI-LEARNING.md`
+  - `docs/WEBSITE-IMPROVEMENT.md`
+  - `cli/bin/design-ai.mjs`
+  - `cli/lib/dispatch.mjs`
+  - `cli/lib/route.mjs`
+  - `cli/lib/site.mjs`
+  - `cli/lib/learn.mjs`
+  - `tools/audit/run-all.py`
+  - `vscode-extension/package.json`
+  - `vscode-extension/src/extension.ts`
+  - `vscode-extension/src/commands.ts`
+- 생성한 포트폴리오 문서:
+  - `docs/project-card.md`
+  - `docs/case-study.md`
+  - `docs/resume-bullets.md`
+  - `docs/interview-story.md`
+  - `docs/project-roadmap.md` 또는 압축 내부 `docs/roadmap.md`
+  - `docs/readme-improvement.md`
+  - `links.md`
+  - `portfolio_manifest.md`
+- 생성한 압축 파일:
+  - `_portfolio_export/design_ai_portfolio_pack.zip`
+
+## Portfolio Analysis - 2026-06-09
+
+- 프로젝트 현재 상태: 고도화 중인 model-agnostic design intelligence toolkit입니다. CLI, Markdown corpus, Website Console, VS Code Extension, audit tooling이 구현되어 있습니다.
+- 구현 완료 기능:
+  - `design-ai` CLI entrypoint와 command dispatcher
+  - deterministic route mapping
+  - prompt/pack/check/audit/workspace/site/learn workflows
+  - Website Improvement Console static app
+  - local learning preference profile
+  - VS Code Extension command/tree surface
+  - Python audit runner와 npm release scripts
+- 개발 중 기능:
+  - external launch readiness
+  - public registry smoke 이후 운영 안정화
+  - Website Console automation 확장
+- 미구현 기능:
+  - backend API
+  - auth
+  - database sync
+  - multi-user collaboration
+  - model training, fine-tuning, embedding index
+  - automatic crawling, Lighthouse, axe, screenshot capture
+- 검증 필요 기능:
+  - 최신 public deployment 상태
+  - npm registry publish 상태
+  - 실제 사용자 피드백과 사용량
+  - 개인 기여 범위
+  - 최신 CI 실행 결과와 demo evidence
+- 이력서 반영 가능 내용:
+  - Node.js CLI 기반 agent workflow toolkit
+  - Markdown knowledge base와 skill/playbook 구조화
+  - Website Console local-first handoff workflow
+  - Python audit/release quality gate
+  - VS Code Extension 탐색 UI
+- README 보완 필요:
+  - 구현 완료/개발 중/미구현 범위 분리
+  - demo screenshot/GIF 추가
+  - shipped scope / not shipped scope 상단 명시
+  - backend/model-training 미구현 boundary 상단 명시
+- 면접 대비 필요 사항:
+  - `cli/lib/route.mjs`, `cli/lib/site.mjs`, `cli/lib/learn.mjs`, `tools/audit/run-all.py`, `vscode-extension/src/commands.ts`를 코드 수준으로 설명할 수 있어야 합니다.
+  - local learning이 model training이 아니라 explicit local JSON preference라는 점을 명확히 설명해야 합니다.
+- 다음 작업:
+  - README 개선안 반영 여부 결정
+  - 주요 CLI 명령 실행 캡처
+  - Website Console과 VS Code Extension screenshot 추가
+  - 최신 `npm test`와 `npm run audit:strict` 결과 기록
+- 참고 사항:
+  - 요청된 `docs/roadmap.md`는 macOS case-insensitive filesystem에서 기존 추적 파일 `docs/ROADMAP.md`와 충돌합니다.
+  - 기존 release roadmap을 보존하기 위해 포트폴리오용 roadmap은 `docs/project-roadmap.md`에 유지했습니다.
+- 분석 기준 파일:
+  - `README.md`
+  - `package.json`
+  - `mkdocs.yml`
+  - `docs/ARCHITECTURE.md`
+  - `docs/PRODUCT-READINESS.md`
+  - `docs/AI-LEARNING.md`
+  - `docs/WEBSITE-IMPROVEMENT.md`
+  - `cli/bin/design-ai.mjs`
+  - `cli/lib/dispatch.mjs`
+  - `cli/lib/route.mjs`
+  - `cli/lib/site.mjs`
+  - `cli/lib/learn.mjs`
+  - `tools/audit/run-all.py`
+  - `vscode-extension/package.json`
+  - `vscode-extension/src/extension.ts`
+  - `vscode-extension/src/commands.ts`
+  - 로컬 수량 확인: `knowledge/*.md` 92개, `skills/*/SKILL.md` 20개, `commands/*.md` 17개, `examples/*.md` 223개

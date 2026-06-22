@@ -1,0 +1,76 @@
+$ node cli/bin/design-ai.mjs help
+
+  design-ai
+  Senior product designer for Claude Code
+
+Usage:  design-ai <command> [args]
+        design-ai help [command|--json]
+
+  install [--json]                                                       Symlink design-ai into Claude Code (~/.claude)
+  update [--dry-run] [--json]                                            Pull latest source + reinstall
+  uninstall [--json]                                                     Remove symlinks (keeps source files)
+  status [--json]                                                        Show what's installed (use VERBOSE=1 for full list)
+  list [skills|commands|agents] [--json]                                 List catalog from the plugin manifest
+  search <query> [--dir kind] [--limit N] [--json]                       Search the local markdown corpus
+  show <file[:line]> [--lines N:M] [--context N] [--json]                Print a corpus file or line range
+  route <brief|--from-file file|--stdin|--list|--eval-template|--eval> [--limit N]
+    Recommend commands, skills, knowledge, and route eval checkpoints
+  routes [--json]                                                        List available route ids
+  prompt <brief|--from-file file|--stdin|--eval-template|--eval> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--out file]
+    Generate a ready-to-use agent prompt and prompt-plan eval checkpoints
+  pack <brief|--from-file file|--stdin|--eval-template|--eval> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--max-bytes N]
+    Generate prompt plus bounded context and prompt-pack eval checkpoints
+  check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--learn]
+    Check generated Markdown artifact quality; add --issues-only or --learn
+  audit [--strict] [--quiet] [--json]                                    Run repository quality checks
+  doctor [--strict] [--json] [--fix]                                     Diagnose source, runtime, and install state
+  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query
+  learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals|--propose-skills|--eval-template|--eval|--forget id|--clear] [--json|--report] [--out file]
+    Manage local learning preferences, usage reports, signal registry, skill proposals, and eval checkpoints for prompt personalization
+  workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]
+    Show read-only local dogfood readiness: git, repository, learning usage, eval checkpoints, and release scripts
+  site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]
+    Validate Website Improvement Console exports and generate handoff artifacts
+  version [--json]                                                       Show CLI + plugin versions
+  help [command|--json]                                                  Show top-level or command-specific help
+
+Environment overrides:
+  DESIGN_AI_PREFIX=mydesign-     prefix for symlinks (default: design-)
+  CLAUDE_HOME=/path/to/.claude    Claude Code home dir
+  DESIGN_AI_HOME=/path/to/source  override source location
+  VERBOSE=1                       verbose output
+  DEBUG=1                         show stack traces on error
+
+Quickstart:
+  $ design-ai install
+  $ design-ai status
+  $ design-ai help route
+  $ design-ai search Pretendard
+  $ design-ai show knowledge/PRINCIPLES.md:29
+  $ design-ai routes
+  $ design-ai route "audit a Figma signup flow" --explain
+  $ design-ai route "improve homepage conversion and SEO" --explain
+  $ design-ai prompt --from-file brief.md --route design-review --out prompt.md
+  $ design-ai prompt "improve homepage conversion" --route website-improvement
+  $ design-ai prompt "spec a Button component"
+  $ design-ai pack "spec a Button component"
+  $ design-ai check output.md --route component-spec --strict
+  $ design-ai check output.md --learn --yes
+  $ design-ai workspace --learning-usage learning.usage.json --learning-eval learning-eval.json --strict
+  $ design-ai site examples/website-improvement-workspace.json --json
+  $ design-ai check --examples --route design-from-brief --limit 1
+  $ design-ai check --examples --all-routes --issues-only
+  $ design-ai examples --route component-spec
+  $ design-ai learn --init
+  $ design-ai learn --remember "Prefer dense Korean product UI"
+  $ design-ai learn --feedback "Keep audit findings short" --outcome keep
+  $ design-ai learn --audit
+  $ design-ai doctor
+  $ design-ai audit --strict
+  $ design-ai list skills
+
+Docs:    https://github.com/sungjin9288/design-ai
+Plugin:  20 skills, 17 commands, 4 agents (UI/UX, website improvement, motion,
+         illustration, print, video, game UI, conversational, spatial)
+
+[exit_code] 0

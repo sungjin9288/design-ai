@@ -5,14 +5,12 @@ How to use design-ai inside **VS Code** via the [design-ai-vscode extension](htt
 ## Prerequisites
 
 ```bash
-# Install design-ai source (any one method)
-npx @design-ai/cli install
-# OR
-brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git && brew install design-ai
-# OR
+# Install design-ai source (currently recommended)
 git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai && cd ~/dev/design-ai && ./install.sh
 
-# Install VS Code extension (when published to marketplace)
+# After public publish, npm/Homebrew install paths can replace the local clone.
+
+# Install VS Code extension (after Marketplace publish)
 # code --install-extension sungjin.design-ai-vscode
 # Or sideload from .vsix during development
 ```
@@ -20,7 +18,7 @@ git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai && cd ~/d
 ## Setup (60 seconds)
 
 1. Install the design-ai source (above).
-2. Install the design-ai VS Code extension.
+2. Install or sideload the design-ai VS Code extension.
 3. Open VS Code; the design-ai activity bar entry appears (icon: gradient "D").
 4. Click it — 4 sidebar trees populate with Skills / Knowledge / Component specs / Walkthroughs.
 

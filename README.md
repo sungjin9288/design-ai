@@ -1,16 +1,18 @@
 # Design AI
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
-[![Docs](https://img.shields.io/badge/docs-mkdocs-indigo)](https://sungjin9288.github.io/design-ai/)
+[![Docs](https://img.shields.io/badge/docs-local-indigo)](docs/QUICKSTART.md)
 [![Knowledge files](https://img.shields.io/badge/knowledge-92-blue)](knowledge/PRINCIPLES.md)
 [![Examples](https://img.shields.io/badge/examples-223-blue)](examples/README.md)
 [![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
 
-> 🇺🇸 English / [🇰🇷 한국어](https://sungjin9288.github.io/design-ai/ko/)
+> 🇺🇸 English / [🇰🇷 한국어](https://github.com/sungjin9288/design-ai/blob/main/README.ko.md)
 
 A model-agnostic design knowledge base + skill system. Drop it in front of any AI coding agent (Claude Code, Codex CLI, Cursor, Aider) and it becomes a senior product designer with 20+ years of experience — opinionated, accessible-by-default, Korean-market-fluent.
 
 > **Not a model. Not a fine-tune.** A structured corpus of design expertise + agent-ready instructions that turn a general-purpose LLM into an expert.
+
+> **Distribution status, checked 2026-06-22:** local `npm run release:check` passes, but public npm, GitHub Pages, and VS Code Marketplace distribution is not currently confirmed. Use the Git clone/local install path until public publish/deploy is completed. See [`docs/external-status.md`](docs/external-status.md).
 
 ## Coverage at a glance
 
@@ -32,7 +34,17 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 
 ## Install (Claude Code)
 
-### Option A: NPM (one command, recommended)
+### Option A: Git clone / local install (currently recommended)
+
+```bash
+git clone https://github.com/sungjin9288/design-ai.git
+cd design-ai
+./install.sh
+```
+
+### Option B: NPM (after public publish)
+
+Use this path only after `@design-ai/cli` is published and `npm run registry:smoke` passes.
 
 ```bash
 npx @design-ai/cli install
@@ -45,7 +57,7 @@ npm install -g @design-ai/cli
 design-ai install
 ```
 
-### Option B: Homebrew
+### Option C: Homebrew (after release tap verification)
 
 ```bash
 brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git
@@ -53,15 +65,7 @@ brew install design-ai
 design-ai install
 ```
 
-### Option C: Git clone (for contributors)
-
-```bash
-git clone https://github.com/sungjin9288/design-ai.git
-cd design-ai
-./install.sh
-```
-
-Any of the three: you get all 20 skills, 17 commands, and 4 agents under `~/.claude/` with `design-` prefix. Restart Claude Code; try:
+Any available path installs all 20 skills, 17 commands, and 4 agents under `~/.claude/` with the `design-` prefix. Restart Claude Code; try:
 
 ```
 /design-component-spec Banner
@@ -83,7 +87,7 @@ See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution gui
 | **Cursor** | Open this dir; symlink or copy `AGENTS.md` to `.cursorrules`. [Walkthrough](docs/integrations/cursor-walkthrough.md). |
 | **Aider** | Pass `AGENTS.md` as system prompt. [Walkthrough](docs/integrations/aider-walkthrough.md). |
 | **Anthropic / OpenAI SDK** | Embed relevant skill `PLAYBOOK.md` files in your prompt. [Walkthrough](docs/integrations/sdk-walkthrough.md). |
-| **VS Code** | Install the `design-ai` extension — sidebar tree + quick-pick commands. [Walkthrough](docs/integrations/vscode-walkthrough.md). |
+| **VS Code** | Use the local extension workspace for sidebar tree + quick-pick commands until Marketplace publish is complete. [Walkthrough](docs/integrations/vscode-walkthrough.md). |
 | **Plain prompt** | Paste any `skills/*/PLAYBOOK.md` body — each is self-contained. |
 
 See [`docs/USING.md`](docs/USING.md) for per-agent setup details, or the linked walkthroughs for concrete example sessions.

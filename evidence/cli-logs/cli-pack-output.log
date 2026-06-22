@@ -1,0 +1,4 @@
+$ node cli/bin/design-ai.mjs pack Audit a SaaS landing page for accessibility and responsive UX --out evidence/output-artifacts/landing-audit-pack.md --force
+✓  Wrote /Users/sungjin/dev/design/evidence/output-artifacts/landing-audit-pack.md
+
+[exit_code] 0

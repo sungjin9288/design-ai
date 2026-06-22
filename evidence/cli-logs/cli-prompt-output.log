@@ -1,0 +1,4 @@
+$ node cli/bin/design-ai.mjs prompt Spec a Button component for a Korean SaaS dashboard --out evidence/output-artifacts/button-component-prompt.md --force
+✓  Wrote /Users/sungjin/dev/design/evidence/output-artifacts/button-component-prompt.md
+
+[exit_code] 0

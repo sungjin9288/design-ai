@@ -1,0 +1,20 @@
+$ node cli/bin/design-ai.mjs route Create a developer design tool portfolio evidence pack --explain
+
+  design-ai route
+  Create a developer design tool portfolio evidence pack
+
+ℹ  Source: /Users/sungjin/dev/design
+ℹ  Corpus version: 4.55.0
+
+1. Design handoff (low, score 1)
+   id:      handoff-spec
+   matched: developer
+   why:     Matched 1 keyword: developer.
+   refs:    4/4 available
+   skill:   ✓ skills/handoff-spec/SKILL.md
+   read:    ✓ knowledge/PRINCIPLES.md
+   read:    ✓ knowledge/patterns/technical-writing.md
+   read:    ✓ knowledge/design-tokens/ant-design.md
+
+
+[exit_code] 0

@@ -2,9 +2,29 @@
 
 design-ai를 이 레포에서 어댑터의 Claude Code 환경으로 가져오는 방법.
 
-## 세 가지 설치 경로 (하나 선택)
+> 배포 상태, 2026-06-22 확인: 로컬 `npm run release:check`는 통과했지만 public npm, GitHub Pages, VS Code Marketplace 배포는 현재 확인되지 않았어요. public publish/deploy가 끝나기 전까지는 Git clone/local install 경로를 사용하세요. 자세한 내용은 [`external-status.md`](external-status.md)를 확인하세요.
 
-### A. NPM (대부분의 어댑터에 추천)
+## 설치 경로
+
+### A. Git clone / local install (현재 추천)
+
+```bash
+git clone https://github.com/sungjin9288/design-ai.git
+cd design-ai
+./install.sh
+```
+
+소스가 작업 클론에 있어요. 업데이트는 `git pull && ./install.sh`.
+
+이 경로를 사용할 때:
+- public package publish 전에 design-ai를 사용할 때
+- upstream에 기여할 때
+- knowledge / skills를 로컬에서 수정할 때
+- publish된 release보다 최신 `main`을 추적할 때
+
+### B. NPM (public publish 이후)
+
+`@design-ai/cli`가 publish되고 `npm run registry:smoke`가 통과한 뒤에만 이 경로를 사용하세요.
 
 ```bash
 # npx로 일회성 (글로벌 설치 없음)
@@ -19,7 +39,7 @@ npm 패키지는 코퍼스(`knowledge/`, `examples/`, `skills/`, `agents/`, `com
 
 설치 후 CLI는 번들된 코퍼스를 `~/.claude/skills/`, `~/.claude/agents/`, `~/.claude/commands/`에 `design-` 접두사로 심볼릭 링크해요.
 
-### B. Homebrew (Mac)
+### C. Homebrew (release tap 검증 이후)
 
 ```bash
 brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git
@@ -27,17 +47,7 @@ brew install design-ai
 design-ai install
 ```
 
-코퍼스는 Homebrew의 `libexec`에 설치되고 `design-ai` 바이너리가 PATH에 추가돼요.
-
-### C. Git clone (기여자용)
-
-```bash
-git clone https://github.com/sungjin9288/design-ai.git
-cd design-ai
-./install.sh
-```
-
-NPM과 같은 최종 상태이지만 소스가 작업 클론에 있어요. 업데이트는 `git pull && ./install.sh`.
+검증된 tap release 이후에는 코퍼스가 Homebrew의 `libexec`에 설치되고 `design-ai` 바이너리가 PATH에 추가돼요.
 
 ## CLI 명령어
 
@@ -148,7 +158,9 @@ npm run registry:smoke
 
 ## 한국어 어댑터 가이드
 
-### NPM 어댑터
+### NPM 어댑터 (public publish 이후)
+
+이 섹션은 `@design-ai/cli` publish와 `npm run registry:smoke` 통과 뒤에만 사용하세요.
 
 ```bash
 # Node ≥ 18 필요
@@ -165,7 +177,9 @@ design-ai list skills
 design-ai version --json
 ```
 
-### Homebrew 어댑터 (Mac)
+### Homebrew 어댑터 (Mac, release tap 검증 이후)
+
+이 섹션은 tap release 검증 뒤에만 사용하세요.
 
 ```bash
 # Tap 추가
@@ -223,7 +237,7 @@ chown -R $USER ~/.claude
 
 - **Homebrew tap → homebrew-core** — 코퍼스가 안정화되면 정식 등록.
 - **Claude Code 플러그인 마켓플레이스** — 그 생태계가 성숙하면.
-- **VS Code 확장** — design-ai를 설치 + UI를 제공하는 wrapper.
+- **VS Code Marketplace publish** — 로컬 확장을 public install surface로 전환.
 - **Docker 이미지** — CI / 샌드박스 환경용.
 
 ## 교차 참조

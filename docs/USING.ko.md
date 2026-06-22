@@ -76,11 +76,13 @@ for f in agents/*.md; do
 done
 ```
 
-또는 NPM CLI로 한 번에:
+또는 프로젝트 루트에서 installer로 한 번에:
 
 ```bash
-npx @design-ai/cli install
+./install.sh
 ```
+
+Public npm publish와 `npm run registry:smoke`가 끝난 뒤에는 `npx @design-ai/cli install` 경로도 사용할 수 있어요.
 
 이렇게 하면:
 - `/design-design-review`, `/design-palette-from-brand` 같은 커맨드를 어디서든 쓸 수 있어요.
@@ -198,7 +200,7 @@ bash tools/extractors/run-all.sh # knowledge/ 재생성
 ## 참고 문서
 
 - [`AGENTS.ko.md`](../AGENTS.ko.md) — 보편적 진입점
-- [`README.ko.md`](https://sungjin9288.github.io/design-ai/ko/) — 사람이 읽는 진입점
+- [`README.ko.md`](https://github.com/sungjin9288/design-ai/blob/main/README.ko.md) — 사람이 읽는 진입점
 - [`QUICKSTART.ko.md`](QUICKSTART.ko.md) — 5분 시작 가이드
 - [`DISTRIBUTION.ko.md`](DISTRIBUTION.ko.md) — 배포 채널 비교
 - [`integrations/codex-walkthrough.ko.md`](integrations/codex-walkthrough.ko.md) — 도구별 워크스루 예시 (Codex / Cursor / Aider / SDK / VS Code)

@@ -1,0 +1,231 @@
+<!doctype html><meta charset='utf-8'><title>Audit evidence</title><style>
+body{margin:0;background:#111827;color:#e5e7eb;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:32px}.wrap{max-width:1180px;margin:auto}h1{font-size:26px;margin:0 0 20px}.status{display:flex;gap:10px;margin-bottom:20px}.pill{border-radius:999px;padding:6px 12px;font-size:13px;border:1px solid}.pass{color:#bbf7d0;border-color:#22c55e;background:#052e16}.warn{color:#fde68a;border-color:#f59e0b;background:#451a03}.fail{color:#fecaca;border-color:#ef4444;background:#450a0a}section{background:#020617;border:1px solid #334155;border-radius:12px;margin:0 0 18px;overflow:hidden}h2{font-size:15px;margin:0;padding:12px 16px;background:#1f2937;color:#bfdbfe}pre{white-space:pre-wrap;word-break:break-word;margin:0;padding:16px;font:12px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace}</style><div class='wrap'><h1>design-ai Audit Evidence</h1><div class='status'><span class='pill pass'>artifact check exit 0</span><span class='pill warn'>artifact score 8/9 warn</span><span class='pill fail'>repo audit 7/8 pass, link check failed</span></div><section><h2>Repository audit strict JSON</h2><pre>$ node cli/bin/design-ai.mjs audit --strict --quiet --json
+{
+  &quot;context&quot;: {
+    &quot;root&quot;: &quot;/Users/sungjin/dev/design&quot;,
+    &quot;auditDir&quot;: &quot;tools/audit&quot;,
+    &quot;strict&quot;: true,
+    &quot;quiet&quot;: true
+  },
+  &quot;audits&quot;: [
+    {
+      &quot;name&quot;: &quot;frontmatter&quot;,
+      &quot;script&quot;: &quot;frontmatter-check.py&quot;,
+      &quot;description&quot;: &quot;YAML frontmatter validity + version field shape&quot;,
+      &quot;passed&quot;: true,
+      &quot;returncode&quot;: 0,
+      &quot;durationSeconds&quot;: 0.042,
+      &quot;strictArgs&quot;: []
+    },
+    {
+      &quot;name&quot;: &quot;link&quot;,
+      &quot;script&quot;: &quot;link-check.py&quot;,
+      &quot;description&quot;: &quot;Internal link resolution&quot;,
+      &quot;passed&quot;: false,
+      &quot;returncode&quot;: 1,
+      &quot;durationSeconds&quot;: 0.818,
+      &quot;strictArgs&quot;: []
+    },
+    {
+      &quot;name&quot;: &quot;korean-copy&quot;,
+      &quot;script&quot;: &quot;korean-copy-check.py&quot;,
+      &quot;description&quot;: &quot;Korean voice / register / typography&quot;,
+      &quot;passed&quot;: true,
+      &quot;returncode&quot;: 0,
+      &quot;durationSeconds&quot;: 0.388,
+      &quot;strictArgs&quot;: []
+    },
+    {
+      &quot;name&quot;: &quot;raw-hex&quot;,
+      &quot;script&quot;: &quot;raw-hex-check.py&quot;,
+      &quot;description&quot;: &quot;Example raw hex colors use token aliases unless explicitly allowlisted&quot;,
+      &quot;passed&quot;: true,
+      &quot;returncode&quot;: 0,
+      &quot;durationSeconds&quot;: 0.069,
+      &quot;strictArgs&quot;: []
+    },
+    {
+      &quot;name&quot;: &quot;integration&quot;,
+      &quot;script&quot;: &quot;integration-check.py&quot;,
+      &quot;description&quot;: &quot;Integration walkthrough completeness&quot;,
+      &quot;passed&quot;: true,
+      &quot;returncode&quot;: 0,
+      &quot;durationSeconds&quot;: 0.023,
+      &quot;strictArgs&quot;: []
+    },
+    {
+      &quot;name&quot;: &quot;stale&quot;,
+      &quot;script&quot;: &quot;stale-check.py&quot;,
+      &quot;description&quot;: &quot;Knowledge freshness (last_updated thresholds)&quot;,
+      &quot;passed&quot;: true,
+      &quot;returncode&quot;: 0,
+      &quot;durationSeconds&quot;: 0.031,
+      &quot;strictArgs&quot;: [
+        &quot;--strict&quot;
+      ]
+    },
+    {
+      &quot;name&quot;: &quot;coverage&quot;,
+      &quot;script&quot;: &quot;check-coverage.py&quot;,
+      &quot;description&quot;: &quot;Component / skill / example coverage report&quot;,
+      &quot;passed&quot;: true,
+      &quot;returncode&quot;: 0,
+      &quot;durationSeconds&quot;: 0.05,
+      &quot;strictArgs&quot;: []
+    },
+    {
+      &quot;name&quot;: &quot;example-qa&quot;,
+      &quot;script&quot;: &quot;example-qa.py&quot;,
+      &quot;description&quot;: &quot;Top worked example quality for every route&quot;,
+      &quot;passed&quot;: true,
+      &quot;returncode&quot;: 0,
+      &quot;durationSeconds&quot;: 0.559,
+      &quot;strictArgs&quot;: []
+    }
+  ],
+  &quot;summary&quot;: {
+    &quot;total&quot;: 8,
+    &quot;passed&quot;: 7,
+    &quot;failed&quot;: 1,
+    &quot;durationSeconds&quot;: 1.978,
+    &quot;exitCode&quot;: 1
+  }
+}
+✗ Command &quot;python3 /Users/sungjin/dev/design/tools/audit/run-all.py --strict --quiet --json&quot; exited with code 1
+
+[exit_code] 1
+</pre></section><section><h2>Link check detail</h2><pre>$ python3 -B tools/audit/link-check.py
+Checked 490 files
+
+43 broken links:
+
+
+_portfolio_export/design_ai_portfolio_pack/README.md:
+  line 76: docs/DISTRIBUTION.md
+  line 82: docs/integrations/codex-walkthrough.md
+  line 83: docs/integrations/cursor-walkthrough.md
+  line 84: docs/integrations/aider-walkthrough.md
+  line 85: docs/integrations/sdk-walkthrough.md
+  line 86: docs/integrations/vscode-walkthrough.md
+  line 89: docs/USING.md
+  line 171: docs/QUICKSTART.md
+  line 211: docs/PRODUCT-READINESS.md
+  line 213: docs/website-console/index.html
+  line 229: docs/CONTRIBUTING.md
+  line 258: CHANGELOG.md
+
+_portfolio_export/design_ai_portfolio_pack/evidence/output-artifacts/landing-audit-pack.md:
+  line 2318: ../knowledge/patterns/report-design.md
+  line 2322: ../skills/ux-audit/PLAYBOOK.md
+  line 2323: ../skills/design-system-qa/PLAYBOOK.md
+  line 2324: ../knowledge/patterns/report-design.md
+  line 2325: ../knowledge/i18n/korean-document-style.md
+  line 2346: ../../knowledge/colors/color-theory.md
+  line 2384: ../../knowledge/colors/color-theory.md
+  line 2411: ../../knowledge/a11y/contrast.md
+  line 2416: ../../knowledge/i18n/korean-typography.md
+  line 2519: ../../knowledge/i18n/korean-typography.md
+  line 2522: ../../knowledge/conversational/korean-voice-conventions.md
+  line 2525: ../component-form-control.md
+  line 2615: ../component-card-content.md
+  line 2616: ../component-card-actions.md
+  line 2617: ../component-list-item.md
+  line 2618: ../component-dialog-title.md
+  line 2619: ../component-dialog-content.md
+  line 2620: ../component-dialog-actions.md
+  line 2633: ../../knowledge/patterns/form-design.md
+
+evidence/output-artifacts/landing-audit-pack.md:
+  line 2318: ../knowledge/patterns/report-design.md
+  line 2322: ../skills/ux-audit/PLAYBOOK.md
+  line 2323: ../skills/design-system-qa/PLAYBOOK.md
+  line 2324: ../knowledge/patterns/report-design.md
+  line 2325: ../knowledge/i18n/korean-document-style.md
+  line 2525: ../component-form-control.md
+  line 2615: ../component-card-content.md
+  line 2616: ../component-card-actions.md
+  line 2617: ../component-list-item.md
+  line 2618: ../component-dialog-title.md
+  line 2619: ../component-dialog-content.md
+  line 2620: ../component-dialog-actions.md
+
+[exit_code] 1
+</pre></section><section><h2>Design artifact check</h2><pre>$ node cli/bin/design-ai.mjs check evidence/output-artifacts/button-component-prompt.md --json
+{
+  &quot;filePath&quot;: &quot;/Users/sungjin/dev/design/evidence/output-artifacts/button-component-prompt.md&quot;,
+  &quot;status&quot;: &quot;warn&quot;,
+  &quot;passes&quot;: 8,
+  &quot;warnings&quot;: 1,
+  &quot;failures&quot;: 0,
+  &quot;total&quot;: 9,
+  &quot;score&quot;: &quot;8/9&quot;,
+  &quot;results&quot;: [
+    {
+      &quot;id&quot;: &quot;content-depth&quot;,
+      &quot;title&quot;: &quot;Meaningful artifact depth&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Artifact has enough content to audit.&quot;,
+      &quot;evidence&quot;: &quot;2413 characters&quot;
+    },
+    {
+      &quot;id&quot;: &quot;unresolved-markers&quot;,
+      &quot;title&quot;: &quot;No unresolved placeholders&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;No TODO/TBD/FIXME or template placeholders detected.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;source-grounding&quot;,
+      &quot;title&quot;: &quot;Knowledge/source grounding&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Artifact cites checked knowledge or reference files.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;contrast&quot;,
+      &quot;title&quot;: &quot;Explicit contrast handling&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Contrast handling is explicit.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;keyboard-focus&quot;,
+      &quot;title&quot;: &quot;Keyboard and focus behavior&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Keyboard/focus behavior is mentioned.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;responsive&quot;,
+      &quot;title&quot;: &quot;Responsive behavior&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Responsive behavior is mentioned.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;screen-reader&quot;,
+      &quot;title&quot;: &quot;Screen-reader semantics&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Screen-reader or ARIA behavior is mentioned.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;dont-section&quot;,
+      &quot;title&quot;: &quot;Misuse guidance&quot;,
+      &quot;level&quot;: &quot;warn&quot;,
+      &quot;passed&quot;: false,
+      &quot;message&quot;: &quot;No Don&#x27;t/avoid/anti-pattern guidance detected.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;korean-context&quot;,
+      &quot;title&quot;: &quot;Korean context when relevant&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;No Korean text detected; rule is not applicable.&quot;
+    }
+  ]
+}
+
+[exit_code] 0
+</pre></section></div>

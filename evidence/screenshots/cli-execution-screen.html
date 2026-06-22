@@ -1,0 +1,145 @@
+<!doctype html><meta charset='utf-8'><title>CLI evidence</title><style>
+:root{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0b1020;color:#f8fafc}body{margin:0;padding:32px}.frame{max-width:1180px;margin:auto}.terminal{background:#020617;border:1px solid #334155;border-radius:12px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.35)}header{display:flex;gap:8px;align-items:center;background:#111827;border-bottom:1px solid #334155;padding:12px 16px;color:#cbd5e1;font-size:14px}.dot{width:12px;height:12px;border-radius:50%}.red{background:#ef4444}.yellow{background:#f59e0b}.green{background:#22c55e}section{padding:18px 22px;border-bottom:1px solid #1f2937}h1{font-size:24px;margin:0 0 18px}h2{font-size:16px;margin:0 0 12px;color:#93c5fd}pre{white-space:pre-wrap;word-break:break-word;margin:0;font:13px/1.55 'SFMono-Regular',Consolas,monospace;color:#d1d5db}</style><body><div class='frame'><h1>design-ai CLI execution evidence</h1><div class='terminal'><header><span class='dot red'></span><span class='dot yellow'></span><span class='dot green'></span><span>zsh · /Users/sungjin/dev/design</span></header><section><h2>Route recommendation</h2><pre>$ node cli/bin/design-ai.mjs route Create a developer design tool portfolio evidence pack --explain
+
+  design-ai route
+  Create a developer design tool portfolio evidence pack
+
+ℹ  Source: /Users/sungjin/dev/design
+ℹ  Corpus version: 4.55.0
+
+1. Design handoff (low, score 1)
+   id:      handoff-spec
+   matched: developer
+   why:     Matched 1 keyword: developer.
+   refs:    4/4 available
+   skill:   ✓ skills/handoff-spec/SKILL.md
+   read:    ✓ knowledge/PRINCIPLES.md
+   read:    ✓ knowledge/patterns/technical-writing.md
+   read:    ✓ knowledge/design-tokens/ant-design.md
+
+
+[exit_code] 0
+</pre></section><section><h2>List commands</h2><pre>$ node cli/bin/design-ai.mjs list commands
+
+  design-ai catalog
+
+ℹ  Plugin: design-ai v4.55.0
+
+
+commands (17)
+────────────────────────────────────────
+  design-from-brief
+    Generate a complete design system from a one-paragraph product brief.
+  iterate
+    Apply a critique to an existing artifact, produce a revision + changelog.
+  document-from-brief
+    Generate documentation from a brief.
+  slide-deck
+    Generate a slide deck outline from a brief.
+  design-review
+    Run UX audit + a11y review + design critique in parallel and combine.
+  website-improvement
+    Plan a website improvement project with profile, audits, MCP readiness, prompts, and ha...
+  palette-from-brand
+    Generate a full palette from a brand input.
+  component-spec
+    Spec a single component using the component-spec-writer skill.
+  extract-tokens
+    Run the token extractor pipeline.
+  motion-design
+    Spec motion for a screen / component / page.
+  illustration
+    Design or spec an illustration system or piece.
+  print
+    Spec a print piece.
+  video
+    Spec video for marketing, social, or in-product.
+  game-ui
+    Spec game UI.
+  conversational
+    Spec a chatbot / voice / AI chat / live agent.
+  spatial
+    Spec a VR / AR / MR / WebXR experience.
+  stability-review
+    Run the quarterly stability review report. Surfaces promotion candidates + stale files.
+
+[exit_code] 0
+</pre></section><section><h2>Design artifact check</h2><pre>$ node cli/bin/design-ai.mjs check evidence/output-artifacts/button-component-prompt.md --json
+{
+  &quot;filePath&quot;: &quot;/Users/sungjin/dev/design/evidence/output-artifacts/button-component-prompt.md&quot;,
+  &quot;status&quot;: &quot;warn&quot;,
+  &quot;passes&quot;: 8,
+  &quot;warnings&quot;: 1,
+  &quot;failures&quot;: 0,
+  &quot;total&quot;: 9,
+  &quot;score&quot;: &quot;8/9&quot;,
+  &quot;results&quot;: [
+    {
+      &quot;id&quot;: &quot;content-depth&quot;,
+      &quot;title&quot;: &quot;Meaningful artifact depth&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Artifact has enough content to audit.&quot;,
+      &quot;evidence&quot;: &quot;2413 characters&quot;
+    },
+    {
+      &quot;id&quot;: &quot;unresolved-markers&quot;,
+      &quot;title&quot;: &quot;No unresolved placeholders&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;No TODO/TBD/FIXME or template placeholders detected.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;source-grounding&quot;,
+      &quot;title&quot;: &quot;Knowledge/source grounding&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Artifact cites checked knowledge or reference files.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;contrast&quot;,
+      &quot;title&quot;: &quot;Explicit contrast handling&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Contrast handling is explicit.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;keyboard-focus&quot;,
+      &quot;title&quot;: &quot;Keyboard and focus behavior&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Keyboard/focus behavior is mentioned.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;responsive&quot;,
+      &quot;title&quot;: &quot;Responsive behavior&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Responsive behavior is mentioned.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;screen-reader&quot;,
+      &quot;title&quot;: &quot;Screen-reader semantics&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;Screen-reader or ARIA behavior is mentioned.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;dont-section&quot;,
+      &quot;title&quot;: &quot;Misuse guidance&quot;,
+      &quot;level&quot;: &quot;warn&quot;,
+      &quot;passed&quot;: false,
+      &quot;message&quot;: &quot;No Don&#x27;t/avoid/anti-pattern guidance detected.&quot;
+    },
+    {
+      &quot;id&quot;: &quot;korean-context&quot;,
+      &quot;title&quot;: &quot;Korean context when relevant&quot;,
+      &quot;level&quot;: &quot;pass&quot;,
+      &quot;passed&quot;: true,
+      &quot;message&quot;: &quot;No Korean text detected; rule is not applicable.&quot;
+    }
+  ]
+}
+
+[exit_code] 0
+</pre></section></div></div></body>

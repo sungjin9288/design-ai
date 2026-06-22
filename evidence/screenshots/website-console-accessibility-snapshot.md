@@ -1,0 +1,37 @@
+- generic [active] [ref=e1]:
+  - link "Skip to workspace" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - generic [ref=e4]:
+    - complementary "Website console sections" [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: design-ai
+        - heading "Website Console" [level=1] [ref=e8]
+        - paragraph [ref=e9]: Local control tower for site audits, MCP readiness, prompts, and handoff reports.
+      - list [ref=e10]:
+        - listitem [ref=e11]
+        - listitem [ref=e14]
+        - listitem [ref=e18]
+        - listitem [ref=e22]
+        - listitem [ref=e26]
+        - listitem [ref=e30]
+        - listitem [ref=e33]
+      - generic [ref=e36]:
+        - button "Export JSON" [ref=e37] [cursor=pointer]
+        - button "Import JSON" [ref=e38] [cursor=pointer]
+        - button "Choose File" [ref=e39]
+        - button "Reset sample" [ref=e40] [cursor=pointer]
+    - main [ref=e41]:
+      - region "Workspace summary" [ref=e42]:
+        - generic [ref=e43]
+        - generic [ref=e46]
+      - region "Workspace metrics" [ref=e49]:
+        - generic [ref=e50]
+        - generic [ref=e54]
+        - generic [ref=e58]
+        - generic [ref=e62]
+      - generic [ref=e66]:
+        - generic [ref=e68]
+        - generic [ref=e72]
+      - generic [ref=e119]:
+        - generic [ref=e121]
+        - generic [ref=e124]

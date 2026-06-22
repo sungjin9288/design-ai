@@ -1,16 +1,18 @@
 # Design AI
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
-[![Docs](https://img.shields.io/badge/docs-mkdocs-indigo)](https://sungjin9288.github.io/design-ai/)
+[![Docs](https://img.shields.io/badge/docs-local-indigo)](docs/QUICKSTART.ko.md)
 [![Knowledge files](https://img.shields.io/badge/knowledge-92-blue)](knowledge/PRINCIPLES.md)
 [![Examples](https://img.shields.io/badge/examples-223-blue)](examples/README.md)
 [![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
 
-> 🇰🇷 한국어 / [🇺🇸 English](https://sungjin9288.github.io/design-ai/)
+> 🇰🇷 한국어 / [🇺🇸 English](https://github.com/sungjin9288/design-ai/blob/main/README.md)
 
 모델에 종속되지 않는 디자인 지식 베이스 + 스킬 시스템. 어떤 AI 코딩 에이전트(Claude Code, Codex CLI, Cursor, Aider)에 붙이든 20년 경력의 시니어 프로덕트 디자이너로 변신해요. 의견이 분명하고, 접근성을 기본으로 챙기며, 한국 시장을 깊이 이해해요.
 
 > **모델이 아니에요. 파인튜닝도 아니에요.** 디자인 전문 지식을 구조화한 코퍼스 + 에이전트가 바로 실행할 수 있는 지시문이에요. 범용 LLM을 이번 세션에서만큼은 시니어 디자이너로 바꿔주는 셈이에요.
+
+> **배포 상태, 2026-06-22 확인:** 로컬 `npm run release:check`는 통과했지만 public npm, GitHub Pages, VS Code Marketplace 배포는 현재 확인되지 않았어요. public publish/deploy가 끝나기 전까지는 Git clone/local install 경로를 사용하세요. 자세한 내용은 [`docs/external-status.md`](docs/external-status.md)를 확인하세요.
 
 ## 한눈에 보는 커버리지
 
@@ -32,7 +34,17 @@
 
 ## 설치 (Claude Code)
 
-### A. NPM (한 줄로 끝, 추천)
+### A. Git clone / local install (현재 추천)
+
+```bash
+git clone https://github.com/sungjin9288/design-ai.git
+cd design-ai
+./install.sh
+```
+
+### B. NPM (public publish 이후)
+
+`@design-ai/cli`가 publish되고 `npm run registry:smoke`가 통과한 뒤에만 이 경로를 사용하세요.
 
 ```bash
 npx @design-ai/cli install
@@ -45,7 +57,7 @@ npm install -g @design-ai/cli
 design-ai install
 ```
 
-### B. Homebrew
+### C. Homebrew (release tap 검증 이후)
 
 ```bash
 brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git
@@ -53,15 +65,7 @@ brew install design-ai
 design-ai install
 ```
 
-### C. Git clone (기여자용)
-
-```bash
-git clone https://github.com/sungjin9288/design-ai.git
-cd design-ai
-./install.sh
-```
-
-세 방법 모두 20개 스킬, 17개 명령어, 4개 에이전트가 `~/.claude/`에 `design-` 접두사로 설치돼요. Claude Code를 다시 실행하고 시도해 보세요:
+사용 가능한 설치 경로는 모두 20개 스킬, 17개 명령어, 4개 에이전트를 `~/.claude/`에 `design-` 접두사로 설치해요. Claude Code를 다시 실행하고 시도해 보세요:
 
 ```
 /design-component-spec Banner
@@ -128,7 +132,7 @@ design-ai/
 
 [`docs/QUICKSTART.ko.md`](docs/QUICKSTART.ko.md)를 참고하세요. 가장 짧은 경로는:
 
-1. 설치 (`./install.sh` 또는 `npx @design-ai/cli install`).
+1. 설치 (`./install.sh`).
 2. Claude Code에서 `/design-component-spec Banner`를 시도해 보세요. Banner 컴포넌트의 개발자용 스펙(아나토미, API, 변형, 상태, 토큰, ARIA, 키보드, 엣지 케이스)을 받아요.
 3. Figma 링크나 스크린샷에 대해 `/design-design-review`를 실행하세요. UX + 접근성 + 디자인 비평이 병렬로 실행돼요.
 

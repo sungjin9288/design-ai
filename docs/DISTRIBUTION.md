@@ -2,9 +2,29 @@
 
 How design-ai gets from this repo into adopters' Claude Code installations.
 
-## Three install paths (pick one)
+> Distribution status, checked 2026-06-22: local `npm run release:check` passes, but public npm, GitHub Pages, and VS Code Marketplace distribution is not currently confirmed. Use the Git clone/local install path until public publish/deploy is completed. See [`external-status.md`](external-status.md).
 
-### A. NPM (recommended for most adopters)
+## Install paths
+
+### A. Git clone / local install (currently recommended)
+
+```bash
+git clone https://github.com/sungjin9288/design-ai.git
+cd design-ai
+./install.sh
+```
+
+The source is your working clone. Pull updates with `git pull && ./install.sh`.
+
+Use this path if you want to:
+- Use design-ai before public package publish.
+- Contribute back upstream.
+- Modify knowledge / skills locally.
+- Track latest `main` rather than published releases.
+
+### B. NPM (after public publish)
+
+Use this path only after `@design-ai/cli` is published and `npm run registry:smoke` passes.
 
 ```bash
 # One-shot via npx (no global install)
@@ -18,21 +38,6 @@ design-ai install
 The npm package bundles the corpus (`knowledge/`, `examples/`, `skills/`, `agents/`, `commands/`, `.claude-plugin/`) — adopters don't need to clone anything.
 
 After install, the CLI symlinks the bundled corpus into `~/.claude/skills/`, `~/.claude/agents/`, `~/.claude/commands/` with the `design-` prefix.
-
-### B. Git clone (for contributors)
-
-```bash
-git clone https://github.com/sungjin9288/design-ai.git
-cd design-ai
-./install.sh
-```
-
-Same end state as NPM, but the source is your working clone. Pull updates with `git pull && ./install.sh`.
-
-Use this path if you want to:
-- Contribute back upstream.
-- Modify knowledge / skills locally.
-- Track latest `main` rather than published releases.
 
 ### C. Manual symlinks (no install script)
 
@@ -206,7 +211,7 @@ Possibilities (not yet implemented):
 
 - **Homebrew tap** — `brew install design-ai`
 - **Claude Code plugin marketplace** — once that ecosystem matures, list there
-- **VS Code extension** — wrapper that installs design-ai + provides UI
+- **VS Code Marketplace publish** — move the local extension wrapper to a public install surface
 - **Docker image** — for CI / sandboxed environments
 - **Public doc site** (mkdocs / docusaurus) — for browsing knowledge without install
 

@@ -1,0 +1,4 @@
+$ node cli/bin/design-ai.mjs site evidence/output-artifacts/website-workspace-sample.json --next-actions --out evidence/output-artifacts/website-next-actions.md --force
+✓  Wrote /Users/sungjin/dev/design/evidence/output-artifacts/website-next-actions.md
+
+[exit_code] 0

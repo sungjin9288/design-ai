@@ -1,0 +1,7 @@
+$ node cli/bin/design-ai.mjs search accessibility contrast focus --dir knowledge --limit 5 --json
+{
+  "query": "accessibility contrast focus",
+  "hits": []
+}
+
+[exit_code] 0

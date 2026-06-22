@@ -44,6 +44,18 @@ for f in AGENTS.md AGENTS.ko.md CLAUDE.md CHANGELOG.md; do
   fi
 done
 
+# Evidence screenshots are referenced from portfolio docs but live outside the
+# main documentation corpus. Include only static assets, not the whole evidence
+# tree, so MkDocs can resolve image links without publishing CI logs as pages.
+if [ -d "$REPO_ROOT/evidence/screenshots" ]; then
+  mkdir -p "$SITE_SRC/evidence/screenshots"
+  while IFS= read -r -d '' evidence_file; do
+    rel_path="${evidence_file#$REPO_ROOT/}"
+    mkdir -p "$SITE_SRC/$(dirname "$rel_path")"
+    ln -sf "$evidence_file" "$SITE_SRC/$rel_path"
+  done < <(find "$REPO_ROOT/evidence/screenshots" -type f \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' -o -name '*.gif' -o -name '*.svg' -o -name '*.webp' \) -print0)
+fi
+
 # Corpus directories
 if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   for d in knowledge examples skills commands agents docs; do
@@ -51,7 +63,12 @@ if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       while IFS= read -r -d '' tracked_file; do
         mkdir -p "$SITE_SRC/$(dirname "$tracked_file")"
         ln -sf "$REPO_ROOT/$tracked_file" "$SITE_SRC/$tracked_file"
-      done < <(git -C "$REPO_ROOT" ls-files -z -- "$d")
+      done < <(
+        {
+          git -C "$REPO_ROOT" ls-files -z -- "$d"
+          git -C "$REPO_ROOT" ls-files --others --exclude-standard -z -- "$d"
+        } | sort -zu
+      )
     fi
   done
 else

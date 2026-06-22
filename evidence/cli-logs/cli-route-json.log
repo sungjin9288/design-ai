@@ -1,0 +1,233 @@
+$ node cli/bin/design-ai.mjs route Build a Korean SaaS landing page accessibility review --json
+{
+  "brief": "Build a Korean SaaS landing page accessibility review",
+  "version": "4.55.0",
+  "routes": [
+    {
+      "id": "design-review",
+      "label": "Design review",
+      "score": 2,
+      "confidence": "medium",
+      "matchedKeywords": [
+        "review",
+        "accessibility"
+      ],
+      "command": {
+        "path": "commands/design-review.md",
+        "exists": true
+      },
+      "skills": [
+        {
+          "path": "skills/ux-audit/SKILL.md",
+          "exists": true
+        },
+        {
+          "path": "skills/design-critique/SKILL.md",
+          "exists": true
+        }
+      ],
+      "agents": [
+        {
+          "path": "agents/a11y-reviewer.md",
+          "exists": true
+        },
+        {
+          "path": "agents/design-critic.md",
+          "exists": true
+        }
+      ],
+      "knowledge": [
+        {
+          "path": "knowledge/PRINCIPLES.md",
+          "exists": true
+        },
+        {
+          "path": "knowledge/patterns/ux-guidelines.md",
+          "exists": true
+        },
+        {
+          "path": "knowledge/a11y/contrast.md",
+          "exists": true
+        },
+        {
+          "path": "knowledge/a11y/keyboard-and-focus.md",
+          "exists": true
+        }
+      ],
+      "keywords": [
+        "audit",
+        "review",
+        "critique",
+        "figma",
+        "screenshot",
+        "ux",
+        "a11y",
+        "accessibility",
+        "리뷰",
+        "감사",
+        "평가",
+        "비평",
+        "접근성",
+        "스크린샷"
+      ],
+      "explanation": {
+        "summary": "Matched 2 keywords: review, accessibility.",
+        "scoreBreakdown": [
+          {
+            "label": "keyword matches",
+            "value": 2
+          }
+        ],
+        "referenceCoverage": {
+          "command": {
+            "available": 1,
+            "total": 1
+          },
+          "skills": {
+            "available": 2,
+            "total": 2
+          },
+          "agents": {
+            "available": 2,
+            "total": 2
+          },
+          "knowledge": {
+            "available": 4,
+            "total": 4
+          },
+          "total": {
+            "available": 9,
+            "total": 9
+          }
+        },
+        "missingReferences": []
+      }
+    },
+    {
+      "id": "website-improvement",
+      "label": "Website improvement",
+      "score": 1,
+      "confidence": "low",
+      "matchedKeywords": [
+        "landing"
+      ],
+      "command": {
+        "path": "commands/website-improvement.md",
+        "exists": true
+      },
+      "skills": [
+        {
+          "path": "skills/website-improvement/SKILL.md",
+          "exists": true
+        },
+        {
+          "path": "skills/ux-audit/SKILL.md",
+          "exists": true
+        },
+        {
+          "path": "skills/handoff-spec/SKILL.md",
+          "exists": true
+        }
+      ],
+      "agents": [
+        {
+          "path": "agents/a11y-reviewer.md",
+          "exists": true
+        },
+        {
+          "path": "agents/design-critic.md",
+          "exists": true
+        }
+      ],
+      "knowledge": [
+        {
+          "path": "knowledge/PRINCIPLES.md",
+          "exists": true
+        },
+        {
+          "path": "knowledge/patterns/ux-guidelines.md",
+          "exists": true
+        },
+        {
+          "path": "knowledge/a11y/contrast.md",
+          "exists": true
+        },
+        {
+          "path": "knowledge/a11y/keyboard-and-focus.md",
+          "exists": true
+        },
+        {
+          "path": "knowledge/layout/spacing-and-grid.md",
+          "exists": true
+        },
+        {
+          "path": "knowledge/patterns/report-design.md",
+          "exists": true
+        },
+        {
+          "path": "docs/MCP-INTEGRATION.md",
+          "exists": true
+        },
+        {
+          "path": "docs/WEBSITE-IMPROVEMENT.md",
+          "exists": true
+        }
+      ],
+      "keywords": [
+        "website",
+        "webpage",
+        "homepage",
+        "landing",
+        "seo",
+        "performance",
+        "lighthouse",
+        "core web vitals",
+        "mcp",
+        "refactor plan",
+        "handoff report",
+        "site profile",
+        "웹사이트",
+        "홈페이지",
+        "랜딩",
+        "성능",
+        "검색엔진",
+        "개선",
+        "리팩터"
+      ],
+      "explanation": {
+        "summary": "Matched 1 keyword: landing.",
+        "scoreBreakdown": [
+          {
+            "label": "keyword matches",
+            "value": 1
+          }
+        ],
+        "referenceCoverage": {
+          "command": {
+            "available": 1,
+            "total": 1
+          },
+          "skills": {
+            "available": 3,
+            "total": 3
+          },
+          "agents": {
+            "available": 2,
+            "total": 2
+          },
+          "knowledge": {
+            "available": 8,
+            "total": 8
+          },
+          "total": {
+            "available": 14,
+            "total": 14
+          }
+        },
+        "missingReferences": []
+      }
+    }
+  ]
+}
+
+[exit_code] 0

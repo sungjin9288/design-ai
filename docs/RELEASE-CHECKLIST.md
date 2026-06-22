@@ -216,7 +216,7 @@ What's new:
 - <feature 2>
 - <feature 3>
 
-Try it: npx @design-ai/cli install
+Try it after publish + registry smoke: npx @design-ai/cli install
 
 Full notes: <link to CHANGELOG section>
 ```

@@ -1,0 +1,95 @@
+$ node cli/bin/design-ai.mjs audit --strict --quiet --json
+{
+  "context": {
+    "root": "/Users/sungjin/dev/design",
+    "auditDir": "tools/audit",
+    "strict": true,
+    "quiet": true
+  },
+  "audits": [
+    {
+      "name": "frontmatter",
+      "script": "frontmatter-check.py",
+      "description": "YAML frontmatter validity + version field shape",
+      "passed": true,
+      "returncode": 0,
+      "durationSeconds": 0.042,
+      "strictArgs": []
+    },
+    {
+      "name": "link",
+      "script": "link-check.py",
+      "description": "Internal link resolution",
+      "passed": false,
+      "returncode": 1,
+      "durationSeconds": 0.818,
+      "strictArgs": []
+    },
+    {
+      "name": "korean-copy",
+      "script": "korean-copy-check.py",
+      "description": "Korean voice / register / typography",
+      "passed": true,
+      "returncode": 0,
+      "durationSeconds": 0.388,
+      "strictArgs": []
+    },
+    {
+      "name": "raw-hex",
+      "script": "raw-hex-check.py",
+      "description": "Example raw hex colors use token aliases unless explicitly allowlisted",
+      "passed": true,
+      "returncode": 0,
+      "durationSeconds": 0.069,
+      "strictArgs": []
+    },
+    {
+      "name": "integration",
+      "script": "integration-check.py",
+      "description": "Integration walkthrough completeness",
+      "passed": true,
+      "returncode": 0,
+      "durationSeconds": 0.023,
+      "strictArgs": []
+    },
+    {
+      "name": "stale",
+      "script": "stale-check.py",
+      "description": "Knowledge freshness (last_updated thresholds)",
+      "passed": true,
+      "returncode": 0,
+      "durationSeconds": 0.031,
+      "strictArgs": [
+        "--strict"
+      ]
+    },
+    {
+      "name": "coverage",
+      "script": "check-coverage.py",
+      "description": "Component / skill / example coverage report",
+      "passed": true,
+      "returncode": 0,
+      "durationSeconds": 0.05,
+      "strictArgs": []
+    },
+    {
+      "name": "example-qa",
+      "script": "example-qa.py",
+      "description": "Top worked example quality for every route",
+      "passed": true,
+      "returncode": 0,
+      "durationSeconds": 0.559,
+      "strictArgs": []
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 7,
+    "failed": 1,
+    "durationSeconds": 1.978,
+    "exitCode": 1
+  }
+}
+✗ Command "python3 /Users/sungjin/dev/design/tools/audit/run-all.py --strict --quiet --json" exited with code 1
+
+[exit_code] 1

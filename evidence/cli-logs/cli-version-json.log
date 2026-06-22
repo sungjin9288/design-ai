@@ -1,0 +1,13 @@
+$ node cli/bin/design-ai.mjs version --json
+{
+  "context": {
+    "sourceRoot": "/Users/sungjin/dev/design"
+  },
+  "versions": {
+    "cli": "4.55.0",
+    "plugin": "4.55.0",
+    "aligned": true
+  }
+}
+
+[exit_code] 0
