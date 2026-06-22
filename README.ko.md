@@ -1,7 +1,7 @@
 # Design AI
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
-[![Docs](https://img.shields.io/badge/docs-local-indigo)](docs/QUICKSTART.ko.md)
+[![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/ko/)
 [![Knowledge files](https://img.shields.io/badge/knowledge-92-blue)](knowledge/PRINCIPLES.md)
 [![Examples](https://img.shields.io/badge/examples-223-blue)](examples/README.md)
 [![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
@@ -12,7 +12,7 @@
 
 > **모델이 아니에요. 파인튜닝도 아니에요.** 디자인 전문 지식을 구조화한 코퍼스 + 에이전트가 바로 실행할 수 있는 지시문이에요. 범용 LLM을 이번 세션에서만큼은 시니어 디자이너로 바꿔주는 셈이에요.
 
-> **배포 상태, 2026-06-22 확인:** 로컬 `npm run release:check`는 통과했지만 public npm, GitHub Pages, VS Code Marketplace 배포는 현재 확인되지 않았어요. public publish/deploy가 끝나기 전까지는 Git clone/local install 경로를 사용하세요. 자세한 내용은 [`docs/external-status.md`](docs/external-status.md)를 확인하세요.
+> **배포 상태, 2026-06-23 확인:** 로컬 `npm run release:check`는 통과했고 GitHub Pages 문서는 공개 URL에서 확인됐어요. public npm과 VS Code Marketplace 배포는 아직 확인되지 않았으므로 package publish가 끝나기 전까지는 Git clone/local install 경로를 사용하세요. 자세한 내용은 [`docs/external-status.md`](docs/external-status.md)를 확인하세요.
 
 ## 한눈에 보는 커버리지
 

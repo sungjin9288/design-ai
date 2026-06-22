@@ -1,14 +1,8 @@
-http_code=404
+http_code=200
 url_effective=https://sungjin9288.github.io/design-ai/
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'">
-    <title>Site not found &middot; GitHub Pages</title>
-    <style type="text/css" media="screen">
-      body {
-        background-color: #f1f1f1;
-        margin: 0;
-        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      }
+content_type=text/html; charset=utf-8
+size_download=156127
+
+Checked: 2026-06-23 Asia/Seoul
+Deploy workflow: https://github.com/sungjin9288/design-ai/actions/runs/27966119055
+Evidence: rendered HTML contains design-ai metadata and homepage content.

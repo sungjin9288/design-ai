@@ -1,7 +1,7 @@
 # Design AI
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
-[![Docs](https://img.shields.io/badge/docs-local-indigo)](docs/QUICKSTART.md)
+[![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/)
 [![Knowledge files](https://img.shields.io/badge/knowledge-92-blue)](knowledge/PRINCIPLES.md)
 [![Examples](https://img.shields.io/badge/examples-223-blue)](examples/README.md)
 [![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
@@ -12,7 +12,7 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 
 > **Not a model. Not a fine-tune.** A structured corpus of design expertise + agent-ready instructions that turn a general-purpose LLM into an expert.
 
-> **Distribution status, checked 2026-06-22:** local `npm run release:check` passes, but public npm, GitHub Pages, and VS Code Marketplace distribution is not currently confirmed. Use the Git clone/local install path until public publish/deploy is completed. See [`docs/external-status.md`](docs/external-status.md).
+> **Distribution status, checked 2026-06-23:** local `npm run release:check` passes and GitHub Pages docs are live. Public npm and VS Code Marketplace distribution are not currently confirmed, so use the Git clone/local install path until package publishing is completed. See [`docs/external-status.md`](docs/external-status.md).
 
 ## Coverage at a glance
 

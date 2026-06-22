@@ -2,7 +2,7 @@
 
 How design-ai gets from this repo into adopters' Claude Code installations.
 
-> Distribution status, checked 2026-06-22: local `npm run release:check` passes, but public npm, GitHub Pages, and VS Code Marketplace distribution is not currently confirmed. Use the Git clone/local install path until public publish/deploy is completed. See [`external-status.md`](external-status.md).
+> Distribution status, checked 2026-06-23: local `npm run release:check` passes and GitHub Pages docs are live. Public npm and VS Code Marketplace distribution are not currently confirmed, so use the Git clone/local install path until package publishing is completed. See [`external-status.md`](external-status.md).
 
 ## Install paths
 
