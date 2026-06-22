@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 643 — Website Console Source Bundle Revalidation Gate Badges (unreleased)
+
+Website Console Source Bundle detail review now uses badges for revalidation gate state.
+
+### Added
+- Added a `pass` badge for source bundles where strict revalidation is not required.
+- Added a `warn` badge for source bundles where strict revalidation is required.
+- Added muted helper text beside the badge so the table remains scannable while preserving the actionable gate summary.
+
+### Impact
+- Operators can distinguish clear versus blocked source-bundle gate state without reading a long text cell.
+- The detail table now aligns with the existing dense dashboard badge language used across readiness, status, and runbook surfaces.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 642 — Website Console Source Bundle Revalidation Detail Row (unreleased)
 
 Website Console Source Bundle detail review now shows revalidation gate state in the provenance table.

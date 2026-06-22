@@ -532,6 +532,13 @@ td input {
   font-size: 12px;
 }
 
+.runbook-revalidation-detail {
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .runbook-provenance-only {
   display: grid;
   gap: 4px;

@@ -1107,7 +1107,7 @@
       sourceBundleRow("Checksum files", String(sourceBundle.verifiedChecksumFiles || 0) + "/" + String(sourceBundle.expectedChecksumFiles || 0)),
       sourceBundleRow("Generated files", String(sourceBundle.verifiedGeneratedFiles || 0) + "/" + String(sourceBundle.expectedGeneratedFiles || 0)),
       sourceBundleRow("Diagnostics", String(sourceBundle.failureCount || 0) + " failures, " + String(sourceBundle.warningCount || 0) + " warnings, " + String(sourceBundle.issueCount || 0) + " issues"),
-      sourceBundleRow("Revalidation gate", formatSourceBundleRevalidationSummary(sourceBundle)),
+      sourceBundleRevalidationRow(sourceBundle),
       sourceBundleCommandRow("Strict check command", checkCommand, "copy-runbook-source-check-command"),
       sourceBundleCommandRow("Strict handoff command", handoffCommand, "copy-runbook-source-handoff-command"),
       "</tbody>",
@@ -1132,6 +1132,21 @@
       "<th scope=\"row\">" + escapeHtml(label) + "</th>",
       "<td class=\"runbook-line-cell\">",
       command ? "<code>" + escapeHtml(command) + "</code><div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"" + escapeAttr(action) + "\">Copy command</button></div>" : "<span class=\"muted\">not recorded</span>",
+      "</td>",
+      "</tr>",
+    ].join("");
+  }
+
+  function sourceBundleRevalidationRow(sourceBundle) {
+    var required = sourceBundleNeedsRevalidation(sourceBundle);
+    var label = required ? "required" : "not required";
+    var tone = required ? "warn" : "pass";
+    return [
+      "<tr>",
+      "<th scope=\"row\">Revalidation gate</th>",
+      "<td>",
+      "<span class=\"badge badge--" + escapeAttr(tone) + "\">" + escapeHtml(label) + "</span>",
+      "<span class=\"runbook-revalidation-detail\">" + escapeHtml(formatSourceBundleRevalidationSummary(sourceBundle)) + "</span>",
       "</td>",
       "</tr>",
     ].join("");
