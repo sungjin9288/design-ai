@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 649 — Website Console Gate-Only JSON Diagnostic Count Preservation (unreleased)
+
+Website Console gate-only revalidation JSON now preserves warning and issue counts during compact export/import roundtrips.
+
+### Added
+- Added `revalidationGate.warningCount` to gate-only JSON output.
+- Added `revalidationGate.issueCount` to gate-only JSON output.
+- Rehydrates warning and issue counts during gate-only JSON import so the Source Bundle diagnostics row stays consistent with the compact gate artifact.
+
+### Impact
+- Operators can import gate-only artifacts without losing non-failing diagnostic totals in the Source Bundle detail table.
+- Automation and wrapper layers keep a compact revalidation payload while preserving enough diagnostic context for review.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 648 — Website Console Gate-Only JSON Source Context Preservation (unreleased)
 
 Website Console gate-only revalidation JSON now preserves source workspace and site name context during export/import roundtrips.

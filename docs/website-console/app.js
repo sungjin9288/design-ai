@@ -430,6 +430,8 @@
       status: sourceBundle.status || gate.status || "unknown",
       valid: sourceBundle.valid === true || gate.valid === true,
       failureCount: Number(gate.failureCount || 0),
+      warningCount: Number(gate.warningCount || 0),
+      issueCount: Number(gate.issueCount || 0),
       strictCheckCommand: gate.strictCheckCommand || "",
     };
   }
@@ -2105,6 +2107,8 @@
         status: "not-provided",
         valid: false,
         failureCount: 0,
+        warningCount: 0,
+        issueCount: 0,
         strictCheckCommand: "",
         strictCheckCommandAvailable: false,
         reason: "source-bundle-not-provided",
@@ -2112,6 +2116,8 @@
       };
     }
     var failureCount = Number(sourceBundle.failureCount || 0);
+    var warningCount = Number(sourceBundle.warningCount || 0);
+    var issueCount = Number(sourceBundle.issueCount || 0);
     var required = sourceBundleNeedsRevalidation(sourceBundle);
     var status = (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid");
     var strictCheckCommandAvailable = Boolean(sourceBundle.strictCheckCommand);
@@ -2120,6 +2126,8 @@
       status: status,
       valid: sourceBundle.valid === true,
       failureCount: failureCount,
+      warningCount: warningCount,
+      issueCount: issueCount,
       strictCheckCommand: String(sourceBundle.strictCheckCommand || ""),
       strictCheckCommandAvailable: strictCheckCommandAvailable,
       reason: required
