@@ -13,6 +13,30 @@ codex "Generate a color palette for a Korean fintech app"
 
 Codex will consume `AGENTS.md`, navigate `knowledge/`, and apply the relevant skill playbook. No setup required.
 
+## design-ai MCP server
+
+Use MCP when you want Claude Code or Codex to call design-ai as tools instead of asking the agent to read repo files manually.
+
+Claude Code:
+
+```bash
+claude mcp add --transport stdio design-ai -- design-ai mcp
+```
+
+Codex:
+
+```bash
+codex mcp add design-ai -- design-ai mcp
+```
+
+If `design-ai` is not on `PATH`, use the local clone entrypoint:
+
+```bash
+node /path/to/design-ai/cli/bin/design-ai-mcp.mjs
+```
+
+The MCP server exposes route, prompt, pack, search, show, examples, check, Website Improvement MCP readiness, and version tools. See [`docs/integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
+
 ## Route eval checkpoints
 
 Use route evals when you want to verify that task briefs still select the intended design-ai command, skill, agents, and knowledge set after changing keywords, skills, or agent docs.

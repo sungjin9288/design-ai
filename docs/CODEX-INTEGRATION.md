@@ -92,24 +92,50 @@ duplicates.
 
 Codex CLI supports MCP servers. Useful integrations for design-ai:
 
+### design-ai MCP server
+
+Use this when you want Codex to call design-ai through MCP tools instead of manually reading repo files:
+
+```bash
+codex mcp add design-ai -- design-ai mcp
+```
+
+Or add it to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.design-ai]
+command = "design-ai"
+args = ["mcp"]
+startup_timeout_sec = 10
+tool_timeout_sec = 60
+```
+
+If `design-ai` is not on `PATH`, point Codex at the local clone:
+
+```toml
+[mcp_servers.design-ai]
+command = "node"
+args = ["/path/to/design-ai/cli/bin/design-ai-mcp.mjs"]
+cwd = "/path/to/design-ai"
+startup_timeout_sec = 10
+tool_timeout_sec = 60
+```
+
+In the Codex TUI, run `/mcp` and confirm that `design-ai` is active.
+
+See [`docs/integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md) for the tool list and Claude Code setup.
+
 ### Figma MCP (recommended)
 
 ```bash
 # Install and configure the Figma MCP server
 # Per https://github.com/figma/mcp-server (or vendor docs)
 
-# Add to your ~/.codex/mcp.json:
-{
-  "mcpServers": {
-    "figma": {
-      "command": "node",
-      "args": ["/path/to/figma-mcp-server"],
-      "env": {
-        "FIGMA_API_KEY": "your-key"
-      }
-    }
-  }
-}
+# Add to your ~/.codex/config.toml:
+[mcp_servers.figma]
+command = "node"
+args = ["/path/to/figma-mcp-server"]
+env = { FIGMA_API_KEY = "your-key" }
 ```
 
 After setup, Codex can:
@@ -275,7 +301,7 @@ Custom components live in `examples/component-*.md`. Either pass them via `--fil
 
 **"Codex's MCP setup for Figma isn't working."**
 
-Codex MCP setup is vendor-specific. Check the OpenAI Codex docs and `~/.codex/mcp.json` configuration. The Figma MCP server itself is generic — same instance works with Claude Code.
+Codex MCP setup is vendor-specific. Check the OpenAI Codex docs and `~/.codex/config.toml` configuration. The Figma MCP server itself is generic — same instance works with Claude Code.
 
 ## Cross-reference
 

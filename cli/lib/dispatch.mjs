@@ -12,6 +12,7 @@ import { runExamples } from "../commands/examples.mjs";
 import { runLearn } from "../commands/learn.mjs";
 import { runWorkspace } from "../commands/workspace.mjs";
 import { runSite } from "../commands/site.mjs";
+import { runMcp } from "../commands/mcp.mjs";
 import { runSearch } from "../commands/search.mjs";
 import { runShow } from "../commands/show.mjs";
 import { runRoute } from "../commands/route.mjs";
@@ -48,6 +49,7 @@ const commands = {
   workspace: runWorkspace,
   ws: runWorkspace,
   site: runSite,
+  mcp: runMcp,
   search: runSearch,
   find: runSearch,
   show: runShow,
@@ -85,6 +87,7 @@ export const CANONICAL_COMMANDS = [
   "learn",
   "workspace",
   "site",
+  "mcp",
   "version",
   "help",
 ];
