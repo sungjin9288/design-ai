@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 660 — Website Console Source Bundle Artifact Action Labels (unreleased)
+
+Website Console Source Bundle action buttons now identify whether they produce Markdown or provenance JSON.
+
+### Added
+- Renamed Source Bundle header actions from generic bundle/JSON labels to artifact-specific Markdown and provenance JSON labels.
+- Kept action ids and generated artifact formats unchanged.
+
+### Impact
+- Operators can distinguish source-bundle Markdown, focused provenance JSON, and gate JSON workflows more quickly before copying or exporting.
+- The change improves UI clarity without changing local state, export payloads, or target-repo handoff behavior.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 659 — Website Console Source Bundle Source Copy Action (unreleased)
 
 Website Console Source Bundle detail review now lets operators copy the current runbook source marker directly.
