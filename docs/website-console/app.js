@@ -2030,6 +2030,7 @@
     return JSON.stringify({
       type: "website-improvement-source-bundle-provenance",
       version: 1,
+      source: "source-bundle-provenance",
       sourceBundle: sourceBundle || null,
       revalidationGate: buildSourceBundleRevalidationGate(sourceBundle),
     }, null, 2);

@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 652 — Website Console Focused Provenance JSON Source Marker Export (unreleased)
+
+Website Console focused source-bundle provenance JSON exports now include an explicit source marker.
+
+### Added
+- Added top-level `source: "source-bundle-provenance"` to `website-improvement-source-bundle-provenance` JSON copy/export payloads.
+- Keeps the existing payload `type`, `sourceBundle`, and `revalidationGate` contract intact for backward-compatible import.
+
+### Impact
+- Operators and wrapper automation can distinguish focused source-bundle provenance payloads from gate-only payloads using the same source-marker convention.
+- Compact source-bundle JSON export/import now uses consistent provenance language across payload, browser state, and Markdown metadata.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 651 — Website Console Gate-Only JSON Source Marker Export (unreleased)
 
 Website Console gate-only revalidation JSON exports now include the same source marker that imports store in Operator Runbook state.
