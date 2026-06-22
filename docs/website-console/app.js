@@ -2039,6 +2039,7 @@
     return JSON.stringify({
       type: "website-improvement-source-bundle-revalidation-gate",
       version: 1,
+      source: "source-bundle-revalidation-gate",
       sourceBundle: sourceBundle ? {
         directory: sourceBundle.directory || "",
         sourceWorkspace: sourceBundle.sourceWorkspace || "",

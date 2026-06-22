@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 651 — Website Console Gate-Only JSON Source Marker Export (unreleased)
+
+Website Console gate-only revalidation JSON exports now include the same source marker that imports store in Operator Runbook state.
+
+### Added
+- Added top-level `source: "source-bundle-revalidation-gate"` to `website-improvement-source-bundle-revalidation-gate` JSON copy/export payloads.
+- Keeps the existing payload `type`, `sourceBundle`, and `revalidationGate` contract intact for backward-compatible import.
+
+### Impact
+- Operators and wrapper automation can identify compact gate-only payloads by source marker without relying only on `type`.
+- Gate-only JSON export/import now carries consistent provenance language across payload, browser state, and Markdown metadata.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 650 — Website Console Gate-Only Import Source Marker (unreleased)
 
 Website Console gate-only revalidation JSON imports now preserve a distinct Operator Runbook source marker.
