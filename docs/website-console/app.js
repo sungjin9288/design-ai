@@ -417,6 +417,21 @@
     return null;
   }
 
+  function extractSourceBundleRevalidationGatePayload(value) {
+    if (!value || typeof value !== "object") return null;
+    if (value.type !== "website-improvement-source-bundle-revalidation-gate") return null;
+    var sourceBundle = value.sourceBundle && typeof value.sourceBundle === "object" ? value.sourceBundle : {};
+    var gate = value.revalidationGate && typeof value.revalidationGate === "object" ? value.revalidationGate : {};
+    return {
+      directory: sourceBundle.directory || "",
+      checksumBundleDigest: sourceBundle.checksumBundleDigest || "",
+      status: sourceBundle.status || gate.status || "unknown",
+      valid: sourceBundle.valid === true || gate.valid === true,
+      failureCount: Number(gate.failureCount || 0),
+      strictCheckCommand: gate.strictCheckCommand || "",
+    };
+  }
+
   function createSourceBundleOnlyRunbook(sourceBundle) {
     return normalizeOperatorRunbook({
       version: 1,
@@ -2428,6 +2443,19 @@
           localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
           saveWorkspace();
           setMessage("Bundle handoff operator runbook imported. Report tab opened.");
+          return;
+        }
+        var importedGateSourceBundle = normalizeRunbookSourceBundle(extractSourceBundleRevalidationGatePayload(parsed));
+        if (importedGateSourceBundle && !parsed.siteProfile) {
+          if (appState.workspace.operatorRunbook) {
+            appState.workspace.operatorRunbook.sourceBundle = importedGateSourceBundle;
+          } else {
+            appState.workspace.operatorRunbook = createSourceBundleOnlyRunbook(importedGateSourceBundle);
+          }
+          appState.activeTab = "report";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveWorkspace();
+          setMessage("Source bundle revalidation gate JSON imported. Report tab opened.");
           return;
         }
         var importedSourceBundle = normalizeRunbookSourceBundle(extractSourceBundleProvenancePayload(parsed));

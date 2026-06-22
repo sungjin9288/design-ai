@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 647 — Website Console Source Bundle Revalidation Gate JSON Import (unreleased)
+
+Website Console now imports compact source-bundle revalidation gate JSON artifacts back into Operator Runbook review.
+
+### Added
+- Added import detection for `website-improvement-source-bundle-revalidation-gate` JSON payloads.
+- Rehydrates minimal source-bundle provenance from gate identity, normalized status, validity, failure count, and strict check command metadata.
+- Opens the Report tab with provenance-only Operator Runbook review when no full runbook is already loaded.
+
+### Impact
+- Operators can round-trip gate-only artifacts without exporting or importing full source-bundle provenance.
+- Automation and wrapper layers can hand a compact gate artifact back to the console for visual review before target-repo execution.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 646 — Website Console Source Bundle Revalidation Gate JSON Export (unreleased)
 
 Website Console now lets operators copy or export only the source-bundle revalidation gate as a compact JSON artifact.
