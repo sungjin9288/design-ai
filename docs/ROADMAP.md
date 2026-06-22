@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 656 — Website Console Provenance-Only Notice Source Marker (unreleased)
+
+Website Console provenance-only Operator Runbook notices now show the source marker inline.
+
+### Added
+- Added a `Source` line to the provenance-only notice block.
+- Uses the current Operator Runbook source with a `source-bundle-provenance` fallback for focused source-bundle imports.
+
+### Impact
+- Gate-only and focused provenance imports remain identifiable even when an operator screenshots or copies only the provenance-only notice area.
+- The notice now matches the source marker convention used by metadata pills, detail tables, Markdown, and JSON exports.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 655 — Website Console Operator Runbook Metadata Source Pill (unreleased)
 
 Website Console Operator Runbook metadata now shows the current source marker in the top pill row.

@@ -1198,6 +1198,7 @@
     return [
       "<div class=\"runbook-provenance-only\" role=\"status\">",
       "<strong>Provenance-only review</strong>",
+      "<span>Source: <code>" + escapeHtml(runbook.source || "source-bundle-provenance") + "</code></span>",
       "<span>" + escapeHtml(message) + "</span>",
       "</div>",
     ].join("");

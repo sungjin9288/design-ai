@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 656 (unreleased)** — Added Website Console provenance-only notice source marker.
 - **Phase 655 (unreleased)** — Added Website Console Operator Runbook metadata source pill.
 - **Phase 654 (unreleased)** — Added Website Console Source Bundle detail source marker.
 - **Phase 653 (unreleased)** — Added Website Console source-bundle Markdown source marker.
