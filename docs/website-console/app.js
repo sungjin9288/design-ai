@@ -1182,7 +1182,7 @@
       "<td class=\"runbook-line-cell\">",
       "<span class=\"badge badge--" + escapeAttr(tone) + "\">" + escapeHtml(label) + "</span>",
       "<span class=\"runbook-revalidation-detail\">" + escapeHtml(formatSourceBundleRevalidationSummary(sourceBundle)) + "</span>",
-      "<div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-source-revalidation-gate\">Copy gate</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-source-revalidation-gate\">Export gate</button></div>",
+      "<div class=\"runbook-line-actions\"><button type=\"button\" class=\"button row-copy-button\" data-action=\"copy-runbook-source-revalidation-gate\">Copy gate JSON</button><button type=\"button\" class=\"button row-copy-button\" data-action=\"download-runbook-source-revalidation-gate\">Export gate JSON</button></div>",
       "</td>",
       "</tr>",
     ].join("");

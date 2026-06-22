@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 661 — Website Console Revalidation Gate JSON Action Labels (unreleased)
+
+Website Console revalidation gate action buttons now identify that they produce compact gate JSON.
+
+### Added
+- Renamed the Source Bundle revalidation gate row actions from generic gate labels to gate JSON labels.
+- Kept action ids and generated gate JSON payloads unchanged.
+
+### Impact
+- Operators can distinguish focused provenance JSON from compact revalidation gate JSON before copying or exporting.
+- The change improves UI clarity without changing local state, export payloads, or target-repo handoff behavior.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 660 — Website Console Source Bundle Artifact Action Labels (unreleased)
 
 Website Console Source Bundle action buttons now identify whether they produce Markdown or provenance JSON.
