@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 657 — Website Console Focused Provenance Import Source Refresh (unreleased)
+
+Website Console focused source-bundle provenance imports now refresh provenance-only runbook source markers.
+
+### Added
+- Updates existing provenance-only Operator Runbooks to `source-bundle-provenance` when a focused source-bundle provenance JSON artifact is imported.
+- Keeps full bundle handoff runbook sources unchanged when stage rows already exist.
+
+### Impact
+- Importing focused provenance JSON after a gate-only JSON review no longer leaves stale `source-bundle-revalidation-gate` metadata in the browser UI.
+- Source marker behavior is now symmetric between gate-only import and focused provenance import for provenance-only reviews.
+- The change remains browser-local, adds no dependency, calls no external MCP, and does not mutate target repositories.
+
+### Verification Plan
+- `node --check docs/website-console/app.js`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm test`
+- `git diff --check`
+
 ## Phase 656 — Website Console Provenance-Only Notice Source Marker (unreleased)
 
 Website Console provenance-only Operator Runbook notices now show the source marker inline.

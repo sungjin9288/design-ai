@@ -2486,6 +2486,9 @@
         if (importedSourceBundle && !parsed.siteProfile) {
           if (appState.workspace.operatorRunbook) {
             appState.workspace.operatorRunbook.sourceBundle = importedSourceBundle;
+            if (!(appState.workspace.operatorRunbook.stageHumanLineDisplayRows || []).length) {
+              appState.workspace.operatorRunbook.source = "source-bundle-provenance";
+            }
           } else {
             appState.workspace.operatorRunbook = createSourceBundleOnlyRunbook(importedSourceBundle);
           }
