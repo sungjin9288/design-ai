@@ -12,7 +12,7 @@
 
 > **모델이 아니에요. 파인튜닝도 아니에요.** 디자인 전문 지식을 구조화한 코퍼스 + 에이전트가 바로 실행할 수 있는 지시문이에요. 범용 LLM을 이번 세션에서만큼은 시니어 디자이너로 바꿔주는 셈이에요.
 
-> **배포 상태, 2026-06-23 확인:** 로컬 `npm run release:check`는 통과했고 GitHub Pages 문서는 공개 URL에서 확인됐어요. public npm과 VS Code Marketplace 배포는 아직 확인되지 않았으므로 package publish가 끝나기 전까지는 Git clone/local install 경로를 사용하세요. 자세한 내용은 [`docs/external-status.md`](docs/external-status.md)를 확인하세요.
+> **배포 상태, 2026-06-23 확인:** 로컬 `npm run release:check`는 통과했고 GitHub Pages 문서는 공개 URL에서 확인됐으며, GitHub Release `v4.55.0`과 npm `@design-ai/cli@4.55.0` publish 및 public registry smoke가 확인됐어요. VS Code Marketplace 배포는 아직 확인되지 않았어요. 자세한 내용은 [`docs/external-status.md`](docs/external-status.md)를 확인하세요.
 
 ## 한눈에 보는 커버리지
 
@@ -34,7 +34,7 @@
 
 ## 설치 (Claude Code)
 
-### A. Git clone / local install (현재 추천)
+### A. Git clone / local install
 
 ```bash
 git clone https://github.com/sungjin9288/design-ai.git
@@ -42,9 +42,9 @@ cd design-ai
 ./install.sh
 ```
 
-### B. NPM (public publish 이후)
+### B. NPM
 
-`@design-ai/cli`가 publish되고 `npm run registry:smoke`가 통과한 뒤에만 이 경로를 사용하세요.
+public npm package 설치 경로예요.
 
 ```bash
 npx @design-ai/cli install

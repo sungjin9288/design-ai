@@ -1,16 +1,10 @@
-npm error code E404
-npm error 404 Not Found - GET https://registry.npmjs.org/@design-ai%2fcli - Not found
-npm error 404
-npm error 404  The requested resource '@design-ai/cli@*' could not be found or you do not have permission to access it.
-npm error 404
-npm error 404 Note that you can also install from a
-npm error 404 tarball, folder, http url, or git url.
+Tue Jun 23 04:56:17 UTC 2026
 {
-  "error": {
-    "code": "E404",
-    "summary": "Not Found - GET https://registry.npmjs.org/@design-ai%2fcli - Not found",
-    "detail": "The requested resource '@design-ai/cli@*' could not be found or you do not have permission to access it.\n\nNote that you can also install from a\ntarball, folder, http url, or git url."
+  "version": "4.55.0",
+  "name": "@design-ai/cli",
+  "time.modified": "2026-06-23T04:45:50.379Z",
+  "dist-tags": {
+    "latest": "4.55.0"
   }
 }
-npm error A complete log of this run can be found in: /Users/sungjin/.npm/_logs/2026-06-22T05_19_29_353Z-debug-0.log
-npm registry check exit=1
+npm registry check exit=0

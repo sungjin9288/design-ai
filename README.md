@@ -12,7 +12,7 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 
 > **Not a model. Not a fine-tune.** A structured corpus of design expertise + agent-ready instructions that turn a general-purpose LLM into an expert.
 
-> **Distribution status, checked 2026-06-23:** local `npm run release:check` passes and GitHub Pages docs are live. Public npm and VS Code Marketplace distribution are not currently confirmed, so use the Git clone/local install path until package publishing is completed. See [`docs/external-status.md`](docs/external-status.md).
+> **Distribution status, checked 2026-06-23:** local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.55.0` is published, and `@design-ai/cli@4.55.0` is public on npm with registry smoke coverage. VS Code Marketplace distribution is not currently confirmed. See [`docs/external-status.md`](docs/external-status.md).
 
 ## Coverage at a glance
 
@@ -34,7 +34,7 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 
 ## Install (Claude Code)
 
-### Option A: Git clone / local install (currently recommended)
+### Option A: Git clone / local install
 
 ```bash
 git clone https://github.com/sungjin9288/design-ai.git
@@ -42,9 +42,9 @@ cd design-ai
 ./install.sh
 ```
 
-### Option B: NPM (after public publish)
+### Option B: NPM
 
-Use this path only after `@design-ai/cli` is published and `npm run registry:smoke` passes.
+Use this path for the public npm package.
 
 ```bash
 npx @design-ai/cli install

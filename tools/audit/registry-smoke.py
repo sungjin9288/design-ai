@@ -154,6 +154,104 @@ from smoke_assertions import (
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
 DEFAULT_PACKAGE_SPEC = f"{PACKAGE['name']}@{PACKAGE['version']}"
+EXPECTED_SITE_MCP_PROBE_COUNTS = {"count": 4, "pass": 4, "warn": 0, "fail": 0}
+EXPECTED_SITE_BUNDLE_MCP_PROBES_KEYS = [
+    "enabled",
+    "mode",
+    "externalCalls",
+    "status",
+    "count",
+    "pass",
+    "warn",
+    "fail",
+    "items",
+]
+EXPECTED_SITE_BUNDLE_MCP_PROBE_ITEM_KEYS = [
+    "id",
+    "key",
+    "label",
+    "requestedStatus",
+    "level",
+    "passed",
+    "message",
+    "evidence",
+    "actions",
+]
+EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS = [
+    "github-repo-reference",
+    "figma-url-reference",
+    "browser-smoke-target",
+    "deploy-provider-reference",
+]
+
+
+def assert_site_mcp_probe_counts(
+    actual: object,
+    *,
+    context: str,
+    label: str,
+) -> None:
+    if actual != EXPECTED_SITE_MCP_PROBE_COUNTS:
+        raise SystemExit(f"{label} after {context} MCP probe counts changed: {actual!r}")
+
+
+def assert_smoke_json_keys(
+    payload: object,
+    expected_keys: list[str],
+    *,
+    label: str,
+    context: str,
+    command_label: str,
+) -> dict:
+    if not isinstance(payload, dict):
+        raise SystemExit(f"{command_label} after {context} {label} must be an object")
+    keys = list(payload.keys())
+    if keys != expected_keys:
+        raise SystemExit(f"{command_label} after {context} {label} keys changed: {keys!r}")
+    return payload
+
+
+def assert_site_bundle_mcp_probes_payload(payload: object, *, context: str) -> None:
+    checked = assert_smoke_json_keys(
+        payload,
+        EXPECTED_SITE_BUNDLE_MCP_PROBES_KEYS,
+        label="mcp-probes.json",
+        context=context,
+        command_label="site bundle",
+    )
+    if checked.get("enabled") is not True or checked.get("mode") != "read-only-local":
+        raise SystemExit(f"site bundle after {context} mcp-probes.json mode changed")
+    if checked.get("externalCalls") is not False:
+        raise SystemExit(f"site bundle after {context} mcp-probes.json must remain read-only")
+    if checked.get("status") != "pass":
+        raise SystemExit(f"site bundle after {context} mcp-probes.json status changed")
+    assert_site_mcp_probe_counts(
+        {key: checked.get(key) for key in ("count", "pass", "warn", "fail")},
+        context=context,
+        label="site bundle mcp-probes.json",
+    )
+
+    items = checked.get("items")
+    if not isinstance(items, list) or len(items) != len(EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS):
+        raise SystemExit(f"site bundle after {context} mcp-probes.json item count changed")
+    checked_ids = []
+    for item in items:
+        checked_item = assert_smoke_json_keys(
+            item,
+            EXPECTED_SITE_BUNDLE_MCP_PROBE_ITEM_KEYS,
+            label="mcp-probes.json item",
+            context=context,
+            command_label="site bundle",
+        )
+        checked_ids.append(checked_item.get("id"))
+        if checked_item.get("level") != "pass" or checked_item.get("passed") is not True:
+            raise SystemExit(f"site bundle after {context} mcp-probes.json item should pass: {checked_item.get('id')}")
+        if not isinstance(checked_item.get("evidence"), list) or not checked_item.get("evidence"):
+            raise SystemExit(f"site bundle after {context} mcp-probes.json item evidence missing")
+        if not isinstance(checked_item.get("actions"), list):
+            raise SystemExit(f"site bundle after {context} mcp-probes.json item actions must be an array")
+    if checked_ids != EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS:
+        raise SystemExit(f"site bundle after {context} mcp-probes.json item order changed")
 
 
 def npm_exec_cmd(package_spec: str, *args: str) -> list[str]:
@@ -3031,6 +3129,7 @@ def assert_site_bundle_smoke(
         "summary.json",
         "website-workspace.tasks.json",
         "mcp-check.json",
+        "mcp-probes.json",
         "mcp-action-plan.md",
         "website-handoff.md",
         "website-prompts.md",
@@ -3046,8 +3145,26 @@ def assert_site_bundle_smoke(
         raise SystemExit(f"site bundle after {context} summary status changed: {summary.get('status')!r}")
     if summary.get("taskGeneration", {}).get("totalTasks") != 3:
         raise SystemExit(f"site bundle after {context} expected 3 generated/retained tasks")
+    evidence_counts = summary.get("implementationEvidence")
+    if (
+        not isinstance(evidence_counts, dict)
+        or evidence_counts.get("executedWork") != 0
+        or evidence_counts.get("verificationResults") != 0
+        or evidence_counts.get("remainingRisks") != 3
+        or evidence_counts.get("nextActions") != 0
+    ):
+        raise SystemExit(f"site bundle after {context} implementation evidence counts changed")
     if summary.get("files") != expected_files:
         raise SystemExit(f"site bundle after {context} file manifest changed")
+    execution_checklist = summary.get("handoff", {}).get("executionChecklist")
+    if not isinstance(execution_checklist, list) or [item.get("id") for item in execution_checklist] != [
+        "confirm-target-repo",
+        "inspect-architecture",
+        "apply-focused-task",
+        "verify-quality-gates",
+        "record-handoff-evidence",
+    ]:
+        raise SystemExit(f"site bundle after {context} handoff execution checklist changed")
     checksums = summary.get("checksums", {})
     checksum_files = checksums.get("files", {})
     if checksums.get("algorithm") != "sha256":
@@ -3066,9 +3183,14 @@ def assert_site_bundle_smoke(
     task_ids = [task.get("id") for task in tasks.get("refactorTasks", [])]
     if task_ids != ["task-homepage-cta", "task-accessibility", "task-content-quality"]:
         raise SystemExit(f"site bundle after {context} task ids changed: {task_ids!r}")
+    evidence = tasks.get("implementationEvidence")
+    if not isinstance(evidence, dict) or len(evidence.get("remainingRisks", [])) != 3:
+        raise SystemExit(f"site bundle after {context} did not preserve implementationEvidence in workspace JSON")
 
     mcp_check = json.loads((out_dir / "mcp-check.json").read_text(encoding="utf-8"))
     assert_site_mcp_check_json(json.dumps(mcp_check), context=context, cmd=cmd)
+    mcp_probes = json.loads((out_dir / "mcp-probes.json").read_text(encoding="utf-8"))
+    assert_site_bundle_mcp_probes_payload(mcp_probes, context=context)
     assert_site_mcp_plan_markdown((out_dir / "mcp-action-plan.md").read_text(encoding="utf-8"), context=context, cmd=cmd)
     implementation_prompt = (out_dir / "codex-implementation.md").read_text(encoding="utf-8")
     assert_no_ansi(implementation_prompt, cmd)
@@ -3083,6 +3205,8 @@ def assert_site_bundle_smoke(
     readme = (out_dir / "README.md").read_text(encoding="utf-8")
     if "Website improvement handoff bundle" not in readme or "does not call external MCPs" not in readme:
         raise SystemExit(f"site bundle after {context} README missing bundle boundary guidance")
+    if "Target Repo Execution Checklist" not in readme or "Run target repo quality gates" not in readme:
+        raise SystemExit(f"site bundle after {context} README missing target repo execution checklist")
 
 
 def assert_site_warning_bundle_smoke(
@@ -3141,22 +3265,82 @@ def assert_site_bundle_check_json_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    expected_evidence_counts: dict[str, int] | None = None,
 ) -> None:
+    if expected_evidence_counts is None:
+        expected_evidence_counts = {
+            "executedWork": 0,
+            "verificationResults": 0,
+            "remainingRisks": 3,
+            "nextActions": 0,
+        }
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_no_ansi(result.stdout, cmd)
     payload = json.loads(result.stdout)
     if payload.get("status") != "pass" or payload.get("valid") is not True:
         raise SystemExit(f"site bundle check after {context} expected pass/valid output")
-    if payload.get("counts", {}).get("presentFiles") != 8:
-        raise SystemExit(f"site bundle check after {context} expected 8 present files")
-    if payload.get("counts", {}).get("verifiedChecksumFiles") != 7:
-        raise SystemExit(f"site bundle check after {context} expected 7 verified checksum files")
+    if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
+        raise SystemExit(f"site bundle check after {context} boundary flags changed")
+    boundaries = payload.get("boundaries")
+    if (
+        not isinstance(boundaries, list)
+        or "deterministic-local" not in boundaries
+        or "no-external-mcp-calls" not in boundaries
+        or "no-target-repo-mutation" not in boundaries
+    ):
+        raise SystemExit(f"site bundle check after {context} boundary list changed: {boundaries!r}")
+    if payload.get("counts", {}).get("presentFiles") != 9:
+        raise SystemExit(f"site bundle check after {context} expected 9 present files")
+    if payload.get("counts", {}).get("verifiedChecksumFiles") != 8:
+        raise SystemExit(f"site bundle check after {context} expected 8 verified checksum files")
     if payload.get("counts", {}).get("checksumFailures") != 0:
         raise SystemExit(f"site bundle check after {context} expected no checksum failures")
+    if payload.get("counts", {}).get("verifiedGeneratedFiles") != 8:
+        raise SystemExit(f"site bundle check after {context} expected 8 current-contract generated files")
+    if payload.get("counts", {}).get("generatedFailures") != 0:
+        raise SystemExit(f"site bundle check after {context} expected no generated bundle contract failures")
+    generated_contract = payload.get("generatedContract")
+    if not isinstance(generated_contract, dict) or generated_contract.get("available") is not True:
+        raise SystemExit(f"site bundle check after {context} generated contract diagnostics missing")
+    if generated_contract.get("expectedFiles") != 8 or generated_contract.get("verifiedFiles") != 8:
+        raise SystemExit(f"site bundle check after {context} generated contract file counts changed")
+    if generated_contract.get("driftFiles") != []:
+        raise SystemExit(f"site bundle check after {context} expected no generated contract drift files")
+    generated_files = generated_contract.get("files")
+    if not isinstance(generated_files, list) or len(generated_files) != 8:
+        raise SystemExit(f"site bundle check after {context} expected 8 generated contract file diagnostics")
+    for item in generated_files:
+        if item.get("present") is not True or item.get("matches") is not True:
+            raise SystemExit(f"site bundle check after {context} generated contract file did not match: {item!r}")
+        for key in ("expectedDigest", "actualDigest"):
+            digest = item.get(key)
+            if not isinstance(digest, str) or len(digest) != 64 or any(char not in "0123456789abcdef" for char in digest):
+                raise SystemExit(f"site bundle check after {context} generated contract {key} is not a SHA-256 hex digest")
+    repair_guidance = payload.get("repairGuidance")
+    if not isinstance(repair_guidance, dict) or repair_guidance.get("available") is not True:
+        raise SystemExit(f"site bundle check after {context} repair guidance missing")
+    if repair_guidance.get("targetRepoMutation") is not False or repair_guidance.get("externalCalls") is not False:
+        raise SystemExit(f"site bundle check after {context} repair guidance boundary flags changed")
+    repair_command = repair_guidance.get("command")
+    verify_command = repair_guidance.get("verifyCommand")
+    if (
+        not isinstance(repair_command, str)
+        or "website-workspace.tasks.json --bundle --out " not in repair_command
+        or " --force" not in repair_command
+    ):
+        raise SystemExit(f"site bundle check after {context} repair command changed: {repair_command!r}")
+    if not isinstance(verify_command, str) or "--bundle-check --strict --json" not in verify_command:
+        raise SystemExit(f"site bundle check after {context} repair verify command changed: {verify_command!r}")
     if payload.get("summary", {}).get("totalTasks") != 3:
         raise SystemExit(f"site bundle check after {context} expected 3 tasks")
     if payload.get("summary", {}).get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle check after {context} site name changed")
+    evidence_counts = payload.get("summary", {}).get("implementationEvidence")
+    if not isinstance(evidence_counts, dict):
+        raise SystemExit(f"site bundle check after {context} implementationEvidence counts missing")
+    for key, expected in expected_evidence_counts.items():
+        if evidence_counts.get(key) != expected:
+            raise SystemExit(f"site bundle check after {context} evidence count {key} changed: {evidence_counts.get(key)!r}")
     if payload.get("summary", {}).get("checksumAlgorithm") != "sha256":
         raise SystemExit(f"site bundle check after {context} checksum algorithm changed")
     bundle_digest = payload.get("summary", {}).get("checksumBundleDigest")
@@ -3164,6 +3348,18 @@ def assert_site_bundle_check_json_smoke(
         raise SystemExit(f"site bundle check after {context} bundle digest changed")
     if payload.get("mcpStatus") != "pass":
         raise SystemExit(f"site bundle check after {context} MCP status changed")
+    if payload.get("mcpProbeStatus") != "pass":
+        raise SystemExit(f"site bundle check after {context} MCP probe status changed")
+    assert_site_mcp_probe_counts(
+        payload.get("mcpProbeCounts"),
+        context=context,
+        label="site bundle check",
+    )
+    assert_site_mcp_probe_counts(
+        payload.get("summary", {}).get("mcpProbeCounts"),
+        context=context,
+        label="site bundle check summary",
+    )
     issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
     if issue_ids != ["bundle-ready"]:
         raise SystemExit(f"site bundle check after {context} expected bundle-ready only, got {issue_ids!r}")
@@ -3175,7 +3371,15 @@ def assert_site_bundle_compare_json_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    expected_evidence_counts: dict[str, int] | None = None,
 ) -> None:
+    if expected_evidence_counts is None:
+        expected_evidence_counts = {
+            "executedWork": 0,
+            "verificationResults": 0,
+            "remainingRisks": 3,
+            "nextActions": 0,
+        }
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_no_ansi(result.stdout, cmd)
     payload = json.loads(result.stdout)
@@ -3191,6 +3395,21 @@ def assert_site_bundle_compare_json_smoke(
             raise SystemExit(f"site bundle compare after {context} {side} bundle digest changed")
         if payload.get(side, {}).get("siteName") != "Korean SaaS marketing site":
             raise SystemExit(f"site bundle compare after {context} {side} site name changed")
+        assert_site_mcp_probe_counts(
+            payload.get(side, {}).get("mcpProbeCounts"),
+            context=context,
+            label=f"site bundle compare {side}",
+        )
+        if payload.get(side, {}).get("verifiedGeneratedFiles") != 8 or payload.get(side, {}).get("generatedFailures") != 0:
+            raise SystemExit(f"site bundle compare after {context} {side} generated bundle contract verification changed")
+        if payload.get(side, {}).get("generatedDriftFiles") != []:
+            raise SystemExit(f"site bundle compare after {context} {side} generated bundle contract drift changed")
+        evidence_counts = payload.get(side, {}).get("implementationEvidence")
+        if not isinstance(evidence_counts, dict):
+            raise SystemExit(f"site bundle compare after {context} {side} implementationEvidence counts missing")
+        for key, expected in expected_evidence_counts.items():
+            if evidence_counts.get(key) != expected:
+                raise SystemExit(f"site bundle compare after {context} {side} evidence count {key} changed: {evidence_counts.get(key)!r}")
     issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
     if issue_ids != ["bundle-compare-identical"]:
         raise SystemExit(f"site bundle compare after {context} expected bundle-compare-identical only, got {issue_ids!r}")
@@ -3202,17 +3421,72 @@ def assert_site_bundle_handoff_json_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
+    expected_evidence_counts: dict[str, int] | None = None,
 ) -> None:
+    if expected_evidence_counts is None:
+        expected_evidence_counts = {
+            "executedWork": 0,
+            "verificationResults": 0,
+            "remainingRisks": 3,
+            "nextActions": 0,
+        }
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_no_ansi(result.stdout, cmd)
     payload = json.loads(result.stdout)
     if payload.get("status") != "pass" or payload.get("valid") is not True:
         raise SystemExit(f"site bundle handoff after {context} expected pass/valid output")
+    expected_boundaries = [
+        "deterministic-local",
+        "no-external-mcp-calls",
+        "no-target-repo-mutation",
+        "no-lighthouse-axe-visual-diff",
+        "target-repo-work-after-handoff",
+    ]
+    if payload.get("boundaries") != expected_boundaries:
+        raise SystemExit(f"site bundle handoff after {context} boundary list changed: {payload.get('boundaries')!r}")
+    if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
+        raise SystemExit(f"site bundle handoff after {context} boundary flags changed")
     bundle = payload.get("bundle", {})
+    source_bundle = payload.get("sourceBundle")
+    if not isinstance(source_bundle, dict):
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance missing")
+    if bundle.get("sourceBundle") != source_bundle:
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance is not mirrored under bundle")
+    if (
+        source_bundle.get("status") != "pass"
+        or source_bundle.get("valid") is not True
+        or source_bundle.get("sourceWorkspace") != "stdin"
+        or source_bundle.get("siteName") != "Korean SaaS marketing site"
+    ):
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance summary changed: {source_bundle!r}")
+    if (
+        source_bundle.get("verifiedGeneratedFiles") != 8
+        or source_bundle.get("expectedGeneratedFiles") != 8
+        or source_bundle.get("verifiedChecksumFiles") != 8
+        or source_bundle.get("expectedChecksumFiles") != 8
+    ):
+        raise SystemExit(f"site bundle handoff after {context} source bundle provenance verification counts changed: {source_bundle!r}")
     if bundle.get("siteName") != "Korean SaaS marketing site":
         raise SystemExit(f"site bundle handoff after {context} site name changed")
-    if bundle.get("verifiedChecksumFiles") != 7 or bundle.get("checksumFailures") != 0:
+    if bundle.get("boundaries") != expected_boundaries:
+        raise SystemExit(f"site bundle handoff after {context} bundle boundary list changed: {bundle.get('boundaries')!r}")
+    if bundle.get("externalCalls") is not False or bundle.get("targetRepoMutation") is not False:
+        raise SystemExit(f"site bundle handoff after {context} bundle boundary flags changed")
+    if bundle.get("verifiedChecksumFiles") != 8 or bundle.get("checksumFailures") != 0:
         raise SystemExit(f"site bundle handoff after {context} checksum verification changed")
+    if bundle.get("verifiedGeneratedFiles") != 8 or bundle.get("generatedFailures") != 0:
+        raise SystemExit(f"site bundle handoff after {context} generated bundle contract verification changed")
+    assert_site_mcp_probe_counts(
+        bundle.get("mcpProbeCounts"),
+        context=context,
+        label="site bundle handoff",
+    )
+    evidence_counts = bundle.get("implementationEvidence")
+    if not isinstance(evidence_counts, dict):
+        raise SystemExit(f"site bundle handoff after {context} implementationEvidence counts missing")
+    for key, expected in expected_evidence_counts.items():
+        if evidence_counts.get(key) != expected:
+            raise SystemExit(f"site bundle handoff after {context} evidence count {key} changed: {evidence_counts.get(key)!r}")
     digest = bundle.get("checksumBundleDigest")
     if not isinstance(digest, str) or len(digest) != 64:
         raise SystemExit(f"site bundle handoff after {context} bundle digest changed")
@@ -3221,9 +3495,9 @@ def assert_site_bundle_handoff_json_smoke(
         raise SystemExit(f"site bundle handoff after {context} prompt missing")
     for fragment in (
         "Website improvement target-repo handoff prompt",
-        "Bundle digest:",
-        "Run `design-ai site",
-        "Work inside the target website repository, not inside the design-ai repository.",
+        "SHA-256 bundle digest:",
+        "Source bundle strict check command: `design-ai site",
+        "You are Codex working in the target website repository, not in the design-ai repository.",
         "# Codex implementation prompt",
     ):
         if fragment not in prompt:
@@ -4502,7 +4776,7 @@ def assert_learning_signals_report_smoke(
     cwd: Path | None = None,
     context: str,
 ) -> None:
-    seed_force_overwrite_target(output_path, context=context, cmd=["design-ai", "learn", "--signals", "--report"])
+    seed_force_overwrite_target(output_path, context=context, cmd=["design-ai", "learn", "--signals", "--report", "--force"])
     cmd = command_factory(
         "learn",
         "--signals",
@@ -4536,7 +4810,7 @@ def assert_learning_agent_backlog_report_smoke(
     cwd: Path | None = None,
     context: str,
 ) -> None:
-    seed_force_overwrite_target(output_path, context=context, cmd=["design-ai", "learn", "--agent-backlog", "--report"])
+    seed_force_overwrite_target(output_path, context=context, cmd=["design-ai", "learn", "--agent-backlog", "--report", "--force"])
     cmd = command_factory(
         "learn",
         "--agent-backlog",

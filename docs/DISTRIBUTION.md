@@ -2,11 +2,11 @@
 
 How design-ai gets from this repo into adopters' Claude Code installations.
 
-> Distribution status, checked 2026-06-23: local `npm run release:check` passes and GitHub Pages docs are live. Public npm and VS Code Marketplace distribution are not currently confirmed, so use the Git clone/local install path until package publishing is completed. See [`external-status.md`](external-status.md).
+> Distribution status, checked 2026-06-23: local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.55.0` is published, and `@design-ai/cli@4.55.0` is public on npm with registry smoke coverage. VS Code Marketplace distribution is not currently confirmed. See [`external-status.md`](external-status.md).
 
 ## Install paths
 
-### A. Git clone / local install (currently recommended)
+### A. Git clone / local install
 
 ```bash
 git clone https://github.com/sungjin9288/design-ai.git
@@ -17,14 +17,13 @@ cd design-ai
 The source is your working clone. Pull updates with `git pull && ./install.sh`.
 
 Use this path if you want to:
-- Use design-ai before public package publish.
 - Contribute back upstream.
 - Modify knowledge / skills locally.
 - Track latest `main` rather than published releases.
 
-### B. NPM (after public publish)
+### B. NPM
 
-Use this path only after `@design-ai/cli` is published and `npm run registry:smoke` passes.
+Use this path for the public package. `@design-ai/cli@4.55.0` is published and public registry smoke has passed.
 
 ```bash
 # One-shot via npx (no global install)

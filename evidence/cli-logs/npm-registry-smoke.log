@@ -1,0 +1,42 @@
+Tue Jun 23 04:56:17 UTC 2026
+Command: python3 tools/audit/registry-smoke.py @design-ai/cli@4.55.0
+✓  Node runtime: v24.13.1
+✓  Python runtime: Python 3.12.12
+✓  Audit runner: tools/audit/run-all.py found
+✓  Audit scripts: 8 repository audit script(s) found
+✓  Doctor assertions helper: tools/audit/doctor_assertions.py found
+✓  Smoke assertions helper: tools/audit/smoke_assertions.py found
+✓  Example QA audit: tools/audit/example-qa.py found
+✓  Package contents check: tools/audit/package-contents.py found
+✓  Package smoke check: tools/audit/package-smoke.py found
+✓  Registry smoke check: tools/audit/registry-smoke.py found
+✓  Installed skills: 20/20 installed
+✓  Installed agents: 4/4 installed
+✓  Installed slash commands: 17/17 installed
+
+ℹ  Summary: 16 pass, 0 warning(s), 0 failure(s)
+
+  design-ai status
+
+ℹ  Source: /private/var/folders/n7/g1vxvrg97t11t_nxzvdk0dpr0000gn/T/design-ai-registry-smoke-ee1p2jsm/npm-cache/_npx/e28eddb64f5eb46c/node_modules/@design-ai/cli
+ℹ  Target: /var/folders/n7/g1vxvrg97t11t_nxzvdk0dpr0000gn/T/design-ai-registry-smoke-ee1p2jsm/claude-home
+ℹ  Prefix: registry-design-
+
+✓  Skills: 20 installed
+✓  Agents: 4 installed
+✓  Slash commands: 17 installed
+
+  design-ai uninstaller
+
+
+╔══════════════════════════════════════════════════════════════╗
+║  design-ai installer                                         ║
+║  Senior product designer for Claude Code                     ║
+╚══════════════════════════════════════════════════════════════╝
+
+ℹ  Uninstalling design-ai from /var/folders/n7/g1vxvrg97t11t_nxzvdk0dpr0000gn/T/design-ai-registry-smoke-ee1p2jsm/claude-home
+✓  Removed 41 design-ai symlinks
+
+✓  Done. To remove the design-ai source, delete its directory manually.
+ℹ  Source location: /private/var/folders/n7/g1vxvrg97t11t_nxzvdk0dpr0000gn/T/design-ai-registry-smoke-ee1p2jsm/npm-cache/_npx/e28eddb64f5eb46c/node_modules/@design-ai/cli
+Registry smoke passed: @design-ai/cli@4.55.0

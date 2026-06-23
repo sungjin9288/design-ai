@@ -2,11 +2,11 @@
 
 design-ai를 이 레포에서 어댑터의 Claude Code 환경으로 가져오는 방법.
 
-> 배포 상태, 2026-06-23 확인: 로컬 `npm run release:check`는 통과했고 GitHub Pages 문서는 공개 URL에서 확인됐어요. public npm과 VS Code Marketplace 배포는 아직 확인되지 않았으므로 package publish가 끝나기 전까지는 Git clone/local install 경로를 사용하세요. 자세한 내용은 [`external-status.md`](external-status.md)를 확인하세요.
+> 배포 상태, 2026-06-23 확인: 로컬 `npm run release:check`는 통과했고 GitHub Pages 문서는 공개 URL에서 확인됐으며, GitHub Release `v4.55.0`과 npm `@design-ai/cli@4.55.0` publish 및 public registry smoke가 확인됐어요. VS Code Marketplace 배포는 아직 확인되지 않았어요. 자세한 내용은 [`external-status.md`](external-status.md)를 확인하세요.
 
 ## 설치 경로
 
-### A. Git clone / local install (현재 추천)
+### A. Git clone / local install
 
 ```bash
 git clone https://github.com/sungjin9288/design-ai.git
@@ -17,14 +17,13 @@ cd design-ai
 소스가 작업 클론에 있어요. 업데이트는 `git pull && ./install.sh`.
 
 이 경로를 사용할 때:
-- public package publish 전에 design-ai를 사용할 때
 - upstream에 기여할 때
 - knowledge / skills를 로컬에서 수정할 때
 - publish된 release보다 최신 `main`을 추적할 때
 
-### B. NPM (public publish 이후)
+### B. NPM
 
-`@design-ai/cli`가 publish되고 `npm run registry:smoke`가 통과한 뒤에만 이 경로를 사용하세요.
+public package 설치 경로예요. `@design-ai/cli@4.55.0` publish와 public registry smoke 통과가 확인됐어요.
 
 ```bash
 # npx로 일회성 (글로벌 설치 없음)
