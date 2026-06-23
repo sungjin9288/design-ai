@@ -1,0 +1,20 @@
+## Homebrew formula status - 2026-06-23T05:06:46Z
+
+# Release source tarball SHA-256
+ed59898e1134d5482d394a191a272ca835a6759b65f3a73215a16d1203892ab5  -
+
+# Formula syntax
+Syntax OK
+
+# Formula style
+
+1 file inspected, no offenses detected
+
+# Formula version pins
+  url "https://github.com/sungjin9288/design-ai/archive/refs/tags/v4.55.0.tar.gz"
+  version "4.55.0"
+  sha256 "ed59898e1134d5482d394a191a272ca835a6759b65f3a73215a16d1203892ab5"
+      assert_match "v4.55.0", shell_output("#{bin}/design-ai version")
+
+# Homebrew audit attempt (non-blocking: current Homebrew rejects path-based audit)
+Error: Calling `brew audit [path ...]` is disabled! Use `brew audit [name ...]` instead.

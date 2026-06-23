@@ -1,4 +1,3 @@
-$ npm --prefix vscode-extension test
 
 > design-ai-vscode@0.4.0 test
 > npm run test:unit
@@ -7,31 +6,31 @@ $ npm --prefix vscode-extension test
 > design-ai-vscode@0.4.0 test:unit
 > node --test test/lib.test.mjs
 
-✔ walkMd returns markdown files recursively (1.386417ms)
-✔ walkMd skips node_modules and hidden dirs (0.973ms)
-✔ walkMd returns empty array for missing dir (0.238333ms)
-✔ splitGlob splits at last slash (0.069834ms)
-✔ splitGlob handles no slash (0.03675ms)
-✔ splitGlob handles nested path (0.031375ms)
-✔ globToRegex matches simple pattern (0.101666ms)
-✔ globToRegex escapes regex special chars (0.040167ms)
-✔ searchCorpus finds known terms in real corpus (29.871375ms)
-✔ searchCorpus is case-insensitive (1.999709ms)
-✔ searchCorpus respects cap (0.607208ms)
-✔ searchCorpus rejects short queries (0.081458ms)
-✔ searchCorpus first-match-per-file (10.313083ms)
-✔ searchCorpus restricted to a single dir (6.399083ms)
-✔ pairWalkthroughs finds all 5 walkthrough stems (5.033375ms)
-✔ pairWalkthroughs pairs EN and KO when both exist (0.1415ms)
-✔ chooseWalkthrough prefers KO when set (0.045375ms)
-✔ chooseWalkthrough falls back to EN when KO missing (0.039542ms)
-✔ chooseWalkthrough falls back to KO when EN missing and EN preferred (0.0265ms)
-✔ chooseWalkthrough returns null when both missing (0.018834ms)
-✔ readManifest reads real manifest (0.130583ms)
-✔ readManifest returns null on missing (0.038333ms)
-✔ pickReadme returns README.md when EN preferred (0.037083ms)
-✔ pickReadme returns README.ko.md when KO preferred and exists (0.0185ms)
-✔ pickReadme returns null when nothing exists (0.188792ms)
+✔ walkMd returns markdown files recursively (1.452458ms)
+✔ walkMd skips node_modules and hidden dirs (1.139042ms)
+✔ walkMd returns empty array for missing dir (0.280584ms)
+✔ splitGlob splits at last slash (0.075625ms)
+✔ splitGlob handles no slash (0.034917ms)
+✔ splitGlob handles nested path (0.032625ms)
+✔ globToRegex matches simple pattern (0.112625ms)
+✔ globToRegex escapes regex special chars (0.041834ms)
+✔ searchCorpus finds known terms in real corpus (67.750166ms)
+✔ searchCorpus is case-insensitive (1.404458ms)
+✔ searchCorpus respects cap (0.778916ms)
+✔ searchCorpus rejects short queries (0.066125ms)
+✔ searchCorpus first-match-per-file (11.107834ms)
+✔ searchCorpus restricted to a single dir (6.520625ms)
+✔ pairWalkthroughs finds all 5 walkthrough stems (5.062125ms)
+✔ pairWalkthroughs pairs EN and KO when both exist (0.173167ms)
+✔ chooseWalkthrough prefers KO when set (0.064209ms)
+✔ chooseWalkthrough falls back to EN when KO missing (0.033083ms)
+✔ chooseWalkthrough falls back to KO when EN missing and EN preferred (0.026583ms)
+✔ chooseWalkthrough returns null when both missing (0.020667ms)
+✔ readManifest reads real manifest (0.291667ms)
+✔ readManifest returns null on missing (0.043667ms)
+✔ pickReadme returns README.md when EN preferred (0.049416ms)
+✔ pickReadme returns README.ko.md when KO preferred and exists (0.020958ms)
+✔ pickReadme returns null when nothing exists (0.211708ms)
 ℹ tests 25
 ℹ suites 0
 ℹ pass 25
@@ -39,6 +38,4 @@ $ npm --prefix vscode-extension test
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 94.367791
-
-[exit_code] 0
+ℹ duration_ms 136.967167

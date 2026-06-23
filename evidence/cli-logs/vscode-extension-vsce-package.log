@@ -1,0 +1,30 @@
+Executing prepublish script 'npm run vscode:prepublish'...
+
+> design-ai-vscode@0.4.0 vscode:prepublish
+> npm run compile
+
+
+> design-ai-vscode@0.4.0 compile
+> tsc -p ./
+
+ INFO  Files included in the VSIX:
+design-ai-vscode-0.4.0.vsix
+├─ [Content_Types].xml 
+├─ extension.vsixmanifest 
+└─ extension/
+   ├─ LICENSE.txt [1.05 KB]
+   ├─ changelog.md [1.05 KB]
+   ├─ package.json [4.61 KB]
+   ├─ readme.md [3.92 KB]
+   ├─ media/
+   │  ├─ icon.png [2.01 KB]
+   │  └─ icon.svg [0.46 KB]
+   └─ out/
+      ├─ commands.js [11.28 KB]
+      ├─ extension.js [4 KB]
+      ├─ lib.js [8.57 KB]
+      ├─ paths.js [3.56 KB]
+      └─ providers/
+         └─ trees.js [6.4 KB]
+
+ DONE  Packaged: /tmp/design-ai-vscode-0.4.0.vsix (13 files, 19.91 KB)

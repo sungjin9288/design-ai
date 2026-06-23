@@ -1,5 +1,10 @@
-{
-  "found": false,
-  "resultCount": 0,
-  "query": "sungjin.design-ai-vscode"
-}
+## VS Code Marketplace status - 2026-06-23T05:08:07Z
+
+# Publisher token presence (values intentionally not printed)
+VSCE_PAT=missing
+AZURE_DEVOPS_EXT_PAT=missing
+MARKETPLACE_PAT=missing
+OVSX_PAT=missing
+
+# Marketplace public query
+{"results":[{"extensions":[],"pagingToken":null,"resultMetadata":[{"metadataType":"ResultCount","metadataItems":[{"name":"TotalCount","count":0}]}]}]}

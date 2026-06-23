@@ -57,7 +57,7 @@ npm install -g @design-ai/cli
 design-ai install
 ```
 
-### Option C: Homebrew (after release tap verification)
+### Option C: Homebrew tap
 
 ```bash
 brew tap sungjin9288/design-ai https://github.com/sungjin9288/design-ai.git

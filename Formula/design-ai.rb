@@ -9,17 +9,18 @@
 #
 # Submitting to homebrew-core requires a stable release with downloadable
 # tarballs and a maintained URL. This formula targets the GitHub release
-# tarball pattern: https://github.com/sungjin9288/design-ai/archive/refs/tags/v3.4.0.tar.gz
+# tarball pattern: https://github.com/sungjin9288/design-ai/archive/refs/tags/v4.55.0.tar.gz
 
 class DesignAi < Formula
-  desc "Senior product designer for any AI coding agent (Claude Code, Codex, Cursor, Aider)"
+  desc "Agent-ready product design toolkit for AI coding agents"
   homepage "https://github.com/sungjin9288/design-ai"
-  url "https://github.com/sungjin9288/design-ai/archive/refs/tags/v3.4.0.tar.gz"
-  sha256 "REPLACE_WITH_ACTUAL_TARBALL_SHA256_AFTER_RELEASE"
+  url "https://github.com/sungjin9288/design-ai/archive/refs/tags/v4.55.0.tar.gz"
+  version "4.55.0"
+  sha256 "ed59898e1134d5482d394a191a272ca835a6759b65f3a73215a16d1203892ab5"
   license "MIT"
-  version "3.4.0"
 
-  depends_on "node" => :recommended  # for the npm CLI; not strictly required for symlink-only install
+  # Node is required for the npm CLI; the install.sh wrapper still works without it.
+  depends_on "node" => :recommended
 
   def install
     # Install the corpus to libexec — that's our package's "home"
@@ -34,7 +35,7 @@ class DesignAi < Formula
     # If Node is available, also expose the npm CLI's design-ai binary
     if Formula["node"].any_version_installed?
       cd libexec do
-        system "npm", "install", "--production", "--silent"
+        system "npm", "install", *std_npm_args(prefix: false), "--production", "--silent"
       end
       bin.install_symlink libexec/"cli/bin/design-ai.mjs" => "design-ai"
     else
@@ -73,9 +74,9 @@ class DesignAi < Formula
     # Verify the install.sh wrapper exists and is executable
     assert_predicate libexec/"install.sh", :executable?
     # Verify core corpus files
-    assert_predicate libexec/"AGENTS.md", :exist?
-    assert_predicate libexec/"knowledge/PRINCIPLES.md", :exist?
-    assert_predicate libexec/".claude-plugin/plugin.json", :exist?
+    assert_path_exists libexec/"AGENTS.md"
+    assert_path_exists libexec/"knowledge/PRINCIPLES.md"
+    assert_path_exists libexec/".claude-plugin/plugin.json"
     # Verify skill count via plugin.json
     plugin = JSON.parse((libexec/".claude-plugin/plugin.json").read)
     assert_equal "design-ai", plugin["name"]
@@ -86,7 +87,7 @@ class DesignAi < Formula
     # Test CLI help (only if Node is available)
     if Formula["node"].any_version_installed?
       assert_match "design-ai", shell_output("#{bin}/design-ai help")
-      assert_match "v3.4.0", shell_output("#{bin}/design-ai version")
+      assert_match "v4.55.0", shell_output("#{bin}/design-ai version")
     end
   end
 end

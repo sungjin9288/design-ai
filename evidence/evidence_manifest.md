@@ -26,7 +26,10 @@
 - `evidence/cli-logs/release-check.log`
 - `evidence/cli-logs/ci-local.log`
 - `evidence/cli-logs/npm-registry-status.log`
+- `evidence/cli-logs/npm-registry-smoke.log`
 - `evidence/cli-logs/github-pages-status.log`
+- `evidence/cli-logs/github-release-v4.55.0.log`
+- `evidence/cli-logs/homebrew-formula-status.log`
 - `evidence/cli-logs/vscode-marketplace-status.log`
 - `evidence/cli-logs/zip-integrity.log`
 - `evidence/cli-logs/zip-contents.log`
@@ -39,6 +42,7 @@
 - `evidence/cli-logs/cli-audit-strict-json.log`
 - `evidence/cli-logs/vscode-extension-compile.log`
 - `evidence/cli-logs/vscode-extension-npm-test.log`
+- `evidence/cli-logs/vscode-extension-vsce-package.log`
 
 ### Audit results
 
@@ -82,7 +86,7 @@
 | output artifact 생성 | 통과 |
 | Website Console 렌더링 | 통과 |
 | Node test suite | 통과 - 302 tests, 302 pass, 0 fail |
-| VS Code Extension compile/test | 통과 - compile pass, 25 tests pass |
+| VS Code Extension compile/test/package | 통과 - compile pass, 25 tests pass, VSIX package created at `/tmp/design-ai-vscode-0.4.0.vsix` |
 | git diff whitespace check | 통과 |
 | design artifact check | 통과(exit 0), score 8/9 warning |
 | repository audit strict | 통과 - 8 audits pass |
@@ -91,8 +95,10 @@
 | portfolio zip integrity | 통과 - `unzip -t _portfolio_export/design_ai_portfolio_pack.zip` |
 | portfolio zip contents | 확인 완료 - `zipinfo -1 _portfolio_export/design_ai_portfolio_pack.zip` |
 | secret pattern scan | 통과 - API key, GitHub token, Slack token, AWS key, private key 패턴 매치 없음 |
-| public npm registry status | 확인 완료 - `@design-ai/cli` E404 |
-| GitHub Pages status | 확인 완료 - documented URL HTTP 404 |
+| public npm registry status | 통과 - `@design-ai/cli@4.55.0` published, registry smoke passed |
+| GitHub Pages status | 통과 - documented URL HTTP 200 |
+| GitHub Release status | 통과 - `v4.55.0` published with release asset |
+| Homebrew formula status | 부분 통과 - `v4.55.0` tarball SHA, Ruby syntax, `brew style` passed; path-based `brew audit` blocked by current Homebrew |
 | VS Code Marketplace status | 확인 완료 - `sungjin.design-ai-vscode` listing 없음 |
 | API response capture | 해당 없음 |
 

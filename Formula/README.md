@@ -45,19 +45,19 @@ brew untap sungjin9288/design-ai
 
 3. **Commit + tag**:
    ```bash
-   git tag v3.4.0
-   git push origin v3.4.0
+   git tag v4.55.0
+   git push origin v4.55.0
    ```
 
 4. **Generate Homebrew tarball**:
    ```bash
-   gh release create v3.4.0 --generate-notes
+   gh release create v4.55.0 --generate-notes
    ```
    (Or wait for GitHub Releases to auto-create from the tag.)
 
 5. **Get tarball SHA256**:
    ```bash
-   curl -sL https://github.com/sungjin9288/design-ai/archive/refs/tags/v3.4.0.tar.gz | shasum -a 256
+   curl -sL https://github.com/sungjin9288/design-ai/archive/refs/tags/v4.55.0.tar.gz | shasum -a 256
    ```
 
 6. **Update `Formula/design-ai.rb`**:
