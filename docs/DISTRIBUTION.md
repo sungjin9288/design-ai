@@ -51,9 +51,15 @@ The workflow defaults to `dry_run=true`, which compiles the extension, runs unit
 To publish publicly:
 
 1. Confirm the Marketplace publisher id in `vscode-extension/package.json`.
-2. Add a repository secret named `VSCE_PAT` with Visual Studio Marketplace extension publish permission.
-3. Run **Actions → Publish VS Code extension → Run workflow** with `dry_run=false`.
-4. Verify the Marketplace listing for `sungjin.design-ai-vscode`.
+2. Create an Azure DevOps Personal Access Token for Marketplace publishing:
+   - Organization: **All accessible organizations**
+   - Scopes: **Marketplace → Manage**
+   - Expiration: shortest practical lifetime for this release
+3. Add that token as a repository secret named `VSCE_PAT`.
+4. Run **Actions → Publish VS Code extension → Run workflow** with `dry_run=false`.
+5. Verify the Marketplace listing for `sungjin.design-ai-vscode`.
+
+Microsoft's current Marketplace publishing guidance warns that Azure DevOps global PATs retire on 2026-12-01. Use `VSCE_PAT` for the current release handoff, then plan a migration to Entra ID based publishing before that date.
 
 Until that final verification passes, describe the extension as locally packaged or Marketplace-ready, not publicly listed.
 

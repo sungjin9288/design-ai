@@ -231,11 +231,17 @@ Walk through all knowledge files with `stability: experimental` or `stability: b
 Separate from npm:
 
 1. Confirm `vscode-extension/package.json` has the correct `publisher` and `version`.
-2. Add repository secret `VSCE_PAT` with Visual Studio Marketplace extension publish permission.
-3. Run **Actions → Publish VS Code extension → Run workflow** with `dry_run=true`.
-4. Inspect the uploaded VSIX artifact.
-5. Re-run the same workflow with `dry_run=false` to publish.
-6. Verify the `sungjin.design-ai-vscode` Marketplace listing.
+2. Create an Azure DevOps Personal Access Token for Marketplace publishing:
+   - Organization: **All accessible organizations**
+   - Scopes: **Marketplace → Manage**
+   - Expiration: shortest practical lifetime for this release
+3. Add that token as repository secret `VSCE_PAT`.
+4. Run **Actions → Publish VS Code extension → Run workflow** with `dry_run=true`.
+5. Inspect the uploaded VSIX artifact.
+6. Re-run the same workflow with `dry_run=false` to publish.
+7. Verify the `sungjin.design-ai-vscode` Marketplace listing.
+
+If `vsce publish` returns 401/403, first check that the token was created with **All accessible organizations** and **Marketplace → Manage**. Microsoft's current guidance also warns that Azure DevOps global PATs retire on 2026-12-01, so migrate this workflow to Entra ID based publishing before that date.
 
 Local equivalent for package-only validation:
 
