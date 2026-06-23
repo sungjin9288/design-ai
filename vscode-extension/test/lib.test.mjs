@@ -204,8 +204,8 @@ test("readManifest reads real manifest", () => {
   assert.ok(Array.isArray(m.skills));
   assert.ok(Array.isArray(m.commands));
   assert.ok(Array.isArray(m.agents));
-  assert.ok(m.skills.length >= 19);
-  assert.ok(m.commands.length >= 16);
+  assert.ok(m.skills.length >= 20);
+  assert.ok(m.commands.length >= 17);
   assert.ok(m.agents.length >= 4);
 });
 

@@ -6,31 +6,31 @@
 > design-ai-vscode@0.4.0 test:unit
 > node --test test/lib.test.mjs
 
-✔ walkMd returns markdown files recursively (1.452458ms)
-✔ walkMd skips node_modules and hidden dirs (1.139042ms)
-✔ walkMd returns empty array for missing dir (0.280584ms)
-✔ splitGlob splits at last slash (0.075625ms)
-✔ splitGlob handles no slash (0.034917ms)
-✔ splitGlob handles nested path (0.032625ms)
-✔ globToRegex matches simple pattern (0.112625ms)
-✔ globToRegex escapes regex special chars (0.041834ms)
-✔ searchCorpus finds known terms in real corpus (67.750166ms)
-✔ searchCorpus is case-insensitive (1.404458ms)
-✔ searchCorpus respects cap (0.778916ms)
-✔ searchCorpus rejects short queries (0.066125ms)
-✔ searchCorpus first-match-per-file (11.107834ms)
-✔ searchCorpus restricted to a single dir (6.520625ms)
-✔ pairWalkthroughs finds all 5 walkthrough stems (5.062125ms)
-✔ pairWalkthroughs pairs EN and KO when both exist (0.173167ms)
-✔ chooseWalkthrough prefers KO when set (0.064209ms)
-✔ chooseWalkthrough falls back to EN when KO missing (0.033083ms)
-✔ chooseWalkthrough falls back to KO when EN missing and EN preferred (0.026583ms)
-✔ chooseWalkthrough returns null when both missing (0.020667ms)
-✔ readManifest reads real manifest (0.291667ms)
-✔ readManifest returns null on missing (0.043667ms)
-✔ pickReadme returns README.md when EN preferred (0.049416ms)
-✔ pickReadme returns README.ko.md when KO preferred and exists (0.020958ms)
-✔ pickReadme returns null when nothing exists (0.211708ms)
+✔ walkMd returns markdown files recursively (1.52575ms)
+✔ walkMd skips node_modules and hidden dirs (0.917792ms)
+✔ walkMd returns empty array for missing dir (0.242875ms)
+✔ splitGlob splits at last slash (0.071208ms)
+✔ splitGlob handles no slash (0.035541ms)
+✔ splitGlob handles nested path (0.033625ms)
+✔ globToRegex matches simple pattern (0.120667ms)
+✔ globToRegex escapes regex special chars (0.069167ms)
+✔ searchCorpus finds known terms in real corpus (71.927125ms)
+✔ searchCorpus is case-insensitive (2.517292ms)
+✔ searchCorpus respects cap (1.067833ms)
+✔ searchCorpus rejects short queries (0.088541ms)
+✔ searchCorpus first-match-per-file (11.019291ms)
+✔ searchCorpus restricted to a single dir (6.867333ms)
+✔ pairWalkthroughs finds all 5 walkthrough stems (5.335959ms)
+✔ pairWalkthroughs pairs EN and KO when both exist (0.218125ms)
+✔ chooseWalkthrough prefers KO when set (0.064375ms)
+✔ chooseWalkthrough falls back to EN when KO missing (0.037083ms)
+✔ chooseWalkthrough falls back to KO when EN missing and EN preferred (0.032959ms)
+✔ chooseWalkthrough returns null when both missing (0.023ms)
+✔ readManifest reads real manifest (0.334834ms)
+✔ readManifest returns null on missing (0.068125ms)
+✔ pickReadme returns README.md when EN preferred (0.049667ms)
+✔ pickReadme returns README.ko.md when KO preferred and exists (0.024042ms)
+✔ pickReadme returns null when nothing exists (0.815708ms)
 ℹ tests 25
 ℹ suites 0
 ℹ pass 25
@@ -38,4 +38,4 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 136.967167
+ℹ duration_ms 143.481833

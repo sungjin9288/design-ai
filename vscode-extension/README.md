@@ -4,10 +4,10 @@ Senior product designer for any AI coding agent — now inside VS Code.
 
 This extension surfaces the [design-ai](https://github.com/sungjin9288/design-ai) corpus directly in your editor:
 
-- **19 design skills** as searchable PLAYBOOKs (color palette, component spec, UX audit, motion, illustration, print, video, game UI, conversational UI, spatial design)
-- **142 worked component specs** synthesized from Ant Design + MUI + shadcn-ui
-- **91 knowledge files** covering tokens, typography, layout, accessibility, Korean i18n, and more
-- **4 integration walkthroughs** (Codex CLI / Cursor / Aider / SDK)
+- **20 design skills** as searchable PLAYBOOKs (color palette, component spec, UX audit, motion, illustration, print, video, game UI, conversational UI, spatial design)
+- **223 worked examples**, including 210 component specs synthesized from Ant Design + MUI + shadcn-ui
+- **92 knowledge files** covering tokens, typography, layout, accessibility, Korean i18n, and more
+- **5 integration walkthroughs** (Codex CLI / Cursor / Aider / SDK / VS Code)
 
 The extension does **not** compete with your AI assistant (Cursor, Copilot, Continue, Claude). It surfaces design-aware **content** that you (or your AI assistant) can reference while building.
 
@@ -38,10 +38,10 @@ The extension auto-probes common locations (`~/dev/design-ai`, `~/.local/lib/des
 
 Four collapsible views in the design-ai activity bar:
 
-- **Skills** — 19 skill PLAYBOOKs. Click to open in editor.
-- **Knowledge** — 91 knowledge files organized by category (motion, illustration, print, game UI, conversational, spatial, i18n, etc.).
-- **Component specs** — 142 worked component specs (Banner, Button, Modal, Table, Sheet, ...).
-- **Integration walkthroughs** — Codex CLI / Cursor / Aider / SDK guides.
+- **Skills** — 20 skill PLAYBOOKs. Click to open in editor.
+- **Knowledge** — 92 knowledge files organized by category (motion, illustration, print, game UI, conversational, spatial, i18n, etc.).
+- **Component specs** — 210 component specs (Banner, Button, Modal, Table, Sheet, ...).
+- **Integration walkthroughs** — Codex CLI / Cursor / Aider / SDK / VS Code guides.
 
 ### Commands
 
@@ -50,8 +50,8 @@ Run via `Cmd+Shift+P` → "design-ai: ...":
 - **Install (Claude Code)** — runs `install.sh` to symlink into `~/.claude/`.
 - **Show install status** — displays plugin manifest version + skill / command / agent counts.
 - **Open knowledge file...** — quick-pick across all knowledge files.
-- **Open component spec...** — quick-pick across the 142 component specs.
-- **Open skill PLAYBOOK...** — quick-pick across the 19 skills.
+- **Open component spec...** — quick-pick across the 210 component specs.
+- **Open skill PLAYBOOK...** — quick-pick across the 20 skills.
 - **Open integration walkthrough...** — quick-pick across walkthroughs.
 
 ### Use with your AI assistant

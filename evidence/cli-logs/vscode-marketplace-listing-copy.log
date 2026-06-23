@@ -1,3 +1,20 @@
+## VS Code Marketplace listing copy status - 2026-06-23T05:24:41Z
+
+# Corpus counts used by extension README
+{
+  "pluginVersion": "4.55.0",
+  "skills": 20,
+  "commands": 17,
+  "agents": 4,
+  "knowledgeFiles": 92,
+  "workedExamples": 223,
+  "componentSpecs": 210,
+  "integrationWalkthroughs": 5
+}
+
+# README stale count scan
+
+# VSIX package evidence
 Executing prepublish script 'npm run vscode:prepublish'...
 
 > design-ai-vscode@0.4.0 vscode:prepublish
