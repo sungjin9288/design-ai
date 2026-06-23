@@ -14,7 +14,7 @@ Local release readiness is verified, GitHub Pages docs are publicly reachable, `
 | npm registry | `@design-ai/cli` | Published: npm reports version `4.55.0`; public registry smoke passed for `@design-ai/cli@4.55.0` | `evidence/cli-logs/npm-registry-status.log`, `evidence/cli-logs/npm-registry-smoke.log` |
 | GitHub Pages | `https://sungjin9288.github.io/design-ai/` | Published and reachable: HTTP `200`, design-ai MkDocs page rendered | `evidence/cli-logs/github-pages-status.log` |
 | Homebrew tap | `Formula/design-ai.rb` | Formula pinned to `v4.55.0` release source tarball with SHA-256 `ed59898e1134d5482d394a191a272ca835a6759b65f3a73215a16d1203892ab5`; Ruby syntax and `brew style` passed | `evidence/cli-logs/homebrew-formula-status.log` |
-| VS Code Marketplace | `sungjin.design-ai-vscode` | No public Marketplace listing found for the publisher/extension id; publish token env vars were not present in this environment | `evidence/cli-logs/vscode-marketplace-status.log`, `evidence/cli-logs/vscode-extension-vsce-package.log` |
+| VS Code Marketplace | `sungjin.design-ai-vscode` | No public Marketplace listing found for the publisher/extension id; manual GitHub Actions publish workflow is prepared, but publish token env vars were not present in this environment | `evidence/cli-logs/vscode-marketplace-status.log`, `evidence/cli-logs/vscode-extension-vsce-package.log`, `evidence/cli-logs/vscode-publish-workflow-status.log` |
 | GitHub Release | `v4.55.0` | Published with release tarball asset | `evidence/cli-logs/github-release-v4.55.0.log` |
 
 ## Interpretation

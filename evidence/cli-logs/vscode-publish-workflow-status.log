@@ -1,0 +1,89 @@
+## VS Code publish workflow status - 2026-06-23T05:16:23Z
+
+# Workflow YAML parse
+YAML OK
+
+# VS Code extension compile
+
+> design-ai-vscode@0.4.0 compile
+> tsc -p ./
+
+
+# VS Code extension unit tests
+
+> design-ai-vscode@0.4.0 test
+> npm run test:unit
+
+
+> design-ai-vscode@0.4.0 test:unit
+> node --test test/lib.test.mjs
+
+✔ walkMd returns markdown files recursively (4.437708ms)
+✔ walkMd skips node_modules and hidden dirs (0.980625ms)
+✔ walkMd returns empty array for missing dir (0.277291ms)
+✔ splitGlob splits at last slash (0.077042ms)
+✔ splitGlob handles no slash (0.037542ms)
+✔ splitGlob handles nested path (0.032125ms)
+✔ globToRegex matches simple pattern (0.111458ms)
+✔ globToRegex escapes regex special chars (0.047542ms)
+✔ searchCorpus finds known terms in real corpus (94.790125ms)
+✔ searchCorpus is case-insensitive (1.420792ms)
+✔ searchCorpus respects cap (0.678583ms)
+✔ searchCorpus rejects short queries (0.06275ms)
+✔ searchCorpus first-match-per-file (11.075333ms)
+✔ searchCorpus restricted to a single dir (7.488625ms)
+✔ pairWalkthroughs finds all 5 walkthrough stems (5.768666ms)
+✔ pairWalkthroughs pairs EN and KO when both exist (0.218917ms)
+✔ chooseWalkthrough prefers KO when set (0.068416ms)
+✔ chooseWalkthrough falls back to EN when KO missing (0.03375ms)
+✔ chooseWalkthrough falls back to KO when EN missing and EN preferred (0.029042ms)
+✔ chooseWalkthrough returns null when both missing (0.023917ms)
+✔ readManifest reads real manifest (0.464875ms)
+✔ readManifest returns null on missing (0.127708ms)
+✔ pickReadme returns README.md when EN preferred (0.071542ms)
+✔ pickReadme returns README.ko.md when KO preferred and exists (0.029083ms)
+✔ pickReadme returns null when nothing exists (1.426208ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 171.328333
+
+# VSIX package dry run
+Executing prepublish script 'npm run vscode:prepublish'...
+
+> design-ai-vscode@0.4.0 vscode:prepublish
+> npm run compile
+
+
+> design-ai-vscode@0.4.0 compile
+> tsc -p ./
+
+ INFO  Files included in the VSIX:
+design-ai-vscode-0.4.0.vsix
+├─ [Content_Types].xml 
+├─ extension.vsixmanifest 
+└─ extension/
+   ├─ LICENSE.txt [1.05 KB]
+   ├─ changelog.md [1.05 KB]
+   ├─ package.json [4.61 KB]
+   ├─ readme.md [3.92 KB]
+   ├─ media/
+   │  ├─ icon.png [2.01 KB]
+   │  └─ icon.svg [0.46 KB]
+   └─ out/
+      ├─ commands.js [11.28 KB]
+      ├─ extension.js [4 KB]
+      ├─ lib.js [8.57 KB]
+      ├─ paths.js [3.56 KB]
+      └─ providers/
+         └─ trees.js [6.4 KB]
+
+ DONE  Packaged: /tmp/design-ai-vscode-0.4.0.vsix (13 files, 19.91 KB)
+
+# vsce publish option check
+  -p, --pat <token>                      Personal Access Token (defaults to VSCE_PAT environment variable)
+  -i, --packagePath <paths...>           Publish the provided VSIX packages.

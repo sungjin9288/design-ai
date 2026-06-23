@@ -48,6 +48,21 @@ design-ai install
 
 검증된 tap release 이후에는 코퍼스가 Homebrew의 `libexec`에 설치되고 `design-ai` 바이너리가 PATH에 추가돼요.
 
+### D. VS Code Marketplace
+
+VS Code 확장은 `vscode-extension/`에 있어요. 공개 Marketplace publish는 수동 `Publish VS Code extension` GitHub Actions workflow로 처리해요.
+
+이 workflow의 기본값은 `dry_run=true`예요. 이 모드에서는 extension compile, unit test, `.vsix` packaging, workflow artifact 업로드까지만 실행하고 Marketplace publish는 하지 않아요.
+
+공개 publish 절차:
+
+1. `vscode-extension/package.json`의 Marketplace publisher id를 확인해요.
+2. Visual Studio Marketplace extension publish 권한이 있는 token을 repository secret `VSCE_PAT`로 추가해요.
+3. **Actions → Publish VS Code extension → Run workflow**에서 `dry_run=false`로 실행해요.
+4. `sungjin.design-ai-vscode` Marketplace listing이 검색되는지 확인해요.
+
+마지막 listing 검증 전까지는 VS Code 확장을 public listing이라고 표현하지 말고, locally packaged 또는 Marketplace-ready라고 표현하세요.
+
 ## CLI 명령어
 
 ```

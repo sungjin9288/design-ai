@@ -191,6 +191,7 @@ After the tag is live:
 - [ ] Verify public install path: `npm run registry:smoke`
 - [ ] Verify doc site updated: visit deployed URL
 - [ ] If breaking change in major version: update Homebrew formula sha256 + version.
+- [ ] If publishing the VS Code extension: run `Publish VS Code extension` with `dry_run=true`, then re-run with `dry_run=false` after `VSCE_PAT` is configured.
 - [ ] Optional: GitHub release notes (auto-generated from CHANGELOG.md section).
 
 ## For major versions (vN.0.0)
@@ -229,11 +230,21 @@ Walk through all knowledge files with `stability: experimental` or `stability: b
 
 Separate from npm:
 
+1. Confirm `vscode-extension/package.json` has the correct `publisher` and `version`.
+2. Add repository secret `VSCE_PAT` with Visual Studio Marketplace extension publish permission.
+3. Run **Actions → Publish VS Code extension → Run workflow** with `dry_run=true`.
+4. Inspect the uploaded VSIX artifact.
+5. Re-run the same workflow with `dry_run=false` to publish.
+6. Verify the `sungjin.design-ai-vscode` Marketplace listing.
+
+Local equivalent for package-only validation:
+
 ```bash
 cd vscode-extension
-npm install
-npx @vscode/vsce package        # produces .vsix
-npx @vscode/vsce publish        # requires Azure DevOps PAT + publisher account
+npm ci --no-audit --no-fund
+npm run compile
+npm test
+npx --yes @vscode/vsce@latest package --out /tmp/design-ai-vscode-$(node -p "require('./package.json').version").vsix
 ```
 
 Publisher account setup: <https://code.visualstudio.com/api/working-with-extensions/publishing-extension>

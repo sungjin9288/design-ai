@@ -43,6 +43,7 @@
 - `evidence/cli-logs/vscode-extension-compile.log`
 - `evidence/cli-logs/vscode-extension-npm-test.log`
 - `evidence/cli-logs/vscode-extension-vsce-package.log`
+- `evidence/cli-logs/vscode-publish-workflow-status.log`
 
 ### Audit results
 
@@ -86,7 +87,7 @@
 | output artifact 생성 | 통과 |
 | Website Console 렌더링 | 통과 |
 | Node test suite | 통과 - 302 tests, 302 pass, 0 fail |
-| VS Code Extension compile/test/package | 통과 - compile pass, 25 tests pass, VSIX package created at `/tmp/design-ai-vscode-0.4.0.vsix` |
+| VS Code Extension compile/test/package | 통과 - compile pass, 25 tests pass, VSIX package created at `/tmp/design-ai-vscode-0.4.0.vsix`, manual publish workflow dry-run path verified |
 | git diff whitespace check | 통과 |
 | design artifact check | 통과(exit 0), score 8/9 warning |
 | repository audit strict | 통과 - 8 audits pass |

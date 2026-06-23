@@ -42,6 +42,21 @@ After install, the CLI symlinks the bundled corpus into `~/.claude/skills/`, `~/
 
 For environments where neither npm nor bash works the way you expect. See [PLUGIN-PACKAGING.md](PLUGIN-PACKAGING.md) for the manual symlink loop.
 
+### D. VS Code Marketplace
+
+The VS Code extension lives in `vscode-extension/`. Public Marketplace publish is handled by the manual `Publish VS Code extension` GitHub Actions workflow.
+
+The workflow defaults to `dry_run=true`, which compiles the extension, runs unit tests, packages a `.vsix`, and uploads the VSIX as a workflow artifact without publishing.
+
+To publish publicly:
+
+1. Confirm the Marketplace publisher id in `vscode-extension/package.json`.
+2. Add a repository secret named `VSCE_PAT` with Visual Studio Marketplace extension publish permission.
+3. Run **Actions → Publish VS Code extension → Run workflow** with `dry_run=false`.
+4. Verify the Marketplace listing for `sungjin.design-ai-vscode`.
+
+Until that final verification passes, describe the extension as locally packaged or Marketplace-ready, not publicly listed.
+
 ## CLI commands
 
 ```

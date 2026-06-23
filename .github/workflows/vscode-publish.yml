@@ -1,0 +1,101 @@
+name: Publish VS Code extension
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Package only; do not publish to Marketplace"
+        type: boolean
+        default: true
+
+jobs:
+  publish-vscode:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "vscode-extension/package-lock.json"
+
+      - name: Install VS Code extension deps
+        working-directory: vscode-extension
+        run: npm ci --no-audit --no-fund
+
+      - name: Compile VS Code extension
+        working-directory: vscode-extension
+        run: npm run compile
+
+      - name: Run VS Code lib unit tests
+        working-directory: vscode-extension
+        run: npm test
+
+      - name: Package VSIX
+        id: package
+        working-directory: vscode-extension
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').version")"
+          mkdir -p dist
+          vsix="dist/design-ai-vscode-${version}.vsix"
+          npx --yes @vscode/vsce@latest package --out "$vsix"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "vsix=$vsix" >> "$GITHUB_OUTPUT"
+          shasum -a 256 "$vsix"
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: design-ai-vscode-${{ steps.package.outputs.version }}
+          path: vscode-extension/${{ steps.package.outputs.vsix }}
+          if-no-files-found: error
+
+      - name: Verify Marketplace token is configured
+        if: ${{ !inputs.dry_run }}
+        run: |
+          if [ -z "${VSCE_PAT:-}" ]; then
+            echo "::error::VSCE_PAT secret is required for Marketplace publish."
+            exit 1
+          fi
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Publish to VS Code Marketplace
+        if: ${{ !inputs.dry_run }}
+        working-directory: vscode-extension
+        run: npx --yes @vscode/vsce@latest publish --packagePath "${{ steps.package.outputs.vsix }}" --pat "$VSCE_PAT"
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+
+      - name: Verify Marketplace listing
+        if: ${{ !inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          response="$(mktemp)"
+          curl -sS -H 'Content-Type: application/json' \
+            -H 'Accept: application/json;api-version=7.2-preview.1' \
+            -X POST https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery \
+            -d '{"filters":[{"criteria":[{"filterType":7,"value":"sungjin.design-ai-vscode"}]}],"flags":914}' \
+            > "$response"
+          node -e '
+            const fs = require("fs");
+            const data = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+            const total = data?.results?.[0]?.resultMetadata?.[0]?.metadataItems?.find((item) => item.name === "TotalCount")?.count ?? 0;
+            if (Number(total) < 1) {
+              console.error("Marketplace listing was not found after publish.");
+              process.exit(1);
+            }
+            console.log(`Marketplace listing found: ${total}`);
+          ' "$response"
+
+      - name: Skip publish
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "Dry run — packaged VSIX and uploaded artifact only."
+          echo "To publish: add VSCE_PAT as a repository secret and re-run with dry_run=false."
