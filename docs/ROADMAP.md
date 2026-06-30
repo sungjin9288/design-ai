@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 670 — Website Improvement Next Actions Module Split (unreleased)
+
+Website Improvement next-action reports now live outside the main site workflow module.
+
+### Changed
+- Moved standard, init, and intake next-action report builders plus next-action JSON/human formatting into `cli/lib/site-next-actions.mjs`.
+- Moved implementation evidence key/count helpers into `cli/lib/site-evidence.mjs` so next-action reports, bundles, and bundle checks share the same evidence counting rules.
+- Re-exported next-action helpers from `cli/lib/site.mjs` so existing imports keep working.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns operator next-action prioritization or setup command rendering.
+- Website Improvement init, intake, readiness, task generation, prompt, handoff, and bundle guidance keep their existing command and output contracts.
+- This continues the split toward smaller modules while preserving verification, handoff evidence, and local-only safety boundaries.
+
+### Verification Plan
+- `node --check cli/lib/site-evidence.mjs && node --check cli/lib/site-next-actions.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 669 — Website Improvement MCP Report Module Split (unreleased)
 
 Website Improvement MCP readiness reports and action plans now live outside the main site workflow module.
