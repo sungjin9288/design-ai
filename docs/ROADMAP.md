@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 667 — Website Improvement MCP Command Helper Split (unreleased)
+
+Website Improvement MCP readiness command strings now live outside the main site workflow module.
+
+### Changed
+- Moved MCP probe command generation, next-action command generation, and stdin command-target normalization into `cli/lib/site-mcp-commands.mjs`.
+- Kept the existing command names and output paths unchanged for `--mcp-check`, `--mcp-plan`, `--tasks`, `--prompt`, `--report`, and `--bundle` flows.
+- Left report assembly in `cli/lib/site.mjs` so this split stays limited to deterministic command construction.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns repeated MCP/readiness command string construction.
+- MCP readiness reports, action plans, next-actions output, and bundle handoff guidance keep their current CLI command contract.
+- This continues the Website Improvement module split toward a cleaner Claude/Codex MCP handoff surface without changing runtime behavior.
+
+### Verification Plan
+- `node --check cli/lib/site-mcp-commands.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 666 — Website Improvement MCP Readiness Helper Split (unreleased)
 
 Website Improvement MCP readiness scoring now lives outside the main site workflow module.

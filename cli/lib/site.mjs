@@ -12,6 +12,11 @@ import path from "node:path";
 import { parseOutputFlags } from "./output.mjs";
 import { unknownOptionMessage } from "./suggest.mjs";
 import { buildSiteMcpProbeReport } from "./site-mcp-probes.mjs";
+import {
+  buildSiteMcpProbeCommandSet,
+  buildSiteNextActionCommandSet,
+  siteMcpCommandTarget,
+} from "./site-mcp-commands.mjs";
 import { mcpItemReport, siteMcpCheckStatus } from "./site-mcp-readiness.mjs";
 import {
   SITE_BUNDLE_CHECKSUM_FILES,
@@ -1666,19 +1671,6 @@ function mcpTaskGaps(workspace) {
   }));
 }
 
-function siteMcpCommandTarget(filePath) {
-  return filePath === "stdin" ? "<workspace.json>" : filePath;
-}
-
-function buildSiteMcpProbeCommandSet(commandTarget) {
-  return {
-    mcpCheckProbesHumanOut: `design-ai site ${commandTarget} --mcp-check --probes --out mcp-check-probes.txt`,
-    mcpCheckProbesJsonOut: `design-ai site ${commandTarget} --mcp-check --probes --json --out mcp-check-probes.json`,
-    mcpPlanProbesJson: `design-ai site ${commandTarget} --mcp-plan --probes --json`,
-    mcpPlanProbesJsonOut: `design-ai site ${commandTarget} --mcp-plan --probes --json --out mcp-action-plan-probes.json`,
-  };
-}
-
 export function buildSiteMcpCheckReport(workspace, summary = {}, options = {}) {
   const items = MCP_ITEMS.map(([key, label]) => mcpItemReport(workspace, key, label));
   const taskGaps = mcpTaskGaps(workspace);
@@ -1966,20 +1958,6 @@ function nextActionEntry({ severity, title, reason, command = "", references = [
     reason,
     command,
     references,
-  };
-}
-
-function buildSiteNextActionCommandSet(commandTarget) {
-  return {
-    summary: `design-ai site ${commandTarget} --json`,
-    mcpCheck: `design-ai site ${commandTarget} --mcp-check --strict --json`,
-    mcpPlan: `design-ai site ${commandTarget} --mcp-plan --out mcp-action-plan.md`,
-    mcpCheckProbes: `design-ai site ${commandTarget} --mcp-check --probes --json --out mcp-check-probes.json`,
-    mcpPlanProbes: `design-ai site ${commandTarget} --mcp-plan --probes --json --out mcp-action-plan-probes.json`,
-    tasks: `design-ai site ${commandTarget} --tasks --out website-workspace.tasks.json`,
-    implementationPrompt: `design-ai site ${commandTarget} --prompt codex-implementation --task 1 --out codex-implementation.md`,
-    handoffReport: `design-ai site ${commandTarget} --report --out website-handoff.md`,
-    handoffBundle: `design-ai site ${commandTarget} --bundle --out website-handoff-bundle`,
   };
 }
 
