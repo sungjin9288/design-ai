@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 684 — Website Improvement Task and Workflow Graph Helper Split (unreleased)
+
+Website Improvement generated task planning and portable workflow graph rendering now live outside the main site workflow module.
+
+### Changed
+- Moved deterministic refactor task generation into `cli/lib/site-tasks.mjs`.
+- Moved workflow graph node/edge construction plus JSON/Markdown graph formatters into `cli/lib/site-workflow-graph.mjs`.
+- Kept `cli/lib/site.mjs` as the public compatibility surface by re-exporting task and graph helpers.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns generated task prompt bodies or graph rendering bodies.
+- Existing imports from `cli/lib/site.mjs`, `design-ai site --tasks`, and `design-ai site --graph` remain behavior-compatible.
+- Task planning can now be reused by graph and bundle orchestration without forcing those deterministic helpers to stay in the main workflow module.
+
+### Verification Plan
+- `node --check cli/lib/site-tasks.mjs && node --check cli/lib/site-workflow-graph.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 683 — Website Improvement Analysis Helper Split (unreleased)
 
 Website Improvement workspace validation, summary generation, JSON loading, and report formatting now live outside the main site workflow module.
