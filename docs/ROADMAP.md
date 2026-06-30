@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 687 — Website Improvement Bundle Check Module Split (unreleased)
+
+Website Improvement handoff bundle validation now lives outside the main site workflow module.
+
+### Changed
+- Moved bundle directory validation, summary/checksum verification, MCP recomputation checks, generated contract checks, and bundle check formatting into `cli/lib/site-bundle-check.mjs`.
+- Kept `cli/lib/site.mjs` as the public compatibility surface by re-exporting bundle check helpers.
+- Removed local imports that were only needed by the moved bundle check implementation.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns the large bundle check validation body.
+- Bundle repair, bundle compare, and target-repo handoff flows continue to consume the same `buildSiteBundleCheckReport` shape.
+- Bundle validation now sits with the bundle-specific helper modules instead of being embedded in the remaining workflow orchestration file.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-check.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 686 — Website Improvement Generated Contract Helper Split (unreleased)
 
 Website Improvement generated bundle contract helpers now live outside the main site workflow module.
