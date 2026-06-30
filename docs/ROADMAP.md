@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 682 — Website Improvement Workspace Builder Split (unreleased)
+
+Website Improvement workspace initialization, intake parsing, and normalization now live outside the main site workflow module.
+
+### Changed
+- Moved real-project `--init` workspace construction, filled intake Markdown parsing, and workspace normalization into `cli/lib/site-workspace.mjs`.
+- Kept `cli/lib/site.mjs` as the public compatibility surface by re-exporting workspace builder helpers.
+- Imported only `normalizeSiteWorkspace` and `normalizeObject` back into `cli/lib/site.mjs` for report validation and bundle summary orchestration.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns workspace creation, intake table parsing, or schema normalization bodies.
+- Existing imports from `cli/lib/site.mjs`, `design-ai site --init`, and `design-ai site --from-intake` remain behavior-compatible.
+- Workspace construction is grouped with its defaults and normalization rules, leaving the main site module focused on analysis, reports, graphs, and bundle orchestration.
+
+### Verification Plan
+- `node --check cli/lib/site-workspace.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 681 — Website Improvement Starter Artifact Helper Split (unreleased)
 
 Website Improvement intake template and sample workspace builders now live outside the main site workflow module.
