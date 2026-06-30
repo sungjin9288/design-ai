@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 689 — Website Improvement Bundle Handoff Report Split (unreleased)
+
+Website Improvement target-repo handoff report construction now lives outside the main site workflow module.
+
+### Changed
+- Moved target-repo handoff workspace loading, prompt assembly, task selection handling, command manifest/runbook wiring, and JSON/human formatters into `cli/lib/site-bundle-handoff.mjs`.
+- Kept `cli/lib/site.mjs` as the public compatibility surface by re-exporting bundle handoff helpers.
+- Removed local imports from `cli/lib/site.mjs` that were only needed by handoff report construction.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns the target-repo handoff report body.
+- `design-ai site <bundle-dir> --bundle-handoff` continues to expose the same prompt and JSON report contracts.
+- Handoff report assembly now sits beside the handoff summary and operator runbook helpers instead of remaining in the workflow orchestration module.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 688 — Website Improvement Bundle Compare Report Split (unreleased)
 
 Website Improvement handoff bundle comparison report construction now lives with the compare helpers.
