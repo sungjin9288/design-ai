@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 683 — Website Improvement Analysis Helper Split (unreleased)
+
+Website Improvement workspace validation, summary generation, JSON loading, and report formatting now live outside the main site workflow module.
+
+### Changed
+- Moved raw workspace validation, issue status reduction, summary counts, `analyzeSiteWorkspace`, `loadSiteWorkspaceInput`, `buildSiteReport`, and `formatSiteJson` into `cli/lib/site-analysis.mjs`.
+- Kept `cli/lib/site.mjs` as the public compatibility surface by re-exporting the existing analysis/report helper API.
+- Imported `addIssue`, `statusFromIssues`, `analyzeSiteWorkspace`, and `loadSiteWorkspaceInput` back into `cli/lib/site.mjs` for bundle repair/check/handoff orchestration.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns schema validation, report input loading, or workspace summary construction bodies.
+- Existing imports from `cli/lib/site.mjs`, report JSON output, strict workspace validation, and bundle consistency checks remain behavior-compatible.
+- Analysis rules now sit beside workspace normalization while bundle orchestration remains in the main site workflow module.
+
+### Verification Plan
+- `node --check cli/lib/site-analysis.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 682 — Website Improvement Workspace Builder Split (unreleased)
 
 Website Improvement workspace initialization, intake parsing, and normalization now live outside the main site workflow module.
