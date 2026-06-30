@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 679 — Website Improvement CLI Argument Parser Split (unreleased)
+
+Website Improvement CLI argument parsing now lives outside the main site workflow module.
+
+### Changed
+- Moved `SITE_OPTIONS`, option value parsing, and `parseSiteArgs` into `cli/lib/site-args.mjs`.
+- Exported shared Website Improvement option enums from `cli/lib/site-options.mjs` so parsing, intake, normalization, and validation use the same catalogs.
+- Kept `cli/lib/site.mjs` as the public compatibility surface by re-exporting the parser API.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns command-line parsing rules.
+- `design-ai site` argument behavior, error messages, and existing imports from `cli/lib/site.mjs` remain behavior-compatible.
+- The remaining site workflow module is easier to scan because CLI parsing is separated from workspace construction and report generation.
+
+### Verification Plan
+- `node --check cli/lib/site-args.mjs && node --check cli/lib/site-options.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 678 — Website Improvement Prompt Helper Consolidation (unreleased)
 
 Website Improvement prompt template formatters and bundle implementation prompt fallback now live with the prompt builders.

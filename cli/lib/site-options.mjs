@@ -89,6 +89,15 @@ export const MCP_ITEMS = [
 ];
 
 export const PRIORITY_OPTIONS = ["p0", "p1", "p2", "p3"];
+export const DEPLOY_OPTIONS = ["vercel", "netlify", "cloudflare", "other", "none"];
+export const CMS_OPTIONS = ["sanity", "contentful", "wordpress", "shopify", "none", "other"];
+export const DATABASE_OPTIONS = ["supabase", "neon", "postgres", "none", "other"];
+export const VIEWPORT_OPTIONS = ["desktop", "tablet", "mobile"];
+export const SITE_INTAKE_TEMPLATE_LANGUAGE_OPTIONS = ["en", "ko"];
+export const CHECKLIST_STATUS_OPTIONS = ["todo", "in-progress", "done", "blocked"];
+export const MCP_STATUS_OPTIONS = ["required", "optional", "unused", "unavailable"];
+export const IMPACT_OPTIONS = ["high", "medium", "low"];
+export const EFFORT_OPTIONS = ["high", "medium", "low"];
 
 export function categoryById(id) {
   return AUDIT_CATEGORIES.find((category) => category.id === id) || AUDIT_CATEGORIES[0];
