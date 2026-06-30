@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 677 — Website Improvement Bundle Handoff Summary Helper Split (unreleased)
+
+Website Improvement bundle handoff task catalog and source summary helpers now live outside the main site workflow module.
+
+### Changed
+- Moved target-repo execution checklist, bundle task catalog summaries, selected-task summary, handoff issue/task catalog line formatting, handoff boundaries, and source bundle command summary into `cli/lib/site-bundle-handoff-summary.mjs`.
+- Kept bundle workspace loading, task selection orchestration, handoff prompt construction, and final handoff report assembly in `cli/lib/site.mjs`.
+- Reused the extracted summary helpers in bundle readme/check validation and target-repo handoff output paths without changing the JSON or Markdown contracts.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns task catalog shaping or source bundle command summary construction.
+- Bundle check validation, handoff prompt checklist text, selected-task command metadata, and command manifest inputs remain behavior-compatible.
+- This makes the remaining handoff flow easier to scan because catalog/source summary data is separated from report orchestration.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-summary.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 676 — Website Improvement Bundle Handoff Runbook Helper Split (unreleased)
 
 Website Improvement bundle handoff command manifest and operator runbook helpers now live outside the main site workflow module.
