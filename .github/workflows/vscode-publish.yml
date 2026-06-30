@@ -77,22 +77,37 @@ jobs:
         if: ${{ !inputs.dry_run }}
         run: |
           set -euo pipefail
+          expected="${{ steps.package.outputs.version }}"
           response="$(mktemp)"
-          curl -sS -H 'Content-Type: application/json' \
-            -H 'Accept: application/json;api-version=7.2-preview.1' \
-            -X POST https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery \
-            -d '{"filters":[{"criteria":[{"filterType":7,"value":"sungjin.design-ai-vscode"}]}],"flags":914}' \
-            > "$response"
-          node -e '
-            const fs = require("fs");
-            const data = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
-            const total = data?.results?.[0]?.resultMetadata?.[0]?.metadataItems?.find((item) => item.name === "TotalCount")?.count ?? 0;
-            if (Number(total) < 1) {
-              console.error("Marketplace listing was not found after publish.");
-              process.exit(1);
-            }
-            console.log(`Marketplace listing found: ${total}`);
-          ' "$response"
+          for attempt in $(seq 1 20); do
+            curl -sS -H 'Content-Type: application/json' \
+              -H 'Accept: application/json;api-version=7.2-preview.1' \
+              -X POST https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery \
+              -d '{"filters":[{"criteria":[{"filterType":7,"value":"sungjin.design-ai-vscode"}]}],"flags":914}' \
+              > "$response"
+            if node -e '
+              const fs = require("fs");
+              const data = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+              const expected = process.argv[2];
+              const extension = data?.results?.[0]?.extensions?.[0];
+              const total = data?.results?.[0]?.resultMetadata?.[0]?.metadataItems?.find((item) => item.name === "TotalCount")?.count ?? 0;
+              const versions = extension?.versions?.map((item) => item.version) ?? [];
+              if (Number(total) < 1) {
+                console.error("Marketplace listing was not found after publish.");
+                process.exit(1);
+              }
+              if (!versions.includes(expected)) {
+                console.error(`Marketplace listing found, but expected version ${expected} is not visible yet. Visible versions: ${versions.join(", ") || "(none)"}`);
+                process.exit(2);
+              }
+              console.log(`Marketplace listing found with version ${expected}.`);
+            ' "$response" "$expected"; then
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::Marketplace listing did not expose version $expected after waiting."
+          exit 1
 
       - name: Skip publish
         if: ${{ inputs.dry_run }}

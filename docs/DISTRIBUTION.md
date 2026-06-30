@@ -52,6 +52,8 @@ Current public package:
 sungjin.design-ai-vscode@0.4.0
 ```
 
+The `0.4.1` listing-copy correction publish run succeeded on 2026-06-30, but the public Gallery API still returned `0.4.0` immediately after propagation checks. Treat `0.4.0` as the visible Marketplace version until the public version query catches up.
+
 The workflow defaults to `dry_run=true`, which compiles the extension, runs unit tests, packages a `.vsix`, and uploads the VSIX as a workflow artifact without publishing.
 
 To publish publicly:
