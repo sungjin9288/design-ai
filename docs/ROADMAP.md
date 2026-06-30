@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 693 — Website Improvement Bundle Handoff Runbook Evidence Helper Split (unreleased)
+
+Website Improvement target-repo handoff runbook evidence capture helper logic now lives outside the runbook assembly body.
+
+### Changed
+- Moved evidence capture field shape, section, payload binding, validation spec, and initial checklist/summary helpers into `cli/lib/site-bundle-handoff-runbook-evidence.mjs`.
+- Kept stage-specific evidence field selection in `cli/lib/site-bundle-handoff-runbook.mjs`, where it still has access to the current runbook stage context.
+- Preserved existing evidence capture payload paths, validation labels, section keys, checklist summaries, and next-action metadata.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same evidence capture JSON contract while the generic evidence helper code has a focused module boundary.
+- Target-repo handoff wrappers can continue to consume the same payload template, flat template, validation specs, checklist rows, and summary fields.
+- No CLI flags, bundle files, target-repo mutation rules, or external-call boundaries change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook-evidence.mjs && node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 692 — Website Improvement Bundle Handoff Runbook Action Metadata Split (unreleased)
 
 Website Improvement target-repo handoff runbook action metadata now lives outside the runbook assembly body.
