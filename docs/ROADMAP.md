@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 673 — Website Improvement Bundle File Helper Split (unreleased)
+
+Website Improvement bundle file, digest, and lightweight validation helpers now live outside the main site workflow module.
+
+### Changed
+- Moved SHA-256 digest creation, bundle checksum manifest hashing, bundle file reads, JSON parsing, Markdown fragment checks, short digest rendering, and array equality checks into `cli/lib/site-bundle-files.mjs`.
+- Kept bundle generation, generated-contract comparison, repair, check, compare, and target-repo handoff report assembly in `cli/lib/site.mjs`.
+- Reused the extracted helpers for bundle creation checksums, strict bundle verification, generated file drift reporting, and handoff prompt context reads.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns low-level bundle file parsing or checksum mechanics.
+- Bundle check, repair, compare, handoff, and checksum validation keep the existing JSON/Markdown output contract.
+- This keeps the next bundle split safer because filesystem and digest helpers are now isolated from workspace analysis and report assembly.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-files.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 672 — Website Improvement Bundle Command Helper Split (unreleased)
 
 Website Improvement bundle handoff command and safety helpers now live outside the main site workflow module.

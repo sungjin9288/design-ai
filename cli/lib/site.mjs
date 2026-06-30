@@ -6,7 +6,6 @@ import {
   readdirSync,
   statSync,
 } from "node:fs";
-import { createHash } from "node:crypto";
 import path from "node:path";
 
 import { parseOutputFlags } from "./output.mjs";
@@ -67,6 +66,16 @@ import {
   shellQuote,
   taskHandoffOutFile,
 } from "./site-bundle-commands.mjs";
+import {
+  addBundleMarkdownIssue,
+  arraysEqual,
+  buildBundleChecksums,
+  buildBundleDigest,
+  parseBundleJson,
+  readBundleTextIfPresent,
+  sha256Hex,
+  shortDigest,
+} from "./site-bundle-files.mjs";
 
 export {
   buildSiteInitNextActionsReport,
@@ -1954,28 +1963,6 @@ function buildSiteBundleReadme(workspace, bundleSummary, mcpReport, mcpProbeRepo
   ].join("\n");
 }
 
-function sha256Hex(content) {
-  return createHash("sha256").update(content, "utf8").digest("hex");
-}
-
-function buildBundleDigest(checksumFiles) {
-  const manifest = SITE_BUNDLE_CHECKSUM_FILES.map((filePath) => `${filePath}\t${checksumFiles[filePath] || ""}`).join("\n");
-  return sha256Hex(`${manifest}\n`);
-}
-
-function buildBundleChecksums(files) {
-  const checksumFiles = Object.fromEntries(
-    files
-      .filter((file) => file.path !== "summary.json")
-      .map((file) => [file.path, sha256Hex(file.content)]),
-  );
-  return {
-    algorithm: "sha256",
-    bundleDigest: buildBundleDigest(checksumFiles),
-    files: checksumFiles,
-  };
-}
-
 export function buildSiteHandoffBundle(workspace, summary = {}) {
   const taskResult = generateSiteRefactorTasks(workspace);
   const taskWorkspace = taskResult.workspace;
@@ -2103,50 +2090,6 @@ function buildSiteBundleImplementationPrompt(workspace) {
     "Next step:",
     "- Add audit findings to the Website Improvement workspace, then run `design-ai site website-workspace.json --tasks --out website-workspace.tasks.json` and regenerate this implementation prompt with `design-ai site website-workspace.tasks.json --prompt codex-implementation --task 1 --out codex-implementation.md`.",
   ].join("\n");
-}
-
-function readBundleFile(directory, relativePath, issues) {
-  const target = path.join(directory, relativePath);
-  if (!existsSync(target)) {
-    addIssue(issues, "fail", `bundle-missing-${relativePath}`, `Bundle file is missing: ${relativePath}`);
-    return null;
-  }
-  if (!statSync(target).isFile()) {
-    addIssue(issues, "fail", `bundle-file-${relativePath}`, `Bundle path must be a file: ${relativePath}`);
-    return null;
-  }
-  return readFileSync(target, "utf8");
-}
-
-function parseBundleJson(directory, relativePath, issues) {
-  const text = readBundleFile(directory, relativePath, issues);
-  if (text === null) return null;
-  try {
-    return JSON.parse(text);
-  } catch (error) {
-    addIssue(issues, "fail", `bundle-json-${relativePath}`, `Bundle JSON is invalid in ${relativePath}: ${error.message}`);
-    return null;
-  }
-}
-
-function arraysEqual(left, right) {
-  if (!Array.isArray(left) || !Array.isArray(right)) return false;
-  if (left.length !== right.length) return false;
-  return left.every((item, index) => item === right[index]);
-}
-
-function addBundleMarkdownIssue(directory, relativePath, fragments, issues) {
-  const text = readBundleFile(directory, relativePath, issues);
-  if (text === null) return;
-  for (const fragment of fragments) {
-    if (!text.includes(fragment)) {
-      addIssue(issues, "fail", `bundle-markdown-${relativePath}`, `${relativePath} is missing required text: ${fragment}`);
-    }
-  }
-}
-
-function shortDigest(digest) {
-  return digest ? String(digest).slice(0, 12) : "missing";
 }
 
 function emptyBundleGeneratedContract(source = "") {
@@ -2955,12 +2898,6 @@ export function formatSiteBundleCompareHuman(report) {
     "Issues:",
     ...report.issues.map((issue) => `- [${issue.level}] ${issue.id}: ${issue.message}`),
   ].join("\n");
-}
-
-function readBundleTextIfPresent(directory, relativePath) {
-  const targetPath = path.join(directory, relativePath);
-  if (!existsSync(targetPath) || !statSync(targetPath).isFile()) return "";
-  return readFileSync(targetPath, "utf8").trim();
 }
 
 function loadSiteBundleWorkspace(directory) {
