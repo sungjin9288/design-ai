@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 663 — Website Improvement Static Content Module Split (unreleased)
+
+Website Improvement prompt and bundle catalogs now live outside the main site workflow module.
+
+### Changed
+- Moved Website Improvement prompt template ids, prompt template metadata, bundle file manifest, and bundle checksum manifest into `cli/lib/site-content.mjs`.
+- Re-exported the public constants from `cli/lib/site.mjs` so existing tests and consumers keep the same import surface.
+- Kept the prompt template ordering assertion next to the catalog data it protects.
+
+### Impact
+- `cli/lib/site.mjs` is smaller and its executable workflow logic is easier to scan.
+- No CLI behavior, JSON contract, bundle manifest, prompt catalog, or test import path changes.
+- This is the first low-risk split toward reducing the oversized Website Improvement module without reducing verification or evidence surfaces.
+
+### Verification Plan
+- `node --check cli/lib/site-content.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 662 — VS Code Extension Dev Dependency Audit Hygiene (unreleased)
 
 VS Code extension development dependencies now install with a clean npm audit report.
