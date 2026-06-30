@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 678 — Website Improvement Prompt Helper Consolidation (unreleased)
+
+Website Improvement prompt template formatters and bundle implementation prompt fallback now live with the prompt builders.
+
+### Changed
+- Moved prompt template JSON/human formatters and bundle implementation prompt fallback rendering into `cli/lib/site-prompts.mjs`.
+- Kept `cli/lib/site.mjs` as the public re-export surface and bundle orchestration caller for existing imports.
+- Reused the existing prompt builder helpers for the no-task bundle fallback instead of keeping prompt body composition in the site workflow module.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns prompt-template display or bundle implementation prompt body construction.
+- Prompt list CLI output, prompt bundle generation, and handoff bundle `codex-implementation.md` content remain behavior-compatible.
+- Prompt-related rendering is grouped with the rest of the prompt/handoff report code, making the remaining site workflow module easier to scan.
+
+### Verification Plan
+- `node --check cli/lib/site-prompts.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 677 — Website Improvement Bundle Handoff Summary Helper Split (unreleased)
 
 Website Improvement bundle handoff task catalog and source summary helpers now live outside the main site workflow module.

@@ -1,7 +1,7 @@
 // Prompt and handoff report builders for Website Improvement workspaces.
 
 import { normalizeImplementationEvidence } from "./site-evidence.mjs";
-import { SITE_PROMPT_TEMPLATE_IDS } from "./site-content.mjs";
+import { SITE_PROMPT_TEMPLATE_IDS, SITE_PROMPT_TEMPLATES } from "./site-content.mjs";
 import { AUDIT_CATEGORIES, MCP_ITEMS, PRIORITY_OPTIONS, categoryById } from "./site-options.mjs";
 import { markdownList } from "./site-strings.mjs";
 
@@ -206,6 +206,59 @@ export function buildSitePromptBundle(workspace) {
       "",
     ]),
   ].join("\n").trimEnd();
+}
+
+export function buildSiteBundleImplementationPrompt(workspace) {
+  const tasks = orderedRefactorTasks(workspace);
+  if (tasks.length > 0) {
+    return buildSitePrompt(workspace, "codex-implementation", { taskSelector: "1" });
+  }
+
+  return [
+    "# Codex implementation prompt",
+    profileBlock(workspace),
+    "",
+    mcpBlock(workspace),
+    "",
+    "Task ID: no-refactor-task-yet",
+    "Goal: inspect the target website repository, confirm the website improvement workspace facts, and produce concrete audit findings before implementation starts.",
+    "",
+    "Rules:",
+    "- Work in the target website repository, not in this design-ai repository.",
+    "- Do not modify production code until you identify specific audit findings and implementation tasks.",
+    "- Inspect existing architecture, components, state, styling, and design tokens before proposing edits.",
+    "- Preserve accessibility: keyboard reachability, visible focus, semantic HTML, screen-reader labels, and WCAG 2.1 AA contrast.",
+    "- Verify desktop, tablet, and mobile layouts before recommending implementation scope.",
+    "",
+    "Next step:",
+    "- Add audit findings to the Website Improvement workspace, then run `design-ai site website-workspace.json --tasks --out website-workspace.tasks.json` and regenerate this implementation prompt with `design-ai site website-workspace.tasks.json --prompt codex-implementation --task 1 --out codex-implementation.md`.",
+  ].join("\n");
+}
+
+export function formatSitePromptTemplatesJson() {
+  return JSON.stringify({
+    count: SITE_PROMPT_TEMPLATES.length,
+    templates: SITE_PROMPT_TEMPLATES,
+  }, null, 2);
+}
+
+export function formatSitePromptTemplatesHuman() {
+  return [
+    "Website Improvement prompt templates",
+    "",
+    ...SITE_PROMPT_TEMPLATES.flatMap((template, index) => [
+      `${index + 1}. ${template.id}`,
+      `   Label: ${template.label}`,
+      `   Agent: ${template.agent}`,
+      `   Output: ${template.output}`,
+      `   Task selectable: ${template.taskSelectable ? "yes" : "no"}`,
+      `   ${template.description}`,
+    ]),
+    "",
+    "Use:",
+    "  design-ai site <workspace.json> --prompt <template-id>",
+    "  design-ai site <workspace.json> --prompt codex-implementation --task <id-or-number>",
+  ].join("\n");
 }
 
 export function buildSiteHandoffReport(workspace) {
