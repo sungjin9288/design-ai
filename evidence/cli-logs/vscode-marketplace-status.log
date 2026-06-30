@@ -1,10 +1,19 @@
-## VS Code Marketplace status - 2026-06-23T05:08:07Z
+## VS Code Marketplace status - 2026-06-30T08:14:02Z
 
-# Publisher token presence (values intentionally not printed)
-VSCE_PAT=missing
-AZURE_DEVOPS_EXT_PAT=missing
-MARKETPLACE_PAT=missing
-OVSX_PAT=missing
+# GitHub Actions publish run
+run_id=28430044818
+run_url=https://github.com/sungjin9288/design-ai/actions/runs/28430044818
+job_url=https://github.com/sungjin9288/design-ai/actions/runs/28430044818/job/84242262745
+head_sha=adf74a38a3f0743854cc8137b7fefedad8ff354a
+mode=dry_run=false
+conclusion=success
+
+# Publish log evidence
+Published sungjin.design-ai-vscode v0.4.0.
+Extension URL (might take a few minutes): https://marketplace.visualstudio.com/items?itemName=sungjin.design-ai-vscode
 
 # Marketplace public query
-{"results":[{"extensions":[],"pagingToken":null,"resultMetadata":[{"metadataType":"ResultCount","metadataItems":[{"name":"TotalCount","count":0}]}]}]}
+{"resultCount":[{"name":"TotalCount","count":1}],"extensions":[{"publisher":"sungjin","extensionName":"design-ai-vscode","displayName":"design-ai","version":"0.4.0","lastUpdated":"2026-06-30T08:12:17.557Z"}]}
+
+# Browser item URL check immediately after publish
+404 https://marketplace.visualstudio.com/items?itemName=sungjin.design-ai-vscode

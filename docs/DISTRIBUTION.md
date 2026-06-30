@@ -2,7 +2,7 @@
 
 How design-ai gets from this repo into adopters' Claude Code installations.
 
-> Distribution status, checked 2026-06-23: local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.55.0` is published, and `@design-ai/cli@4.55.0` is public on npm with registry smoke coverage. VS Code Marketplace distribution is not currently confirmed. See [`external-status.md`](external-status.md).
+> Distribution status, checked 2026-06-30: local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.55.0` is published, `@design-ai/cli@4.55.0` is public on npm with registry smoke coverage, and `sungjin.design-ai-vscode@0.4.0` is published to the VS Code Marketplace by Gallery API evidence. See [`external-status.md`](external-status.md).
 
 ## Install paths
 
@@ -46,6 +46,12 @@ For environments where neither npm nor bash works the way you expect. See [PLUGI
 
 The VS Code extension lives in `vscode-extension/`. Public Marketplace publish is handled by the manual `Publish VS Code extension` GitHub Actions workflow.
 
+Current public package:
+
+```text
+sungjin.design-ai-vscode@0.4.0
+```
+
 The workflow defaults to `dry_run=true`, which compiles the extension, runs unit tests, packages a `.vsix`, and uploads the VSIX as a workflow artifact without publishing.
 
 To publish publicly:
@@ -61,7 +67,7 @@ To publish publicly:
 
 Microsoft's current Marketplace publishing guidance warns that Azure DevOps global PATs retire on 2026-12-01. Use `VSCE_PAT` for the current release handoff, then plan a migration to Entra ID based publishing before that date.
 
-Until that final verification passes, describe the extension as locally packaged or Marketplace-ready, not publicly listed.
+The 2026-06-30 publish run completed successfully with `dry_run=false` and the Marketplace Gallery API returned one listing for `sungjin.design-ai-vscode`. If the browser item URL returns `404` immediately after publish, wait for Marketplace propagation before capturing install screenshots.
 
 ## CLI commands
 

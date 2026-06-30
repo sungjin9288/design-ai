@@ -1,11 +1,11 @@
 # External Publication Status
 
-> Checked: 2026-06-23
+> Checked: 2026-06-30
 > Scope: npm registry, GitHub Pages, Homebrew tap, VS Code Marketplace
 
 ## Summary
 
-Local release readiness is verified, GitHub Pages docs are publicly reachable, `@design-ai/cli@4.55.0` is published on npm with public registry smoke coverage, and the Homebrew tap formula points at the `v4.55.0` release source tarball with a verified SHA-256. The VS Code Marketplace extension id still returned no public listing at the time of this check.
+Local release readiness is verified, GitHub Pages docs are publicly reachable, `@design-ai/cli@4.55.0` is published on npm with public registry smoke coverage, and the Homebrew tap formula points at the `v4.55.0` release source tarball with a verified SHA-256. The VS Code extension `sungjin.design-ai-vscode` is published to the VS Code Marketplace at version `0.4.0`; the Gallery API returned one listing immediately after publish, while the browser item URL may take a few minutes to index.
 
 ## Results
 
@@ -14,7 +14,7 @@ Local release readiness is verified, GitHub Pages docs are publicly reachable, `
 | npm registry | `@design-ai/cli` | Published: npm reports version `4.55.0`; public registry smoke passed for `@design-ai/cli@4.55.0` | `evidence/cli-logs/npm-registry-status.log`, `evidence/cli-logs/npm-registry-smoke.log` |
 | GitHub Pages | `https://sungjin9288.github.io/design-ai/` | Published and reachable: HTTP `200`, design-ai MkDocs page rendered | `evidence/cli-logs/github-pages-status.log` |
 | Homebrew tap | `Formula/design-ai.rb` | Formula pinned to `v4.55.0` release source tarball with SHA-256 `ed59898e1134d5482d394a191a272ca835a6759b65f3a73215a16d1203892ab5`; Ruby syntax and `brew style` passed | `evidence/cli-logs/homebrew-formula-status.log` |
-| VS Code Marketplace | `sungjin.design-ai-vscode` | No public Marketplace listing found for the publisher/extension id; manual GitHub Actions publish workflow dry-run passed, but repository secret `VSCE_PAT` is not configured yet | `evidence/cli-logs/vscode-marketplace-status.log`, `evidence/cli-logs/vscode-marketplace-secret-status.log`, `evidence/cli-logs/vscode-extension-vsce-package.log`, `evidence/cli-logs/vscode-publish-workflow-status.log` |
+| VS Code Marketplace | `sungjin.design-ai-vscode` | Published: GitHub Actions run `28430044818` completed `dry_run=false`, `vsce publish` reported `Published sungjin.design-ai-vscode v0.4.0`, and the Marketplace Gallery API returned `TotalCount=1` for the listing. Browser item URL returned HTTP `404` immediately after publish, which matches Marketplace propagation delay noted by `vsce`. | `evidence/cli-logs/vscode-marketplace-status.log`, `evidence/cli-logs/vscode-marketplace-secret-status.log`, `evidence/cli-logs/vscode-extension-vsce-package.log`, `evidence/cli-logs/vscode-publish-workflow-status.log` |
 | GitHub Release | `v4.55.0` | Published with release tarball asset | `evidence/cli-logs/github-release-v4.55.0.log` |
 
 ## Interpretation
@@ -23,8 +23,7 @@ Local release readiness is verified, GitHub Pages docs are publicly reachable, `
 - GitHub Pages docs can now be described as publicly deployed.
 - Public npm install can now be described as published and smoke-tested.
 - Homebrew tap install can now be described as pinned to the `v4.55.0` release tarball; full tap audit/install/test remains a maintainer-side verification step because this Homebrew version rejects path-based `brew audit Formula/...` calls.
-- Public VS Code Marketplace install claims should not be used in portfolio or README copy until that surface is published with a Marketplace publisher token and rechecked.
-- For portfolio wording, describe VS Code Marketplace as "prepared for" or "locally packaged", not "publicly shipped".
+- VS Code Marketplace can now be described as published by Gallery API evidence. Before using browser-install screenshots or one-click install claims, re-open the Marketplace item URL after propagation and capture the visible listing page.
 
 ## Recheck Commands
 

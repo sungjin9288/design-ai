@@ -89,7 +89,7 @@
 | output artifact 생성 | 통과 |
 | Website Console 렌더링 | 통과 |
 | Node test suite | 통과 - 302 tests, 302 pass, 0 fail |
-| VS Code Extension compile/test/package | 통과 - compile pass, 25 tests pass, VSIX package created at `/tmp/design-ai-vscode-0.4.0.vsix`, Marketplace listing copy counts verified, manual publish workflow dry-run path verified |
+| VS Code Extension compile/test/package | 통과 - GitHub Actions publish run `28430044818`에서 compile pass, 25 tests pass, VSIX package artifact upload, `vsce publish`, Marketplace Gallery API listing verification 통과 |
 | git diff whitespace check | 통과 |
 | design artifact check | 통과(exit 0), score 8/9 warning |
 | repository audit strict | 통과 - 8 audits pass |
@@ -102,7 +102,7 @@
 | GitHub Pages status | 통과 - documented URL HTTP 200 |
 | GitHub Release status | 통과 - `v4.55.0` published with release asset |
 | Homebrew formula status | 부분 통과 - `v4.55.0` tarball SHA, Ruby syntax, `brew style` passed; path-based `brew audit` blocked by current Homebrew |
-| VS Code Marketplace status | 확인 완료 - `sungjin.design-ai-vscode` listing 없음, `VSCE_PAT` repository secret 미설정 |
+| VS Code Marketplace status | 통과 - `sungjin.design-ai-vscode@0.4.0` published, Gallery API `TotalCount=1`; browser item URL은 publish 직후 propagation 지연으로 HTTP 404 반환 |
 | API response capture | 해당 없음 |
 
 ## 제외 원칙
