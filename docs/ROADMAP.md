@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 664 — Website Improvement Intake Template Content Split (unreleased)
+
+Website Improvement intake template Markdown now lives with the static content catalog instead of the main workflow module.
+
+### Changed
+- Moved English and Korean intake template Markdown plus the intake section list into `cli/lib/site-content.mjs`.
+- Kept `buildSiteIntakeTemplateMarkdown` and `formatSiteIntakeTemplateJson` in `cli/lib/site.mjs` so command behavior and public helper names remain unchanged.
+
+### Impact
+- `cli/lib/site.mjs` no longer carries the long intake template bodies inline, making the executable workflow code easier to scan.
+- The generated English/Korean intake Markdown, JSON metadata, CLI flags, and tests remain unchanged.
+- This continues the incremental split of static Website Improvement content without reducing validation, bundle, or handoff evidence surfaces.
+
+### Verification Plan
+- `node --check cli/lib/site-content.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 663 — Website Improvement Static Content Module Split (unreleased)
 
 Website Improvement prompt and bundle catalogs now live outside the main site workflow module.
