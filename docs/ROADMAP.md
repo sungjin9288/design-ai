@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 672 — Website Improvement Bundle Command Helper Split (unreleased)
+
+Website Improvement bundle handoff command and safety helpers now live outside the main site workflow module.
+
+### Changed
+- Moved bundle task handoff command args, check/handoff command args, shell quoting, output-file naming, and command safety policy helpers into `cli/lib/site-bundle-commands.mjs`.
+- Kept bundle check, repair, compare, and target-repo handoff report assembly in `cli/lib/site.mjs` so this split stays limited to deterministic command construction.
+- Reused the same helper outputs for task catalogs, operator runbooks, repair guidance, and source bundle verification prompts.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns low-level bundle command string construction or local/read-only safety policy payloads.
+- Bundle repair guidance, strict bundle checks, task-specific handoff commands, and target-repo handoff prompts keep the existing command and JSON contract.
+- This prepares the remaining bundle check/repair/handoff logic for smaller future module boundaries without changing external behavior.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-commands.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 671 — Website Improvement Prompt Module Split (unreleased)
 
 Website Improvement prompt and handoff report builders now live outside the main site workflow module.
