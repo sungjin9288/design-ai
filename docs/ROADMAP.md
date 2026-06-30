@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 691 — Website Improvement Bundle Handoff Runbook Formatter Split (unreleased)
+
+Website Improvement target-repo handoff runbook line formatting now lives outside the runbook assembly module.
+
+### Changed
+- Moved operator runbook human line formatting into `cli/lib/site-bundle-handoff-runbook-format.mjs`.
+- Kept `cli/lib/site-bundle-handoff-runbook.mjs` responsible for command manifest and operator runbook assembly.
+- Re-exported the existing public formatter from the runbook module so current imports keep working.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same JSON contract and stage metadata.
+- Human runbook lines remain available through the same public helper while formatting logic has a smaller module boundary.
+- Target-repo handoff command manifest, runbook stages, evidence capture metadata, and existing CLI output contracts are unchanged.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook-format.mjs && node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 690 — Website Improvement Bundle Repair Report Split (unreleased)
 
 Website Improvement bundle repair report orchestration now lives outside the public site helper surface.
