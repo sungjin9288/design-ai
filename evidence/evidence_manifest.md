@@ -102,7 +102,7 @@
 | GitHub Pages status | 통과 - documented URL HTTP 200 |
 | GitHub Release status | 통과 - `v4.55.0` published with release asset |
 | Homebrew formula status | 부분 통과 - `v4.55.0` tarball SHA, Ruby syntax, `brew style` passed; path-based `brew audit` blocked by current Homebrew |
-| VS Code Marketplace status | 부분 통과 - `sungjin.design-ai-vscode@0.4.0` public listing 확인, `0.4.1` publish run `28431571256` 성공; public Gallery API는 확인 시점에 visible version `0.4.0` 유지 |
+| VS Code Marketplace status | 통과 - `sungjin.design-ai-vscode@0.4.1` public listing 확인, Gallery API visible version `0.4.1`, browser item URL HTTP 200 |
 | API response capture | 해당 없음 |
 
 ## 제외 원칙

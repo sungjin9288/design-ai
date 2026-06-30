@@ -1,4 +1,4 @@
-## VS Code Marketplace status - 2026-06-30T08:44:00Z
+## VS Code Marketplace status - 2026-06-30T08:49:00Z
 
 # GitHub Actions publish run - public version
 run_id=28430044818
@@ -25,12 +25,11 @@ Publishing 'sungjin.design-ai-vscode v0.4.1'...
 Published sungjin.design-ai-vscode v0.4.1.
 
 # Marketplace public query
-{"resultCount":[{"name":"TotalCount","count":1}],"extensions":[{"publisher":"sungjin","extensionName":"design-ai-vscode","displayName":"design-ai","version":"0.4.0","lastUpdated":"2026-06-30T08:17:50.013Z"}]}
+{"resultCount":[{"name":"TotalCount","count":1}],"extensions":[{"publisher":"sungjin","extensionName":"design-ai-vscode","displayName":"design-ai","version":"0.4.1","lastUpdated":"2026-06-30T08:46:24.057Z"}]}
 
 # Browser item URL check after propagation
 200 https://marketplace.visualstudio.com/items?itemName=sungjin.design-ai-vscode
 
 # Browser item page evidence after 0.4.1 publish
 meta_description=Surfaces 20 skills, 17 commands, 221 worked examples, and website improvement workflows.
-visible_version=0.4.0
-overview_copy_still_cached=223 worked examples
+visible_version=0.4.1

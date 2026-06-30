@@ -2,7 +2,7 @@
 
 How design-ai gets from this repo into adopters' Claude Code installations.
 
-> Distribution status, checked 2026-06-30: local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.55.0` is published, `@design-ai/cli@4.55.0` is public on npm with registry smoke coverage, and `sungjin.design-ai-vscode@0.4.0` is published to the VS Code Marketplace by Gallery API evidence. See [`external-status.md`](external-status.md).
+> Distribution status, checked 2026-06-30: local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.55.0` is published, `@design-ai/cli@4.55.0` is public on npm with registry smoke coverage, and `sungjin.design-ai-vscode@0.4.1` is published to the VS Code Marketplace by Gallery API evidence. See [`external-status.md`](external-status.md).
 
 ## Install paths
 
@@ -49,10 +49,10 @@ The VS Code extension lives in `vscode-extension/`. Public Marketplace publish i
 Current public package:
 
 ```text
-sungjin.design-ai-vscode@0.4.0
+sungjin.design-ai-vscode@0.4.1
 ```
 
-The `0.4.1` listing-copy correction publish run succeeded on 2026-06-30, but the public Gallery API still returned `0.4.0` immediately after propagation checks. Treat `0.4.0` as the visible Marketplace version until the public version query catches up.
+The `0.4.1` listing-copy correction publish run succeeded on 2026-06-30, and the public Gallery API returned visible version `0.4.1` after propagation.
 
 The workflow defaults to `dry_run=true`, which compiles the extension, runs unit tests, packages a `.vsix`, and uploads the VSIX as a workflow artifact without publishing.
 
