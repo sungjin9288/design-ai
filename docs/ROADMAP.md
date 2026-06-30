@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 674 — Website Improvement Bundle Repair Helper Split (unreleased)
+
+Website Improvement bundle repair guidance helpers now live outside the main site workflow module.
+
+### Changed
+- Moved bundle repair command guidance, repair guidance Markdown lines, and before/after repair check summaries into `cli/lib/site-bundle-repair.mjs`.
+- Kept repair preview, repair bundle regeneration, applied repair verification, and bundle check orchestration in `cli/lib/site.mjs`.
+- Reused the extracted repair guidance in bundle check reports, repair reports, and target-repo handoff prompts.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns repair command construction or repair check summary formatting.
+- Bundle repair preview/apply, strict bundle check, and handoff prompt repair sections keep their existing JSON/Markdown output contract.
+- This leaves repair execution in the orchestrator while moving deterministic repair guidance into a smaller module.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-repair.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 673 — Website Improvement Bundle File Helper Split (unreleased)
 
 Website Improvement bundle file, digest, and lightweight validation helpers now live outside the main site workflow module.
