@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 662 — VS Code Extension Dev Dependency Audit Hygiene (unreleased)
+
+VS Code extension development dependencies now install with a clean npm audit report.
+
+### Changed
+- Pinned the Mocha integration-test harness at `11.3.0` to avoid the vulnerable newer `diff` range while keeping the extension e2e runner on the current major.
+- Added npm `overrides` for `js-yaml` and `serialize-javascript` so transitive Mocha audit findings resolve without changing extension runtime dependencies.
+- Refreshed `vscode-extension/package-lock.json` from the updated dependency policy.
+
+### Impact
+- `npm audit --prefix vscode-extension --audit-level=moderate` now reports zero vulnerabilities.
+- The published VSIX runtime surface remains unchanged because the extension still has no production dependencies.
+- The integration test harness still uses Mocha and remains covered by the VS Code extension e2e test.
+
+### Verification Plan
+- `npm audit --prefix vscode-extension --audit-level=moderate`
+- `npm run compile --prefix vscode-extension`
+- `npm test --prefix vscode-extension`
+- `npm run test:e2e --prefix vscode-extension`
+- `npm test`
+- `npm run audit:strict`
+- `git diff --check`
+
 ## Phase 661 — Website Console Revalidation Gate JSON Action Labels (unreleased)
 
 Website Console revalidation gate action buttons now identify that they produce compact gate JSON.
