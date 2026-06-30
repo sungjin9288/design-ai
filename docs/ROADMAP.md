@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 688 — Website Improvement Bundle Compare Report Split (unreleased)
+
+Website Improvement handoff bundle comparison report construction now lives with the compare helpers.
+
+### Changed
+- Moved `buildSiteBundleCompareReport` into `cli/lib/site-bundle-compare.mjs`.
+- Kept `cli/lib/site.mjs` as the public compatibility surface by re-exporting the compare report builder.
+- Preserved compare issue ids, digest comparison, metadata diffing, changed file reporting, and JSON/human formatter contracts.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns bundle comparison report assembly.
+- `design-ai site <bundle-dir> --bundle-compare other-bundle-dir` continues to use the same report shape and formatter outputs.
+- Bundle comparison logic is grouped with its checksum/metadata diff helpers instead of remaining in the workflow orchestration module.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-compare.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 687 — Website Improvement Bundle Check Module Split (unreleased)
 
 Website Improvement handoff bundle validation now lives outside the main site workflow module.

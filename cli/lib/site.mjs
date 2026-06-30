@@ -26,9 +26,7 @@ import {
 } from "./site-bundle-repair.mjs";
 import { buildSiteBundleCheckReport } from "./site-bundle-check.mjs";
 import {
-  buildBundleFileChanges,
-  buildBundleMetadataChanges,
-  summarizeBundleForCompare,
+  buildSiteBundleCompareReport,
 } from "./site-bundle-compare.mjs";
 import {
   buildBundleHandoffCommandManifest,
@@ -72,6 +70,7 @@ export {
 } from "./site-mcp-probes.mjs";
 
 export {
+  buildSiteBundleCompareReport,
   formatSiteBundleCompareHuman,
   formatSiteBundleCompareJson,
 } from "./site-bundle-compare.mjs";
@@ -267,59 +266,6 @@ export function formatSiteBundleRepairHuman(report) {
     "Issues:",
     ...report.issues.map((issue) => `- [${issue.level}] ${issue.id}: ${issue.message}`),
   ].join("\n");
-}
-
-export function buildSiteBundleCompareReport({ target, compareTarget }) {
-  const left = buildSiteBundleCheckReport({ target });
-  const right = buildSiteBundleCheckReport({ target: compareTarget });
-  const issues = [];
-
-  if (left.status === "fail") {
-    addIssue(issues, "fail", "bundle-compare-left-invalid", "Primary bundle must pass bundle-check before comparison can be trusted");
-  } else if (left.status === "warn") {
-    addIssue(issues, "warn", "bundle-compare-left-warn", "Primary bundle has bundle-check warnings; review them before target-repo handoff");
-  }
-  if (right.status === "fail") {
-    addIssue(issues, "fail", "bundle-compare-right-invalid", "Comparison bundle must pass bundle-check before comparison can be trusted");
-  } else if (right.status === "warn") {
-    addIssue(issues, "warn", "bundle-compare-right-warn", "Comparison bundle has bundle-check warnings; review them before target-repo handoff");
-  }
-
-  const leftDigest = left.summary.checksumBundleDigest || "";
-  const rightDigest = right.summary.checksumBundleDigest || "";
-  const digestMatch = Boolean(leftDigest && rightDigest && leftDigest === rightDigest);
-  const changedFiles = buildBundleFileChanges(left, right);
-  const metadataChanges = buildBundleMetadataChanges(left, right);
-  const hasDifferences = !digestMatch || changedFiles.length > 0 || metadataChanges.length > 0;
-  const hasFailures = issues.some((issue) => issue.level === "fail");
-
-  if (issues.length === 0 && !hasDifferences) {
-    addIssue(issues, "pass", "bundle-compare-identical", "Handoff bundles have the same bundle digest and checksum manifest");
-  } else if (!hasFailures && hasDifferences) {
-    addIssue(issues, "warn", "bundle-compare-different", "Handoff bundles differ; review changed files before target-repo handoff");
-  }
-
-  const status = statusFromIssues(issues);
-  return {
-    status,
-    valid: left.valid && right.valid,
-    sameBundle: !hasDifferences,
-    digestMatch,
-    left: summarizeBundleForCompare(left),
-    right: summarizeBundleForCompare(right),
-    counts: {
-      changedFiles: changedFiles.length,
-      metadataChanges: metadataChanges.length,
-      leftIssues: left.issues.length,
-      rightIssues: right.issues.length,
-      issues: issues.length,
-      warnings: issues.filter((issue) => issue.level === "warn").length,
-      failures: issues.filter((issue) => issue.level === "fail").length,
-    },
-    changedFiles,
-    metadataChanges,
-    issues,
-  };
 }
 
 function loadSiteBundleWorkspace(directory) {
