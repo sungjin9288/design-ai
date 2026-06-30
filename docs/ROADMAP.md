@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 681 — Website Improvement Starter Artifact Helper Split (unreleased)
+
+Website Improvement intake template and sample workspace builders now live outside the main site workflow module.
+
+### Changed
+- Moved intake template Markdown/JSON rendering and sample workspace construction into `cli/lib/site-starter.mjs`.
+- Kept `cli/lib/site.mjs` as the public compatibility surface by re-exporting the starter helper API.
+- Preserved the sample workspace as the normalization fallback by importing it from the starter module.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns starter artifact bodies for `--intake-template` and `--sample`.
+- Intake template output, sample workspace output, CLI import paths, and normalization fallback behavior remain behavior-compatible.
+- Starter artifacts now live with their static content dependencies instead of mixing with workspace analysis and bundle orchestration.
+
+### Verification Plan
+- `node --check cli/lib/site-starter.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 680 — Website Improvement Bundle README Helper Split (unreleased)
 
 Website Improvement bundle README and strict handoff guidance builders now live outside the main site workflow module.
