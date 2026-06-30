@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 665 — Website Improvement MCP Probe Helper Split (unreleased)
+
+Website Improvement read-only MCP probe logic now lives outside the main site workflow module.
+
+### Changed
+- Moved URL parsing, GitHub/Figma reference parsing, local repo directory probe checks, probe item construction, and `buildSiteMcpProbeReport` into `cli/lib/site-mcp-probes.mjs`.
+- Re-exported `buildSiteMcpProbeReport` from `cli/lib/site.mjs` so existing tests and consumers keep the same helper import surface.
+- Kept broader MCP readiness scoring and task/MCP gap logic in `cli/lib/site.mjs` for now because it still depends on workspace normalization and task ranking helpers.
+
+### Impact
+- `cli/lib/site.mjs` is smaller and its MCP readiness section now focuses on report assembly rather than low-level URL/path probe mechanics.
+- The probe report remains read-only, makes no external MCP calls, and keeps the same JSON/human output contract.
+- This continues the incremental Website Improvement module split without changing CLI flags, bundle checks, or handoff evidence surfaces.
+
+### Verification Plan
+- `node --check cli/lib/site-mcp-probes.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 664 — Website Improvement Intake Template Content Split (unreleased)
 
 Website Improvement intake template Markdown now lives with the static content catalog instead of the main workflow module.
