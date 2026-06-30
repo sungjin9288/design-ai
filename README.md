@@ -3,7 +3,7 @@
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/)
 [![Knowledge files](https://img.shields.io/badge/knowledge-92-blue)](knowledge/PRINCIPLES.md)
-[![Examples](https://img.shields.io/badge/examples-223-blue)](examples/README.md)
+[![Examples](https://img.shields.io/badge/examples-221-blue)](examples/README.md)
 [![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
 
 > 🇺🇸 English / [🇰🇷 한국어](https://github.com/sungjin9288/design-ai/blob/main/README.ko.md)
@@ -12,14 +12,14 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 
 > **Not a model. Not a fine-tune.** A structured corpus of design expertise + agent-ready instructions that turn a general-purpose LLM into an expert.
 
-> **Distribution status, checked 2026-06-23:** local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.55.0` is published, and `@design-ai/cli@4.55.0` is public on npm with registry smoke coverage. VS Code Marketplace distribution is not currently confirmed. See [`docs/external-status.md`](docs/external-status.md).
+> **Distribution status, checked 2026-06-30:** local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.55.0` is published, `@design-ai/cli@4.55.0` is public on npm with registry smoke coverage, and `sungjin.design-ai-vscode` is public on the VS Code Marketplace. See [`docs/external-status.md`](docs/external-status.md).
 
 ## Coverage at a glance
 
 | Domain | Knowledge | Worked examples | Skill |
 |---|---|---|---|
 | Design tokens (W3C DTCG, OKLCH) | ✓ | ✓ | `color-palette` |
-| Components (Ant + MUI + shadcn synthesis) | ✓ | 47 specs | `component-spec-writer` |
+| Components (Ant + MUI + shadcn synthesis) | ✓ | 210 component specs | `component-spec-writer` |
 | UX patterns (auth, pricing, hero, forms, etc.) | ✓ | ✓ | `ux-audit`, `design-critique` |
 | Website improvement control tower | ✓ | ✓ | `website-improvement` |
 | Korean i18n (Hangul, payments, app store, fintech) | ✓ | ✓ | (cross-cutting) |
@@ -88,7 +88,7 @@ See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution gui
 | **Cursor** | Open this dir; symlink or copy `AGENTS.md` to `.cursorrules`. [Walkthrough](docs/integrations/cursor-walkthrough.md). |
 | **Aider** | Pass `AGENTS.md` as system prompt. [Walkthrough](docs/integrations/aider-walkthrough.md). |
 | **Anthropic / OpenAI SDK** | Embed relevant skill `PLAYBOOK.md` files in your prompt. [Walkthrough](docs/integrations/sdk-walkthrough.md). |
-| **VS Code** | Use the local extension workspace for sidebar tree + quick-pick commands until Marketplace publish is complete. [Walkthrough](docs/integrations/vscode-walkthrough.md). |
+| **VS Code** | Install the public Marketplace extension for sidebar trees + quick-pick commands. [Walkthrough](docs/integrations/vscode-walkthrough.md). |
 | **Plain prompt** | Paste any `skills/*/PLAYBOOK.md` body — each is self-contained. |
 
 See [`docs/USING.md`](docs/USING.md) for per-agent setup details, or the linked walkthroughs for concrete example sessions.
@@ -125,7 +125,7 @@ design-ai/
 │   ├── spatial/             # VR / AR / panels / comfort
 │   └── i18n/                # Korean typography, payments, app store, ...
 │
-├── examples/                # 223 worked outputs (what "good" looks like)
+├── examples/                # 221 worked outputs (what "good" looks like)
 │
 ├── skills/                  # 20 reusable playbooks (task-focused)
 │   ├── design-system-builder/   illustration-designer/

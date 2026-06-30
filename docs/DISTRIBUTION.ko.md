@@ -263,7 +263,6 @@ chown -R $USER ~/.claude
 
 - **Homebrew tap → homebrew-core** — 코퍼스가 안정화되면 정식 등록.
 - **Claude Code 플러그인 마켓플레이스** — 그 생태계가 성숙하면.
-- **VS Code Marketplace publish** — 로컬 확장을 public install surface로 전환.
 - **Docker 이미지** — CI / 샌드박스 환경용.
 
 ## 교차 참조

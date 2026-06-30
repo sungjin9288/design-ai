@@ -5,7 +5,7 @@ Senior product designer for any AI coding agent — now inside VS Code.
 This extension surfaces the [design-ai](https://github.com/sungjin9288/design-ai) corpus directly in your editor:
 
 - **20 design skills** as searchable PLAYBOOKs (color palette, component spec, UX audit, motion, illustration, print, video, game UI, conversational UI, spatial design)
-- **223 worked examples**, including 210 component specs synthesized from Ant Design + MUI + shadcn-ui
+- **221 worked examples**, including 210 component specs synthesized from Ant Design + MUI + shadcn-ui
 - **92 knowledge files** covering tokens, typography, layout, accessibility, Korean i18n, and more
 - **5 integration walkthroughs** (Codex CLI / Cursor / Aider / SDK / VS Code)
 

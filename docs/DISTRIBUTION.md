@@ -235,11 +235,8 @@ Adopters can download the tarball, extract it, and run `./install.sh` directly.
 
 Possibilities (not yet implemented):
 
-- **Homebrew tap** — `brew install design-ai`
 - **Claude Code plugin marketplace** — once that ecosystem matures, list there
-- **VS Code Marketplace publish** — move the local extension wrapper to a public install surface
 - **Docker image** — for CI / sandboxed environments
-- **Public doc site** (mkdocs / docusaurus) — for browsing knowledge without install
 
 ## Troubleshooting
 

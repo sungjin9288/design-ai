@@ -349,6 +349,10 @@ function errorResponse(id, code, message) {
   return { jsonrpc: "2.0", id: id ?? null, error: { code, message } };
 }
 
+function chooseProtocolVersion(requestedVersion) {
+  return requestedVersion === PROTOCOL_VERSION ? requestedVersion : PROTOCOL_VERSION;
+}
+
 export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}) {
   const { id, method, params = {} } = message || {};
 
@@ -356,7 +360,7 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
 
   if (method === "initialize") {
     return successResponse(id, {
-      protocolVersion: params.protocolVersion || PROTOCOL_VERSION,
+      protocolVersion: chooseProtocolVersion(params.protocolVersion),
       capabilities: {
         tools: { listChanged: false },
       },

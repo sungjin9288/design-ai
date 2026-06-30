@@ -10,9 +10,9 @@ git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai && cd ~/d
 
 # After public publish, npm/Homebrew install paths can replace the local clone.
 
-# Install VS Code extension (after Marketplace publish)
-# code --install-extension sungjin.design-ai-vscode
-# Or sideload from .vsix during development
+# Install the public VS Code extension
+code --install-extension sungjin.design-ai-vscode
+# Or sideload from .vsix during local extension development
 ```
 
 ## Setup (60 seconds)

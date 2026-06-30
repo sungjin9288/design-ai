@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import {
   MCP_TOOLS,
   buildCliInvocation,
+  callMcpTool,
   handleMcpRequest,
 } from "./mcp-server.mjs";
 
@@ -39,6 +40,17 @@ test("MCP initialize advertises tool capability and server instructions", async 
   assert.deepEqual(response.result.capabilities, { tools: { listChanged: false } });
   assert.equal(response.result.serverInfo.name, "design-ai");
   assert.match(response.result.instructions, /route briefs/);
+});
+
+test("MCP initialize falls back to the supported protocol version", async () => {
+  const response = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: "init",
+    method: "initialize",
+    params: { protocolVersion: "2099-01-01" },
+  });
+
+  assert.equal(response.result.protocolVersion, "2025-11-25");
 });
 
 test("buildCliInvocation maps MCP tool args to existing CLI commands", () => {
@@ -80,6 +92,36 @@ test("tools/call returns CLI output from injected runner", async () => {
   assert.equal(response.result.isError, false);
   assert.equal(response.result.content[0].type, "text");
   assert.equal(response.result.content[0].text, "{\"hits\":[]}");
+});
+
+test("tools/call reports CLI failures without failing JSON-RPC", async () => {
+  const response = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 3,
+    method: "tools/call",
+    params: {
+      name: "design_ai_search",
+      arguments: { query: "Pretendard" },
+    },
+  }, {
+    runCli: async () => ({ code: 2, stdout: "", stderr: "search failed\n" }),
+  });
+
+  assert.equal(response.error, undefined);
+  assert.equal(response.result.isError, true);
+  assert.match(response.result.content[0].text, /\[stderr\]\nsearch failed/);
+});
+
+test("MCP tool output is truncated before returning to clients", async () => {
+  const result = await callMcpTool("design_ai_version", {}, async () => ({
+    code: 0,
+    stdout: `${"x".repeat(230_000)}\n`,
+    stderr: "",
+  }));
+
+  assert.equal(result.isError, false);
+  assert.ok(Buffer.byteLength(result.content[0].text, "utf8") < 221_000);
+  assert.match(result.content[0].text, /output truncated at 220000 bytes from 230000 bytes/);
 });
 
 test("design-ai MCP stdio subprocess handles initialize, list, and route call", async () => {

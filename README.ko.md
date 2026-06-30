@@ -3,7 +3,7 @@
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/ko/)
 [![Knowledge files](https://img.shields.io/badge/knowledge-92-blue)](knowledge/PRINCIPLES.md)
-[![Examples](https://img.shields.io/badge/examples-223-blue)](examples/README.md)
+[![Examples](https://img.shields.io/badge/examples-221-blue)](examples/README.md)
 [![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
 
 > 🇰🇷 한국어 / [🇺🇸 English](https://github.com/sungjin9288/design-ai/blob/main/README.md)
@@ -12,14 +12,14 @@
 
 > **모델이 아니에요. 파인튜닝도 아니에요.** 디자인 전문 지식을 구조화한 코퍼스 + 에이전트가 바로 실행할 수 있는 지시문이에요. 범용 LLM을 이번 세션에서만큼은 시니어 디자이너로 바꿔주는 셈이에요.
 
-> **배포 상태, 2026-06-23 확인:** 로컬 `npm run release:check`는 통과했고 GitHub Pages 문서는 공개 URL에서 확인됐으며, GitHub Release `v4.55.0`과 npm `@design-ai/cli@4.55.0` publish 및 public registry smoke가 확인됐어요. VS Code Marketplace 배포는 아직 확인되지 않았어요. 자세한 내용은 [`docs/external-status.md`](docs/external-status.md)를 확인하세요.
+> **배포 상태, 2026-06-30 확인:** 로컬 `npm run release:check`는 통과했고 GitHub Pages 문서는 공개 URL에서 확인됐으며, GitHub Release `v4.55.0`, npm `@design-ai/cli@4.55.0`, VS Code Marketplace `sungjin.design-ai-vscode` publish가 확인됐어요. 자세한 내용은 [`docs/external-status.md`](docs/external-status.md)를 확인하세요.
 
 ## 한눈에 보는 커버리지
 
 | 영역 | 지식 | 워크드 예제 | 스킬 |
 |---|---|---|---|
 | 디자인 토큰 (W3C DTCG, OKLCH) | ✓ | ✓ | `color-palette` |
-| 컴포넌트 (Ant + MUI + shadcn 합성) | ✓ | 72 specs | `component-spec-writer` |
+| 컴포넌트 (Ant + MUI + shadcn 합성) | ✓ | 210 component specs | `component-spec-writer` |
 | UX 패턴 (인증, 가격, 히어로, 폼 등) | ✓ | ✓ | `ux-audit`, `design-critique` |
 | 웹사이트 개선 컨트롤 타워 | ✓ | ✓ | `website-improvement` |
 | 한국어 i18n (한글, 결제, 앱스토어, 핀테크) | ✓ | ✓ | (전 영역 적용) |
@@ -120,7 +120,7 @@ design-ai/
 │   ├── spatial/             # VR / AR / 패널 / 편안함
 │   └── i18n/                # 한국어 타이포그래피, 결제, 앱스토어 등
 │
-├── examples/                # 223개 워크드 예제 ("good"이 어떻게 생겼는지)
+├── examples/                # 221개 워크드 예제 ("good"이 어떻게 생겼는지)
 │
 ├── skills/                  # 20개 재사용 가능한 플레이북 (작업 중심)
 ├── agents/                  # 4개 서브 에이전트 (병렬 리뷰)

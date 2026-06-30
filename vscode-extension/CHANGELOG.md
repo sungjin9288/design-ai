@@ -2,6 +2,18 @@
 
 All notable changes to the VS Code extension. Aligned with the design-ai corpus version (`x.y.z`) where possible; the extension may release independently for VS Code-specific fixes.
 
+## 0.4.1 — Marketplace copy correction (2026-06)
+
+Corrects Marketplace listing copy after the public publish.
+
+### Changed
+- README and package description now report 221 worked examples, matching the canonical coverage report.
+
+### Verified
+- `npm run compile`
+- `npm test`
+- `npx --yes @vscode/vsce@latest package`
+
 ## 0.4.0 — Marketplace-ready package (2026-06)
 
 Prepares the VS Code wrapper for public Marketplace distribution.
@@ -13,7 +25,7 @@ Prepares the VS Code wrapper for public Marketplace distribution.
 - Marketplace publish handoff through the manual `Publish VS Code extension` GitHub Actions workflow.
 
 ### Changed
-- README listing copy now reflects the current corpus: 20 skills, 223 worked examples, 92 knowledge files, and 5 integration walkthroughs.
+- README listing copy documented the Marketplace-ready corpus counts: 20 skills, 223 worked examples, 92 knowledge files, and 5 integration walkthroughs.
 - Package metadata and repository links point at `sungjin9288/design-ai`.
 
 ### Verified

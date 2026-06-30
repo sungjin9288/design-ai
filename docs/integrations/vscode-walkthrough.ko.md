@@ -10,9 +10,9 @@ git clone https://github.com/sungjin9288/design-ai.git ~/dev/design-ai && cd ~/d
 
 # public publish 이후에는 npm/Homebrew 설치 경로로 local clone을 대체할 수 있어요.
 
-# VS Code 확장 설치 (Marketplace publish 이후)
-# code --install-extension sungjin.design-ai-vscode
-# 또는 개발 중에는 .vsix 사이드로드
+# 공개 VS Code 확장 설치
+code --install-extension sungjin.design-ai-vscode
+# 또는 로컬 확장 개발 중에는 .vsix 사이드로드
 ```
 
 ## 설치 (60초)
