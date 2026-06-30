@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 690 — Website Improvement Bundle Repair Report Split (unreleased)
+
+Website Improvement bundle repair report orchestration now lives outside the public site helper surface.
+
+### Changed
+- Moved bundle repair preview, repair bundle creation, applied repair report assembly, and JSON/human repair formatters into `cli/lib/site-bundle-repair-report.mjs`.
+- Kept `cli/lib/site.mjs` as a public compatibility surface by re-exporting repair report helpers.
+- Avoided a circular dependency with `cli/lib/site-bundle-check.mjs` by keeping repair guidance helpers in `cli/lib/site-bundle-repair.mjs` and repair orchestration in a separate module.
+
+### Impact
+- `cli/lib/site.mjs` now acts as a compact Website Improvement public export surface instead of owning bundle workflow bodies.
+- `design-ai site <bundle-dir> --bundle-repair` continues to expose the same preview/apply report contracts.
+- Bundle check, repair guidance, and repair report orchestration remain separated by dependency direction.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-repair-report.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 689 — Website Improvement Bundle Handoff Report Split (unreleased)
 
 Website Improvement target-repo handoff report construction now lives outside the main site workflow module.
