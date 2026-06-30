@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 669 — Website Improvement MCP Report Module Split (unreleased)
+
+Website Improvement MCP readiness reports and action plans now live outside the main site workflow module.
+
+### Changed
+- Moved MCP status combination, MCP key normalization, task/MCP gap detection, readiness check report formatting, and MCP action plan rendering into `cli/lib/site-mcp-report.mjs`.
+- Moved shared MCP item and priority option catalogs into `cli/lib/site-options.mjs` so `site.mjs` and MCP report helpers can share them without circular imports.
+- Re-exported the public MCP report/action-plan helpers from `cli/lib/site.mjs` so existing imports keep working.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns MCP readiness report construction or action-plan Markdown rendering.
+- Website Improvement MCP check, probe-aware MCP check, MCP action plan, next-actions, workflow graph, bundle, and handoff flows keep the same output contract.
+- This leaves `site.mjs` closer to orchestration while MCP handoff logic is grouped in a dedicated module for Claude/Codex MCP use.
+
+### Verification Plan
+- `node --check cli/lib/site-options.mjs && node --check cli/lib/site-mcp-report.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 668 — Website Improvement String Helper Split (unreleased)
 
 Website Improvement string normalization and Markdown rendering helpers now live outside the main site workflow module.
