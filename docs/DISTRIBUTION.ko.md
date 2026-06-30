@@ -73,7 +73,7 @@ sungjin.design-ai-vscode@0.4.0
 
 Microsoft의 현재 Marketplace publish 안내에 따르면 Azure DevOps global PAT는 2026-12-01에 retired 돼요. 이번 release handoff에는 `VSCE_PAT`를 사용하되, 그 전까지 Entra ID 기반 publish로 전환하는 계획을 잡아야 해요.
 
-2026-06-30 publish run은 `dry_run=false`로 성공했고 Marketplace Gallery API가 `sungjin.design-ai-vscode` listing 1개를 반환했어요. publish 직후 browser item URL이 `404`를 반환하면 Marketplace propagation을 기다린 뒤 설치 화면 캡처를 진행하세요.
+2026-06-30 publish run은 `dry_run=false`로 성공했고 Marketplace Gallery API가 `sungjin.design-ai-vscode` listing 1개를 반환했으며 browser item URL도 HTTP `200`으로 확인됐어요.
 
 ## CLI 명령어
 

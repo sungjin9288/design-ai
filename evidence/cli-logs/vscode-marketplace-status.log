@@ -1,4 +1,4 @@
-## VS Code Marketplace status - 2026-06-30T08:14:02Z
+## VS Code Marketplace status - 2026-06-30T08:22:00Z
 
 # GitHub Actions publish run
 run_id=28430044818
@@ -13,7 +13,7 @@ Published sungjin.design-ai-vscode v0.4.0.
 Extension URL (might take a few minutes): https://marketplace.visualstudio.com/items?itemName=sungjin.design-ai-vscode
 
 # Marketplace public query
-{"resultCount":[{"name":"TotalCount","count":1}],"extensions":[{"publisher":"sungjin","extensionName":"design-ai-vscode","displayName":"design-ai","version":"0.4.0","lastUpdated":"2026-06-30T08:12:17.557Z"}]}
+{"resultCount":[{"name":"TotalCount","count":1}],"extensions":[{"publisher":"sungjin","extensionName":"design-ai-vscode","displayName":"design-ai","version":"0.4.0","lastUpdated":"2026-06-30T08:17:50.013Z"}]}
 
-# Browser item URL check immediately after publish
-404 https://marketplace.visualstudio.com/items?itemName=sungjin.design-ai-vscode
+# Browser item URL check after propagation
+200 https://marketplace.visualstudio.com/items?itemName=sungjin.design-ai-vscode

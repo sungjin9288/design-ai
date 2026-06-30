@@ -67,7 +67,7 @@ To publish publicly:
 
 Microsoft's current Marketplace publishing guidance warns that Azure DevOps global PATs retire on 2026-12-01. Use `VSCE_PAT` for the current release handoff, then plan a migration to Entra ID based publishing before that date.
 
-The 2026-06-30 publish run completed successfully with `dry_run=false` and the Marketplace Gallery API returned one listing for `sungjin.design-ai-vscode`. If the browser item URL returns `404` immediately after publish, wait for Marketplace propagation before capturing install screenshots.
+The 2026-06-30 publish run completed successfully with `dry_run=false`, the Marketplace Gallery API returned one listing for `sungjin.design-ai-vscode`, and the browser item URL returned HTTP `200`.
 
 ## CLI commands
 
