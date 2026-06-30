@@ -18,6 +18,7 @@ import {
   siteMcpCommandTarget,
 } from "./site-mcp-commands.mjs";
 import { mcpItemReport, siteMcpCheckStatus } from "./site-mcp-readiness.mjs";
+import { markdownList, markdownTable, normalizeStringArray } from "./site-strings.mjs";
 import {
   SITE_BUNDLE_CHECKSUM_FILES,
   SITE_BUNDLE_FILES,
@@ -1196,13 +1197,6 @@ function normalizeEnum(value, allowed, fallback) {
   return allowed.includes(value) ? value : fallback;
 }
 
-function normalizeStringArray(value, fallback = []) {
-  const source = Array.isArray(value) ? value : fallback;
-  return source
-    .map((item) => String(item || "").trim())
-    .filter(Boolean);
-}
-
 function normalizeObject(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
@@ -1763,15 +1757,6 @@ export function formatSiteMcpCheckHuman(report) {
     "",
     "Next actions:",
     ...(report.nextActions.length ? report.nextActions.map((action) => `- ${action}`) : ["- none"]),
-  ].join("\n");
-}
-
-function markdownTable(headers, rows) {
-  const escapeCell = (value) => String(value || "").replace(/\|/g, "\\|").replace(/\n/g, " ");
-  return [
-    `| ${headers.map(escapeCell).join(" | ")} |`,
-    `| ${headers.map(() => "---").join(" | ")} |`,
-    ...rows.map((row) => `| ${row.map(escapeCell).join(" | ")} |`),
   ].join("\n");
 }
 
@@ -5625,12 +5610,6 @@ export function formatSiteBundleHandoffJson(report) {
 
 export function formatSiteBundleHandoffHuman(report) {
   return report.prompt;
-}
-
-function markdownList(items, fallback) {
-  const normalized = normalizeStringArray(items);
-  if (normalized.length === 0) return `- ${fallback}`;
-  return normalized.map((item) => `- ${item}`).join("\n");
 }
 
 function profileBlock(workspace) {

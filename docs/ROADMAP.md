@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 668 — Website Improvement String Helper Split (unreleased)
+
+Website Improvement string normalization and Markdown rendering helpers now live outside the main site workflow module.
+
+### Changed
+- Moved `normalizeStringArray`, `markdownTable`, and `markdownList` into `cli/lib/site-strings.mjs`.
+- Kept the existing Markdown output shape for MCP action plans, workflow graphs, bundle READMEs, handoff reports, and prompt bundles.
+- Left browser-console helpers in `docs/website-console/app.js` untouched because this change only affects the CLI module boundary.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns low-level string cleanup and Markdown table/list rendering.
+- Future Website Improvement action-plan and bundle modules can share the same small formatting helpers without circular imports.
+- Existing CLI JSON/human/Markdown output contracts remain unchanged.
+
+### Verification Plan
+- `node --check cli/lib/site-strings.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 667 — Website Improvement MCP Command Helper Split (unreleased)
 
 Website Improvement MCP readiness command strings now live outside the main site workflow module.
