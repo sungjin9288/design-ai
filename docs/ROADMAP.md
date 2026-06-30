@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 666 — Website Improvement MCP Readiness Helper Split (unreleased)
+
+Website Improvement MCP readiness scoring now lives outside the main site workflow module.
+
+### Changed
+- Moved MCP readiness evidence collection, readiness item construction, and aggregate check status scoring into `cli/lib/site-mcp-readiness.mjs`.
+- Kept task/MCP gap detection in `cli/lib/site.mjs` because it still depends on normalized task metadata and local workspace structures.
+- Left the existing `buildSiteMcpCheckReport` JSON and human report contract unchanged.
+
+### Impact
+- `cli/lib/site.mjs` is smaller and now focuses on command/report assembly rather than low-level MCP readiness rules.
+- MCP readiness, probe output, task gap warnings, and generated next actions keep the same behavior for existing Website Improvement workspaces.
+- This continues the incremental Website Improvement module split while preserving MCP handoff evidence and verification surfaces.
+
+### Verification Plan
+- `node --check cli/lib/site-mcp-readiness.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 665 — Website Improvement MCP Probe Helper Split (unreleased)
 
 Website Improvement read-only MCP probe logic now lives outside the main site workflow module.
