@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 680 — Website Improvement Bundle README Helper Split (unreleased)
+
+Website Improvement bundle README and strict handoff guidance builders now live outside the main site workflow module.
+
+### Changed
+- Moved bundle handoff guidance construction and bundle README Markdown assembly into `cli/lib/site-bundle-readme.mjs`.
+- Kept bundle generation orchestration, checksum creation, and artifact ordering in `cli/lib/site.mjs`.
+- Reused the existing target-repo execution checklist contract from `cli/lib/site-bundle-handoff-summary.mjs`.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns bundle README copy or strict/draft handoff command guidance.
+- Bundle contents, README text, handoff readiness metadata, and existing bundle check behavior remain behavior-compatible.
+- The remaining bundle generation flow is easier to scan because artifact orchestration is separated from README prose assembly.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-readme.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 679 — Website Improvement CLI Argument Parser Split (unreleased)
 
 Website Improvement CLI argument parsing now lives outside the main site workflow module.
