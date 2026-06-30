@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 671 — Website Improvement Prompt Module Split (unreleased)
+
+Website Improvement prompt and handoff report builders now live outside the main site workflow module.
+
+### Changed
+- Moved Codex/Claude prompt rendering, task selection, ordered refactor-task sorting, and Website Improvement handoff report Markdown into `cli/lib/site-prompts.mjs`.
+- Moved audit category catalog and category lookup into `cli/lib/site-options.mjs` so prompts, workflow graphs, task normalization, and reports share one source.
+- Moved default implementation risk normalization into `cli/lib/site-evidence.mjs` so handoff reports and workspace normalization share the same evidence defaults.
+- Re-exported prompt and handoff helpers from `cli/lib/site.mjs` so existing imports keep working.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns Codex/Claude prompt body composition or final handoff report rendering.
+- Bundle creation, bundle handoff, workflow graph, and prompt CLI flows keep their existing output contracts and local-only safety boundaries.
+- This keeps the Website Improvement CLI moving toward smaller, readable modules without weakening verification, evidence, or MCP readiness tracking.
+
+### Verification Plan
+- `node --check cli/lib/site-options.mjs && node --check cli/lib/site-evidence.mjs && node --check cli/lib/site-prompts.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 670 — Website Improvement Next Actions Module Split (unreleased)
 
 Website Improvement next-action reports now live outside the main site workflow module.
