@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 696 — Website Improvement Bundle Handoff Runbook Lookup Assembly Cleanup (unreleased)
+
+Website Improvement target-repo handoff runbook lookup map assembly now uses a small shared helper instead of repeating the same `Object.fromEntries` pattern through the assembly body.
+
+### Changed
+- Added local `byKey`, `fieldByKey`, `stageFieldByKey`, and `actionFieldByKey` helpers inside `buildBundleHandoffOperatorRunbook`.
+- Replaced repeated stage/action lookup map construction with named helper calls while keeping every exported lookup object and key unchanged.
+- Kept nested command lookup maps explicit where they derive arrays from stage commands.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same lookup maps, action rows, summaries, next-action fields, and JSON contract.
+- Target-repo handoff wrappers can continue to read the same `stage*ByKey` and `stageAction*ByKey` objects without migration.
+- No CLI flags, bundle files, target-repo mutation rules, external-call boundaries, evidence fields, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 695 — Website Improvement Bundle Handoff Runbook Stage Metadata Split (unreleased)
 
 Website Improvement target-repo handoff runbook stage dependency and requirement metadata now lives outside the runbook assembly body.
