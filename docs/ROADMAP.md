@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 686 — Website Improvement Generated Contract Helper Split (unreleased)
+
+Website Improvement generated bundle contract helpers now live outside the main site workflow module.
+
+### Changed
+- Moved generated contract construction, drift issue creation, and drift summary formatting into `cli/lib/site-bundle-contract.mjs`.
+- Kept `cli/lib/site.mjs` focused on bundle check and handoff orchestration by importing the generated contract helpers.
+- Preserved generated bundle contract comparison behavior, digest formatting, repair guidance inputs, and bundle check report shape.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns the generated bundle contract helper bodies.
+- Bundle check, bundle repair, bundle compare, and target-repo handoff flows continue to receive the same `generatedContract` data.
+- Generated contract logic now sits beside bundle file/checksum helpers instead of being embedded in the main workflow module.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-contract.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 685 — Website Improvement Handoff Bundle Builder Split (unreleased)
 
 Website Improvement handoff bundle assembly now lives outside the main site workflow module.
