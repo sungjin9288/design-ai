@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 675 — Website Improvement Bundle Compare Helper Split (unreleased)
+
+Website Improvement bundle compare summary, diff, and formatter helpers now live outside the main site workflow module.
+
+### Changed
+- Moved bundle compare summaries, metadata/file diff builders, and JSON/Markdown compare formatters into `cli/lib/site-bundle-compare.mjs`.
+- Kept bundle check orchestration and compare report assembly in `cli/lib/site.mjs` because compare report creation still depends on strict bundle validation.
+- Re-exported compare formatters from `cli/lib/site.mjs` so existing imports keep their public API.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns deterministic compare formatting or checksum diff construction.
+- Bundle compare JSON and human-readable output keep the existing output contract.
+- This narrows the remaining bundle orchestration surface before larger check/handoff boundaries are split.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-compare.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 674 — Website Improvement Bundle Repair Helper Split (unreleased)
 
 Website Improvement bundle repair guidance helpers now live outside the main site workflow module.
