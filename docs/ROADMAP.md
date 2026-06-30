@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 692 — Website Improvement Bundle Handoff Runbook Action Metadata Split (unreleased)
+
+Website Improvement target-repo handoff runbook action metadata now lives outside the runbook assembly body.
+
+### Changed
+- Moved stage action type, labels, instructions, button labels, affordances, status metadata, disabled reasons, and evidence target labels into `cli/lib/site-bundle-handoff-runbook-actions.mjs`.
+- Kept `cli/lib/site-bundle-handoff-runbook.mjs` focused on command manifest input, stage assembly, evidence capture rows, and the final runbook payload.
+- Preserved the existing runbook JSON keys and human output by importing the same helper behavior from the new action metadata module.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps its current public contract while the stage action wording and UI-oriented metadata have a focused module boundary.
+- Target-repo handoff wrappers can still consume the same action fields, status labels, evidence targets, and disabled reason codes.
+- No bundle files, CLI flags, target-repo mutation rules, or external-call boundaries change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook-actions.mjs && node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 691 — Website Improvement Bundle Handoff Runbook Formatter Split (unreleased)
 
 Website Improvement target-repo handoff runbook line formatting now lives outside the runbook assembly module.
