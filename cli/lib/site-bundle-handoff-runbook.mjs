@@ -31,6 +31,16 @@ import {
 import {
   formatBundleHandoffOperatorRunbookStageLine,
 } from "./site-bundle-handoff-runbook-format.mjs";
+import {
+  getStageActionBlockedStageKeys,
+  getStageActionCompletionCriteria,
+  getStageActionDependencyReason,
+  getStageActionDependencyReasonCode,
+  getStageActionEvidenceRequirements,
+  getStageActionPrerequisiteKeys,
+  getStageActionPrerequisiteLabels,
+  getStageLabel,
+} from "./site-bundle-handoff-runbook-stage-metadata.mjs";
 
 export function buildBundleHandoffCommandManifest({
   sourceBundle,
@@ -203,151 +213,102 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     }),
   ];
   const commandStages = stages.filter((stage) => stage.commandCount > 0);
-  const getStageActionPrerequisiteKeys = (stage) => ({
-    verifySourceBundle: [],
-    refreshHandoffSnapshot: [],
-    writeEffectiveTaskPrompt: ["verifySourceBundle"],
-    executeInTargetRepo: ["verifySourceBundle", "writeEffectiveTaskPrompt"],
-    recordEvidence: ["executeInTargetRepo"],
-  }[stage.key] || []);
-  const getStageLabel = (stageKey) => stages.find((stage) => stage.key === stageKey)?.label || stageKey;
-  const getStageActionPrerequisiteLabels = (stage) => getStageActionPrerequisiteKeys(stage).map(getStageLabel);
-  const getStageActionBlockedStageKeys = (stage) => stages
-    .filter((candidate) => getStageActionPrerequisiteKeys(candidate).includes(stage.key))
-    .map((candidate) => candidate.key);
-  const getStageActionDependencyReasonCode = (stage) => (
-    getStageActionPrerequisiteKeys(stage).length > 0 ? "requires-prerequisite-actions" : ""
-  );
-  const getStageActionDependencyReason = (stage) => ({
-    writeEffectiveTaskPrompt: "Complete Verify source bundle integrity before writing the selected task prompt.",
-    executeInTargetRepo: "Complete Verify source bundle integrity and Write effective task handoff prompt before implementing in the target website repo.",
-    recordEvidence: "Complete Execute the task in the target website repo before recording implementation evidence.",
-  }[stage.key] || "");
-  const getStageActionCompletionCriteria = (stage) => ({
-    verifySourceBundle: [
-      "Strict bundle check status is pass.",
-      "Checksum and generated-file drift counts are zero.",
-    ],
-    refreshHandoffSnapshot: [
-      "Strict handoff JSON can be regenerated without target-repo mutation.",
-    ],
-    writeEffectiveTaskPrompt: [
-      "Selected task handoff prompt is written to the expected local Markdown output file.",
-      "Output command remains local-output-file only.",
-    ],
-    executeInTargetRepo: [
-      "Target website repo has scoped implementation changes for the selected task.",
-      "Target repo lint/typecheck/build or equivalent verification has been run.",
-    ],
-    recordEvidence: [
-      "Changed files, verification commands, viewport checks, accessibility checks, remaining risks, and bundle digest are recorded.",
-    ],
-  }[stage.key] || []);
-  const getStageActionEvidenceRequirements = (stage) => ({
-    verifySourceBundle: [
-      "Strict bundle-check command output or JSON status.",
-      "Bundle digest and zero drift counts.",
-    ],
-    refreshHandoffSnapshot: [
-      "Refreshed strict handoff JSON snapshot when a wrapper consumes the latest contract.",
-    ],
-    writeEffectiveTaskPrompt: [
-      "Generated prompt output file path.",
-      "Selected task id and output filename.",
-    ],
-    executeInTargetRepo: [
-      "Target repo changed file list.",
-      "Target repo verification command results.",
-      "Viewport and accessibility check notes for affected pages.",
-    ],
-    recordEvidence: [
-      "Final evidence record includes changed files, verification, viewport/accessibility checks, risks, and bundle digest.",
-    ],
-  }[stage.key] || []);
-  const stageActionRows = stages.map((stage) => ({
-    step: stage.step,
-    key: stage.key,
-    label: stage.label,
-    actionType: getStageActionType(stage),
-    actionLabel: getStageActionLabel(stage),
-    actionInstruction: getStageActionInstruction(stage),
-    actionButtonLabel: getStageActionButtonLabel(stage),
-    actionAffordance: getStageActionAffordance(stage),
-    actionEnabled: getStageActionEnabled(stage),
-    actionStatus: getStageActionStatus(stage),
-    actionStatusLabel: getStageActionStatusLabel(stage),
-    actionStatusTone: getStageActionStatusTone(stage),
-    actionDisabledReasonCode: getStageActionDisabledReasonCode(stage),
-    actionDisabledReason: getStageActionDisabledReason(stage),
-    actionPrerequisiteKeys: getStageActionPrerequisiteKeys(stage),
-    actionPrerequisiteLabels: getStageActionPrerequisiteLabels(stage),
-    actionPrerequisiteCount: getStageActionPrerequisiteKeys(stage).length,
-    actionHasPrerequisites: getStageActionPrerequisiteKeys(stage).length > 0,
-    actionDependencyReasonCode: getStageActionDependencyReasonCode(stage),
-    actionDependencyReason: getStageActionDependencyReason(stage),
-    actionBlockedStageKeys: getStageActionBlockedStageKeys(stage),
-    actionBlockedStageLabels: getStageActionBlockedStageKeys(stage).map(getStageLabel),
-    actionBlockedStageCount: getStageActionBlockedStageKeys(stage).length,
-    actionBlocksStages: getStageActionBlockedStageKeys(stage).length > 0,
-    actionCompletionCriteria: getStageActionCompletionCriteria(stage),
-    actionCompletionCriteriaCount: getStageActionCompletionCriteria(stage).length,
-    actionHasCompletionCriteria: getStageActionCompletionCriteria(stage).length > 0,
-    actionEvidenceRequirements: getStageActionEvidenceRequirements(stage),
-    actionEvidenceRequirementCount: getStageActionEvidenceRequirements(stage).length,
-    actionRequiresEvidence: getStageActionEvidenceRequirements(stage).length > 0,
-    actionEvidenceTarget: getStageActionEvidenceTarget(stage),
-    actionEvidenceTargetLabel: getStageActionEvidenceTargetLabel(stage),
-    actionEvidenceCaptureFields: getStageActionEvidenceCaptureFields(stage),
-    actionEvidenceCaptureFieldKeys: getStageActionEvidenceCaptureFields(stage).map((field) => field.key),
-    actionEvidenceCaptureFieldLabels: getStageActionEvidenceCaptureFields(stage).map((field) => field.label),
-    actionEvidenceCaptureFieldPlaceholders: getStageActionEvidenceCaptureFields(stage).map((field) => field.placeholder),
-    actionEvidenceCaptureFieldRequirementLabels: getStageActionEvidenceCaptureFields(stage).map((field) => field.requirementLabel),
-    actionEvidenceCaptureFieldAriaLabels: getStageActionEvidenceCaptureFields(stage).map((field) => field.ariaLabel),
-    actionEvidenceCaptureFieldHelpTexts: getStageActionEvidenceCaptureFields(stage).map((field) => field.helpText),
-    actionEvidenceCaptureFieldSectionKeys: getStageActionEvidenceCaptureFields(stage).map((field) => field.sectionKey),
-    actionEvidenceCaptureFieldSectionLabels: getStageActionEvidenceCaptureFields(stage).map((field) => field.sectionLabel),
-    actionEvidenceCaptureSectionKeys: uniqueValues(getStageActionEvidenceCaptureFields(stage).map((field) => field.sectionKey)),
-    actionEvidenceCaptureSectionLabels: uniqueValues(getStageActionEvidenceCaptureFields(stage).map((field) => field.sectionLabel)),
-    actionEvidenceCaptureSectionCount: uniqueValues(getStageActionEvidenceCaptureFields(stage).map((field) => field.sectionKey)).length,
-    actionEvidenceCaptureFieldPayloadNamespaces: getStageActionEvidenceCaptureFields(stage).map((field) => field.payloadNamespace),
-    actionEvidenceCaptureFieldPayloadPaths: getStageActionEvidenceCaptureFields(stage).map((field) => field.payloadPath),
-    actionEvidenceCapturePayloadNamespaces: uniqueValues(getStageActionEvidenceCaptureFields(stage).map((field) => field.payloadNamespace)),
-    actionEvidenceCapturePayloadNamespaceCount: uniqueValues(getStageActionEvidenceCaptureFields(stage).map((field) => field.payloadNamespace)).length,
-    actionEvidenceCapturePayloadTemplate: buildEvidenceCapturePayloadTemplate(getStageActionEvidenceCaptureFields(stage)),
-    actionEvidenceCapturePayloadFlatTemplate: buildEvidenceCapturePayloadFlatTemplate(getStageActionEvidenceCaptureFields(stage)),
-    actionEvidenceCapturePayloadBindings: buildEvidenceCapturePayloadBindings(getStageActionEvidenceCaptureFields(stage)),
-    actionEvidenceCaptureValidationSpecs: buildEvidenceCaptureValidationSpecs(getStageActionEvidenceCaptureFields(stage)),
-    actionEvidenceCaptureInitialValidationStates: buildEvidenceCaptureInitialValidationStates(getStageActionEvidenceCaptureFields(stage)),
-    actionEvidenceCaptureInitialValidationDisplayMetadata: buildEvidenceCaptureInitialValidationDisplayMetadata(getStageActionEvidenceCaptureFields(stage)),
-    actionEvidenceCaptureInitialValidationChecklist: buildEvidenceCaptureInitialValidationChecklist(getStageActionEvidenceCaptureFields(stage)),
-    actionEvidenceCaptureInitialValidationChecklistSummary: buildEvidenceCaptureInitialValidationChecklistSummary(getStageActionEvidenceCaptureFields(stage)),
-    actionEvidenceCaptureInitialValidationSummary: buildEvidenceCaptureInitialValidationSummary(getStageActionEvidenceCaptureFields(stage)),
-    actionEvidenceCaptureFieldInputTypes: getStageActionEvidenceCaptureFields(stage).map((field) => field.inputType),
-    actionEvidenceCaptureFieldValueShapes: getStageActionEvidenceCaptureFields(stage).map((field) => field.valueShape),
-    actionEvidenceCaptureFieldAcceptsMultiple: getStageActionEvidenceCaptureFields(stage).map((field) => field.acceptsMultiple),
-    actionEvidenceCaptureFieldDefaultValues: getStageActionEvidenceCaptureFields(stage).map((field) => field.defaultValue),
-    actionEvidenceCaptureFieldEmptyValues: getStageActionEvidenceCaptureFields(stage).map((field) => field.emptyValue),
-    actionEvidenceCaptureFieldValidationRules: getStageActionEvidenceCaptureFields(stage).map((field) => field.validationRule),
-    actionEvidenceCaptureFieldMinLengths: getStageActionEvidenceCaptureFields(stage).map((field) => field.minLength),
-    actionEvidenceCaptureFieldExamples: getStageActionEvidenceCaptureFields(stage).map((field) => field.example),
-    actionEvidenceCaptureFieldValidationHints: getStageActionEvidenceCaptureFields(stage).map((field) => field.validationHint),
-    actionRequiredEvidenceCaptureFieldKeys: getStageActionEvidenceCaptureFields(stage).filter((field) => field.required).map((field) => field.key),
-    actionOptionalEvidenceCaptureFieldKeys: getStageActionEvidenceCaptureFields(stage).filter((field) => !field.required).map((field) => field.key),
-    actionEvidenceCaptureFieldCount: getStageActionEvidenceCaptureFields(stage).length,
-    actionRequiredEvidenceCaptureFieldCount: getStageActionEvidenceCaptureFields(stage).filter((field) => field.required).length,
-    actionOptionalEvidenceCaptureFieldCount: getStageActionEvidenceCaptureFields(stage).filter((field) => !field.required).length,
-    actionHasEvidenceCaptureFields: getStageActionEvidenceCaptureFields(stage).length > 0,
-    required: stage.required,
-    runPolicy: stage.runPolicy,
-    safetyLevel: stage.safetyLevel,
-    commandKeys: stage.commandKeys,
-    commandCount: stage.commandCount,
-    outputFiles: stage.outputFiles,
-    manual: stage.commandCount === 0,
-    writesLocalFile: stage.writesLocalFile,
-    externalCalls: stage.externalCalls,
-    targetRepoMutation: stage.targetRepoMutation,
-  }));
+  const stageActionRows = stages.map((stage) => {
+    const prerequisiteKeys = getStageActionPrerequisiteKeys(stage);
+    const blockedStageKeys = getStageActionBlockedStageKeys(stage, stages);
+    const completionCriteria = getStageActionCompletionCriteria(stage);
+    const evidenceRequirements = getStageActionEvidenceRequirements(stage);
+    const evidenceCaptureFields = getStageActionEvidenceCaptureFields(stage);
+    const evidenceCaptureSectionKeys = uniqueValues(evidenceCaptureFields.map((field) => field.sectionKey));
+    const evidenceCapturePayloadNamespaces = uniqueValues(evidenceCaptureFields.map((field) => field.payloadNamespace));
+    const requiredEvidenceCaptureFields = evidenceCaptureFields.filter((field) => field.required);
+    const optionalEvidenceCaptureFields = evidenceCaptureFields.filter((field) => !field.required);
+
+    return {
+      step: stage.step,
+      key: stage.key,
+      label: stage.label,
+      actionType: getStageActionType(stage),
+      actionLabel: getStageActionLabel(stage),
+      actionInstruction: getStageActionInstruction(stage),
+      actionButtonLabel: getStageActionButtonLabel(stage),
+      actionAffordance: getStageActionAffordance(stage),
+      actionEnabled: getStageActionEnabled(stage),
+      actionStatus: getStageActionStatus(stage),
+      actionStatusLabel: getStageActionStatusLabel(stage),
+      actionStatusTone: getStageActionStatusTone(stage),
+      actionDisabledReasonCode: getStageActionDisabledReasonCode(stage),
+      actionDisabledReason: getStageActionDisabledReason(stage),
+      actionPrerequisiteKeys: prerequisiteKeys,
+      actionPrerequisiteLabels: getStageActionPrerequisiteLabels(stage, stages),
+      actionPrerequisiteCount: prerequisiteKeys.length,
+      actionHasPrerequisites: prerequisiteKeys.length > 0,
+      actionDependencyReasonCode: getStageActionDependencyReasonCode(stage),
+      actionDependencyReason: getStageActionDependencyReason(stage),
+      actionBlockedStageKeys: blockedStageKeys,
+      actionBlockedStageLabels: blockedStageKeys.map((stageKey) => getStageLabel(stages, stageKey)),
+      actionBlockedStageCount: blockedStageKeys.length,
+      actionBlocksStages: blockedStageKeys.length > 0,
+      actionCompletionCriteria: completionCriteria,
+      actionCompletionCriteriaCount: completionCriteria.length,
+      actionHasCompletionCriteria: completionCriteria.length > 0,
+      actionEvidenceRequirements: evidenceRequirements,
+      actionEvidenceRequirementCount: evidenceRequirements.length,
+      actionRequiresEvidence: evidenceRequirements.length > 0,
+      actionEvidenceTarget: getStageActionEvidenceTarget(stage),
+      actionEvidenceTargetLabel: getStageActionEvidenceTargetLabel(stage),
+      actionEvidenceCaptureFields: evidenceCaptureFields,
+      actionEvidenceCaptureFieldKeys: evidenceCaptureFields.map((field) => field.key),
+      actionEvidenceCaptureFieldLabels: evidenceCaptureFields.map((field) => field.label),
+      actionEvidenceCaptureFieldPlaceholders: evidenceCaptureFields.map((field) => field.placeholder),
+      actionEvidenceCaptureFieldRequirementLabels: evidenceCaptureFields.map((field) => field.requirementLabel),
+      actionEvidenceCaptureFieldAriaLabels: evidenceCaptureFields.map((field) => field.ariaLabel),
+      actionEvidenceCaptureFieldHelpTexts: evidenceCaptureFields.map((field) => field.helpText),
+      actionEvidenceCaptureFieldSectionKeys: evidenceCaptureFields.map((field) => field.sectionKey),
+      actionEvidenceCaptureFieldSectionLabels: evidenceCaptureFields.map((field) => field.sectionLabel),
+      actionEvidenceCaptureSectionKeys: evidenceCaptureSectionKeys,
+      actionEvidenceCaptureSectionLabels: uniqueValues(evidenceCaptureFields.map((field) => field.sectionLabel)),
+      actionEvidenceCaptureSectionCount: evidenceCaptureSectionKeys.length,
+      actionEvidenceCaptureFieldPayloadNamespaces: evidenceCaptureFields.map((field) => field.payloadNamespace),
+      actionEvidenceCaptureFieldPayloadPaths: evidenceCaptureFields.map((field) => field.payloadPath),
+      actionEvidenceCapturePayloadNamespaces: evidenceCapturePayloadNamespaces,
+      actionEvidenceCapturePayloadNamespaceCount: evidenceCapturePayloadNamespaces.length,
+      actionEvidenceCapturePayloadTemplate: buildEvidenceCapturePayloadTemplate(evidenceCaptureFields),
+      actionEvidenceCapturePayloadFlatTemplate: buildEvidenceCapturePayloadFlatTemplate(evidenceCaptureFields),
+      actionEvidenceCapturePayloadBindings: buildEvidenceCapturePayloadBindings(evidenceCaptureFields),
+      actionEvidenceCaptureValidationSpecs: buildEvidenceCaptureValidationSpecs(evidenceCaptureFields),
+      actionEvidenceCaptureInitialValidationStates: buildEvidenceCaptureInitialValidationStates(evidenceCaptureFields),
+      actionEvidenceCaptureInitialValidationDisplayMetadata: buildEvidenceCaptureInitialValidationDisplayMetadata(evidenceCaptureFields),
+      actionEvidenceCaptureInitialValidationChecklist: buildEvidenceCaptureInitialValidationChecklist(evidenceCaptureFields),
+      actionEvidenceCaptureInitialValidationChecklistSummary: buildEvidenceCaptureInitialValidationChecklistSummary(evidenceCaptureFields),
+      actionEvidenceCaptureInitialValidationSummary: buildEvidenceCaptureInitialValidationSummary(evidenceCaptureFields),
+      actionEvidenceCaptureFieldInputTypes: evidenceCaptureFields.map((field) => field.inputType),
+      actionEvidenceCaptureFieldValueShapes: evidenceCaptureFields.map((field) => field.valueShape),
+      actionEvidenceCaptureFieldAcceptsMultiple: evidenceCaptureFields.map((field) => field.acceptsMultiple),
+      actionEvidenceCaptureFieldDefaultValues: evidenceCaptureFields.map((field) => field.defaultValue),
+      actionEvidenceCaptureFieldEmptyValues: evidenceCaptureFields.map((field) => field.emptyValue),
+      actionEvidenceCaptureFieldValidationRules: evidenceCaptureFields.map((field) => field.validationRule),
+      actionEvidenceCaptureFieldMinLengths: evidenceCaptureFields.map((field) => field.minLength),
+      actionEvidenceCaptureFieldExamples: evidenceCaptureFields.map((field) => field.example),
+      actionEvidenceCaptureFieldValidationHints: evidenceCaptureFields.map((field) => field.validationHint),
+      actionRequiredEvidenceCaptureFieldKeys: requiredEvidenceCaptureFields.map((field) => field.key),
+      actionOptionalEvidenceCaptureFieldKeys: optionalEvidenceCaptureFields.map((field) => field.key),
+      actionEvidenceCaptureFieldCount: evidenceCaptureFields.length,
+      actionRequiredEvidenceCaptureFieldCount: requiredEvidenceCaptureFields.length,
+      actionOptionalEvidenceCaptureFieldCount: optionalEvidenceCaptureFields.length,
+      actionHasEvidenceCaptureFields: evidenceCaptureFields.length > 0,
+      required: stage.required,
+      runPolicy: stage.runPolicy,
+      safetyLevel: stage.safetyLevel,
+      commandKeys: stage.commandKeys,
+      commandCount: stage.commandCount,
+      outputFiles: stage.outputFiles,
+      manual: stage.commandCount === 0,
+      writesLocalFile: stage.writesLocalFile,
+      externalCalls: stage.externalCalls,
+      targetRepoMutation: stage.targetRepoMutation,
+    };
+  });
   const stageKeys = stages.map((stage) => stage.key);
   const stageByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage]));
   const stageLabelByKey = Object.fromEntries(stages.map((stage) => [stage.key, stage.label]));

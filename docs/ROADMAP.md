@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 695 — Website Improvement Bundle Handoff Runbook Stage Metadata Split (unreleased)
+
+Website Improvement target-repo handoff runbook stage dependency and requirement metadata now lives outside the runbook assembly body.
+
+### Changed
+- Moved stage prerequisite, blocked-stage, dependency reason, completion criteria, and evidence requirement helpers into `cli/lib/site-bundle-handoff-runbook-stage-metadata.mjs`.
+- Kept `cli/lib/site-bundle-handoff-runbook.mjs` focused on building stages, action rows, lookup maps, summaries, and the final operator runbook payload.
+- Reworked action row assembly to compute prerequisite, blocking, completion, evidence requirement, and evidence capture values once per stage before writing the public row fields.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same stage action dependency, completion criteria, evidence requirement, and evidence capture JSON contract.
+- Target-repo handoff wrappers can continue to read the same prerequisite keys, blocked-stage labels, dependency reason codes, completion criteria, evidence requirements, payload templates, and validation metadata.
+- No CLI flags, bundle files, target-repo mutation rules, external-call boundaries, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook-stage-metadata.mjs && node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 694 — Website Improvement Bundle Handoff Runbook Evidence Field Split (unreleased)
 
 Website Improvement target-repo handoff runbook stage-specific evidence field definitions now live outside the runbook assembly body.
