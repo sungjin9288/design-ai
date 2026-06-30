@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 676 — Website Improvement Bundle Handoff Runbook Helper Split (unreleased)
+
+Website Improvement bundle handoff command manifest and operator runbook helpers now live outside the main site workflow module.
+
+### Changed
+- Moved bundle handoff command manifest construction, operator runbook assembly, and runbook Markdown line formatting into `cli/lib/site-bundle-handoff-runbook.mjs`.
+- Kept bundle validation, task selection, prompt construction, and final handoff report assembly in `cli/lib/site.mjs`.
+- Reused the extracted runbook helpers from the existing bundle handoff report path without changing JSON or human-readable output contracts.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns the large deterministic operator runbook payload builder.
+- Bundle handoff JSON snapshots, task command manifests, evidence capture metadata, and target-repo prompt output remain behavior-compatible.
+- This leaves the remaining handoff flow easier to read because report orchestration is separated from runbook payload construction.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 675 — Website Improvement Bundle Compare Helper Split (unreleased)
 
 Website Improvement bundle compare summary, diff, and formatter helpers now live outside the main site workflow module.
