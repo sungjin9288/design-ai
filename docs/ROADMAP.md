@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 685 — Website Improvement Handoff Bundle Builder Split (unreleased)
+
+Website Improvement handoff bundle assembly now lives outside the main site workflow module.
+
+### Changed
+- Moved `buildSiteHandoffBundle` into `cli/lib/site-bundle-build.mjs`.
+- Kept `cli/lib/site.mjs` as the public compatibility surface by re-exporting the bundle builder.
+- Preserved bundle summary, file ordering, checksums, README generation, MCP artifacts, and prompt artifacts without changing output contracts.
+
+### Impact
+- `cli/lib/site.mjs` no longer owns the handoff bundle file assembly body.
+- Existing imports from `cli/lib/site.mjs`, `design-ai site --bundle`, bundle repair, generated-contract comparison, and bundle handoff flows remain behavior-compatible.
+- Bundle construction is now grouped with its deterministic artifact dependencies while bundle check/repair orchestration remains in the main workflow module.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-build.mjs && node --check cli/lib/site.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 684 — Website Improvement Task and Workflow Graph Helper Split (unreleased)
 
 Website Improvement generated task planning and portable workflow graph rendering now live outside the main site workflow module.
