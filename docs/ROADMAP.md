@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 699 — Website Improvement Bundle Handoff Runbook Stage Command Lookup Cleanup (unreleased)
+
+Website Improvement target-repo handoff runbook stage command lookup maps now use named helpers instead of repeating command-list mapping expressions inline.
+
+### Changed
+- Added local `commandListByKey` and `stageKeysBy` helpers inside `buildBundleHandoffOperatorRunbook`.
+- Replaced repeated stage command label, command string, command args, run policy, and safety-level lookup map construction with `commandListByKey`.
+- Replaced command/manual stage key list construction with `stageKeysBy` while keeping the exported arrays unchanged.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same command lookup maps, stage key arrays, action summaries, and JSON contract.
+- Target-repo handoff wrappers can continue to consume the same stage command metadata without migration.
+- No CLI flags, bundle files, target-repo mutation rules, external-call boundaries, evidence fields, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 698 — Website Improvement Bundle Handoff Runbook Human Line Summary Cleanup (unreleased)
 
 Website Improvement target-repo handoff runbook human-line display summaries and first-action key fields now use small named helpers instead of repeating row and action scans inline.
