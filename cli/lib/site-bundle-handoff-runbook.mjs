@@ -551,20 +551,29 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     ...stageHumanLineDisplayRowEvidenceProgressSummary,
     ...stageHumanLineDisplayRowFirstKeySummary,
   };
-  const stageHumanLineSummary = {
+  const stageHumanLineCountSummary = {
     count: stageHumanLines.length,
     byKeyCount: Object.keys(stageHumanLineByKey).length,
     requiredCount: countBy(isRequiredStage),
     optionalCount: countBy(isOptionalStage),
     commandCount: countBy(hasCommands),
     manualCount: countBy(isManualStage),
+  };
+  const stageHumanLineEvidenceProgressSummary = {
     evidenceProgressCount: countActions(hasEvidenceProgress),
     blockedEvidenceProgressCount: countActions(hasBlockedEvidenceProgress),
     readyEvidenceProgressCount: countActions(hasReadyEvidenceProgress),
+  };
+  const stageHumanLineFirstValueSummary = {
     firstStageKey: stages[0]?.key || "",
     firstLine: stageHumanLines[0] || "",
     firstEvidenceProgressStageKey: firstActionKey(hasEvidenceProgress),
     firstBlockedEvidenceProgressStageKey: firstActionKey(hasBlockedEvidenceProgress),
+  };
+  const stageHumanLineSummary = {
+    ...stageHumanLineCountSummary,
+    ...stageHumanLineEvidenceProgressSummary,
+    ...stageHumanLineFirstValueSummary,
   };
   const stageActionEvidenceCaptureFieldInputTypesByKey = actionFieldByKey("actionEvidenceCaptureFieldInputTypes");
   const stageActionEvidenceCaptureFieldValueShapesByKey = actionFieldByKey("actionEvidenceCaptureFieldValueShapes");

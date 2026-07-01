@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 727 — Website Improvement Bundle Handoff Human Line Summary Snapshot Cleanup (unreleased)
+
+Website Improvement bundle handoff runbook human-line summary now groups count, evidence-progress, and first-value fields into named internal snapshots before returning the same summary fields.
+
+### Changed
+- Added internal human-line summary snapshots for base counts, evidence-progress counts, and first stage/line values.
+- Replaced the long inline `stageHumanLineSummary` assembly with snapshot spreads while keeping the existing summary field names unchanged.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same `stageHumanLineSummary` contract.
+- Website Improvement handoff wrappers and tests can continue to consume the same human-line count, progress, and first-value summary fields without migration.
+- No CLI flags, bundle files, command manifest fields, stage/action/evidence field names, validation status values, next-action keys, target-repo mutation rules, external-call boundaries, human runbook lines, or generated output files change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run release:check`
+
 ## Phase 726 — Website Improvement Bundle Handoff Human Line Display Row Summary Snapshot Cleanup (unreleased)
 
 Website Improvement bundle handoff runbook human-line display row summary now groups count, action-status, evidence-progress, and first-key fields into named internal snapshots before returning the same summary fields.
