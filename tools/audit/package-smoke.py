@@ -379,6 +379,18 @@ def npm_exec_cmd(tarball: Path, *args: str) -> list[str]:
     ]
 
 
+def npm_exec_mcp_cmd(tarball: Path) -> list[str]:
+    return [
+        "npm",
+        "exec",
+        "--yes",
+        "--package",
+        str(tarball),
+        "--",
+        "design-ai-mcp",
+    ]
+
+
 def npm_exec_shell_cmd(tarball: Path, script: str) -> list[str]:
     return [
         "npm",
@@ -531,6 +543,111 @@ def fail_package_smoke(context: str, cmd: list[str], message: str) -> None:
 def require_package_smoke(condition: bool, *, context: str, cmd: list[str], message: str) -> None:
     if not condition:
         fail_package_smoke(context, cmd, message)
+
+
+def mcp_smoke_input() -> str:
+    messages = [
+        {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-11-25"}},
+        {"jsonrpc": "2.0", "method": "notifications/initialized"},
+        {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
+        {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "tools/call",
+            "params": {
+                "name": "design_ai_search",
+                "arguments": {"query": "Pretendard", "limit": "10"},
+            },
+        },
+    ]
+    return "".join(f"{json.dumps(message, separators=(',', ':'))}\n" for message in messages)
+
+
+def assert_design_ai_mcp_protocol_responses(responses: list[object], *, context: str, cmd: list[str]) -> None:
+    by_id = {
+        response.get("id"): response
+        for response in responses
+        if isinstance(response, dict) and "id" in response
+    }
+    init = by_id.get(1)
+    tools = by_id.get(2)
+    invalid_call = by_id.get(3)
+
+    require_package_smoke(
+        isinstance(init, dict) and init.get("result", {}).get("serverInfo", {}).get("name") == "design-ai",
+        context=context,
+        cmd=cmd,
+        message="MCP initialize response missing design-ai serverInfo",
+    )
+    tool_names = [
+        item.get("name")
+        for item in tools.get("result", {}).get("tools", [])
+    ] if isinstance(tools, dict) else []
+    require_package_smoke(
+        "design_ai_route" in tool_names and "design_ai_search" in tool_names,
+        context=context,
+        cmd=cmd,
+        message="MCP tools/list response missing design-ai tools",
+    )
+    invalid_text = ""
+    if isinstance(invalid_call, dict):
+        content = invalid_call.get("result", {}).get("content", [])
+        if content and isinstance(content[0], dict):
+            invalid_text = str(content[0].get("text", ""))
+    require_package_smoke(
+        isinstance(invalid_call, dict)
+        and invalid_call.get("result", {}).get("isError") is True
+        and "design_ai_search.limit must be an integer" in invalid_text,
+        context=context,
+        cmd=cmd,
+        message="MCP invalid argument response did not preserve typed validation",
+    )
+
+
+def assert_design_ai_mcp_protocol_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None,
+    context: str,
+) -> None:
+    print(f"$ {format_cmd(cmd)} < MCP smoke", flush=True)
+    result = subprocess.run(
+        cmd,
+        cwd=cwd,
+        env=env,
+        input=mcp_smoke_input(),
+        text=True,
+        capture_output=True,
+        timeout=15,
+    )
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+
+    if is_npm_exec_cache_enoent(cmd, result):
+        result = retry_npm_exec_once(cmd, cwd=cwd, env=env, input_text=mcp_smoke_input())
+        if result.stdout:
+            print(result.stdout, end="")
+        if result.stderr:
+            print(result.stderr, end="", file=sys.stderr)
+
+    if result.returncode != 0:
+        raise SystemExit(f"command failed with exit code {result.returncode}: {format_cmd(cmd)}")
+
+    output = f"{result.stdout}\n{result.stderr}"
+    assert_no_ansi(output, cmd)
+
+    responses = []
+    for line in result.stdout.splitlines():
+        if not line.strip():
+            continue
+        try:
+            responses.append(json.loads(line))
+        except json.JSONDecodeError as error:
+            fail_package_smoke(context, cmd, f"MCP stdout line is not JSON: {error}")
+    assert_design_ai_mcp_protocol_responses(responses, context=context, cmd=cmd)
 
 
 def run_expected_failure(
@@ -12482,6 +12599,43 @@ def run_self_test() -> None:
         site_bundle_mcp_probes_payload,
         context=f"{context} site bundle mcp-probes.json",
     )
+    mcp_protocol_cmd = ["design-ai-mcp"]
+    assert_design_ai_mcp_protocol_responses(
+        [
+            {"jsonrpc": "2.0", "id": 1, "result": {"serverInfo": {"name": "design-ai"}}},
+            {"jsonrpc": "2.0", "id": 2, "result": {"tools": [{"name": "design_ai_route"}, {"name": "design_ai_search"}]}},
+            {
+                "jsonrpc": "2.0",
+                "id": 3,
+                "result": {
+                    "isError": True,
+                    "content": [{"type": "text", "text": "design_ai_search.limit must be an integer"}],
+                },
+            },
+        ],
+        context=f"{context} design-ai MCP protocol",
+        cmd=mcp_protocol_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_design_ai_mcp_protocol_responses(
+            [
+                {"jsonrpc": "2.0", "id": 1, "result": {"serverInfo": {"name": "design-ai"}}},
+                {"jsonrpc": "2.0", "id": 2, "result": {"tools": [{"name": "design_ai_route"}, {"name": "design_ai_search"}]}},
+                {
+                    "jsonrpc": "2.0",
+                    "id": 3,
+                    "result": {
+                        "isError": True,
+                        "content": [{"type": "text", "text": "wrong validation message"}],
+                    },
+                },
+            ],
+            context=f"{context} design-ai MCP protocol",
+            cmd=mcp_protocol_cmd,
+        ),
+        expected="MCP invalid argument response did not preserve typed validation",
+        scope="package smoke",
+    )
     for label in (
         "site bundle check",
         "site bundle check summary",
@@ -19602,6 +19756,9 @@ def smoke_tarball(tarball: Path) -> None:
         bin_path = install_root / "node_modules" / ".bin" / "design-ai"
         if not bin_path.exists():
             raise SystemExit(f"design-ai bin shim not found: {bin_path}")
+        mcp_bin_path = install_root / "node_modules" / ".bin" / "design-ai-mcp"
+        if not mcp_bin_path.exists():
+            raise SystemExit(f"design-ai-mcp bin shim not found: {mcp_bin_path}")
 
         smoke_env = base_env.copy()
         smoke_env.update({
@@ -19619,6 +19776,12 @@ def smoke_tarball(tarball: Path) -> None:
             [str(bin_path), "version", "--json"],
             env=smoke_env,
             context="package smoke installed bin version JSON",
+        )
+        assert_design_ai_mcp_protocol_smoke(
+            [str(mcp_bin_path)],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin design-ai-mcp protocol",
         )
         assert_workspace_json_smoke(
             [str(bin_path), "workspace", "--json"],
@@ -20998,6 +21161,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec version JSON",
+        )
+        assert_design_ai_mcp_protocol_smoke(
+            npm_exec_mcp_cmd(tarball),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec design-ai-mcp protocol",
         )
         assert_workspace_json_smoke(
             npm_exec_cmd(tarball, "workspace", "--json"),

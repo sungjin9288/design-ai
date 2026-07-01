@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 733 — design-ai MCP Package Entrypoint Smoke Coverage (unreleased)
+
+Packed-tarball release smoke now verifies the standalone `design-ai-mcp` bin after package installation and through one-shot `npm exec`, so Claude Code and Codex MCP setup cannot silently lose the stdio server entrypoint.
+
+### Changed
+- Added a package-smoke MCP protocol helper that sends `initialize`, `tools/list`, and invalid `tools/call` JSON-RPC messages over stdin.
+- Verified the installed `node_modules/.bin/design-ai-mcp` shim and the one-shot `npm exec --package <tarball> -- design-ai-mcp` path.
+- Added self-test coverage for the MCP protocol assertion so typed argument validation remains visible in package smoke failures.
+
+### Impact
+- Release smoke now covers the actual MCP server bin that Claude Code and Codex configuration examples use.
+- The smoke keeps the same protocol version, tool names, JSON-RPC response shape, and typed validation message checked by unit tests.
+- No CLI commands, package names, Website Improvement readiness outputs, external MCP calls, target-repo mutation rules, or learning writes change.
+
+### Verification Plan
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `npm run package:smoke:self-test`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run release:check`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 732 — design-ai MCP Tool Argument Validation (unreleased)
 
 The design-ai MCP server now validates tool arguments before invoking the CLI, so Claude Code and Codex get immediate, typed feedback for malformed tool calls instead of opaque downstream command failures.

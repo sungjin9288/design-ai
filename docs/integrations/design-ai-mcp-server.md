@@ -145,6 +145,12 @@ Run the unit and subprocess smoke tests:
 node --test cli/lib/mcp-server.test.mjs
 ```
 
+Run the package smoke self-test when changing the packaged MCP entrypoint:
+
+```bash
+npm run package:smoke:self-test
+```
+
 Run a protocol smoke manually:
 
 ```bash
@@ -155,6 +161,8 @@ printf '%s\n' \
 ```
 
 The output must contain valid one-line JSON-RPC responses and a `tools` list.
+
+The packed-tarball release smoke also checks `design-ai-mcp` after install and through one-shot `npm exec`, so package releases catch missing bin shims or broken stdio startup before publish.
 
 ## Troubleshooting
 
