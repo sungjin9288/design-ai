@@ -109,8 +109,14 @@ export function buildBundleHandoffCommandManifest({
   }
 
   const countBy = (predicate) => commands.filter(predicate).length;
+  const isSourceBundleCommand = (command) => command.scope === "source-bundle";
+  const isTaskHandoffCommand = (command) => command.scope === "task-handoff";
   const usesReadOnlyRunPolicy = (command) => command.runPolicy === "read-only";
   const usesLocalOutputRunPolicy = (command) => command.runPolicy === "writes-local-file";
+  const hasExternalCallSafety = (command) => command.safety?.externalCalls === true;
+  const hasTargetRepoMutationSafety = (command) => command.safety?.targetRepoMutation === true;
+  const requiresCleanWorkspaceSafety = (command) => command.safety?.requiresCleanWorkspace === true;
+  const requiresReviewBeforeMutationSafety = (command) => command.safety?.requiresReviewBeforeMutation === true;
   const effectiveTaskId = effectiveTask?.id || "";
   const selectedTaskId = selectedTask?.id || "";
   const defaultTaskId = defaultTask?.id || "";
@@ -118,14 +124,14 @@ export function buildBundleHandoffCommandManifest({
     version: 1,
     source: "bundle-handoff",
     commandCount: commands.length,
-    sourceCommandCount: countBy((command) => command.scope === "source-bundle"),
-    taskCommandCount: countBy((command) => command.scope === "task-handoff"),
+    sourceCommandCount: countBy(isSourceBundleCommand),
+    taskCommandCount: countBy(isTaskHandoffCommand),
     readOnlyCount: countBy(usesReadOnlyRunPolicy),
     localOutputFileCount: countBy(usesLocalOutputRunPolicy),
-    externalCallCount: countBy((command) => command.safety?.externalCalls === true),
-    targetRepoMutationCount: countBy((command) => command.safety?.targetRepoMutation === true),
-    requiresCleanWorkspaceCount: countBy((command) => command.safety?.requiresCleanWorkspace === true),
-    requiresReviewBeforeMutationCount: countBy((command) => command.safety?.requiresReviewBeforeMutation === true),
+    externalCallCount: countBy(hasExternalCallSafety),
+    targetRepoMutationCount: countBy(hasTargetRepoMutationSafety),
+    requiresCleanWorkspaceCount: countBy(requiresCleanWorkspaceSafety),
+    requiresReviewBeforeMutationCount: countBy(requiresReviewBeforeMutationSafety),
     defaultTaskId,
     selectedTaskId,
     effectiveTaskId,
@@ -223,9 +229,13 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   ];
   const hasCommands = (stage) => stage.commandCount > 0;
   const isManualStage = (stage) => !hasCommands(stage);
+  const isRequiredStage = (stage) => stage.required;
+  const isOptionalStage = (stage) => !stage.required;
   const usesReadOnlyRunPolicy = (stage) => stage.runPolicy === "read-only";
   const usesLocalOutputRunPolicy = (stage) => stage.runPolicy === "writes-local-file";
   const hasOutputFile = (stage) => stage.outputFiles.length > 0;
+  const callsExternalSystem = (stage) => stage.externalCalls;
+  const mutatesTargetRepo = (stage) => stage.targetRepoMutation;
   const commandStages = stages.filter(hasCommands);
   const stageActionRows = stages.map((stage) => {
     const prerequisiteKeys = getStageActionPrerequisiteKeys(stage);
@@ -472,8 +482,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageHumanLineSummary = {
     count: stageHumanLines.length,
     byKeyCount: Object.keys(stageHumanLineByKey).length,
-    requiredCount: countBy((stage) => stage.required),
-    optionalCount: countBy((stage) => !stage.required),
+    requiredCount: countBy(isRequiredStage),
+    optionalCount: countBy(isOptionalStage),
     commandCount: countBy(hasCommands),
     manualCount: countBy(isManualStage),
     evidenceProgressCount: countActions(hasEvidenceProgress),
@@ -705,13 +715,13 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       (field) => field.minLength,
     ),
     maxEvidenceCaptureFieldMinLength: maxEvidenceCaptureFieldValue((field) => field.minLength),
-    requiredActionCount: countBy((stage) => stage.required),
-    optionalActionCount: countBy((stage) => !stage.required),
+    requiredActionCount: countBy(isRequiredStage),
+    optionalActionCount: countBy(isOptionalStage),
     readOnlyActionCount: countBy(usesReadOnlyRunPolicy),
     localOutputActionCount: countBy(usesLocalOutputRunPolicy),
     outputFileActionCount: countBy(hasOutputFile),
-    externalCallActionCount: countBy((stage) => stage.externalCalls),
-    targetRepoMutationActionCount: countBy((stage) => stage.targetRepoMutation),
+    externalCallActionCount: countBy(callsExternalSystem),
+    targetRepoMutationActionCount: countBy(mutatesTargetRepo),
     nextActionKey: nextStageKey,
     nextActionType: nextActionValue("actionType"),
     nextActionLabel: nextActionValue("actionLabel"),
@@ -780,10 +790,10 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionHasEvidenceCaptureFields: nextActionFlag("actionHasEvidenceCaptureFields"),
     nextActionRunPolicy: nextStageValue("runPolicy"),
     nextActionSafetyLevel: nextStageValue("safetyLevel"),
-    firstRequiredCommandStageKey: firstStageKey((stage) => stage.required && hasCommands(stage)),
+    firstRequiredCommandStageKey: firstStageKey((stage) => isRequiredStage(stage) && hasCommands(stage)),
     firstLocalOutputStageKey: firstStageKey((stage) => stage.writesLocalFile),
     firstManualStageKey: firstStageKey(isManualStage),
-    firstRequiredManualStageKey: firstStageKey((stage) => stage.required && isManualStage(stage)),
+    firstRequiredManualStageKey: firstStageKey((stage) => isRequiredStage(stage) && isManualStage(stage)),
     firstEvidenceStageKey: firstStageKey((stage) => stage.kind === "manual-reporting"),
     firstActionWithPrerequisiteKey: firstActionKey((stage) => stage.actionHasPrerequisites),
     firstManualActionWithPrerequisiteKey: firstActionKey((stage) => stage.manual && stage.actionHasPrerequisites),
@@ -805,8 +815,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstValidationRuleEvidenceCaptureActionKey: firstActionWithEvidenceCaptureField((field) => field.validationRule),
     requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
     requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
-    externalCalls: stages.some((stage) => stage.externalCalls),
-    targetRepoMutation: stages.some((stage) => stage.targetRepoMutation),
+    externalCalls: stages.some(callsExternalSystem),
+    targetRepoMutation: stages.some(mutatesTargetRepo),
   };
   return {
     version: 1,
@@ -814,12 +824,12 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageCount: stages.length,
     commandStageCount: commandStages.length,
     manualStageCount: countBy(isManualStage),
-    requiredStageCount: countBy((stage) => stage.required),
-    optionalStageCount: countBy((stage) => !stage.required),
+    requiredStageCount: countBy(isRequiredStage),
+    optionalStageCount: countBy(isOptionalStage),
     readOnlyCommandStageCount: countBy(usesReadOnlyRunPolicy),
     localOutputCommandStageCount: countBy(usesLocalOutputRunPolicy),
-    externalCallCommandStageCount: countBy((stage) => stage.externalCalls),
-    targetRepoMutationCommandStageCount: countBy((stage) => stage.targetRepoMutation),
+    externalCallCommandStageCount: countBy(callsExternalSystem),
+    targetRepoMutationCommandStageCount: countBy(mutatesTargetRepo),
     effectiveTaskId: commandManifest?.effectiveTaskId || "",
     effectiveStrictTaskCommandKey,
     stageKeys,

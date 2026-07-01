@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 713 — Website Improvement Bundle Handoff Runbook Scope and Safety Predicate Cleanup (unreleased)
+
+Website Improvement bundle handoff command and operator summaries now use named predicates for command scope, safety flags, required stages, and external/target-repo boundary counts.
+
+### Changed
+- Added command-manifest predicates for source-bundle and task-handoff scope counts.
+- Added command-manifest safety predicates for external calls, target-repo mutation, clean-workspace requirements, and review-before-mutation requirements.
+- Added runbook-stage predicates for required/optional stages and external/target-repo boundary checks.
+- Reused those predicates in manifest counts, action summaries, first-stage lookups, returned stage counts, and top-level boundary booleans.
+
+### Impact
+- `buildBundleHandoffCommandManifest` keeps the same command count and safety count fields.
+- `buildBundleHandoffOperatorRunbook` keeps the same stage count, action summary, first-stage key, and boundary fields.
+- Website Improvement handoff wrappers can continue to consume the same manifest and runbook contracts without migration.
+- No CLI flags, bundle files, command manifest field names, target-repo mutation rules, external-call boundaries, evidence field names, action counts, first-stage keys, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 712 — Website Improvement Bundle Handoff Runbook Run Policy Predicate Cleanup (unreleased)
 
 Website Improvement bundle handoff command and operator summaries now use named predicates for read-only and local-output run policy counts.
