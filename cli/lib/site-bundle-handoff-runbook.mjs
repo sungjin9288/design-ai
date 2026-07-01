@@ -680,7 +680,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceTarget: nextActionField("actionEvidenceTarget"),
     nextStageActionEvidenceTargetLabel: nextActionField("actionEvidenceTargetLabel"),
   };
-  const nextStageEvidenceCapture = {
+  const nextStageEvidenceCaptureFieldMetadata = {
     nextStageActionEvidenceCaptureFields: nextActionListField("actionEvidenceCaptureFields"),
     nextStageActionEvidenceCaptureFieldKeys: nextActionListField("actionEvidenceCaptureFieldKeys"),
     nextStageActionEvidenceCaptureFieldLabels: nextActionListField("actionEvidenceCaptureFieldLabels"),
@@ -693,6 +693,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceCaptureSectionKeys: nextActionListField("actionEvidenceCaptureSectionKeys"),
     nextStageActionEvidenceCaptureSectionLabels: nextActionListField("actionEvidenceCaptureSectionLabels"),
     nextStageActionEvidenceCaptureSectionCount: nextActionNumberField("actionEvidenceCaptureSectionCount"),
+  };
+  const nextStageEvidenceCapturePayload = {
     nextStageActionEvidenceCaptureFieldPayloadNamespaces: nextActionListField("actionEvidenceCaptureFieldPayloadNamespaces"),
     nextStageActionEvidenceCaptureFieldPayloadPaths: nextActionListField("actionEvidenceCaptureFieldPayloadPaths"),
     nextStageActionEvidenceCapturePayloadNamespaces: nextActionListField("actionEvidenceCapturePayloadNamespaces"),
@@ -700,12 +702,16 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceCapturePayloadTemplate: nextActionObjectField("actionEvidenceCapturePayloadTemplate"),
     nextStageActionEvidenceCapturePayloadFlatTemplate: nextActionObjectField("actionEvidenceCapturePayloadFlatTemplate"),
     nextStageActionEvidenceCapturePayloadBindings: nextActionListField("actionEvidenceCapturePayloadBindings"),
+  };
+  const nextStageEvidenceCaptureValidation = {
     nextStageActionEvidenceCaptureValidationSpecs: nextActionListField("actionEvidenceCaptureValidationSpecs"),
     nextStageActionEvidenceCaptureInitialValidationStates: nextActionListField("actionEvidenceCaptureInitialValidationStates"),
     nextStageActionEvidenceCaptureInitialValidationDisplayMetadata: nextActionListField("actionEvidenceCaptureInitialValidationDisplayMetadata"),
     nextStageActionEvidenceCaptureInitialValidationChecklist: nextActionListField("actionEvidenceCaptureInitialValidationChecklist"),
     nextStageActionEvidenceCaptureInitialValidationChecklistSummary: nextActionObjectField("actionEvidenceCaptureInitialValidationChecklistSummary"),
     nextStageActionEvidenceCaptureInitialValidationSummary: nextActionObjectField("actionEvidenceCaptureInitialValidationSummary"),
+  };
+  const nextStageEvidenceCaptureFieldRules = {
     nextStageActionEvidenceCaptureFieldInputTypes: nextActionListField("actionEvidenceCaptureFieldInputTypes"),
     nextStageActionEvidenceCaptureFieldValueShapes: nextActionListField("actionEvidenceCaptureFieldValueShapes"),
     nextStageActionEvidenceCaptureFieldAcceptsMultiple: nextActionListField("actionEvidenceCaptureFieldAcceptsMultiple"),
@@ -717,10 +723,19 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageActionEvidenceCaptureFieldValidationHints: nextActionListField("actionEvidenceCaptureFieldValidationHints"),
     nextStageActionRequiredEvidenceCaptureFieldKeys: nextActionListField("actionRequiredEvidenceCaptureFieldKeys"),
     nextStageActionOptionalEvidenceCaptureFieldKeys: nextActionListField("actionOptionalEvidenceCaptureFieldKeys"),
+  };
+  const nextStageEvidenceCaptureFieldCounts = {
     nextStageActionEvidenceCaptureFieldCount: nextActionNumberField("actionEvidenceCaptureFieldCount"),
     nextStageActionRequiredEvidenceCaptureFieldCount: nextActionNumberField("actionRequiredEvidenceCaptureFieldCount"),
     nextStageActionOptionalEvidenceCaptureFieldCount: nextActionNumberField("actionOptionalEvidenceCaptureFieldCount"),
     nextStageActionHasEvidenceCaptureFields: nextActionBooleanField("actionHasEvidenceCaptureFields"),
+  };
+  const nextStageEvidenceCapture = {
+    ...nextStageEvidenceCaptureFieldMetadata,
+    ...nextStageEvidenceCapturePayload,
+    ...nextStageEvidenceCaptureValidation,
+    ...nextStageEvidenceCaptureFieldRules,
+    ...nextStageEvidenceCaptureFieldCounts,
   };
   const nextStageCommandSummary = {
     nextStageKind: nextStageField("kind"),
