@@ -233,6 +233,28 @@ test("malformed MCP requests return protocol errors", async () => {
   assert.equal(unknownMethod.error.message, "Method not found: resources/read");
 });
 
+test("tools/call validates request params before tool lookup", async () => {
+  const missingParams = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 33,
+    method: "tools/call",
+    params: null,
+  });
+
+  assert.equal(missingParams.error.code, -32602);
+  assert.equal(missingParams.error.message, "tools/call params must be an object");
+
+  const missingName = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 34,
+    method: "tools/call",
+    params: { arguments: {} },
+  });
+
+  assert.equal(missingName.error.code, -32602);
+  assert.equal(missingName.error.message, "tools/call params.name must be a non-empty string");
+});
+
 test("MCP tool output is truncated before returning to clients", async () => {
   const result = await callMcpTool("design_ai_version", {}, async () => ({
     code: 0,

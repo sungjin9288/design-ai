@@ -398,6 +398,20 @@ function chooseProtocolVersion(requestedVersion) {
   return requestedVersion === PROTOCOL_VERSION ? requestedVersion : PROTOCOL_VERSION;
 }
 
+function isObjectRecord(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function validateToolCallParams(params) {
+  if (!isObjectRecord(params)) {
+    return "tools/call params must be an object";
+  }
+  if (typeof params.name !== "string" || params.name.trim() === "") {
+    return "tools/call params.name must be a non-empty string";
+  }
+  return "";
+}
+
 export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}) {
   const { id, method, params = {} } = message || {};
 
@@ -425,6 +439,9 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
   }
 
   if (method === "tools/call") {
+    const paramsError = validateToolCallParams(params);
+    if (paramsError) return errorResponse(id, -32602, paramsError);
+
     const name = params.name;
     const tool = MCP_TOOLS.find((item) => item.name === name);
     if (!tool) return errorResponse(id, -32602, `Unknown tool: ${name}`);

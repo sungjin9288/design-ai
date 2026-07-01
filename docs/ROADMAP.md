@@ -1,5 +1,24 @@
 # Roadmap
 
+## Phase 737 — design-ai MCP Tool Call Param Guard (unreleased)
+
+The MCP server now rejects malformed `tools/call` request parameters before tool lookup, so Claude Code and Codex clients get a clear JSON-RPC `-32602` error when `params` is not an object or `params.name` is missing.
+
+### Changed
+- Added a small MCP request-boundary guard for `tools/call` params.
+- Added unit coverage for `params: null` and missing `params.name`.
+
+### Impact
+- Malformed MCP clients receive deterministic protocol errors instead of falling into less specific request handling.
+- Valid tool calls, tool schemas, CLI argument mapping, output truncation, protocol version fallback, Website Improvement readiness behavior, external call boundaries, target-repo mutation rules, and learning write behavior stay unchanged.
+
+### Verification Plan
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 736 — design-ai MCP Test Subprocess Readability (unreleased)
 
 MCP stdio subprocess tests now share one small response collector, so parse-error and route-call smoke tests read as protocol scenarios instead of repeated stream plumbing.
