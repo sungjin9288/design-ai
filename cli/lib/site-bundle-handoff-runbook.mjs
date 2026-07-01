@@ -545,6 +545,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const countInitialValidationStates = (predicate) => countActionItems("actionEvidenceCaptureInitialValidationStates", predicate);
   const countInitialDisplayRows = (predicate) => countActionItems("actionEvidenceCaptureInitialValidationDisplayMetadata", predicate);
   const countInitialChecklistItems = (predicate) => countActionItems("actionEvidenceCaptureInitialValidationChecklist", predicate);
+  const uniqueActionListValueCount = (field) => uniqueValues(stageActionRows.flatMap((stage) => stage[field])).length;
+  const payloadTemplatePathCount = (stage) => Object.keys(stage.actionEvidenceCapturePayloadFlatTemplate).length;
   const maxActionItemValue = (field, getValue) => Math.max(
     0,
     ...stageActionRows.flatMap((stage) => stage[field].map(getValue)),
@@ -599,16 +601,16 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     ariaLabelEvidenceCaptureFieldCount: countEvidenceCaptureFields((field) => field.ariaLabel),
     helpTextEvidenceCaptureFieldCount: countEvidenceCaptureFields((field) => field.helpText),
     sectionedEvidenceCaptureFieldCount: countEvidenceCaptureFields((field) => field.sectionKey),
-    uniqueEvidenceCaptureSectionCount: uniqueValues(stageActionRows.flatMap((stage) => stage.actionEvidenceCaptureSectionKeys)).length,
+    uniqueEvidenceCaptureSectionCount: uniqueActionListValueCount("actionEvidenceCaptureSectionKeys"),
     actionWithMultipleEvidenceCaptureSectionCount: countActions((stage) => stage.actionEvidenceCaptureSectionCount > 1),
     maxActionEvidenceCaptureSectionCount: maxActionValue((stage) => stage.actionEvidenceCaptureSectionCount),
     payloadMappedEvidenceCaptureFieldCount: countEvidenceCaptureFields((field) => field.payloadPath),
-    uniqueEvidenceCapturePayloadNamespaceCount: uniqueValues(stageActionRows.flatMap((stage) => stage.actionEvidenceCapturePayloadNamespaces)).length,
+    uniqueEvidenceCapturePayloadNamespaceCount: uniqueActionListValueCount("actionEvidenceCapturePayloadNamespaces"),
     actionWithMultipleEvidenceCapturePayloadNamespaceCount: countActions((stage) => stage.actionEvidenceCapturePayloadNamespaceCount > 1),
     maxActionEvidenceCapturePayloadNamespaceCount: maxActionValue((stage) => stage.actionEvidenceCapturePayloadNamespaceCount),
-    actionWithEvidenceCapturePayloadTemplateCount: countActions((stage) => Object.keys(stage.actionEvidenceCapturePayloadFlatTemplate).length > 0),
-    evidenceCapturePayloadTemplatePathCount: sumActions((stage) => Object.keys(stage.actionEvidenceCapturePayloadFlatTemplate).length),
-    maxActionEvidenceCapturePayloadTemplatePathCount: maxActionValue((stage) => Object.keys(stage.actionEvidenceCapturePayloadFlatTemplate).length),
+    actionWithEvidenceCapturePayloadTemplateCount: countActions((stage) => payloadTemplatePathCount(stage) > 0),
+    evidenceCapturePayloadTemplatePathCount: sumActions(payloadTemplatePathCount),
+    maxActionEvidenceCapturePayloadTemplatePathCount: maxActionValue(payloadTemplatePathCount),
     actionWithEvidenceCapturePayloadBindingCount: countActions((stage) => stage.actionEvidenceCapturePayloadBindings.length > 0),
     evidenceCapturePayloadBindingCount: sumActions((stage) => stage.actionEvidenceCapturePayloadBindings.length),
     requiredEvidenceCapturePayloadBindingCount: countPayloadBindings((binding) => binding.required),

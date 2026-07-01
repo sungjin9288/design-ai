@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 707 — Website Improvement Bundle Handoff Runbook Payload Summary Cleanup (unreleased)
+
+Website Improvement bundle handoff operator action summaries now name the payload template and unique-list summary calculations before returning the runbook payload.
+
+### Changed
+- Added local `uniqueActionListValueCount` for unique action-list summary counts.
+- Added local `payloadTemplatePathCount` for payload flat-template path counts.
+- Replaced inline `flatMap`/`Object.keys(...).length` summary calculations with the named helpers.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same payload template path counts, unique section counts, unique payload namespace counts, action summary fields, and returned runbook contract.
+- Website Improvement handoff wrappers can continue to consume the same summary fields without migration.
+- No CLI flags, bundle files, command manifest fields, target-repo mutation rules, external-call boundaries, evidence field names, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 706 — Website Improvement Bundle Handoff Runbook Action Item Summary Cleanup (unreleased)
 
 Website Improvement bundle handoff operator action summaries now use shared local item-summary helpers for repeated evidence item counts and first-action lookups.
