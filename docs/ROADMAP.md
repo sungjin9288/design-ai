@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 712 — Website Improvement Bundle Handoff Runbook Run Policy Predicate Cleanup (unreleased)
+
+Website Improvement bundle handoff command and operator summaries now use named predicates for read-only and local-output run policy counts.
+
+### Changed
+- Added command-manifest run policy predicates for read-only and local-output command counts.
+- Added a runbook-stage `usesReadOnlyRunPolicy` predicate beside the existing local-output predicate.
+- Reused those predicates for manifest counts, action summary counts, and returned command-stage summary counts.
+
+### Impact
+- `buildBundleHandoffCommandManifest` keeps the same command count fields.
+- `buildBundleHandoffOperatorRunbook` keeps the same read-only and local-output summary fields.
+- Website Improvement handoff wrappers can continue to consume the same manifest and runbook contracts without migration.
+- No CLI flags, bundle files, command manifest field names, target-repo mutation rules, external-call boundaries, evidence field names, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 711 — Website Improvement Bundle Handoff Runbook Output Predicate Cleanup (unreleased)
 
 Website Improvement bundle handoff operator stage summaries now use named predicates for local-output run policy and output-file checks.

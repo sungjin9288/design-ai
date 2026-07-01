@@ -109,6 +109,8 @@ export function buildBundleHandoffCommandManifest({
   }
 
   const countBy = (predicate) => commands.filter(predicate).length;
+  const usesReadOnlyRunPolicy = (command) => command.runPolicy === "read-only";
+  const usesLocalOutputRunPolicy = (command) => command.runPolicy === "writes-local-file";
   const effectiveTaskId = effectiveTask?.id || "";
   const selectedTaskId = selectedTask?.id || "";
   const defaultTaskId = defaultTask?.id || "";
@@ -118,8 +120,8 @@ export function buildBundleHandoffCommandManifest({
     commandCount: commands.length,
     sourceCommandCount: countBy((command) => command.scope === "source-bundle"),
     taskCommandCount: countBy((command) => command.scope === "task-handoff"),
-    readOnlyCount: countBy((command) => command.runPolicy === "read-only"),
-    localOutputFileCount: countBy((command) => command.runPolicy === "writes-local-file"),
+    readOnlyCount: countBy(usesReadOnlyRunPolicy),
+    localOutputFileCount: countBy(usesLocalOutputRunPolicy),
     externalCallCount: countBy((command) => command.safety?.externalCalls === true),
     targetRepoMutationCount: countBy((command) => command.safety?.targetRepoMutation === true),
     requiresCleanWorkspaceCount: countBy((command) => command.safety?.requiresCleanWorkspace === true),
@@ -221,6 +223,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   ];
   const hasCommands = (stage) => stage.commandCount > 0;
   const isManualStage = (stage) => !hasCommands(stage);
+  const usesReadOnlyRunPolicy = (stage) => stage.runPolicy === "read-only";
   const usesLocalOutputRunPolicy = (stage) => stage.runPolicy === "writes-local-file";
   const hasOutputFile = (stage) => stage.outputFiles.length > 0;
   const commandStages = stages.filter(hasCommands);
@@ -704,7 +707,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     maxEvidenceCaptureFieldMinLength: maxEvidenceCaptureFieldValue((field) => field.minLength),
     requiredActionCount: countBy((stage) => stage.required),
     optionalActionCount: countBy((stage) => !stage.required),
-    readOnlyActionCount: countBy((stage) => stage.runPolicy === "read-only"),
+    readOnlyActionCount: countBy(usesReadOnlyRunPolicy),
     localOutputActionCount: countBy(usesLocalOutputRunPolicy),
     outputFileActionCount: countBy(hasOutputFile),
     externalCallActionCount: countBy((stage) => stage.externalCalls),
@@ -813,7 +816,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     manualStageCount: countBy(isManualStage),
     requiredStageCount: countBy((stage) => stage.required),
     optionalStageCount: countBy((stage) => !stage.required),
-    readOnlyCommandStageCount: countBy((stage) => stage.runPolicy === "read-only"),
+    readOnlyCommandStageCount: countBy(usesReadOnlyRunPolicy),
     localOutputCommandStageCount: countBy(usesLocalOutputRunPolicy),
     externalCallCommandStageCount: countBy((stage) => stage.externalCalls),
     targetRepoMutationCommandStageCount: countBy((stage) => stage.targetRepoMutation),
