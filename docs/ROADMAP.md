@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 736 — design-ai MCP Test Subprocess Readability (unreleased)
+
+MCP stdio subprocess tests now share one small response collector, so parse-error and route-call smoke tests read as protocol scenarios instead of repeated stream plumbing.
+
+### Changed
+- Added a focused MCP subprocess test helper for stdout line buffering and JSON-RPC response collection.
+- Reused the helper in stdio parse-error and initialize/list/route subprocess tests.
+- Kept timeout cleanup explicit so failed subprocess tests do not leave a child process running.
+
+### Impact
+- MCP test code is easier to scan while preserving the same runtime behavior and assertions.
+- No MCP server implementation, protocol response shape, tool schema, CLI mapping, package contents, Website Improvement readiness output, external call boundary, or learning write behavior changes.
+
+### Verification Plan
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 735 — design-ai MCP Negative Response Coverage (unreleased)
 
 The MCP server test suite now pins common client failure paths, so malformed Claude/Codex requests keep returning deterministic JSON-RPC errors without starting the design-ai CLI unnecessarily.

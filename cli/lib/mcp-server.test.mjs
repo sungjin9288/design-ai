@@ -10,6 +10,43 @@ import {
   handleMcpRequest,
 } from "./mcp-server.mjs";
 
+function startMcpSubprocess() {
+  const child = spawn(process.execPath, ["cli/bin/design-ai-mcp.mjs"], {
+    cwd: process.cwd(),
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  const responses = [];
+  let stdoutBuffer = "";
+
+  child.stdout.setEncoding("utf8");
+  child.stdout.on("data", (chunk) => {
+    stdoutBuffer += chunk;
+    const lines = stdoutBuffer.split("\n");
+    stdoutBuffer = lines.pop() || "";
+    for (const line of lines) {
+      if (line.trim()) responses.push(JSON.parse(line));
+    }
+  });
+
+  return { child, responses };
+}
+
+async function waitForMcpResponse(child, responses, predicate, timeoutMessage) {
+  const started = Date.now();
+  while (!responses.some(predicate)) {
+    if (Date.now() - started > 5000) {
+      child.kill();
+      throw new Error(timeoutMessage);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+}
+
+async function stopMcpSubprocess(child) {
+  child.kill();
+  await once(child, "close");
+}
+
 test("MCP tool list exposes design-ai read-only workflow tools", async () => {
   const response = await handleMcpRequest({
     jsonrpc: "2.0",
@@ -209,56 +246,24 @@ test("MCP tool output is truncated before returning to clients", async () => {
 });
 
 test("design-ai MCP stdio subprocess reports JSON parse errors", async () => {
-  const child = spawn(process.execPath, ["cli/bin/design-ai-mcp.mjs"], {
-    cwd: process.cwd(),
-    stdio: ["pipe", "pipe", "pipe"],
-  });
-  const responses = [];
-  let stdoutBuffer = "";
-  child.stdout.setEncoding("utf8");
-  child.stdout.on("data", (chunk) => {
-    stdoutBuffer += chunk;
-    const lines = stdoutBuffer.split("\n");
-    stdoutBuffer = lines.pop() || "";
-    for (const line of lines) {
-      if (line.trim()) responses.push(JSON.parse(line));
-    }
-  });
+  const { child, responses } = startMcpSubprocess();
 
   child.stdin.write("{bad json\n");
 
-  const started = Date.now();
-  while (responses.length === 0) {
-    if (Date.now() - started > 5000) {
-      child.kill();
-      throw new Error("Timed out waiting for MCP parse error response");
-    }
-    await new Promise((resolve) => setTimeout(resolve, 25));
-  }
-
-  child.kill();
-  await once(child, "close");
+  await waitForMcpResponse(
+    child,
+    responses,
+    () => true,
+    "Timed out waiting for MCP parse error response",
+  );
+  await stopMcpSubprocess(child);
 
   assert.equal(responses[0].error.code, -32700);
   assert.match(responses[0].error.message, /Parse error/);
 });
 
 test("design-ai MCP stdio subprocess handles initialize, list, and route call", async () => {
-  const child = spawn(process.execPath, ["cli/bin/design-ai-mcp.mjs"], {
-    cwd: process.cwd(),
-    stdio: ["pipe", "pipe", "pipe"],
-  });
-  const responses = [];
-  let stdoutBuffer = "";
-  child.stdout.setEncoding("utf8");
-  child.stdout.on("data", (chunk) => {
-    stdoutBuffer += chunk;
-    const lines = stdoutBuffer.split("\n");
-    stdoutBuffer = lines.pop() || "";
-    for (const line of lines) {
-      if (line.trim()) responses.push(JSON.parse(line));
-    }
-  });
+  const { child, responses } = startMcpSubprocess();
 
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-11-25" } })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
@@ -273,17 +278,13 @@ test("design-ai MCP stdio subprocess handles initialize, list, and route call", 
     },
   })}\n`);
 
-  const started = Date.now();
-  while (!responses.some((response) => response.id === 3)) {
-    if (Date.now() - started > 5000) {
-      child.kill();
-      throw new Error(`Timed out waiting for MCP route response. Responses: ${JSON.stringify(responses)}`);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 25));
-  }
-
-  child.kill();
-  await once(child, "close");
+  await waitForMcpResponse(
+    child,
+    responses,
+    (response) => response.id === 3,
+    `Timed out waiting for MCP route response. Responses: ${JSON.stringify(responses)}`,
+  );
+  await stopMcpSubprocess(child);
 
   const init = responses.find((response) => response.id === 1);
   const list = responses.find((response) => response.id === 2);
