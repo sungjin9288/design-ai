@@ -402,8 +402,18 @@ function isObjectRecord(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+function validateMcpRequestEnvelope(message) {
+  if (!isObjectRecord(message)) {
+    return "Invalid MCP request: request must be an object";
+  }
+  if (message.jsonrpc !== "2.0") {
+    return 'Invalid MCP request: jsonrpc must be "2.0"';
+  }
+  return "";
+}
+
 function validateMcpRequestMethod(message) {
-  if (!isObjectRecord(message) || !Object.hasOwn(message, "method")) {
+  if (!Object.hasOwn(message, "method")) {
     return "Invalid MCP request: missing method";
   }
   if (typeof message.method !== "string" || message.method.trim() === "") {
@@ -440,6 +450,9 @@ function shouldWriteMcpResponse(message, response) {
 
 export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}) {
   const id = hasRequestId(message) ? message.id : undefined;
+  const envelopeError = validateMcpRequestEnvelope(message);
+  if (envelopeError) return errorResponse(id, -32600, envelopeError);
+
   const methodError = validateMcpRequestMethod(message);
   if (methodError) return errorResponse(id, -32600, methodError);
 

@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 741 — design-ai MCP JSON-RPC Envelope Guard (unreleased)
+
+The MCP stdio server now rejects requests without `jsonrpc: "2.0"` before method dispatch, so malformed clients cannot reach normal initialize/list/call handlers with an invalid JSON-RPC envelope.
+
+### Changed
+- Added a JSON-RPC envelope guard before MCP method validation.
+- Preserved deterministic `-32600` responses for id-less malformed requests.
+- Added unit and subprocess coverage for missing and unsupported `jsonrpc` payloads.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get clearer protocol feedback when a malformed JSON-RPC envelope reaches the stdio server.
+- Valid JSON-RPC 2.0 initialize, notifications, tools/list, tools/call, argument validation, output truncation, package smoke, Website Improvement readiness behavior, external MCP call boundaries, target-repo mutation rules, and learning write behavior stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 740 — design-ai MCP Request Method Shape Guard (unreleased)
 
 The MCP stdio server now treats non-string or empty request methods as JSON-RPC invalid requests, so malformed notification-like payloads without ids still receive deterministic `-32600` feedback while valid notifications remain silent.

@@ -239,6 +239,21 @@ test("tools/call validates MCP argument types before running the CLI", async () 
 });
 
 test("malformed MCP requests return protocol errors", async () => {
+  const missingJsonrpc = await handleMcpRequest({
+    id: 3103,
+    method: "tools/list",
+  });
+  assert.equal(missingJsonrpc.error.code, -32600);
+  assert.equal(missingJsonrpc.error.message, 'Invalid MCP request: jsonrpc must be "2.0"');
+
+  const wrongJsonrpc = await handleMcpRequest({
+    jsonrpc: "1.0",
+    id: 3104,
+    method: "tools/list",
+  });
+  assert.equal(wrongJsonrpc.error.code, -32600);
+  assert.equal(wrongJsonrpc.error.message, 'Invalid MCP request: jsonrpc must be "2.0"');
+
   const missingMethod = await handleMcpRequest({
     jsonrpc: "2.0",
     id: 31,
@@ -348,6 +363,8 @@ test("design-ai MCP stdio subprocess reports invalid requests without ids", asyn
   child.stdin.write("{}\n");
   child.stdin.write("[]\n");
   child.stdin.write("null\n");
+  child.stdin.write(`${JSON.stringify({ method: "tools/list" })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "1.0", method: "tools/list" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: 42 })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
@@ -355,18 +372,18 @@ test("design-ai MCP stdio subprocess reports invalid requests without ids", asyn
   await waitForMcpResponse(
     child,
     responses,
-    () => responses.length === 5,
+    () => responses.length === 7,
     `Timed out waiting for invalid request responses. Responses: ${JSON.stringify(responses)}`,
   );
   await stopMcpSubprocess(child);
 
   assert.deepEqual(
     responses.map((response) => response.error.code),
-    [-32600, -32600, -32600, -32600, -32600],
+    [-32600, -32600, -32600, -32600, -32600, -32600, -32600],
   );
   assert.deepEqual(
     responses.map((response) => response.id),
-    [null, null, null, null, null],
+    [null, null, null, null, null, null, null],
   );
 });
 
