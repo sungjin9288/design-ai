@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 709 — Website Improvement Bundle Handoff Runbook Initial Validation Summary Cleanup (unreleased)
+
+Website Improvement bundle handoff operator action summaries now route initial validation summary and checklist summary aggregations through named local helpers.
+
+### Changed
+- Added local `countActionsBySummary` and `sumSummaryValues` helpers for action-row summary objects.
+- Added local initial-validation summary wrappers for field-count, status, completion, and blocking totals.
+- Added local initial-checklist summary wrappers for item-count, status, completion, checked, unchecked, and blocking-unchecked totals.
+- Replaced repeated direct `actionEvidenceCaptureInitialValidationSummary` and `actionEvidenceCaptureInitialValidationChecklistSummary` accesses inside `actionSummary`.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same initial validation summary and checklist summary fields.
+- Website Improvement handoff wrappers can continue to consume the same action summary contract without migration.
+- No CLI flags, bundle files, command manifest fields, target-repo mutation rules, external-call boundaries, evidence field names, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 708 — Website Improvement Bundle Handoff Runbook Action Item Count Cleanup (unreleased)
 
 Website Improvement bundle handoff operator action summaries now name repeated item-count and item-value aggregations before assembling evidence-capture totals.

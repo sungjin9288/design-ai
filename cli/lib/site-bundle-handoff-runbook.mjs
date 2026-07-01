@@ -550,6 +550,20 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const countInitialValidationStates = (predicate) => countActionItems("actionEvidenceCaptureInitialValidationStates", predicate);
   const countInitialDisplayRows = (predicate) => countActionItems("actionEvidenceCaptureInitialValidationDisplayMetadata", predicate);
   const countInitialChecklistItems = (predicate) => countActionItems("actionEvidenceCaptureInitialValidationChecklist", predicate);
+  const countActionsBySummary = (field, predicate) => countActions((stage) => predicate(stage[field]));
+  const sumSummaryValues = (field, getValue) => sumActions((stage) => getValue(stage[field]));
+  const countInitialValidationSummaries = (predicate) => (
+    countActionsBySummary("actionEvidenceCaptureInitialValidationSummary", predicate)
+  );
+  const sumInitialValidationSummaryValues = (getValue) => (
+    sumSummaryValues("actionEvidenceCaptureInitialValidationSummary", getValue)
+  );
+  const countInitialChecklistSummaries = (predicate) => (
+    countActionsBySummary("actionEvidenceCaptureInitialValidationChecklistSummary", predicate)
+  );
+  const sumInitialChecklistSummaryValues = (getValue) => (
+    sumSummaryValues("actionEvidenceCaptureInitialValidationChecklistSummary", getValue)
+  );
   const uniqueActionListValueCount = (field) => uniqueValues(stageActionRows.flatMap((stage) => stage[field])).length;
   const payloadTemplatePathCount = (stage) => Object.keys(stage.actionEvidenceCapturePayloadFlatTemplate).length;
   const maxActionItemValue = (field, getValue) => Math.max(
@@ -642,14 +656,14 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     infoInitialEvidenceCaptureDisplayMetadataCount: countInitialDisplayRows((display) => display.statusTone === "info"),
     blockingInitialEvidenceCaptureDisplayMetadataCount: countInitialDisplayRows((display) => display.blocking),
     nonBlockingInitialEvidenceCaptureDisplayMetadataCount: countInitialDisplayRows((display) => !display.blocking),
-    actionWithEvidenceCaptureInitialValidationSummaryCount: countActions((stage) => stage.actionEvidenceCaptureInitialValidationSummary.fieldCount > 0),
-    blockedInitialEvidenceCaptureSummaryActionCount: countActions((stage) => stage.actionEvidenceCaptureInitialValidationSummary.status === "blocked"),
-    readyInitialEvidenceCaptureSummaryActionCount: countActions((stage) => stage.actionEvidenceCaptureInitialValidationSummary.status === "ready"),
-    completableInitialEvidenceCaptureSummaryActionCount: countActions((stage) => stage.actionEvidenceCaptureInitialValidationSummary.canCompleteInitially),
-    nonCompletableInitialEvidenceCaptureSummaryActionCount: countActions((stage) => !stage.actionEvidenceCaptureInitialValidationSummary.canCompleteInitially),
-    initialEvidenceCaptureSummaryBlockingFieldCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationSummary.blockingCount),
-    initialEvidenceCaptureSummaryMissingRequiredFieldCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationSummary.missingRequiredCount),
-    initialEvidenceCaptureSummaryOptionalEmptyFieldCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationSummary.optionalEmptyCount),
+    actionWithEvidenceCaptureInitialValidationSummaryCount: countInitialValidationSummaries((summary) => summary.fieldCount > 0),
+    blockedInitialEvidenceCaptureSummaryActionCount: countInitialValidationSummaries((summary) => summary.status === "blocked"),
+    readyInitialEvidenceCaptureSummaryActionCount: countInitialValidationSummaries((summary) => summary.status === "ready"),
+    completableInitialEvidenceCaptureSummaryActionCount: countInitialValidationSummaries((summary) => summary.canCompleteInitially),
+    nonCompletableInitialEvidenceCaptureSummaryActionCount: countInitialValidationSummaries((summary) => !summary.canCompleteInitially),
+    initialEvidenceCaptureSummaryBlockingFieldCount: sumInitialValidationSummaryValues((summary) => summary.blockingCount),
+    initialEvidenceCaptureSummaryMissingRequiredFieldCount: sumInitialValidationSummaryValues((summary) => summary.missingRequiredCount),
+    initialEvidenceCaptureSummaryOptionalEmptyFieldCount: sumInitialValidationSummaryValues((summary) => summary.optionalEmptyCount),
     actionWithEvidenceCaptureInitialValidationChecklistCount: countActionsWithItems("actionEvidenceCaptureInitialValidationChecklist"),
     evidenceCaptureInitialValidationChecklistItemCount: sumActionItems("actionEvidenceCaptureInitialValidationChecklist"),
     checkedInitialEvidenceCaptureChecklistItemCount: countInitialChecklistItems((item) => item.checkedInitially),
@@ -658,14 +672,14 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     nonBlockingInitialEvidenceCaptureChecklistItemCount: countInitialChecklistItems((item) => !item.completionBlocking),
     requiredInitialEvidenceCaptureChecklistItemCount: countInitialChecklistItems((item) => item.required),
     optionalInitialEvidenceCaptureChecklistItemCount: countInitialChecklistItems((item) => !item.required),
-    actionWithEvidenceCaptureInitialValidationChecklistSummaryCount: countActions((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.itemCount > 0),
-    blockedInitialEvidenceCaptureChecklistSummaryActionCount: countActions((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "blocked"),
-    readyInitialEvidenceCaptureChecklistSummaryActionCount: countActions((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "ready"),
-    completeInitialEvidenceCaptureChecklistSummaryActionCount: countActions((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.allCheckedInitially),
-    incompleteInitialEvidenceCaptureChecklistSummaryActionCount: countActions((stage) => !stage.actionEvidenceCaptureInitialValidationChecklistSummary.allCheckedInitially),
-    initialEvidenceCaptureChecklistSummaryCheckedItemCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.checkedCount),
-    initialEvidenceCaptureChecklistSummaryUncheckedItemCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.uncheckedCount),
-    initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.blockingUncheckedCount),
+    actionWithEvidenceCaptureInitialValidationChecklistSummaryCount: countInitialChecklistSummaries((summary) => summary.itemCount > 0),
+    blockedInitialEvidenceCaptureChecklistSummaryActionCount: countInitialChecklistSummaries((summary) => summary.status === "blocked"),
+    readyInitialEvidenceCaptureChecklistSummaryActionCount: countInitialChecklistSummaries((summary) => summary.status === "ready"),
+    completeInitialEvidenceCaptureChecklistSummaryActionCount: countInitialChecklistSummaries((summary) => summary.allCheckedInitially),
+    incompleteInitialEvidenceCaptureChecklistSummaryActionCount: countInitialChecklistSummaries((summary) => !summary.allCheckedInitially),
+    initialEvidenceCaptureChecklistSummaryCheckedItemCount: sumInitialChecklistSummaryValues((summary) => summary.checkedCount),
+    initialEvidenceCaptureChecklistSummaryUncheckedItemCount: sumInitialChecklistSummaryValues((summary) => summary.uncheckedCount),
+    initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount: sumInitialChecklistSummaryValues((summary) => summary.blockingUncheckedCount),
     humanLineCount: stageHumanLineSummary.count,
     humanLineByKeyCount: stageHumanLineSummary.byKeyCount,
     humanLineWithEvidenceProgressCount: stageHumanLineSummary.evidenceProgressCount,
