@@ -853,13 +853,15 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const isInitiallyUncheckedChecklistItem = (item) => !item.checkedInitially;
   const blocksChecklistCompletion = (item) => item.completionBlocking;
   const doesNotBlockChecklistCompletion = (item) => !item.completionBlocking;
-  const actionSummary = {
+  const actionCountSummary = {
     totalActionCount: stages.length,
     commandActionCount: commandStages.length,
     manualActionCount: countBy(isManualStage),
     enabledActionCount: countActions(isActionEnabled),
     disabledActionCount: countActions(isActionDisabled),
     manualDisabledActionCount: countActions(isManualDisabledAction),
+  };
+  const actionDependencySummary = {
     actionWithPrerequisiteCount: countActions(hasActionPrerequisites),
     maxActionPrerequisiteCount: maxActionValue((stage) => stage.actionPrerequisiteCount),
     actionWithDependencyReasonCount: countActions(hasActionDependencyReason),
@@ -868,6 +870,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionWithCompletionCriteriaCount: countActions(hasActionCompletionCriteria),
     totalActionCompletionCriteriaCount: sumActions((stage) => stage.actionCompletionCriteriaCount),
     maxActionCompletionCriteriaCount: maxActionValue((stage) => stage.actionCompletionCriteriaCount),
+  };
+  const actionEvidenceSummary = {
     actionRequiringEvidenceCount: countActions(requiresActionEvidence),
     totalActionEvidenceRequirementCount: sumActions((stage) => stage.actionEvidenceRequirementCount),
     maxActionEvidenceRequirementCount: maxActionValue((stage) => stage.actionEvidenceRequirementCount),
@@ -875,6 +879,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     localOutputEvidenceActionCount: countActions(targetsLocalOutputEvidence),
     targetRepoEvidenceActionCount: countActions(targetsTargetRepoEvidence),
     handoffRecordEvidenceActionCount: countActions(targetsHandoffRecordEvidence),
+  };
+  const actionEvidenceCaptureFieldSummary = {
     actionWithEvidenceCaptureFieldCount: countActions(hasActionEvidenceCaptureFields),
     actionWithRequiredEvidenceCaptureFieldCount: countActions(hasRequiredActionEvidenceCaptureFields),
     actionWithOptionalEvidenceCaptureFieldCount: countActions(hasOptionalActionEvidenceCaptureFields),
@@ -902,6 +908,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionWithMultipleEvidenceCaptureSectionCount: countActions(hasMultipleEvidenceCaptureSections),
     maxActionEvidenceCaptureSectionCount: maxActionValue((stage) => stage.actionEvidenceCaptureSectionCount),
     payloadMappedEvidenceCaptureFieldCount: countEvidenceCaptureFields(mapsToPayloadPath),
+  };
+  const actionEvidenceCapturePayloadSummary = {
     uniqueEvidenceCapturePayloadNamespaceCount: uniqueActionListValueCount("actionEvidenceCapturePayloadNamespaces"),
     actionWithMultipleEvidenceCapturePayloadNamespaceCount: countActions(hasMultipleEvidenceCapturePayloadNamespaces),
     maxActionEvidenceCapturePayloadNamespaceCount: maxActionValue((stage) => stage.actionEvidenceCapturePayloadNamespaceCount),
@@ -913,6 +921,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     requiredEvidenceCapturePayloadBindingCount: countPayloadBindings(isRequiredItem),
     optionalEvidenceCapturePayloadBindingCount: countPayloadBindings(isOptionalItem),
     multiValueEvidenceCapturePayloadBindingCount: countPayloadBindings(acceptsMultipleValues),
+  };
+  const actionEvidenceCaptureValidationSummary = {
     actionWithEvidenceCaptureValidationSpecCount: countActionsWithItems("actionEvidenceCaptureValidationSpecs"),
     evidenceCaptureValidationSpecCount: sumActionItems("actionEvidenceCaptureValidationSpecs"),
     requiredEvidenceCaptureValidationSpecCount: countValidationSpecs(isRequiredItem),
@@ -920,6 +930,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     errorEvidenceCaptureValidationSpecCount: countValidationSpecs(isErrorValidationSpec),
     infoEvidenceCaptureValidationSpecCount: countValidationSpecs(isInfoValidationSpec),
     multiValueEvidenceCaptureValidationSpecCount: countValidationSpecs(acceptsMultipleValues),
+  };
+  const actionEvidenceCaptureInitialStateSummary = {
     actionWithEvidenceCaptureInitialValidationStateCount: countActionsWithItems("actionEvidenceCaptureInitialValidationStates"),
     evidenceCaptureInitialValidationStateCount: sumActionItems("actionEvidenceCaptureInitialValidationStates"),
     validInitialEvidenceCaptureStateCount: countInitialValidationStates(isValidInitialState),
@@ -928,12 +940,16 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     optionalEmptyInitialEvidenceCaptureStateCount: countInitialValidationStates(isOptionalEmptyInitialState),
     missingRequiredInitialEvidenceCaptureStateCount: countInitialValidationStates(isMissingRequiredInitialState),
     pristineInitialEvidenceCaptureStateCount: countInitialValidationStates(isPristineInitialState),
+  };
+  const actionEvidenceCaptureInitialDisplaySummary = {
     actionWithEvidenceCaptureInitialValidationDisplayMetadataCount: countActionsWithItems("actionEvidenceCaptureInitialValidationDisplayMetadata"),
     evidenceCaptureInitialValidationDisplayMetadataCount: sumActionItems("actionEvidenceCaptureInitialValidationDisplayMetadata"),
     dangerInitialEvidenceCaptureDisplayMetadataCount: countInitialDisplayRows(isDangerInitialDisplayRow),
     infoInitialEvidenceCaptureDisplayMetadataCount: countInitialDisplayRows(isInfoInitialDisplayRow),
     blockingInitialEvidenceCaptureDisplayMetadataCount: countInitialDisplayRows(isBlockingInitialDisplayRow),
     nonBlockingInitialEvidenceCaptureDisplayMetadataCount: countInitialDisplayRows(isNonBlockingInitialDisplayRow),
+  };
+  const actionEvidenceCaptureInitialValidationSummary = {
     actionWithEvidenceCaptureInitialValidationSummaryCount: countInitialValidationSummaries((summary) => summary.fieldCount > 0),
     blockedInitialEvidenceCaptureSummaryActionCount: countInitialValidationSummaries((summary) => summary.status === "blocked"),
     readyInitialEvidenceCaptureSummaryActionCount: countInitialValidationSummaries((summary) => summary.status === "ready"),
@@ -942,6 +958,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     initialEvidenceCaptureSummaryBlockingFieldCount: sumInitialValidationSummaryValues((summary) => summary.blockingCount),
     initialEvidenceCaptureSummaryMissingRequiredFieldCount: sumInitialValidationSummaryValues((summary) => summary.missingRequiredCount),
     initialEvidenceCaptureSummaryOptionalEmptyFieldCount: sumInitialValidationSummaryValues((summary) => summary.optionalEmptyCount),
+  };
+  const actionEvidenceCaptureInitialChecklistSummary = {
     actionWithEvidenceCaptureInitialValidationChecklistCount: countActionsWithItems("actionEvidenceCaptureInitialValidationChecklist"),
     evidenceCaptureInitialValidationChecklistItemCount: sumActionItems("actionEvidenceCaptureInitialValidationChecklist"),
     checkedInitialEvidenceCaptureChecklistItemCount: countInitialChecklistItems(isInitiallyCheckedChecklistItem),
@@ -958,6 +976,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     initialEvidenceCaptureChecklistSummaryCheckedItemCount: sumInitialChecklistSummaryValues((summary) => summary.checkedCount),
     initialEvidenceCaptureChecklistSummaryUncheckedItemCount: sumInitialChecklistSummaryValues((summary) => summary.uncheckedCount),
     initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount: sumInitialChecklistSummaryValues((summary) => summary.blockingUncheckedCount),
+  };
+  const humanLineActionSummary = {
     humanLineCount: stageHumanLineSummary.count,
     humanLineByKeyCount: stageHumanLineSummary.byKeyCount,
     humanLineWithEvidenceProgressCount: stageHumanLineSummary.evidenceProgressCount,
@@ -970,6 +990,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     humanLineDisplayRowWithReadyEvidenceProgressCount: stageHumanLineDisplayRowSummary.readyEvidenceProgressCount,
     humanLineDisplayRowReadyActionCount: stageHumanLineDisplayRowSummary.readyActionStatusCount,
     humanLineDisplayRowManualActionCount: stageHumanLineDisplayRowSummary.manualActionStatusCount,
+  };
+  const evidenceCaptureValidatedFieldSummary = {
     validatedEvidenceCaptureFieldCount: countEvidenceCaptureFields(hasValidationRule),
     requiredValidatedEvidenceCaptureFieldCount: countEvidenceCaptureFields(isRequiredValidatedField),
     optionalValidatedEvidenceCaptureFieldCount: countEvidenceCaptureFields(isOptionalValidatedField),
@@ -978,6 +1000,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       (field) => field.minLength,
     ),
     maxEvidenceCaptureFieldMinLength: maxEvidenceCaptureFieldValue((field) => field.minLength),
+  };
+  const actionRunPolicySummary = {
     requiredActionCount: countBy(isRequiredStage),
     optionalActionCount: countBy(isOptionalStage),
     readOnlyActionCount: countBy(usesReadOnlyRunPolicy),
@@ -985,7 +1009,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     outputFileActionCount: countBy(hasOutputFile),
     externalCallActionCount: countBy(callsExternalSystem),
     targetRepoMutationActionCount: countBy(mutatesTargetRepo),
-    ...nextActionSummary,
+  };
+  const firstActionLookupSummary = {
     firstRequiredCommandStageKey: firstStageKey((stage) => isRequiredStage(stage) && hasCommands(stage)),
     firstLocalOutputStageKey: firstStageKey((stage) => stage.writesLocalFile),
     firstManualStageKey: firstStageKey(isManualStage),
@@ -1009,10 +1034,30 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstTextareaEvidenceCaptureActionKey: firstActionWithEvidenceCaptureField(usesTextareaInput),
     firstMultiValueEvidenceCaptureActionKey: firstActionWithEvidenceCaptureField(acceptsMultipleValues),
     firstValidationRuleEvidenceCaptureActionKey: firstActionWithEvidenceCaptureField(hasValidationRule),
+  };
+  const actionBoundarySummary = {
     requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
     requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
     externalCalls: stages.some(callsExternalSystem),
     targetRepoMutation: stages.some(mutatesTargetRepo),
+  };
+  const actionSummary = {
+    ...actionCountSummary,
+    ...actionDependencySummary,
+    ...actionEvidenceSummary,
+    ...actionEvidenceCaptureFieldSummary,
+    ...actionEvidenceCapturePayloadSummary,
+    ...actionEvidenceCaptureValidationSummary,
+    ...actionEvidenceCaptureInitialStateSummary,
+    ...actionEvidenceCaptureInitialDisplaySummary,
+    ...actionEvidenceCaptureInitialValidationSummary,
+    ...actionEvidenceCaptureInitialChecklistSummary,
+    ...humanLineActionSummary,
+    ...evidenceCaptureValidatedFieldSummary,
+    ...actionRunPolicySummary,
+    ...nextActionSummary,
+    ...firstActionLookupSummary,
+    ...actionBoundarySummary,
   };
   return {
     version: 1,
