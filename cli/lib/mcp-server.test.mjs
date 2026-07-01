@@ -246,6 +246,22 @@ test("malformed MCP requests return protocol errors", async () => {
   assert.equal(missingMethod.error.code, -32600);
   assert.match(missingMethod.error.message, /missing method/);
 
+  const numericMethod = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 3101,
+    method: 42,
+  });
+  assert.equal(numericMethod.error.code, -32600);
+  assert.equal(numericMethod.error.message, "Invalid MCP request: method must be a non-empty string");
+
+  const emptyMethod = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 3102,
+    method: "",
+  });
+  assert.equal(emptyMethod.error.code, -32600);
+  assert.equal(emptyMethod.error.message, "Invalid MCP request: method must be a non-empty string");
+
   const unknownMethod = await handleMcpRequest({
     jsonrpc: "2.0",
     id: 32,
@@ -332,23 +348,25 @@ test("design-ai MCP stdio subprocess reports invalid requests without ids", asyn
   child.stdin.write("{}\n");
   child.stdin.write("[]\n");
   child.stdin.write("null\n");
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: 42 })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
 
   await waitForMcpResponse(
     child,
     responses,
-    () => responses.length === 3,
+    () => responses.length === 5,
     `Timed out waiting for invalid request responses. Responses: ${JSON.stringify(responses)}`,
   );
   await stopMcpSubprocess(child);
 
   assert.deepEqual(
     responses.map((response) => response.error.code),
-    [-32600, -32600, -32600],
+    [-32600, -32600, -32600, -32600, -32600],
   );
   assert.deepEqual(
     responses.map((response) => response.id),
-    [null, null, null],
+    [null, null, null, null, null],
   );
 });
 

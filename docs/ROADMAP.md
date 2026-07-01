@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 740 — design-ai MCP Request Method Shape Guard (unreleased)
+
+The MCP stdio server now treats non-string or empty request methods as JSON-RPC invalid requests, so malformed notification-like payloads without ids still receive deterministic `-32600` feedback while valid notifications remain silent.
+
+### Changed
+- Added a request-method shape guard before MCP method dispatch.
+- Updated stdio response writing so id-less `-32600` invalid requests are emitted without also responding to valid unknown-method notifications.
+- Added unit and subprocess coverage for numeric and empty `method` payloads.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get clearer protocol feedback when a malformed request method reaches the stdio server.
+- Valid notifications, unknown-method notifications without ids, initialize, tools/list, tools/call, argument validation, output truncation, package smoke, Website Improvement readiness behavior, external MCP call boundaries, target-repo mutation rules, and learning write behavior stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 739 — design-ai MCP Tool Arguments Container Guard (unreleased)
 
 The MCP server now rejects malformed `tools/call.params.arguments` containers before tool lookup or CLI execution, so omitted arguments still default to `{}` while explicit `null`, array, or primitive argument payloads return JSON-RPC `-32602` feedback.

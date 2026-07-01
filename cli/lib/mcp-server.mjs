@@ -402,6 +402,16 @@ function isObjectRecord(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
+function validateMcpRequestMethod(message) {
+  if (!isObjectRecord(message) || !Object.hasOwn(message, "method")) {
+    return "Invalid MCP request: missing method";
+  }
+  if (typeof message.method !== "string" || message.method.trim() === "") {
+    return "Invalid MCP request: method must be a non-empty string";
+  }
+  return "";
+}
+
 function validateToolCallParams(params) {
   if (!isObjectRecord(params)) {
     return "tools/call params must be an object";
@@ -419,19 +429,21 @@ function hasRequestId(message) {
   return isObjectRecord(message) && Object.hasOwn(message, "id");
 }
 
-function isInvalidRequestWithoutMethod(message, response) {
-  return Boolean(response?.error) && (!isObjectRecord(message) || !message.method);
+function isInvalidRequestResponse(response) {
+  return response?.error?.code === -32600;
 }
 
 function shouldWriteMcpResponse(message, response) {
   if (!response) return false;
-  return hasRequestId(message) || isInvalidRequestWithoutMethod(message, response);
+  return hasRequestId(message) || isInvalidRequestResponse(response);
 }
 
 export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}) {
-  const { id, method, params } = message || {};
+  const id = hasRequestId(message) ? message.id : undefined;
+  const methodError = validateMcpRequestMethod(message);
+  if (methodError) return errorResponse(id, -32600, methodError);
 
-  if (!method) return errorResponse(id, -32600, "Invalid MCP request: missing method");
+  const { method, params } = message;
 
   if (method === "initialize") {
     const initializeParams = params === undefined ? {} : params;
