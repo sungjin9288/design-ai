@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 719 — Website Improvement Bundle Handoff Runbook Action Row Evidence Snapshot Cleanup (unreleased)
+
+Website Improvement bundle handoff runbook action rows now group evidence and evidence-capture assembly into named internal snapshots before returning the same row fields.
+
+### Changed
+- Added an internal `actionEvidenceSummary` snapshot for evidence requirements, evidence-required state, and evidence target metadata.
+- Added an internal `actionEvidenceCaptureSummary` snapshot for evidence-capture fields, field metadata, payload templates, validation metadata, checklist summaries, and capture counts.
+- Replaced the long inline `stageActionRows` evidence assembly with snapshot spreads while keeping the existing action-row field names unchanged.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same `stageActionRows[*].actionEvidence*` and `stageActionRows[*].actionEvidenceCapture*` contract.
+- Downstream Website Improvement handoff wrappers can continue to consume the same action-row evidence fields without migration.
+- No CLI flags, bundle files, command manifest fields, stage/action field names, evidence field names, validation status values, next-action keys, target-repo mutation rules, external-call boundaries, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run release:check`
+
 ## Phase 718 — Website Improvement Bundle Handoff Runbook Action Summary Next Snapshot Cleanup (unreleased)
 
 Website Improvement bundle handoff runbook action summary now groups the internal `nextAction*` assembly into a named snapshot object before returning the same public fields.
