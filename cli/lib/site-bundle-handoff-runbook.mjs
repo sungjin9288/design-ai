@@ -150,6 +150,9 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     const stageCommands = commandKeys
       .map((commandKey) => commandByKey.get(commandKey))
       .filter(Boolean);
+    const firstCommand = stageCommands[0] || null;
+    const firstCommandSafety = firstCommand?.safety || null;
+    const commandHasSafetyFlag = (command, field) => command.safety?.[field] === true;
     return {
       step,
       key,
@@ -159,12 +162,12 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       commandKeys,
       commands: stageCommands,
       commandCount: stageCommands.length,
-      runPolicy: manual ? "manual-target-repo" : (stageCommands[0]?.runPolicy || ""),
-      safetyLevel: manual ? "operator-controlled-target-repo" : (stageCommands[0]?.safety?.safetyLevel || ""),
-      writesLocalFile: stageCommands.some((command) => command.safety?.writesLocalFile === true),
+      runPolicy: manual ? "manual-target-repo" : (firstCommand?.runPolicy || ""),
+      safetyLevel: manual ? "operator-controlled-target-repo" : (firstCommandSafety?.safetyLevel || ""),
+      writesLocalFile: stageCommands.some((command) => commandHasSafetyFlag(command, "writesLocalFile")),
       outputFiles: stageCommands.map((command) => command.outputFile).filter(Boolean),
-      externalCalls: stageCommands.some((command) => command.safety?.externalCalls === true),
-      targetRepoMutation: stageCommands.some((command) => command.safety?.targetRepoMutation === true),
+      externalCalls: stageCommands.some((command) => commandHasSafetyFlag(command, "externalCalls")),
+      targetRepoMutation: stageCommands.some((command) => commandHasSafetyFlag(command, "targetRepoMutation")),
       reason,
     };
   };

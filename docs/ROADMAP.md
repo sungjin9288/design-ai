@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 703 — Website Improvement Bundle Handoff Runbook Stage Command Safety Cleanup (unreleased)
+
+Website Improvement bundle handoff operator stages now read first-command run policy and safety metadata through named local values before assembling each stage record.
+
+### Changed
+- Added local `firstCommand`, `firstCommandSafety`, and `commandHasSafetyFlag` values inside `buildStage`.
+- Replaced repeated `stageCommands[0]?.*` lookups with the named first-command values.
+- Replaced repeated stage-command safety flag predicates with `commandHasSafetyFlag`.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same stage run policy, safety level, local-output, external-call, and target-repo mutation metadata.
+- Website Improvement handoff wrappers can continue to consume the same stage and command fields without migration.
+- No CLI flags, bundle files, command manifest fields, target-repo mutation rules, external-call boundaries, evidence fields, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 702 — Website Improvement Bundle Handoff Command Manifest Fallback Cleanup (unreleased)
 
 Website Improvement bundle handoff command manifest entries now read source-bundle and task command metadata through small local fallback helpers before assembling each command record.
