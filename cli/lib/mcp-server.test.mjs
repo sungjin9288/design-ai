@@ -275,6 +275,26 @@ test("tools/call validates request params before tool lookup", async () => {
 
   assert.equal(missingName.error.code, -32602);
   assert.equal(missingName.error.message, "tools/call params.name must be a non-empty string");
+
+  const nullArguments = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 35,
+    method: "tools/call",
+    params: { name: "design_ai_version", arguments: null },
+  });
+
+  assert.equal(nullArguments.error.code, -32602);
+  assert.equal(nullArguments.error.message, "tools/call params.arguments must be an object when provided");
+
+  const arrayArguments = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 36,
+    method: "tools/call",
+    params: { name: "design_ai_version", arguments: [] },
+  });
+
+  assert.equal(arrayArguments.error.code, -32602);
+  assert.equal(arrayArguments.error.message, "tools/call params.arguments must be an object when provided");
 });
 
 test("MCP tool output is truncated before returning to clients", async () => {

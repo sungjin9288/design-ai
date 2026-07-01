@@ -409,6 +409,9 @@ function validateToolCallParams(params) {
   if (typeof params.name !== "string" || params.name.trim() === "") {
     return "tools/call params.name must be a non-empty string";
   }
+  if (Object.hasOwn(params, "arguments") && params.arguments !== undefined && !isObjectRecord(params.arguments)) {
+    return "tools/call params.arguments must be an object when provided";
+  }
   return "";
 }
 
@@ -464,7 +467,7 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
     const tool = MCP_TOOLS.find((item) => item.name === name);
     if (!tool) return errorResponse(id, -32602, `Unknown tool: ${name}`);
     try {
-      const result = await callMcpTool(name, params.arguments || {}, runCli);
+      const result = await callMcpTool(name, params.arguments === undefined ? {} : params.arguments, runCli);
       return successResponse(id, result);
     } catch (error) {
       return successResponse(id, {

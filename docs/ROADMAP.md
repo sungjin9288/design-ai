@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 739 — design-ai MCP Tool Arguments Container Guard (unreleased)
+
+The MCP server now rejects malformed `tools/call.params.arguments` containers before tool lookup or CLI execution, so omitted arguments still default to `{}` while explicit `null`, array, or primitive argument payloads return JSON-RPC `-32602` feedback.
+
+### Changed
+- Added a `tools/call.params.arguments` object-shape check to the MCP request boundary.
+- Preserved omitted `arguments` support for no-argument tools such as `design_ai_version`.
+- Added unit coverage for `arguments: null` and array argument payloads.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get clearer protocol feedback when a tool call includes a malformed arguments container.
+- Normal `tools/call` execution, tool-schema argument validation, unknown-tool handling, initialize, notifications, tools/list, package smoke, Website Improvement readiness behavior, external MCP call boundaries, target-repo mutation rules, and learning write behavior stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 738 — design-ai MCP Invalid Request Stdio Response (unreleased)
 
 The MCP stdio server now distinguishes valid notifications from malformed request objects without ids, so invalid JSON-RPC payloads such as `{}`, `[]`, or `null` receive deterministic `-32600` responses with `id: null` while normal `notifications/initialized` messages remain silent.
