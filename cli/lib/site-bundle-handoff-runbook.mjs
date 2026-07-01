@@ -601,31 +601,51 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstActionKey((stage) => stage.actionEvidenceCaptureFields.some(predicate))
   );
   const firstStageKey = (predicate) => stages.find(predicate)?.key || "";
+  const isActionEnabled = (action) => action.actionEnabled;
+  const isActionDisabled = (action) => !action.actionEnabled;
+  const isManualDisabledAction = (action) => isActionDisabled(action) && action.manual;
+  const hasActionPrerequisites = (action) => action.actionHasPrerequisites;
+  const hasActionDependencyReason = (action) => action.actionDependencyReasonCode;
+  const blocksOtherActions = (action) => action.actionBlocksStages;
+  const hasActionCompletionCriteria = (action) => action.actionHasCompletionCriteria;
+  const requiresActionEvidence = (action) => action.actionRequiresEvidence;
+  const targetsLocalCommandEvidence = (action) => action.actionEvidenceTarget === "local-command-output";
+  const targetsLocalOutputEvidence = (action) => action.actionEvidenceTarget === "local-output-file";
+  const targetsTargetRepoEvidence = (action) => action.actionEvidenceTarget === "target-repo-working-tree";
+  const targetsHandoffRecordEvidence = (action) => action.actionEvidenceTarget === "handoff-evidence-record";
+  const hasActionEvidenceCaptureFields = (action) => action.actionHasEvidenceCaptureFields;
+  const hasRequiredActionEvidenceCaptureFields = (action) => action.actionRequiredEvidenceCaptureFieldCount > 0;
+  const hasOptionalActionEvidenceCaptureFields = (action) => action.actionOptionalEvidenceCaptureFieldCount > 0;
+  const hasMultipleEvidenceCaptureSections = (action) => action.actionEvidenceCaptureSectionCount > 1;
+  const hasMultipleEvidenceCapturePayloadNamespaces = (action) => action.actionEvidenceCapturePayloadNamespaceCount > 1;
+  const hasEvidenceCapturePayloadTemplate = (action) => payloadTemplatePathCount(action) > 0;
+  const isManualAction = (action) => action.manual;
+  const isManualEvidenceAction = (action) => action.actionType === "manual-evidence";
   const actionSummary = {
     totalActionCount: stages.length,
     commandActionCount: commandStages.length,
     manualActionCount: countBy(isManualStage),
-    enabledActionCount: countActions((stage) => stage.actionEnabled),
-    disabledActionCount: countActions((stage) => !stage.actionEnabled),
-    manualDisabledActionCount: countActions((stage) => !stage.actionEnabled && stage.manual),
-    actionWithPrerequisiteCount: countActions((stage) => stage.actionHasPrerequisites),
+    enabledActionCount: countActions(isActionEnabled),
+    disabledActionCount: countActions(isActionDisabled),
+    manualDisabledActionCount: countActions(isManualDisabledAction),
+    actionWithPrerequisiteCount: countActions(hasActionPrerequisites),
     maxActionPrerequisiteCount: maxActionValue((stage) => stage.actionPrerequisiteCount),
-    actionWithDependencyReasonCount: countActions((stage) => stage.actionDependencyReasonCode),
-    actionBlockingOtherActionCount: countActions((stage) => stage.actionBlocksStages),
+    actionWithDependencyReasonCount: countActions(hasActionDependencyReason),
+    actionBlockingOtherActionCount: countActions(blocksOtherActions),
     maxActionBlockedStageCount: maxActionValue((stage) => stage.actionBlockedStageCount),
-    actionWithCompletionCriteriaCount: countActions((stage) => stage.actionHasCompletionCriteria),
+    actionWithCompletionCriteriaCount: countActions(hasActionCompletionCriteria),
     totalActionCompletionCriteriaCount: sumActions((stage) => stage.actionCompletionCriteriaCount),
     maxActionCompletionCriteriaCount: maxActionValue((stage) => stage.actionCompletionCriteriaCount),
-    actionRequiringEvidenceCount: countActions((stage) => stage.actionRequiresEvidence),
+    actionRequiringEvidenceCount: countActions(requiresActionEvidence),
     totalActionEvidenceRequirementCount: sumActions((stage) => stage.actionEvidenceRequirementCount),
     maxActionEvidenceRequirementCount: maxActionValue((stage) => stage.actionEvidenceRequirementCount),
-    localCommandEvidenceActionCount: countActions((stage) => stage.actionEvidenceTarget === "local-command-output"),
-    localOutputEvidenceActionCount: countActions((stage) => stage.actionEvidenceTarget === "local-output-file"),
-    targetRepoEvidenceActionCount: countActions((stage) => stage.actionEvidenceTarget === "target-repo-working-tree"),
-    handoffRecordEvidenceActionCount: countActions((stage) => stage.actionEvidenceTarget === "handoff-evidence-record"),
-    actionWithEvidenceCaptureFieldCount: countActions((stage) => stage.actionHasEvidenceCaptureFields),
-    actionWithRequiredEvidenceCaptureFieldCount: countActions((stage) => stage.actionRequiredEvidenceCaptureFieldCount > 0),
-    actionWithOptionalEvidenceCaptureFieldCount: countActions((stage) => stage.actionOptionalEvidenceCaptureFieldCount > 0),
+    localCommandEvidenceActionCount: countActions(targetsLocalCommandEvidence),
+    localOutputEvidenceActionCount: countActions(targetsLocalOutputEvidence),
+    targetRepoEvidenceActionCount: countActions(targetsTargetRepoEvidence),
+    handoffRecordEvidenceActionCount: countActions(targetsHandoffRecordEvidence),
+    actionWithEvidenceCaptureFieldCount: countActions(hasActionEvidenceCaptureFields),
+    actionWithRequiredEvidenceCaptureFieldCount: countActions(hasRequiredActionEvidenceCaptureFields),
+    actionWithOptionalEvidenceCaptureFieldCount: countActions(hasOptionalActionEvidenceCaptureFields),
     totalActionEvidenceCaptureFieldCount: sumActions((stage) => stage.actionEvidenceCaptureFieldCount),
     totalRequiredActionEvidenceCaptureFieldCount: sumActions((stage) => stage.actionRequiredEvidenceCaptureFieldCount),
     totalOptionalActionEvidenceCaptureFieldCount: sumActions((stage) => stage.actionOptionalEvidenceCaptureFieldCount),
@@ -647,13 +667,13 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     helpTextEvidenceCaptureFieldCount: countEvidenceCaptureFields((field) => field.helpText),
     sectionedEvidenceCaptureFieldCount: countEvidenceCaptureFields((field) => field.sectionKey),
     uniqueEvidenceCaptureSectionCount: uniqueActionListValueCount("actionEvidenceCaptureSectionKeys"),
-    actionWithMultipleEvidenceCaptureSectionCount: countActions((stage) => stage.actionEvidenceCaptureSectionCount > 1),
+    actionWithMultipleEvidenceCaptureSectionCount: countActions(hasMultipleEvidenceCaptureSections),
     maxActionEvidenceCaptureSectionCount: maxActionValue((stage) => stage.actionEvidenceCaptureSectionCount),
     payloadMappedEvidenceCaptureFieldCount: countEvidenceCaptureFields((field) => field.payloadPath),
     uniqueEvidenceCapturePayloadNamespaceCount: uniqueActionListValueCount("actionEvidenceCapturePayloadNamespaces"),
-    actionWithMultipleEvidenceCapturePayloadNamespaceCount: countActions((stage) => stage.actionEvidenceCapturePayloadNamespaceCount > 1),
+    actionWithMultipleEvidenceCapturePayloadNamespaceCount: countActions(hasMultipleEvidenceCapturePayloadNamespaces),
     maxActionEvidenceCapturePayloadNamespaceCount: maxActionValue((stage) => stage.actionEvidenceCapturePayloadNamespaceCount),
-    actionWithEvidenceCapturePayloadTemplateCount: countActions((stage) => payloadTemplatePathCount(stage) > 0),
+    actionWithEvidenceCapturePayloadTemplateCount: countActions(hasEvidenceCapturePayloadTemplate),
     evidenceCapturePayloadTemplatePathCount: sumActions(payloadTemplatePathCount),
     maxActionEvidenceCapturePayloadTemplatePathCount: maxActionValue(payloadTemplatePathCount),
     actionWithEvidenceCapturePayloadBindingCount: countActionsWithItems("actionEvidenceCapturePayloadBindings"),
@@ -806,21 +826,21 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstManualStageKey: firstStageKey(isManualStage),
     firstRequiredManualStageKey: firstStageKey((stage) => isRequiredStage(stage) && isManualStage(stage)),
     firstEvidenceStageKey: firstStageKey((stage) => stage.kind === "manual-reporting"),
-    firstActionWithPrerequisiteKey: firstActionKey((stage) => stage.actionHasPrerequisites),
-    firstManualActionWithPrerequisiteKey: firstActionKey((stage) => stage.manual && stage.actionHasPrerequisites),
-    firstEvidenceActionWithPrerequisiteKey: firstActionKey((stage) => stage.actionType === "manual-evidence" && stage.actionHasPrerequisites),
-    firstActionWithDependencyReasonKey: firstActionKey((stage) => stage.actionDependencyReasonCode),
-    firstActionBlockingOtherActionKey: firstActionKey((stage) => stage.actionBlocksStages),
-    firstActionWithCompletionCriteriaKey: firstActionKey((stage) => stage.actionHasCompletionCriteria),
-    firstManualActionWithCompletionCriteriaKey: firstActionKey((stage) => stage.manual && stage.actionHasCompletionCriteria),
-    firstActionRequiringEvidenceKey: firstActionKey((stage) => stage.actionRequiresEvidence),
-    firstManualActionRequiringEvidenceKey: firstActionKey((stage) => stage.manual && stage.actionRequiresEvidence),
-    firstEvidenceRecordingActionKey: firstActionKey((stage) => stage.actionType === "manual-evidence" && stage.actionRequiresEvidence),
-    firstTargetRepoEvidenceActionKey: firstActionKey((stage) => stage.actionEvidenceTarget === "target-repo-working-tree"),
-    firstLocalOutputEvidenceActionKey: firstActionKey((stage) => stage.actionEvidenceTarget === "local-output-file"),
-    firstActionWithEvidenceCaptureFieldKey: firstActionKey((stage) => stage.actionHasEvidenceCaptureFields),
-    firstActionWithOptionalEvidenceCaptureFieldKey: firstActionKey((stage) => stage.actionOptionalEvidenceCaptureFieldCount > 0),
-    firstManualActionWithEvidenceCaptureFieldKey: firstActionKey((stage) => stage.manual && stage.actionHasEvidenceCaptureFields),
+    firstActionWithPrerequisiteKey: firstActionKey(hasActionPrerequisites),
+    firstManualActionWithPrerequisiteKey: firstActionKey((action) => isManualAction(action) && hasActionPrerequisites(action)),
+    firstEvidenceActionWithPrerequisiteKey: firstActionKey((action) => isManualEvidenceAction(action) && hasActionPrerequisites(action)),
+    firstActionWithDependencyReasonKey: firstActionKey(hasActionDependencyReason),
+    firstActionBlockingOtherActionKey: firstActionKey(blocksOtherActions),
+    firstActionWithCompletionCriteriaKey: firstActionKey(hasActionCompletionCriteria),
+    firstManualActionWithCompletionCriteriaKey: firstActionKey((action) => isManualAction(action) && hasActionCompletionCriteria(action)),
+    firstActionRequiringEvidenceKey: firstActionKey(requiresActionEvidence),
+    firstManualActionRequiringEvidenceKey: firstActionKey((action) => isManualAction(action) && requiresActionEvidence(action)),
+    firstEvidenceRecordingActionKey: firstActionKey((action) => isManualEvidenceAction(action) && requiresActionEvidence(action)),
+    firstTargetRepoEvidenceActionKey: firstActionKey(targetsTargetRepoEvidence),
+    firstLocalOutputEvidenceActionKey: firstActionKey(targetsLocalOutputEvidence),
+    firstActionWithEvidenceCaptureFieldKey: firstActionKey(hasActionEvidenceCaptureFields),
+    firstActionWithOptionalEvidenceCaptureFieldKey: firstActionKey(hasOptionalActionEvidenceCaptureFields),
+    firstManualActionWithEvidenceCaptureFieldKey: firstActionKey((action) => isManualAction(action) && hasActionEvidenceCaptureFields(action)),
     firstTextareaEvidenceCaptureActionKey: firstActionWithEvidenceCaptureField((field) => field.inputType === "textarea"),
     firstMultiValueEvidenceCaptureActionKey: firstActionWithEvidenceCaptureField((field) => field.acceptsMultiple),
     firstValidationRuleEvidenceCaptureActionKey: firstActionWithEvidenceCaptureField((field) => field.validationRule),

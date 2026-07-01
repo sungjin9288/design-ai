@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 715 — Website Improvement Bundle Handoff Runbook Action Predicate Cleanup (unreleased)
+
+Website Improvement bundle handoff action summaries now use named predicates for action enabled state, prerequisites, evidence targets, evidence-capture presence, and first-action lookups.
+
+### Changed
+- Added action-row predicates for enabled, disabled, manual-disabled, prerequisite, dependency, blocking, completion-criteria, and evidence-required states.
+- Added action evidence-target predicates for local command output, local output file, target repo working tree, and handoff evidence record.
+- Added evidence-capture predicates for field presence, required/optional field presence, multiple sections, multiple payload namespaces, and payload template presence.
+- Reused those predicates in action summary counts and first-action lookup fields.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same action summary fields and first-action lookup fields.
+- Website Improvement handoff wrappers can continue to consume the same runbook action summary contract without migration.
+- No CLI flags, bundle files, command manifest fields, stage fields, action field names, evidence field names, evidence targets, first-action keys, target-repo mutation rules, external-call boundaries, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 714 — Website Improvement Bundle Handoff Runbook Display Row Predicate Cleanup (unreleased)
 
 Website Improvement bundle handoff display-row summaries now use named predicates for required/manual rows, command rows, action status, and evidence-progress status.
