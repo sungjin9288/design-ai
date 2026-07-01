@@ -518,26 +518,38 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     blocked: displayRowKeysBy(hasBlockedDisplayRowEvidenceProgress),
     ready: displayRowKeysBy(hasReadyDisplayRowEvidenceProgress),
   };
-  const stageHumanLineDisplayRowSummary = {
+  const stageHumanLineDisplayRowCountSummary = {
     count: stageHumanLineDisplayRows.length,
     byKeyCount: Object.keys(stageHumanLineDisplayRowByKey).length,
     requiredCount: countDisplayRows(isRequiredDisplayRow),
     optionalCount: countDisplayRows(isOptionalDisplayRow),
     commandCount: countDisplayRows(hasCommandDisplayRow),
     manualCount: countDisplayRows(isManualDisplayRow),
+  };
+  const stageHumanLineDisplayRowActionStatusSummary = {
     readyActionStatusCount: countDisplayRows(hasReadyActionStatus),
     optionalActionStatusCount: countDisplayRows(hasOptionalActionStatus),
     manualActionStatusCount: countDisplayRows(hasManualActionStatus),
     blockedActionStatusCount: countDisplayRows(hasBlockedActionStatus),
+  };
+  const stageHumanLineDisplayRowEvidenceProgressSummary = {
     evidenceProgressCount: countDisplayRows(hasDisplayRowEvidenceProgress),
     blockedEvidenceProgressCount: countDisplayRows(hasBlockedDisplayRowEvidenceProgress),
     readyEvidenceProgressCount: countDisplayRows(hasReadyDisplayRowEvidenceProgress),
+  };
+  const stageHumanLineDisplayRowFirstKeySummary = {
     firstRowKey: stageHumanLineDisplayRows[0]?.key || "",
     firstReadyActionRowKey: firstDisplayRowKey(hasReadyActionStatus),
     firstOptionalActionRowKey: firstDisplayRowKey(hasOptionalActionStatus),
     firstManualActionRowKey: firstDisplayRowKey(hasManualActionStatus),
     firstBlockedEvidenceProgressRowKey: firstDisplayRowKey(hasBlockedDisplayRowEvidenceProgress),
     firstReadyEvidenceProgressRowKey: firstDisplayRowKey(hasReadyDisplayRowEvidenceProgress),
+  };
+  const stageHumanLineDisplayRowSummary = {
+    ...stageHumanLineDisplayRowCountSummary,
+    ...stageHumanLineDisplayRowActionStatusSummary,
+    ...stageHumanLineDisplayRowEvidenceProgressSummary,
+    ...stageHumanLineDisplayRowFirstKeySummary,
   };
   const stageHumanLineSummary = {
     count: stageHumanLines.length,
