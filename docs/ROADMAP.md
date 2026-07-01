@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 722 — Website Improvement Bundle Handoff Command Manifest Return Snapshot Cleanup (unreleased)
+
+Website Improvement bundle handoff command manifest return assembly now groups command counts, selected task ids, and strict task command keys into named internal snapshots before returning the same public fields.
+
+### Changed
+- Added internal return snapshots for command manifest counts, task selection ids, and strict task command keys.
+- Replaced the long inline command manifest return assembly with snapshot spreads while keeping the existing returned field names unchanged.
+
+### Impact
+- `buildBundleHandoffCommandManifest` keeps the same top-level command manifest contract.
+- Website Improvement bundle handoff wrappers can continue to consume the same command counts, task ids, strict task command keys, and `commands` array without migration.
+- No CLI flags, bundle files, command entries, command scopes, run policies, safety flags, task selection behavior, output-file selection, target-repo mutation rules, external-call boundaries, or generated output files change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run release:check`
+
 ## Phase 721 — Website Improvement Bundle Handoff Runbook Return Snapshot Cleanup (unreleased)
 
 Website Improvement bundle handoff runbook return assembly now groups count, stage identity, human-line, action, evidence-capture, execution, and next-step fields into named internal snapshots before returning the same public fields.

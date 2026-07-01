@@ -120,9 +120,7 @@ export function buildBundleHandoffCommandManifest({
   const effectiveTaskId = effectiveTask?.id || "";
   const selectedTaskId = selectedTask?.id || "";
   const defaultTaskId = defaultTask?.id || "";
-  return {
-    version: 1,
-    source: "bundle-handoff",
+  const manifestCountSummary = {
     commandCount: commands.length,
     sourceCommandCount: countBy(isSourceBundleCommand),
     taskCommandCount: countBy(isTaskHandoffCommand),
@@ -132,12 +130,23 @@ export function buildBundleHandoffCommandManifest({
     targetRepoMutationCount: countBy(hasTargetRepoMutationSafety),
     requiresCleanWorkspaceCount: countBy(requiresCleanWorkspaceSafety),
     requiresReviewBeforeMutationCount: countBy(requiresReviewBeforeMutationSafety),
+  };
+  const manifestTaskSelection = {
     defaultTaskId,
     selectedTaskId,
     effectiveTaskId,
+  };
+  const manifestStrictCommandKeys = {
     defaultStrictTaskCommandKey: defaultTaskId ? `task.${defaultTaskId}.handoff.strict` : "",
     selectedStrictTaskCommandKey: selectedTaskId ? `task.${selectedTaskId}.handoff.strict` : "",
     effectiveStrictTaskCommandKey: effectiveTaskId ? `task.${effectiveTaskId}.handoff.strict` : "",
+  };
+  return {
+    version: 1,
+    source: "bundle-handoff",
+    ...manifestCountSummary,
+    ...manifestTaskSelection,
+    ...manifestStrictCommandKeys,
     commands,
   };
 }
