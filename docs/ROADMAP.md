@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 702 — Website Improvement Bundle Handoff Command Manifest Fallback Cleanup (unreleased)
+
+Website Improvement bundle handoff command manifest entries now read source-bundle and task command metadata through small local fallback helpers before assembling each command record.
+
+### Changed
+- Added a local `sourceValue` helper inside `buildBundleHandoffCommandManifest` for source-bundle command, args, run-policy, and safety metadata.
+- Read source-bundle safety once per source command so `strict` comes from the same object that is returned in the command manifest.
+- Added a local `taskValue` helper inside `pushTaskCommand` and read task safety once before deriving strict task command metadata and output file fallback.
+
+### Impact
+- `buildBundleHandoffCommandManifest` keeps the same command keys, task ids, output file fallback, strict flags, safety metadata, and manifest JSON contract.
+- Website Improvement handoff wrappers can continue to consume the same command manifest fields without migration.
+- No CLI flags, bundle files, target-repo mutation rules, external-call boundaries, operator runbook fields, evidence fields, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 701 — Website Improvement Bundle Handoff Runbook Next Stage Return Cleanup (unreleased)
 
 Website Improvement target-repo handoff runbook next-stage and next-command return metadata now use the same local fallback style as the next-action fields.

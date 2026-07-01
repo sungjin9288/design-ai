@@ -54,16 +54,18 @@ export function buildBundleHandoffCommandManifest({
     if (!entry || !entry.command || !Array.isArray(entry.commandArgs) || entry.commandArgs.length === 0) return;
     commands.push(entry);
   };
+  const sourceValue = (field, fallback = "") => sourceBundle?.[field] || fallback;
   const pushSourceCommand = (key, label, commandKey, argsKey, policyKey, safetyKey) => {
+    const safety = sourceValue(safetyKey, null);
     pushCommand({
       key,
       scope: "source-bundle",
       label,
-      command: sourceBundle?.[commandKey] || "",
-      commandArgs: sourceBundle?.[argsKey] || [],
-      runPolicy: sourceBundle?.[policyKey] || "",
-      safety: sourceBundle?.[safetyKey] || null,
-      strict: Boolean(sourceBundle?.[safetyKey]?.strict),
+      command: sourceValue(commandKey),
+      commandArgs: sourceValue(argsKey, []),
+      runPolicy: sourceValue(policyKey),
+      safety,
+      strict: Boolean(safety?.strict),
       taskId: "",
       outputFile: "",
       defaultTask: false,
@@ -77,18 +79,20 @@ export function buildBundleHandoffCommandManifest({
     const argsKey = strict ? "strictHandoffCommandArgs" : "handoffCommandArgs";
     const policyKey = strict ? "strictHandoffCommandRunPolicy" : "handoffCommandRunPolicy";
     const safetyKey = strict ? "strictHandoffCommandSafety" : "handoffCommandSafety";
+    const taskValue = (field, fallback = "") => task[field] || fallback;
+    const safety = taskValue(safetyKey, null);
     pushCommand({
       key: `task.${task.id}.handoff.${strict ? "strict" : "default"}`,
       scope: "task-handoff",
       label: `${strict ? "Strict " : ""}Task handoff: ${task.id}`,
-      command: task[commandKey] || "",
-      commandArgs: task[argsKey] || [],
-      runPolicy: task[policyKey] || "",
-      safety: task[safetyKey] || null,
+      command: taskValue(commandKey),
+      commandArgs: taskValue(argsKey, []),
+      runPolicy: taskValue(policyKey),
+      safety,
       strict,
       taskId: task.id,
       taskNumber: Number.isInteger(task.number) ? task.number : null,
-      outputFile: task.handoffOutFile || task[safetyKey]?.outputFile || "",
+      outputFile: task.handoffOutFile || safety?.outputFile || "",
       defaultTask: task.id === defaultTask?.id,
       selectedTask: task.id === selectedTask?.id,
       effectiveTask: task.id === effectiveTask?.id,
