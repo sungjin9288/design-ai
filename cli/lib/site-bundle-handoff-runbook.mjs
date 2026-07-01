@@ -513,8 +513,16 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const nextActionCount = (field) => nextActionValue(field, 0);
   const nextActionFlag = (field) => nextStageActionRow?.[field] === true;
   const nextStageValue = (field, fallback = "") => nextStage?.[field] || fallback;
+  const nextStageList = (field) => nextStageValue(field, []);
+  const nextStageFlag = (field) => nextStage?.[field] === true;
   const nextStageCommandList = (getValue) => nextStage?.commands?.map(getValue) || [];
   const nextActionEvidenceProgressSummary = nextActionObject("actionEvidenceCaptureInitialValidationChecklistSummary");
+  const nextStageHumanLine = nextStage ? stageHumanLineByKey[nextStage.key] || "" : "";
+  const nextStageHumanLineDisplayRow = nextStage ? stageHumanLineDisplayRowByKey[nextStage.key] || {} : {};
+  const nextStageCommandCount = nextStageValue("commandCount", 0);
+  const nextCommandValue = (field, fallback = "") => nextCommandEntry?.[field] || fallback;
+  const nextCommandList = (field) => nextCommandValue(field, []);
+  const nextCommandSafety = nextCommandEntry?.safety || null;
   const sumActions = (getValue) => stageActionRows.reduce((sum, stage) => sum + getValue(stage), 0);
   const maxActionValue = (getValue) => Math.max(0, ...stageActionRows.map(getValue));
   const countEvidenceCaptureFields = (predicate) => sumActions(
@@ -885,13 +893,13 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     manualStageKeys,
     nextStageKey,
     nextStage,
-    nextStageLabel: nextStage?.label || "",
-    nextStageSummary: nextStage?.reason || "",
-    nextStageHumanLine: nextStage ? stageHumanLineByKey[nextStage.key] || "" : "",
-    nextStageHumanLineDisplayRow: nextStage ? stageHumanLineDisplayRowByKey[nextStage.key] || {} : {},
+    nextStageLabel: nextStageValue("label"),
+    nextStageSummary: nextStageValue("reason"),
+    nextStageHumanLine,
+    nextStageHumanLineDisplayRow,
     nextStageHumanLineSummary: nextStage ? {
       stageKey: nextStage.key,
-      line: stageHumanLineByKey[nextStage.key] || "",
+      line: nextStageHumanLine,
       hasEvidenceProgress: (nextActionEvidenceProgressSummary.itemCount || 0) > 0,
       evidenceProgressStatus: nextActionEvidenceProgressSummary.status || "",
       evidenceProgressLabel: nextActionEvidenceProgressSummary.progressLabel || "",
@@ -970,25 +978,25 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageRequired: nextStage?.required === true,
     nextStageRunPolicy: nextStageValue("runPolicy"),
     nextStageSafetyLevel: nextStageValue("safetyLevel"),
-    nextStageCommandCount: nextStageValue("commandCount", 0),
+    nextStageCommandCount,
     nextStageCommandLabels: nextStageCommandList((command) => command.label),
     nextStageCommands: nextStageCommandList((command) => command.command),
     nextStageCommandArgsList: nextStageCommandList((command) => command.commandArgs),
     nextStageCommandRunPolicies: nextStageCommandList((command) => command.runPolicy),
     nextStageCommandSafetyLevels: nextStageCommandList((command) => command.safety?.safetyLevel || ""),
-    nextStageOutputFiles: nextStage?.outputFiles || [],
-    nextStageHasCommands: (nextStage?.commandCount || 0) > 0,
-    nextStageManual: (nextStage?.commandCount || 0) === 0,
-    nextStageWritesLocalFile: nextStage?.writesLocalFile === true,
-    nextStageExternalCalls: nextStage?.externalCalls === true,
-    nextStageTargetRepoMutation: nextStage?.targetRepoMutation === true,
-    nextStageCommandKeys: nextStage?.commandKeys || [],
+    nextStageOutputFiles: nextStageList("outputFiles"),
+    nextStageHasCommands: nextStageCommandCount > 0,
+    nextStageManual: nextStageCommandCount === 0,
+    nextStageWritesLocalFile: nextStageFlag("writesLocalFile"),
+    nextStageExternalCalls: nextStageFlag("externalCalls"),
+    nextStageTargetRepoMutation: nextStageFlag("targetRepoMutation"),
+    nextStageCommandKeys: nextStageList("commandKeys"),
     nextCommandKey,
-    nextCommand: nextCommandEntry?.command || "",
-    nextCommandArgs: nextCommandEntry?.commandArgs || [],
-    nextCommandRunPolicy: nextCommandEntry?.runPolicy || "",
-    nextCommandSafetyLevel: nextCommandEntry?.safety?.safetyLevel || "",
-    nextCommandSafety: nextCommandEntry?.safety || null,
+    nextCommand: nextCommandValue("command"),
+    nextCommandArgs: nextCommandList("commandArgs"),
+    nextCommandRunPolicy: nextCommandValue("runPolicy"),
+    nextCommandSafetyLevel: nextCommandSafety?.safetyLevel || "",
+    nextCommandSafety,
     nextCommandEntry,
     stages,
   };

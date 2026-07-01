@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 701 — Website Improvement Bundle Handoff Runbook Next Stage Return Cleanup (unreleased)
+
+Website Improvement target-repo handoff runbook next-stage and next-command return metadata now use the same local fallback style as the next-action fields.
+
+### Changed
+- Added local `nextStageList`, `nextStageFlag`, `nextCommandValue`, and `nextCommandList` helpers inside `buildBundleHandoffOperatorRunbook`.
+- Precomputed the next-stage human line, display row, command count, and command safety before assembling the returned runbook payload.
+- Replaced the remaining repeated `nextStage?.*` and `nextCommandEntry?.*` fallback expressions in the return object with named values or helper calls.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same next-stage labels, command metadata, safety metadata, human-line summary, and JSON contract.
+- Target-repo handoff wrappers can continue to consume the same next-stage and next-command fields without migration.
+- No CLI flags, bundle files, target-repo mutation rules, external-call boundaries, lookup maps, evidence fields, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 700 — Website Improvement Bundle Handoff Runbook Next Action Fallback Cleanup (unreleased)
 
 Website Improvement target-repo handoff runbook next-action metadata now uses small local fallback helpers instead of repeating the same optional-chaining defaults in `actionSummary` and the returned runbook payload.
