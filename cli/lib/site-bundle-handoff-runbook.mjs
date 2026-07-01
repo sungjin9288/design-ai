@@ -630,19 +630,20 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const nextCommandField = (field, fallback = "") => nextCommandEntry?.[field] || fallback;
   const nextCommandListField = (field) => nextCommandField(field, []);
   const nextCommandSafety = nextCommandEntry?.safety || null;
+  const nextStageHumanLineSummary = nextStage ? {
+    stageKey: nextStage.key,
+    line: nextStageHumanLine,
+    hasEvidenceProgress: (nextActionEvidenceProgressSummary.itemCount || 0) > 0,
+    evidenceProgressStatus: nextActionEvidenceProgressSummary.status || "",
+    evidenceProgressLabel: nextActionEvidenceProgressSummary.progressLabel || "",
+    firstUncheckedEvidenceItemLabel: nextActionEvidenceProgressSummary.firstUncheckedItemLabel || "",
+  } : {};
   const nextStageIdentity = {
     nextStageLabel: nextStageField("label"),
     nextStageSummary: nextStageField("reason"),
     nextStageHumanLine,
     nextStageHumanLineDisplayRow,
-    nextStageHumanLineSummary: nextStage ? {
-      stageKey: nextStage.key,
-      line: nextStageHumanLine,
-      hasEvidenceProgress: (nextActionEvidenceProgressSummary.itemCount || 0) > 0,
-      evidenceProgressStatus: nextActionEvidenceProgressSummary.status || "",
-      evidenceProgressLabel: nextActionEvidenceProgressSummary.progressLabel || "",
-      firstUncheckedEvidenceItemLabel: nextActionEvidenceProgressSummary.firstUncheckedItemLabel || "",
-    } : {},
+    nextStageHumanLineSummary,
   };
   const nextStageActionStatus = {
     nextStageActionType: nextActionField("actionType"),

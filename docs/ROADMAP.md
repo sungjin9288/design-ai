@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 728 — Website Improvement Bundle Handoff Next Stage Human Line Summary Snapshot Cleanup (unreleased)
+
+Website Improvement bundle handoff runbook next-stage identity now prepares the next-stage human-line summary as a named internal snapshot before returning the same identity fields.
+
+### Changed
+- Added an internal `nextStageHumanLineSummary` snapshot for the next-stage line, evidence-progress status, progress label, and first unchecked evidence label.
+- Replaced the nested inline `nextStageHumanLineSummary` assembly inside `nextStageIdentity` with a direct snapshot reference while keeping the existing returned field names unchanged.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same `nextStageHumanLineSummary` and `nextStageIdentity` contract.
+- Website Improvement handoff wrappers and tests can continue to consume the same next-stage human-line summary fields without migration.
+- No CLI flags, bundle files, command manifest fields, stage/action/evidence field names, validation status values, next-action keys, target-repo mutation rules, external-call boundaries, human runbook lines, or generated output files change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run release:check`
+
 ## Phase 727 — Website Improvement Bundle Handoff Human Line Summary Snapshot Cleanup (unreleased)
 
 Website Improvement bundle handoff runbook human-line summary now groups count, evidence-progress, and first-value fields into named internal snapshots before returning the same summary fields.
