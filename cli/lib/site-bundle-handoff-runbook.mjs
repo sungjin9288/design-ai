@@ -219,7 +219,9 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       reason: "Return changed files, verification commands, browser/viewport checks, remaining risks, and the bundle digest.",
     }),
   ];
-  const commandStages = stages.filter((stage) => stage.commandCount > 0);
+  const hasCommands = (stage) => stage.commandCount > 0;
+  const isManualStage = (stage) => !hasCommands(stage);
+  const commandStages = stages.filter(hasCommands);
   const stageActionRows = stages.map((stage) => {
     const prerequisiteKeys = getStageActionPrerequisiteKeys(stage);
     const blockedStageKeys = getStageActionBlockedStageKeys(stage, stages);
@@ -310,7 +312,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       commandKeys: stage.commandKeys,
       commandCount: stage.commandCount,
       outputFiles: stage.outputFiles,
-      manual: stage.commandCount === 0,
+      manual: isManualStage(stage),
       writesLocalFile: stage.writesLocalFile,
       externalCalls: stage.externalCalls,
       targetRepoMutation: stage.targetRepoMutation,
@@ -395,7 +397,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       label: stage.label,
       line: stageHumanLines[index],
       required: stage.required,
-      manual: stage.commandCount === 0,
+      manual: isManualStage(stage),
       commandCount: stage.commandCount,
       actionType: actionRow.actionType,
       actionLabel: actionRow.actionLabel,
@@ -444,7 +446,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     byKeyCount: Object.keys(stageHumanLineDisplayRowByKey).length,
     requiredCount: countDisplayRows((row) => row.required),
     optionalCount: countDisplayRows((row) => !row.required),
-    commandCount: countDisplayRows((row) => row.commandCount > 0),
+    commandCount: countDisplayRows(hasCommands),
     manualCount: countDisplayRows((row) => row.manual),
     readyActionStatusCount: countDisplayRows((row) => row.actionStatus === "ready"),
     optionalActionStatusCount: countDisplayRows((row) => row.actionStatus === "optional"),
@@ -465,8 +467,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     byKeyCount: Object.keys(stageHumanLineByKey).length,
     requiredCount: countBy((stage) => stage.required),
     optionalCount: countBy((stage) => !stage.required),
-    commandCount: countBy((stage) => stage.commandCount > 0),
-    manualCount: countBy((stage) => stage.commandCount === 0),
+    commandCount: countBy(hasCommands),
+    manualCount: countBy(isManualStage),
     evidenceProgressCount: countActions(hasEvidenceProgress),
     blockedEvidenceProgressCount: countActions(hasBlockedEvidenceProgress),
     readyEvidenceProgressCount: countActions(hasReadyEvidenceProgress),
@@ -502,13 +504,13 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageCommandRunPoliciesByKey = commandListByKey((command) => command.runPolicy);
   const stageCommandSafetyLevelsByKey = commandListByKey((command) => command.safety?.safetyLevel || "");
   const stageOutputFilesByKey = stageFieldByKey("outputFiles");
-  const stageHasCommandsByKey = byKey(stages, (stage) => stage.commandCount > 0);
-  const stageManualByKey = byKey(stages, (stage) => stage.commandCount === 0);
+  const stageHasCommandsByKey = byKey(stages, hasCommands);
+  const stageManualByKey = byKey(stages, isManualStage);
   const stageWritesLocalFileByKey = stageFieldByKey("writesLocalFile");
   const stageExternalCallsByKey = stageFieldByKey("externalCalls");
   const stageTargetRepoMutationByKey = stageFieldByKey("targetRepoMutation");
-  const commandStageKeys = stageKeysBy((stage) => stage.commandCount > 0);
-  const manualStageKeys = stageKeysBy((stage) => stage.commandCount === 0);
+  const commandStageKeys = stageKeysBy(hasCommands);
+  const manualStageKeys = stageKeysBy(isManualStage);
   const nextStageKey = "verifySourceBundle";
   const nextCommandKey = "source.bundleCheck.strict";
   const nextStage = stageByKey[nextStageKey] || null;
@@ -558,7 +560,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const actionSummary = {
     totalActionCount: stages.length,
     commandActionCount: commandStages.length,
-    manualActionCount: countBy((stage) => stage.commandCount === 0),
+    manualActionCount: countBy(isManualStage),
     enabledActionCount: countActions((stage) => stage.actionEnabled),
     disabledActionCount: countActions((stage) => !stage.actionEnabled),
     manualDisabledActionCount: countActions((stage) => !stage.actionEnabled && stage.manual),
@@ -754,10 +756,10 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextActionHasEvidenceCaptureFields: nextActionFlag("actionHasEvidenceCaptureFields"),
     nextActionRunPolicy: nextStageValue("runPolicy"),
     nextActionSafetyLevel: nextStageValue("safetyLevel"),
-    firstRequiredCommandStageKey: firstStageKey((stage) => stage.required && stage.commandCount > 0),
+    firstRequiredCommandStageKey: firstStageKey((stage) => stage.required && hasCommands(stage)),
     firstLocalOutputStageKey: firstStageKey((stage) => stage.writesLocalFile),
-    firstManualStageKey: firstStageKey((stage) => stage.commandCount === 0),
-    firstRequiredManualStageKey: firstStageKey((stage) => stage.required && stage.commandCount === 0),
+    firstManualStageKey: firstStageKey(isManualStage),
+    firstRequiredManualStageKey: firstStageKey((stage) => stage.required && isManualStage(stage)),
     firstEvidenceStageKey: firstStageKey((stage) => stage.kind === "manual-reporting"),
     firstActionWithPrerequisiteKey: firstActionKey((stage) => stage.actionHasPrerequisites),
     firstManualActionWithPrerequisiteKey: firstActionKey((stage) => stage.manual && stage.actionHasPrerequisites),
@@ -787,7 +789,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     source: "bundle-handoff",
     stageCount: stages.length,
     commandStageCount: commandStages.length,
-    manualStageCount: countBy((stage) => stage.commandCount === 0),
+    manualStageCount: countBy(isManualStage),
     requiredStageCount: countBy((stage) => stage.required),
     optionalStageCount: countBy((stage) => !stage.required),
     readOnlyCommandStageCount: countBy((stage) => stage.runPolicy === "read-only"),

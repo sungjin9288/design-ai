@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 704 — Website Improvement Bundle Handoff Runbook Manual Stage Predicate Cleanup (unreleased)
+
+Website Improvement bundle handoff operator stages now use named predicates for command-backed and manual stage checks instead of repeating `commandCount` comparisons inline.
+
+### Changed
+- Added local `hasCommands` and `isManualStage` predicates inside `buildBundleHandoffOperatorRunbook`.
+- Replaced repeated `stage.commandCount > 0` checks with `hasCommands`.
+- Replaced repeated `stage.commandCount === 0` checks with `isManualStage`.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same command-stage counts, manual-stage counts, lookup maps, next-action summary fields, and stage lists.
+- Website Improvement handoff wrappers can continue to consume the same stage and action fields without migration.
+- No CLI flags, bundle files, command manifest fields, target-repo mutation rules, external-call boundaries, evidence fields, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 703 — Website Improvement Bundle Handoff Runbook Stage Command Safety Cleanup (unreleased)
 
 Website Improvement bundle handoff operator stages now read first-command run policy and safety metadata through named local values before assembling each stage record.
