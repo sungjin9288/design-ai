@@ -254,6 +254,41 @@ test("malformed MCP requests return protocol errors", async () => {
   assert.equal(wrongJsonrpc.error.code, -32600);
   assert.equal(wrongJsonrpc.error.message, 'Invalid MCP request: jsonrpc must be "2.0"');
 
+  const objectId = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: { request: 3105 },
+    method: "tools/list",
+  });
+  assert.equal(objectId.id, null);
+  assert.equal(objectId.error.code, -32600);
+  assert.equal(objectId.error.message, "Invalid MCP request: id must be a string, number, or null");
+
+  const arrayId = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: [3106],
+    method: "tools/list",
+  });
+  assert.equal(arrayId.id, null);
+  assert.equal(arrayId.error.code, -32600);
+  assert.equal(arrayId.error.message, "Invalid MCP request: id must be a string, number, or null");
+
+  const booleanId = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: true,
+    method: "tools/list",
+  });
+  assert.equal(booleanId.id, null);
+  assert.equal(booleanId.error.code, -32600);
+  assert.equal(booleanId.error.message, "Invalid MCP request: id must be a string, number, or null");
+
+  const nullId = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: null,
+    method: "tools/list",
+  });
+  assert.equal(nullId.id, null);
+  assert.ok(nullId.result.tools.some((tool) => tool.name === "design_ai_route"));
+
   const missingMethod = await handleMcpRequest({
     jsonrpc: "2.0",
     id: 31,
@@ -365,6 +400,9 @@ test("design-ai MCP stdio subprocess reports invalid requests without ids", asyn
   child.stdin.write("null\n");
   child.stdin.write(`${JSON.stringify({ method: "tools/list" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "1.0", method: "tools/list" })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: { request: 1 }, method: "tools/list" })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: [1], method: "tools/list" })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: true, method: "tools/list" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: 42 })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
@@ -372,18 +410,18 @@ test("design-ai MCP stdio subprocess reports invalid requests without ids", asyn
   await waitForMcpResponse(
     child,
     responses,
-    () => responses.length === 7,
+    () => responses.length === 10,
     `Timed out waiting for invalid request responses. Responses: ${JSON.stringify(responses)}`,
   );
   await stopMcpSubprocess(child);
 
   assert.deepEqual(
     responses.map((response) => response.error.code),
-    [-32600, -32600, -32600, -32600, -32600, -32600, -32600],
+    [-32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600],
   );
   assert.deepEqual(
     responses.map((response) => response.id),
-    [null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
   );
 });
 

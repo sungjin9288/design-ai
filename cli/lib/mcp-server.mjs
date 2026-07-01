@@ -409,6 +409,9 @@ function validateMcpRequestEnvelope(message) {
   if (message.jsonrpc !== "2.0") {
     return 'Invalid MCP request: jsonrpc must be "2.0"';
   }
+  if (hasRequestId(message) && !isValidMcpRequestId(message.id)) {
+    return "Invalid MCP request: id must be a string, number, or null";
+  }
   return "";
 }
 
@@ -439,6 +442,15 @@ function hasRequestId(message) {
   return isObjectRecord(message) && Object.hasOwn(message, "id");
 }
 
+function isValidMcpRequestId(id) {
+  return id === null || typeof id === "string" || (typeof id === "number" && Number.isFinite(id));
+}
+
+function responseIdForMessage(message) {
+  if (!hasRequestId(message)) return undefined;
+  return isValidMcpRequestId(message.id) ? message.id : undefined;
+}
+
 function isInvalidRequestResponse(response) {
   return response?.error?.code === -32600;
 }
@@ -449,7 +461,7 @@ function shouldWriteMcpResponse(message, response) {
 }
 
 export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}) {
-  const id = hasRequestId(message) ? message.id : undefined;
+  const id = responseIdForMessage(message);
   const envelopeError = validateMcpRequestEnvelope(message);
   if (envelopeError) return errorResponse(id, -32600, envelopeError);
 
@@ -527,7 +539,7 @@ export function startMcpStdioServer({ input = process.stdin, output = process.st
         output.write(`${JSON.stringify(response)}\n`);
       }
     } catch (requestError) {
-      const id = hasRequestId(message) ? message.id : null;
+      const id = responseIdForMessage(message) ?? null;
       output.write(`${JSON.stringify(errorResponse(id, -32603, requestError.message || String(requestError)))}\n`);
     }
   });

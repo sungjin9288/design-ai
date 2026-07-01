@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 742 — design-ai MCP Request ID Guard (unreleased)
+
+The MCP stdio server now validates JSON-RPC request ids before dispatch, so malformed object, array, or boolean ids receive deterministic `-32600` feedback with `id: null` instead of being echoed back to clients.
+
+### Changed
+- Added a JSON-RPC request id guard for `string`, `number`, and `null` ids.
+- Normalized invalid request ids to `id: null` in protocol error responses.
+- Added unit and subprocess coverage for invalid object, array, and boolean id payloads while preserving explicit `id: null` requests.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get clearer protocol feedback when request correlation ids are malformed.
+- Valid string, number, and null ids, notifications, initialize, tools/list, tools/call, argument validation, output truncation, package smoke, Website Improvement readiness behavior, external MCP call boundaries, target-repo mutation rules, and learning write behavior stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 741 — design-ai MCP JSON-RPC Envelope Guard (unreleased)
 
 The MCP stdio server now rejects requests without `jsonrpc: "2.0"` before method dispatch, so malformed clients cannot reach normal initialize/list/call handlers with an invalid JSON-RPC envelope.
