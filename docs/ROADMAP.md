@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 717 — Website Improvement Bundle Handoff Runbook Next Snapshot Cleanup (unreleased)
+
+Website Improvement bundle handoff runbook next-stage output now groups the internal `nextStage*`, `nextStageAction*`, evidence-capture, and `nextCommand*` assembly into named snapshot objects before returning the same public fields.
+
+### Changed
+- Renamed generic next-action and next-stage accessors so scalar, list, object, number, and boolean reads are explicit at the call site.
+- Added grouped internal snapshots for next-stage identity, action status, dependency/completion metadata, evidence metadata, evidence-capture metadata, command-stage metadata, and next-command metadata.
+- Replaced the long inline return assembly for `nextStage*` and `nextCommand*` fields with those grouped snapshots.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same returned `nextStage*`, `nextStageAction*`, `nextCommand*`, evidence-capture, command, safety, and stage fields.
+- Website Improvement handoff wrappers can continue to consume the same runbook next-step contract without migration.
+- No CLI flags, bundle files, command manifest fields, stage/action field names, evidence field names, validation status values, next-action keys, target-repo mutation rules, external-call boundaries, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 716 — Website Improvement Bundle Handoff Runbook Evidence Predicate Cleanup (unreleased)
 
 Website Improvement bundle handoff evidence-capture summaries now use named predicates for evidence field input type, value shape, payload mapping, validation state, display state, and checklist item state.
