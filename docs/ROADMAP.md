@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 697 — Website Improvement Bundle Handoff Runbook Action Summary Count Cleanup (unreleased)
+
+Website Improvement target-repo handoff runbook action summary count and aggregate calculations now use named local helpers instead of repeating filter, reduce, max, and evidence-capture traversal expressions.
+
+### Changed
+- Added local `countActions`, `sumActions`, `maxActionValue`, and evidence-capture aggregate helpers inside `buildBundleHandoffOperatorRunbook`.
+- Replaced repeated action summary count, sum, max, payload binding, validation spec, validation state, display metadata, and checklist aggregate expressions with named helper calls.
+- Kept the action summary object keys and computed values unchanged.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same `actionSummary` JSON contract while the summary section reads as a set of named aggregate calculations.
+- Target-repo handoff wrappers can continue to consume the same summary fields without migration.
+- No CLI flags, bundle files, target-repo mutation rules, external-call boundaries, lookup maps, evidence fields, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 696 — Website Improvement Bundle Handoff Runbook Lookup Assembly Cleanup (unreleased)
 
 Website Improvement target-repo handoff runbook lookup map assembly now uses a small shared helper instead of repeating the same `Object.fromEntries` pattern through the assembly body.
