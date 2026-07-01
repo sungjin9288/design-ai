@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 718 — Website Improvement Bundle Handoff Runbook Action Summary Next Snapshot Cleanup (unreleased)
+
+Website Improvement bundle handoff runbook action summary now groups the internal `nextAction*` assembly into a named snapshot object before returning the same public fields.
+
+### Changed
+- Added a grouped internal `nextActionSummary` snapshot for next-action status, dependency/completion metadata, evidence metadata, evidence-capture metadata, and stage linkage metadata.
+- Replaced the long inline `actionSummary` assembly for `nextAction*` fields with the grouped snapshot spread.
+- Kept the existing next-action accessor helpers and public field names unchanged.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same returned `actionSummary.nextAction*` contract.
+- Website Improvement handoff wrappers can continue to consume the same runbook next-action summary fields without migration.
+- No CLI flags, bundle files, command manifest fields, stage/action field names, evidence field names, validation status values, next-action keys, target-repo mutation rules, external-call boundaries, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run release:check`
+
 ## Phase 717 — Website Improvement Bundle Handoff Runbook Next Snapshot Cleanup (unreleased)
 
 Website Improvement bundle handoff runbook next-stage output now groups the internal `nextStage*`, `nextStageAction*`, evidence-capture, and `nextCommand*` assembly into named snapshot objects before returning the same public fields.
