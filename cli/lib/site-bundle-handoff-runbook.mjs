@@ -405,51 +405,66 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     };
   });
   const stageHumanLineDisplayRowByKey = byKey(stageHumanLineDisplayRows, (row) => row);
+  const countBy = (predicate) => stages.filter(predicate).length;
+  const countActions = (predicate) => stageActionRows.filter(predicate).length;
+  const firstActionKey = (predicate) => stageActionRows.find(predicate)?.key || "";
+  const displayRowKeysBy = (predicate) => stageHumanLineDisplayRows.filter(predicate).map((row) => row.key);
+  const countDisplayRows = (predicate) => stageHumanLineDisplayRows.filter(predicate).length;
+  const firstDisplayRowKey = (predicate) => stageHumanLineDisplayRows.find(predicate)?.key || "";
+  const hasEvidenceProgress = (stage) => (
+    stage.actionEvidenceCaptureInitialValidationChecklistSummary.itemCount > 0
+  );
+  const hasBlockedEvidenceProgress = (stage) => (
+    stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "blocked"
+  );
+  const hasReadyEvidenceProgress = (stage) => (
+    stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "ready"
+  );
   const stageHumanLineDisplayRowKeysByActionStatus = {
-    ready: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "ready").map((row) => row.key),
-    optional: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "optional").map((row) => row.key),
-    manual: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "manual").map((row) => row.key),
-    blocked: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "blocked").map((row) => row.key),
+    ready: displayRowKeysBy((row) => row.actionStatus === "ready"),
+    optional: displayRowKeysBy((row) => row.actionStatus === "optional"),
+    manual: displayRowKeysBy((row) => row.actionStatus === "manual"),
+    blocked: displayRowKeysBy((row) => row.actionStatus === "blocked"),
   };
   const stageHumanLineDisplayRowKeysByEvidenceProgressStatus = {
-    blocked: stageHumanLineDisplayRows.filter((row) => row.evidenceProgressStatus === "blocked").map((row) => row.key),
-    ready: stageHumanLineDisplayRows.filter((row) => row.evidenceProgressStatus === "ready").map((row) => row.key),
+    blocked: displayRowKeysBy((row) => row.evidenceProgressStatus === "blocked"),
+    ready: displayRowKeysBy((row) => row.evidenceProgressStatus === "ready"),
   };
   const stageHumanLineDisplayRowSummary = {
     count: stageHumanLineDisplayRows.length,
     byKeyCount: Object.keys(stageHumanLineDisplayRowByKey).length,
-    requiredCount: stageHumanLineDisplayRows.filter((row) => row.required).length,
-    optionalCount: stageHumanLineDisplayRows.filter((row) => !row.required).length,
-    commandCount: stageHumanLineDisplayRows.filter((row) => row.commandCount > 0).length,
-    manualCount: stageHumanLineDisplayRows.filter((row) => row.manual).length,
-    readyActionStatusCount: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "ready").length,
-    optionalActionStatusCount: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "optional").length,
-    manualActionStatusCount: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "manual").length,
-    blockedActionStatusCount: stageHumanLineDisplayRows.filter((row) => row.actionStatus === "blocked").length,
-    evidenceProgressCount: stageHumanLineDisplayRows.filter((row) => row.hasEvidenceProgress).length,
-    blockedEvidenceProgressCount: stageHumanLineDisplayRows.filter((row) => row.evidenceProgressStatus === "blocked").length,
-    readyEvidenceProgressCount: stageHumanLineDisplayRows.filter((row) => row.evidenceProgressStatus === "ready").length,
+    requiredCount: countDisplayRows((row) => row.required),
+    optionalCount: countDisplayRows((row) => !row.required),
+    commandCount: countDisplayRows((row) => row.commandCount > 0),
+    manualCount: countDisplayRows((row) => row.manual),
+    readyActionStatusCount: countDisplayRows((row) => row.actionStatus === "ready"),
+    optionalActionStatusCount: countDisplayRows((row) => row.actionStatus === "optional"),
+    manualActionStatusCount: countDisplayRows((row) => row.actionStatus === "manual"),
+    blockedActionStatusCount: countDisplayRows((row) => row.actionStatus === "blocked"),
+    evidenceProgressCount: countDisplayRows((row) => row.hasEvidenceProgress),
+    blockedEvidenceProgressCount: countDisplayRows((row) => row.evidenceProgressStatus === "blocked"),
+    readyEvidenceProgressCount: countDisplayRows((row) => row.evidenceProgressStatus === "ready"),
     firstRowKey: stageHumanLineDisplayRows[0]?.key || "",
-    firstReadyActionRowKey: stageHumanLineDisplayRows.find((row) => row.actionStatus === "ready")?.key || "",
-    firstOptionalActionRowKey: stageHumanLineDisplayRows.find((row) => row.actionStatus === "optional")?.key || "",
-    firstManualActionRowKey: stageHumanLineDisplayRows.find((row) => row.actionStatus === "manual")?.key || "",
-    firstBlockedEvidenceProgressRowKey: stageHumanLineDisplayRows.find((row) => row.evidenceProgressStatus === "blocked")?.key || "",
-    firstReadyEvidenceProgressRowKey: stageHumanLineDisplayRows.find((row) => row.evidenceProgressStatus === "ready")?.key || "",
+    firstReadyActionRowKey: firstDisplayRowKey((row) => row.actionStatus === "ready"),
+    firstOptionalActionRowKey: firstDisplayRowKey((row) => row.actionStatus === "optional"),
+    firstManualActionRowKey: firstDisplayRowKey((row) => row.actionStatus === "manual"),
+    firstBlockedEvidenceProgressRowKey: firstDisplayRowKey((row) => row.evidenceProgressStatus === "blocked"),
+    firstReadyEvidenceProgressRowKey: firstDisplayRowKey((row) => row.evidenceProgressStatus === "ready"),
   };
   const stageHumanLineSummary = {
     count: stageHumanLines.length,
     byKeyCount: Object.keys(stageHumanLineByKey).length,
-    requiredCount: stages.filter((stage) => stage.required).length,
-    optionalCount: stages.filter((stage) => !stage.required).length,
-    commandCount: stages.filter((stage) => stage.commandCount > 0).length,
-    manualCount: stages.filter((stage) => stage.commandCount === 0).length,
-    evidenceProgressCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.itemCount > 0).length,
-    blockedEvidenceProgressCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "blocked").length,
-    readyEvidenceProgressCount: stageActionRows.filter((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "ready").length,
+    requiredCount: countBy((stage) => stage.required),
+    optionalCount: countBy((stage) => !stage.required),
+    commandCount: countBy((stage) => stage.commandCount > 0),
+    manualCount: countBy((stage) => stage.commandCount === 0),
+    evidenceProgressCount: countActions(hasEvidenceProgress),
+    blockedEvidenceProgressCount: countActions(hasBlockedEvidenceProgress),
+    readyEvidenceProgressCount: countActions(hasReadyEvidenceProgress),
     firstStageKey: stages[0]?.key || "",
     firstLine: stageHumanLines[0] || "",
-    firstEvidenceProgressStageKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.itemCount > 0)?.key || "",
-    firstBlockedEvidenceProgressStageKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "blocked")?.key || "",
+    firstEvidenceProgressStageKey: firstActionKey(hasEvidenceProgress),
+    firstBlockedEvidenceProgressStageKey: firstActionKey(hasBlockedEvidenceProgress),
   };
   const stageActionEvidenceCaptureFieldInputTypesByKey = actionFieldByKey("actionEvidenceCaptureFieldInputTypes");
   const stageActionEvidenceCaptureFieldValueShapesByKey = actionFieldByKey("actionEvidenceCaptureFieldValueShapes");
@@ -490,8 +505,6 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const nextStage = stageByKey[nextStageKey] || null;
   const nextStageActionRow = stageActionRows.find((stage) => stage.key === nextStageKey) || null;
   const nextCommandEntry = commandByKey.get(nextCommandKey) || null;
-  const countBy = (predicate) => stages.filter(predicate).length;
-  const countActions = (predicate) => stageActionRows.filter(predicate).length;
   const sumActions = (getValue) => stageActionRows.reduce((sum, stage) => sum + getValue(stage), 0);
   const maxActionValue = (getValue) => Math.max(0, ...stageActionRows.map(getValue));
   const countEvidenceCaptureFields = (predicate) => sumActions(
@@ -629,7 +642,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     humanLineWithReadyEvidenceProgressCount: stageHumanLineSummary.readyEvidenceProgressCount,
     humanLineDisplayRowCount: stageHumanLineDisplayRows.length,
     humanLineDisplayRowByKeyCount: Object.keys(stageHumanLineDisplayRowByKey).length,
-    humanLineDisplayRowWithEvidenceProgressCount: stageHumanLineDisplayRows.filter((row) => row.hasEvidenceProgress).length,
+    humanLineDisplayRowWithEvidenceProgressCount: stageHumanLineDisplayRowSummary.evidenceProgressCount,
     humanLineDisplayRowWithBlockedEvidenceProgressCount: stageHumanLineDisplayRowSummary.blockedEvidenceProgressCount,
     humanLineDisplayRowWithReadyEvidenceProgressCount: stageHumanLineDisplayRowSummary.readyEvidenceProgressCount,
     humanLineDisplayRowReadyActionCount: stageHumanLineDisplayRowSummary.readyActionStatusCount,
@@ -721,24 +734,24 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstManualStageKey: firstStageKey((stage) => stage.commandCount === 0),
     firstRequiredManualStageKey: firstStageKey((stage) => stage.required && stage.commandCount === 0),
     firstEvidenceStageKey: firstStageKey((stage) => stage.kind === "manual-reporting"),
-    firstActionWithPrerequisiteKey: stageActionRows.find((stage) => stage.actionHasPrerequisites)?.key || "",
-    firstManualActionWithPrerequisiteKey: stageActionRows.find((stage) => stage.manual && stage.actionHasPrerequisites)?.key || "",
-    firstEvidenceActionWithPrerequisiteKey: stageActionRows.find((stage) => stage.actionType === "manual-evidence" && stage.actionHasPrerequisites)?.key || "",
-    firstActionWithDependencyReasonKey: stageActionRows.find((stage) => stage.actionDependencyReasonCode)?.key || "",
-    firstActionBlockingOtherActionKey: stageActionRows.find((stage) => stage.actionBlocksStages)?.key || "",
-    firstActionWithCompletionCriteriaKey: stageActionRows.find((stage) => stage.actionHasCompletionCriteria)?.key || "",
-    firstManualActionWithCompletionCriteriaKey: stageActionRows.find((stage) => stage.manual && stage.actionHasCompletionCriteria)?.key || "",
-    firstActionRequiringEvidenceKey: stageActionRows.find((stage) => stage.actionRequiresEvidence)?.key || "",
-    firstManualActionRequiringEvidenceKey: stageActionRows.find((stage) => stage.manual && stage.actionRequiresEvidence)?.key || "",
-    firstEvidenceRecordingActionKey: stageActionRows.find((stage) => stage.actionType === "manual-evidence" && stage.actionRequiresEvidence)?.key || "",
-    firstTargetRepoEvidenceActionKey: stageActionRows.find((stage) => stage.actionEvidenceTarget === "target-repo-working-tree")?.key || "",
-    firstLocalOutputEvidenceActionKey: stageActionRows.find((stage) => stage.actionEvidenceTarget === "local-output-file")?.key || "",
-    firstActionWithEvidenceCaptureFieldKey: stageActionRows.find((stage) => stage.actionHasEvidenceCaptureFields)?.key || "",
-    firstActionWithOptionalEvidenceCaptureFieldKey: stageActionRows.find((stage) => stage.actionOptionalEvidenceCaptureFieldCount > 0)?.key || "",
-    firstManualActionWithEvidenceCaptureFieldKey: stageActionRows.find((stage) => stage.manual && stage.actionHasEvidenceCaptureFields)?.key || "",
-    firstTextareaEvidenceCaptureActionKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureFields.some((field) => field.inputType === "textarea"))?.key || "",
-    firstMultiValueEvidenceCaptureActionKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureFields.some((field) => field.acceptsMultiple))?.key || "",
-    firstValidationRuleEvidenceCaptureActionKey: stageActionRows.find((stage) => stage.actionEvidenceCaptureFields.some((field) => field.validationRule))?.key || "",
+    firstActionWithPrerequisiteKey: firstActionKey((stage) => stage.actionHasPrerequisites),
+    firstManualActionWithPrerequisiteKey: firstActionKey((stage) => stage.manual && stage.actionHasPrerequisites),
+    firstEvidenceActionWithPrerequisiteKey: firstActionKey((stage) => stage.actionType === "manual-evidence" && stage.actionHasPrerequisites),
+    firstActionWithDependencyReasonKey: firstActionKey((stage) => stage.actionDependencyReasonCode),
+    firstActionBlockingOtherActionKey: firstActionKey((stage) => stage.actionBlocksStages),
+    firstActionWithCompletionCriteriaKey: firstActionKey((stage) => stage.actionHasCompletionCriteria),
+    firstManualActionWithCompletionCriteriaKey: firstActionKey((stage) => stage.manual && stage.actionHasCompletionCriteria),
+    firstActionRequiringEvidenceKey: firstActionKey((stage) => stage.actionRequiresEvidence),
+    firstManualActionRequiringEvidenceKey: firstActionKey((stage) => stage.manual && stage.actionRequiresEvidence),
+    firstEvidenceRecordingActionKey: firstActionKey((stage) => stage.actionType === "manual-evidence" && stage.actionRequiresEvidence),
+    firstTargetRepoEvidenceActionKey: firstActionKey((stage) => stage.actionEvidenceTarget === "target-repo-working-tree"),
+    firstLocalOutputEvidenceActionKey: firstActionKey((stage) => stage.actionEvidenceTarget === "local-output-file"),
+    firstActionWithEvidenceCaptureFieldKey: firstActionKey((stage) => stage.actionHasEvidenceCaptureFields),
+    firstActionWithOptionalEvidenceCaptureFieldKey: firstActionKey((stage) => stage.actionOptionalEvidenceCaptureFieldCount > 0),
+    firstManualActionWithEvidenceCaptureFieldKey: firstActionKey((stage) => stage.manual && stage.actionHasEvidenceCaptureFields),
+    firstTextareaEvidenceCaptureActionKey: firstActionKey((stage) => stage.actionEvidenceCaptureFields.some((field) => field.inputType === "textarea")),
+    firstMultiValueEvidenceCaptureActionKey: firstActionKey((stage) => stage.actionEvidenceCaptureFields.some((field) => field.acceptsMultiple)),
+    firstValidationRuleEvidenceCaptureActionKey: firstActionKey((stage) => stage.actionEvidenceCaptureFields.some((field) => field.validationRule)),
     requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
     requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
     externalCalls: stages.some((stage) => stage.externalCalls),

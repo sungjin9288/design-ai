@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 698 — Website Improvement Bundle Handoff Runbook Human Line Summary Cleanup (unreleased)
+
+Website Improvement target-repo handoff runbook human-line display summaries and first-action key fields now use small named helpers instead of repeating row and action scans inline.
+
+### Changed
+- Added local display-row count, key-list, first-key, and action first-key helpers inside `buildBundleHandoffOperatorRunbook`.
+- Replaced repeated human-line display row status counts, evidence-progress counts, and first-row lookups with named helper calls.
+- Replaced repeated first action key lookups in `actionSummary` with the shared `firstActionKey` helper while keeping every exported field name unchanged.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same human-line summary, display-row summary, first-action key fields, and JSON contract.
+- Target-repo handoff wrappers can continue to consume the same stage human-line, evidence-progress, and first-action metadata without migration.
+- No CLI flags, bundle files, target-repo mutation rules, external-call boundaries, lookup maps, evidence fields, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+
 ## Phase 697 — Website Improvement Bundle Handoff Runbook Action Summary Count Cleanup (unreleased)
 
 Website Improvement target-repo handoff runbook action summary count and aggregate calculations now use named local helpers instead of repeating filter, reduce, max, and evidence-capture traversal expressions.
