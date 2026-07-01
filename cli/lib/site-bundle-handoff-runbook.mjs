@@ -170,21 +170,31 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     const firstCommand = stageCommands[0] || null;
     const firstCommandSafety = firstCommand?.safety || null;
     const commandHasSafetyFlag = (command, field) => command.safety?.[field] === true;
-    return {
+    const commandCount = stageCommands.length;
+    const stageIdentity = {
       step,
       key,
       label,
       kind,
       required,
+    };
+    const stageCommandSummary = {
       commandKeys,
       commands: stageCommands,
-      commandCount: stageCommands.length,
+      commandCount,
       runPolicy: manual ? "manual-target-repo" : (firstCommand?.runPolicy || ""),
       safetyLevel: manual ? "operator-controlled-target-repo" : (firstCommandSafety?.safetyLevel || ""),
+    };
+    const stageSafetySummary = {
       writesLocalFile: stageCommands.some((command) => commandHasSafetyFlag(command, "writesLocalFile")),
       outputFiles: stageCommands.map((command) => command.outputFile).filter(Boolean),
       externalCalls: stageCommands.some((command) => commandHasSafetyFlag(command, "externalCalls")),
       targetRepoMutation: stageCommands.some((command) => commandHasSafetyFlag(command, "targetRepoMutation")),
+    };
+    return {
+      ...stageIdentity,
+      ...stageCommandSummary,
+      ...stageSafetySummary,
       reason,
     };
   };

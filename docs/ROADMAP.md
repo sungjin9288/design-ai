@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 723 — Website Improvement Bundle Handoff Stage Snapshot Cleanup (unreleased)
+
+Website Improvement bundle handoff runbook stage assembly now groups stage identity, command metadata, and safety metadata into named internal snapshots before returning the same public stage fields.
+
+### Changed
+- Added internal stage snapshots for stage identity, command summary, and safety summary inside `buildStage`.
+- Replaced the long inline stage return assembly with snapshot spreads while keeping the existing stage field names unchanged.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same top-level `stages[*]` contract.
+- Website Improvement handoff wrappers can continue to consume the same stage identity fields, command lists, command counts, run policies, safety levels, output files, and safety flags without migration.
+- No CLI flags, bundle files, command manifest fields, stage/action field names, evidence field names, validation status values, next-action keys, target-repo mutation rules, external-call boundaries, human runbook lines, or generated output files change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run release:check`
+
 ## Phase 722 — Website Improvement Bundle Handoff Command Manifest Return Snapshot Cleanup (unreleased)
 
 Website Improvement bundle handoff command manifest return assembly now groups command counts, selected task ids, and strict task command keys into named internal snapshots before returning the same public fields.
