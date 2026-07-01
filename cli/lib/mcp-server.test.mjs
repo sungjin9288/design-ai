@@ -306,6 +306,32 @@ test("design-ai MCP stdio subprocess reports JSON parse errors", async () => {
   assert.match(responses[0].error.message, /Parse error/);
 });
 
+test("design-ai MCP stdio subprocess reports invalid requests without ids", async () => {
+  const { child, responses } = startMcpSubprocess();
+
+  child.stdin.write("{}\n");
+  child.stdin.write("[]\n");
+  child.stdin.write("null\n");
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
+
+  await waitForMcpResponse(
+    child,
+    responses,
+    () => responses.length === 3,
+    `Timed out waiting for invalid request responses. Responses: ${JSON.stringify(responses)}`,
+  );
+  await stopMcpSubprocess(child);
+
+  assert.deepEqual(
+    responses.map((response) => response.error.code),
+    [-32600, -32600, -32600],
+  );
+  assert.deepEqual(
+    responses.map((response) => response.id),
+    [null, null, null],
+  );
+});
+
 test("design-ai MCP stdio subprocess handles initialize, list, and route call", async () => {
   const { child, responses } = startMcpSubprocess();
 

@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 738 — design-ai MCP Invalid Request Stdio Response (unreleased)
+
+The MCP stdio server now distinguishes valid notifications from malformed request objects without ids, so invalid JSON-RPC payloads such as `{}`, `[]`, or `null` receive deterministic `-32600` responses with `id: null` while normal `notifications/initialized` messages remain silent.
+
+### Changed
+- Added a small response-write predicate for MCP stdio output.
+- Preserved silent handling for valid JSON-RPC notifications.
+- Added subprocess coverage for invalid request objects without ids.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get clearer protocol feedback when a malformed payload reaches the stdio server.
+- Valid initialize requests, notifications, tools/list, tools/call, CLI argument mapping, output truncation, Website Improvement readiness behavior, external call boundaries, target-repo mutation rules, and learning write behavior stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+
 ## Phase 737 — design-ai MCP Request Param Guard (unreleased)
 
 The MCP server now rejects malformed `initialize` and `tools/call` request parameters at the protocol boundary, so Claude Code and Codex clients get clear JSON-RPC `-32602` errors instead of less specific request handling or internal exceptions.

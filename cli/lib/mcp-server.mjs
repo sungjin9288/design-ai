@@ -412,6 +412,19 @@ function validateToolCallParams(params) {
   return "";
 }
 
+function hasRequestId(message) {
+  return isObjectRecord(message) && Object.hasOwn(message, "id");
+}
+
+function isInvalidRequestWithoutMethod(message, response) {
+  return Boolean(response?.error) && (!isObjectRecord(message) || !message.method);
+}
+
+function shouldWriteMcpResponse(message, response) {
+  if (!response) return false;
+  return hasRequestId(message) || isInvalidRequestWithoutMethod(message, response);
+}
+
 export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}) {
   const { id, method, params } = message || {};
 
@@ -482,11 +495,11 @@ export function startMcpStdioServer({ input = process.stdin, output = process.st
 
     try {
       const response = await handleMcpRequest(message);
-      if (response && message.id !== undefined) {
+      if (shouldWriteMcpResponse(message, response)) {
         output.write(`${JSON.stringify(response)}\n`);
       }
     } catch (requestError) {
-      const id = message && message.id !== undefined ? message.id : null;
+      const id = hasRequestId(message) ? message.id : null;
       output.write(`${JSON.stringify(errorResponse(id, -32603, requestError.message || String(requestError)))}\n`);
     }
   });
