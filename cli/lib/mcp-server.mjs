@@ -413,13 +413,18 @@ function validateToolCallParams(params) {
 }
 
 export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}) {
-  const { id, method, params = {} } = message || {};
+  const { id, method, params } = message || {};
 
   if (!method) return errorResponse(id, -32600, "Invalid MCP request: missing method");
 
   if (method === "initialize") {
+    const initializeParams = params === undefined ? {} : params;
+    if (!isObjectRecord(initializeParams)) {
+      return errorResponse(id, -32602, "initialize params must be an object");
+    }
+
     return successResponse(id, {
-      protocolVersion: chooseProtocolVersion(params.protocolVersion),
+      protocolVersion: chooseProtocolVersion(initializeParams.protocolVersion),
       capabilities: {
         tools: { listChanged: false },
       },

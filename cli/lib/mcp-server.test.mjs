@@ -90,6 +90,28 @@ test("MCP initialize falls back to the supported protocol version", async () => 
   assert.equal(response.result.protocolVersion, "2025-11-25");
 });
 
+test("MCP initialize validates request params", async () => {
+  const nullParams = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: "init-null",
+    method: "initialize",
+    params: null,
+  });
+
+  assert.equal(nullParams.error.code, -32602);
+  assert.equal(nullParams.error.message, "initialize params must be an object");
+
+  const arrayParams = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: "init-array",
+    method: "initialize",
+    params: [],
+  });
+
+  assert.equal(arrayParams.error.code, -32602);
+  assert.equal(arrayParams.error.message, "initialize params must be an object");
+});
+
 test("buildCliInvocation maps MCP tool args to existing CLI commands", () => {
   assert.deepEqual(
     buildCliInvocation("design_ai_route", { brief: "Spec a Button", limit: 1, explain: true }),

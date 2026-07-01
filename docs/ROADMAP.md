@@ -1,12 +1,13 @@
 # Roadmap
 
-## Phase 737 — design-ai MCP Tool Call Param Guard (unreleased)
+## Phase 737 — design-ai MCP Request Param Guard (unreleased)
 
-The MCP server now rejects malformed `tools/call` request parameters before tool lookup, so Claude Code and Codex clients get a clear JSON-RPC `-32602` error when `params` is not an object or `params.name` is missing.
+The MCP server now rejects malformed `initialize` and `tools/call` request parameters at the protocol boundary, so Claude Code and Codex clients get clear JSON-RPC `-32602` errors instead of less specific request handling or internal exceptions.
 
 ### Changed
 - Added a small MCP request-boundary guard for `tools/call` params.
-- Added unit coverage for `params: null` and missing `params.name`.
+- Added a matching MCP request-boundary guard for `initialize` params.
+- Added unit coverage for malformed `initialize` params, `tools/call` `params: null`, and missing `params.name`.
 
 ### Impact
 - Malformed MCP clients receive deterministic protocol errors instead of falling into less specific request handling.
