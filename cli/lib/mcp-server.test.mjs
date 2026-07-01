@@ -112,6 +112,28 @@ test("tools/call reports CLI failures without failing JSON-RPC", async () => {
   assert.match(response.result.content[0].text, /\[stderr\]\nsearch failed/);
 });
 
+test("tools/call rejects unknown tools before running the CLI", async () => {
+  let cliWasCalled = false;
+  const response = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 30,
+    method: "tools/call",
+    params: {
+      name: "design_ai_missing",
+      arguments: {},
+    },
+  }, {
+    runCli: async () => {
+      cliWasCalled = true;
+      return { code: 0, stdout: "", stderr: "" };
+    },
+  });
+
+  assert.equal(cliWasCalled, false);
+  assert.equal(response.error.code, -32602);
+  assert.equal(response.error.message, "Unknown tool: design_ai_missing");
+});
+
 test("tools/call rejects invalid MCP arguments before running the CLI", async () => {
   let cliWasCalled = false;
   const response = await handleMcpRequest({
@@ -157,6 +179,23 @@ test("tools/call validates MCP argument types before running the CLI", async () 
   assert.match(response.result.content[0].text, /design_ai_search.limit must be an integer/);
 });
 
+test("malformed MCP requests return protocol errors", async () => {
+  const missingMethod = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 31,
+  });
+  assert.equal(missingMethod.error.code, -32600);
+  assert.match(missingMethod.error.message, /missing method/);
+
+  const unknownMethod = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 32,
+    method: "resources/read",
+  });
+  assert.equal(unknownMethod.error.code, -32601);
+  assert.equal(unknownMethod.error.message, "Method not found: resources/read");
+});
+
 test("MCP tool output is truncated before returning to clients", async () => {
   const result = await callMcpTool("design_ai_version", {}, async () => ({
     code: 0,
@@ -167,6 +206,41 @@ test("MCP tool output is truncated before returning to clients", async () => {
   assert.equal(result.isError, false);
   assert.ok(Buffer.byteLength(result.content[0].text, "utf8") < 221_000);
   assert.match(result.content[0].text, /output truncated at 220000 bytes from 230000 bytes/);
+});
+
+test("design-ai MCP stdio subprocess reports JSON parse errors", async () => {
+  const child = spawn(process.execPath, ["cli/bin/design-ai-mcp.mjs"], {
+    cwd: process.cwd(),
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  const responses = [];
+  let stdoutBuffer = "";
+  child.stdout.setEncoding("utf8");
+  child.stdout.on("data", (chunk) => {
+    stdoutBuffer += chunk;
+    const lines = stdoutBuffer.split("\n");
+    stdoutBuffer = lines.pop() || "";
+    for (const line of lines) {
+      if (line.trim()) responses.push(JSON.parse(line));
+    }
+  });
+
+  child.stdin.write("{bad json\n");
+
+  const started = Date.now();
+  while (responses.length === 0) {
+    if (Date.now() - started > 5000) {
+      child.kill();
+      throw new Error("Timed out waiting for MCP parse error response");
+    }
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+
+  child.kill();
+  await once(child, "close");
+
+  assert.equal(responses[0].error.code, -32700);
+  assert.match(responses[0].error.message, /Parse error/);
 });
 
 test("design-ai MCP stdio subprocess handles initialize, list, and route call", async () => {

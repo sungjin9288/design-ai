@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 735 — design-ai MCP Negative Response Coverage (unreleased)
+
+The MCP server test suite now pins common client failure paths, so malformed Claude/Codex requests keep returning deterministic JSON-RPC errors without starting the design-ai CLI unnecessarily.
+
+### Changed
+- Added coverage for unknown MCP tool calls to prove the CLI runner is not invoked.
+- Added request-level error coverage for missing and unsupported MCP methods.
+- Added stdio subprocess coverage for invalid JSON input and parse-error responses.
+
+### Impact
+- Claude Code and Codex integrations get stronger regression coverage for setup mistakes and malformed client messages.
+- The existing MCP runtime behavior, tool names, schemas, protocol version fallback, CLI command mappings, output truncation, and typed tool argument validation stay unchanged.
+- No package names, Website Improvement readiness outputs, external MCP calls, target-repo mutation rules, or learning writes change.
+
+### Verification Plan
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `git diff --check`
+- `npm run release:self-test`
+- `npm run release:check`
+
 ## Phase 734 — design-ai MCP Public Registry Smoke Coverage (unreleased)
 
 Public registry smoke now verifies the published `design-ai-mcp` bin through `npm exec --package @design-ai/cli@<version>`, so the post-publish gate covers the same Claude Code and Codex stdio server path as the packed-tarball release smoke.
