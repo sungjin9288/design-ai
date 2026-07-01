@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 732 — design-ai MCP Tool Argument Validation (unreleased)
+
+The design-ai MCP server now validates tool arguments before invoking the CLI, so Claude Code and Codex get immediate, typed feedback for malformed tool calls instead of opaque downstream command failures.
+
+### Changed
+- Added MCP tool argument validation for required fields, unknown fields, string length, boolean values, and integer ranges.
+- Added MCP server tests proving invalid arguments are rejected before the CLI runner is called.
+- Added troubleshooting notes for common Claude/Codex MCP setup and tool-call failures.
+
+### Impact
+- `design-ai mcp` and `design-ai-mcp` keep the same tool names, schemas, protocol version, JSON-RPC response shape, and CLI command mappings.
+- Claude Code and Codex integrations now fail earlier and with clearer messages when a client sends malformed tool input.
+- No external MCP calls, target-repo mutation, learning writes, CLI flags, package bin names, or Website Improvement readiness contracts change.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run release:check`
+
 ## Phase 731 — Website Improvement Bundle Handoff Next Stage Command Summary Snapshot Cleanup (unreleased)
 
 Website Improvement bundle handoff runbook next-stage command summary now groups stage classification, command metadata, and execution context into named internal snapshots before returning the same fields.

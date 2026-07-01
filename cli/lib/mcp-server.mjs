@@ -196,6 +196,48 @@ function assertString(value, name) {
   return value;
 }
 
+function assertMcpInputValue(name, value, schema) {
+  if (schema.type === "string") {
+    if (typeof value !== "string") throw new Error(`${name} must be a string`);
+    if (schema.minLength && value.length < schema.minLength) {
+      throw new Error(`${name} must be at least ${schema.minLength} characters`);
+    }
+    return;
+  }
+
+  if (schema.type === "boolean") {
+    if (typeof value !== "boolean") throw new Error(`${name} must be a boolean`);
+    return;
+  }
+
+  if (schema.type === "integer") {
+    if (!Number.isInteger(value)) throw new Error(`${name} must be an integer`);
+    if (schema.minimum !== undefined && value < schema.minimum) {
+      throw new Error(`${name} must be at least ${schema.minimum}`);
+    }
+    if (schema.maximum !== undefined && value > schema.maximum) {
+      throw new Error(`${name} must be at most ${schema.maximum}`);
+    }
+  }
+}
+
+function assertMcpToolInput(tool, input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw new Error(`${tool.name} arguments must be an object`);
+  }
+
+  const properties = tool.inputSchema.properties || {};
+  for (const name of tool.inputSchema.required || []) {
+    if (!Object.hasOwn(input, name)) throw new Error(`${tool.name}.${name} is required`);
+  }
+
+  for (const [name, value] of Object.entries(input)) {
+    const schema = properties[name];
+    if (!schema) throw new Error(`Unknown argument for ${tool.name}: ${name}`);
+    assertMcpInputValue(`${tool.name}.${name}`, value, schema);
+  }
+}
+
 function maybePush(args, flag, value) {
   if (value !== undefined && value !== null && value !== "") args.push(flag, String(value));
 }
@@ -328,6 +370,9 @@ export function runDesignAiCli(args, { stdin = "" } = {}) {
 }
 
 export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
+  const tool = MCP_TOOLS.find((item) => item.name === name);
+  if (tool) assertMcpToolInput(tool, input || {});
+
   const invocation = buildCliInvocation(name, input || {});
   const result = await runCli(invocation.args, { stdin: invocation.stdin });
   const text = [

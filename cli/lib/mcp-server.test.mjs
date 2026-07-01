@@ -112,6 +112,51 @@ test("tools/call reports CLI failures without failing JSON-RPC", async () => {
   assert.match(response.result.content[0].text, /\[stderr\]\nsearch failed/);
 });
 
+test("tools/call rejects invalid MCP arguments before running the CLI", async () => {
+  let cliWasCalled = false;
+  const response = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 4,
+    method: "tools/call",
+    params: {
+      name: "design_ai_route",
+      arguments: { brief: "Spec a Button", unexpected: true },
+    },
+  }, {
+    runCli: async () => {
+      cliWasCalled = true;
+      return { code: 0, stdout: "", stderr: "" };
+    },
+  });
+
+  assert.equal(cliWasCalled, false);
+  assert.equal(response.error, undefined);
+  assert.equal(response.result.isError, true);
+  assert.match(response.result.content[0].text, /Unknown argument for design_ai_route: unexpected/);
+});
+
+test("tools/call validates MCP argument types before running the CLI", async () => {
+  let cliWasCalled = false;
+  const response = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 5,
+    method: "tools/call",
+    params: {
+      name: "design_ai_search",
+      arguments: { query: "Pretendard", limit: "10" },
+    },
+  }, {
+    runCli: async () => {
+      cliWasCalled = true;
+      return { code: 0, stdout: "", stderr: "" };
+    },
+  });
+
+  assert.equal(cliWasCalled, false);
+  assert.equal(response.result.isError, true);
+  assert.match(response.result.content[0].text, /design_ai_search.limit must be an integer/);
+});
+
 test("MCP tool output is truncated before returning to clients", async () => {
   const result = await callMcpTool("design_ai_version", {}, async () => ({
     code: 0,

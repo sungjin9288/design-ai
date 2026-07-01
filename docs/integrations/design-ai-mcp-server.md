@@ -156,6 +156,15 @@ printf '%s\n' \
 
 The output must contain valid one-line JSON-RPC responses and a `tools` list.
 
+## Troubleshooting
+
+| Symptom | What to check |
+|---|---|
+| `/mcp` does not show `design-ai` | Confirm the command in Claude/Codex points at either `design-ai mcp` or `node /path/to/design-ai/cli/bin/design-ai-mcp.mjs`. |
+| Tool calls return `Unknown argument` | Remove unsupported fields from the MCP tool input. The server validates tool arguments before running the CLI. |
+| Tool calls return `must be an integer` or `must be a boolean` | Send JSON values with the right type, for example `{"limit": 3}` instead of `{"limit": "3"}`. |
+| Tool calls are marked `isError: true` with `[stderr]` | The MCP protocol is working; inspect the CLI error text and rerun the equivalent `design-ai ...` command locally. |
+
 ## References
 
 - [Model Context Protocol specification](https://modelcontextprotocol.io/specification/2025-11-25)
