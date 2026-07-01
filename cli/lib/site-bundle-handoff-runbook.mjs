@@ -445,19 +445,25 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const stageHumanLineDisplayRows = stages.map((stage, index) => {
     const actionRow = stageActionRows[index];
     const evidenceProgress = actionRow.actionEvidenceCaptureInitialValidationChecklistSummary;
-    return {
+    const displayRowIdentity = {
       step: stage.step,
       key: stage.key,
       label: stage.label,
       line: stageHumanLines[index],
+    };
+    const displayRowExecutionContext = {
       required: stage.required,
       manual: isManualStage(stage),
       commandCount: stage.commandCount,
+    };
+    const displayRowActionStatus = {
       actionType: actionRow.actionType,
       actionLabel: actionRow.actionLabel,
       actionStatus: actionRow.actionStatus,
       actionStatusLabel: actionRow.actionStatusLabel,
       actionStatusTone: actionRow.actionStatusTone,
+    };
+    const displayRowEvidenceProgress = {
       hasEvidenceProgress: evidenceProgress.itemCount > 0,
       evidenceProgressStatus: evidenceProgress.status || "",
       evidenceProgressStatusLabel: evidenceProgress.statusLabel || "",
@@ -466,6 +472,12 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       evidenceProgressLabel: evidenceProgress.progressLabel || "",
       evidenceCompletionPercent: evidenceProgress.completionPercent ?? 0,
       firstUncheckedEvidenceItemLabel: evidenceProgress.firstUncheckedItemLabel || "",
+    };
+    return {
+      ...displayRowIdentity,
+      ...displayRowExecutionContext,
+      ...displayRowActionStatus,
+      ...displayRowEvidenceProgress,
     };
   });
   const stageHumanLineDisplayRowByKey = byKey(stageHumanLineDisplayRows, (row) => row);

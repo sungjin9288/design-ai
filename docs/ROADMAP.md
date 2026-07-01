@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 725 — Website Improvement Bundle Handoff Human Line Display Row Snapshot Cleanup (unreleased)
+
+Website Improvement bundle handoff runbook human-line display rows now group row identity, execution context, action status, and evidence progress fields into named internal snapshots before returning the same display-row fields.
+
+### Changed
+- Added internal display-row snapshots for stage identity, execution context, action status, and evidence progress metadata.
+- Replaced the long inline `stageHumanLineDisplayRows` return assembly with snapshot spreads while keeping the existing display-row field names unchanged.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same `stageHumanLineDisplayRows[*]` contract.
+- Website Improvement handoff wrappers can continue to consume the same stage line, required/manual, command count, action status, and evidence-progress display fields without migration.
+- No CLI flags, bundle files, command manifest fields, stage/action field names, evidence field names, validation status values, next-action keys, target-repo mutation rules, external-call boundaries, human runbook lines, or generated output files change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run release:check`
+
 ## Phase 724 — Website Improvement Bundle Handoff Action Row Snapshot Cleanup (unreleased)
 
 Website Improvement bundle handoff runbook action rows now group action identity, status, dependency, evidence, evidence-capture, and execution fields into named internal snapshots before returning the same row fields.
