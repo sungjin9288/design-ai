@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 708 — Website Improvement Bundle Handoff Runbook Action Item Count Cleanup (unreleased)
+
+Website Improvement bundle handoff operator action summaries now name repeated item-count and item-value aggregations before assembling evidence-capture totals.
+
+### Changed
+- Added local `countActionsWithItems` for action rows that contain at least one item in a named list field.
+- Added local `sumActionItems` for total item counts across action rows.
+- Added local `sumActionItemValues` for numeric totals derived from list item values.
+- Replaced repeated `.length > 0`, `.length`, and nested `reduce` summary calculations with the named helpers.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same payload binding, validation spec, initial validation state, display metadata, checklist, and minimum-length summary fields.
+- Website Improvement handoff wrappers can continue to consume the same action summary fields without migration.
+- No CLI flags, bundle files, command manifest fields, target-repo mutation rules, external-call boundaries, evidence field names, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 707 — Website Improvement Bundle Handoff Runbook Payload Summary Cleanup (unreleased)
 
 Website Improvement bundle handoff operator action summaries now name the payload template and unique-list summary calculations before returning the runbook payload.

@@ -536,6 +536,11 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const nextCommandSafety = nextCommandEntry?.safety || null;
   const sumActions = (getValue) => stageActionRows.reduce((sum, stage) => sum + getValue(stage), 0);
   const maxActionValue = (getValue) => Math.max(0, ...stageActionRows.map(getValue));
+  const countActionsWithItems = (field) => countActions((stage) => stage[field].length > 0);
+  const sumActionItems = (field) => sumActions((stage) => stage[field].length);
+  const sumActionItemValues = (field, getValue) => sumActions(
+    (stage) => stage[field].reduce((sum, item) => sum + getValue(item), 0),
+  );
   const countActionItems = (field, predicate) => sumActions(
     (stage) => stage[field].filter(predicate).length,
   );
@@ -611,28 +616,28 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     actionWithEvidenceCapturePayloadTemplateCount: countActions((stage) => payloadTemplatePathCount(stage) > 0),
     evidenceCapturePayloadTemplatePathCount: sumActions(payloadTemplatePathCount),
     maxActionEvidenceCapturePayloadTemplatePathCount: maxActionValue(payloadTemplatePathCount),
-    actionWithEvidenceCapturePayloadBindingCount: countActions((stage) => stage.actionEvidenceCapturePayloadBindings.length > 0),
-    evidenceCapturePayloadBindingCount: sumActions((stage) => stage.actionEvidenceCapturePayloadBindings.length),
+    actionWithEvidenceCapturePayloadBindingCount: countActionsWithItems("actionEvidenceCapturePayloadBindings"),
+    evidenceCapturePayloadBindingCount: sumActionItems("actionEvidenceCapturePayloadBindings"),
     requiredEvidenceCapturePayloadBindingCount: countPayloadBindings((binding) => binding.required),
     optionalEvidenceCapturePayloadBindingCount: countPayloadBindings((binding) => !binding.required),
     multiValueEvidenceCapturePayloadBindingCount: countPayloadBindings((binding) => binding.acceptsMultiple),
-    actionWithEvidenceCaptureValidationSpecCount: countActions((stage) => stage.actionEvidenceCaptureValidationSpecs.length > 0),
-    evidenceCaptureValidationSpecCount: sumActions((stage) => stage.actionEvidenceCaptureValidationSpecs.length),
+    actionWithEvidenceCaptureValidationSpecCount: countActionsWithItems("actionEvidenceCaptureValidationSpecs"),
+    evidenceCaptureValidationSpecCount: sumActionItems("actionEvidenceCaptureValidationSpecs"),
     requiredEvidenceCaptureValidationSpecCount: countValidationSpecs((spec) => spec.required),
     optionalEvidenceCaptureValidationSpecCount: countValidationSpecs((spec) => !spec.required),
     errorEvidenceCaptureValidationSpecCount: countValidationSpecs((spec) => spec.severity === "error"),
     infoEvidenceCaptureValidationSpecCount: countValidationSpecs((spec) => spec.severity === "info"),
     multiValueEvidenceCaptureValidationSpecCount: countValidationSpecs((spec) => spec.acceptsMultiple),
-    actionWithEvidenceCaptureInitialValidationStateCount: countActions((stage) => stage.actionEvidenceCaptureInitialValidationStates.length > 0),
-    evidenceCaptureInitialValidationStateCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationStates.length),
+    actionWithEvidenceCaptureInitialValidationStateCount: countActionsWithItems("actionEvidenceCaptureInitialValidationStates"),
+    evidenceCaptureInitialValidationStateCount: sumActionItems("actionEvidenceCaptureInitialValidationStates"),
     validInitialEvidenceCaptureStateCount: countInitialValidationStates((state) => state.valid),
     invalidInitialEvidenceCaptureStateCount: countInitialValidationStates((state) => !state.valid),
     blockingInitialEvidenceCaptureStateCount: countInitialValidationStates((state) => state.blocking),
     optionalEmptyInitialEvidenceCaptureStateCount: countInitialValidationStates((state) => state.status === "optional-empty"),
     missingRequiredInitialEvidenceCaptureStateCount: countInitialValidationStates((state) => state.status === "missing-required"),
     pristineInitialEvidenceCaptureStateCount: countInitialValidationStates((state) => !state.dirty && !state.touched),
-    actionWithEvidenceCaptureInitialValidationDisplayMetadataCount: countActions((stage) => stage.actionEvidenceCaptureInitialValidationDisplayMetadata.length > 0),
-    evidenceCaptureInitialValidationDisplayMetadataCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationDisplayMetadata.length),
+    actionWithEvidenceCaptureInitialValidationDisplayMetadataCount: countActionsWithItems("actionEvidenceCaptureInitialValidationDisplayMetadata"),
+    evidenceCaptureInitialValidationDisplayMetadataCount: sumActionItems("actionEvidenceCaptureInitialValidationDisplayMetadata"),
     dangerInitialEvidenceCaptureDisplayMetadataCount: countInitialDisplayRows((display) => display.statusTone === "danger"),
     infoInitialEvidenceCaptureDisplayMetadataCount: countInitialDisplayRows((display) => display.statusTone === "info"),
     blockingInitialEvidenceCaptureDisplayMetadataCount: countInitialDisplayRows((display) => display.blocking),
@@ -645,8 +650,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     initialEvidenceCaptureSummaryBlockingFieldCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationSummary.blockingCount),
     initialEvidenceCaptureSummaryMissingRequiredFieldCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationSummary.missingRequiredCount),
     initialEvidenceCaptureSummaryOptionalEmptyFieldCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationSummary.optionalEmptyCount),
-    actionWithEvidenceCaptureInitialValidationChecklistCount: countActions((stage) => stage.actionEvidenceCaptureInitialValidationChecklist.length > 0),
-    evidenceCaptureInitialValidationChecklistItemCount: sumActions((stage) => stage.actionEvidenceCaptureInitialValidationChecklist.length),
+    actionWithEvidenceCaptureInitialValidationChecklistCount: countActionsWithItems("actionEvidenceCaptureInitialValidationChecklist"),
+    evidenceCaptureInitialValidationChecklistItemCount: sumActionItems("actionEvidenceCaptureInitialValidationChecklist"),
     checkedInitialEvidenceCaptureChecklistItemCount: countInitialChecklistItems((item) => item.checkedInitially),
     uncheckedInitialEvidenceCaptureChecklistItemCount: countInitialChecklistItems((item) => !item.checkedInitially),
     blockingInitialEvidenceCaptureChecklistItemCount: countInitialChecklistItems((item) => item.completionBlocking),
@@ -676,8 +681,9 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     validatedEvidenceCaptureFieldCount: countEvidenceCaptureFields((field) => field.validationRule),
     requiredValidatedEvidenceCaptureFieldCount: countEvidenceCaptureFields((field) => field.required && field.validationRule),
     optionalValidatedEvidenceCaptureFieldCount: countEvidenceCaptureFields((field) => !field.required && field.validationRule),
-    minEvidenceCaptureFieldLengthTotal: sumActions(
-      (stage) => stage.actionEvidenceCaptureFields.reduce((fieldSum, field) => fieldSum + field.minLength, 0),
+    minEvidenceCaptureFieldLengthTotal: sumActionItemValues(
+      "actionEvidenceCaptureFields",
+      (field) => field.minLength,
     ),
     maxEvidenceCaptureFieldMinLength: maxEvidenceCaptureFieldValue((field) => field.minLength),
     requiredActionCount: countBy((stage) => stage.required),
