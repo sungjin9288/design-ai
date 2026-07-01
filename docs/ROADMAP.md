@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 710 — Website Improvement Bundle Handoff Runbook Display Row Summary Cleanup (unreleased)
+
+Website Improvement bundle handoff operator action summaries now reuse the prepared human-line display-row summary for display-row counts.
+
+### Changed
+- Reused `stageHumanLineDisplayRowSummary.count` for `humanLineDisplayRowCount`.
+- Reused `stageHumanLineDisplayRowSummary.byKeyCount` for `humanLineDisplayRowByKeyCount`.
+- Removed repeated direct display-row length and by-key object counting inside `actionSummary`.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same human-line display-row action summary fields.
+- Website Improvement handoff wrappers can continue to consume the same action summary contract without migration.
+- No CLI flags, bundle files, command manifest fields, target-repo mutation rules, external-call boundaries, evidence field names, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 709 — Website Improvement Bundle Handoff Runbook Initial Validation Summary Cleanup (unreleased)
 
 Website Improvement bundle handoff operator action summaries now route initial validation summary and checklist summary aggregations through named local helpers.
