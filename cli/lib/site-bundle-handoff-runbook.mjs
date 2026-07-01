@@ -275,6 +275,39 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       actionEvidenceTarget: getStageActionEvidenceTarget(stage),
       actionEvidenceTargetLabel: getStageActionEvidenceTargetLabel(stage),
     };
+    const actionIdentity = {
+      step: stage.step,
+      key: stage.key,
+      label: stage.label,
+    };
+    const actionStatusSummary = {
+      actionType: getStageActionType(stage),
+      actionLabel: getStageActionLabel(stage),
+      actionInstruction: getStageActionInstruction(stage),
+      actionButtonLabel: getStageActionButtonLabel(stage),
+      actionAffordance: getStageActionAffordance(stage),
+      actionEnabled: getStageActionEnabled(stage),
+      actionStatus: getStageActionStatus(stage),
+      actionStatusLabel: getStageActionStatusLabel(stage),
+      actionStatusTone: getStageActionStatusTone(stage),
+      actionDisabledReasonCode: getStageActionDisabledReasonCode(stage),
+      actionDisabledReason: getStageActionDisabledReason(stage),
+    };
+    const actionDependencySummary = {
+      actionPrerequisiteKeys: prerequisiteKeys,
+      actionPrerequisiteLabels: getStageActionPrerequisiteLabels(stage, stages),
+      actionPrerequisiteCount: prerequisiteKeys.length,
+      actionHasPrerequisites: prerequisiteKeys.length > 0,
+      actionDependencyReasonCode: getStageActionDependencyReasonCode(stage),
+      actionDependencyReason: getStageActionDependencyReason(stage),
+      actionBlockedStageKeys: blockedStageKeys,
+      actionBlockedStageLabels: blockedStageKeys.map((stageKey) => getStageLabel(stages, stageKey)),
+      actionBlockedStageCount: blockedStageKeys.length,
+      actionBlocksStages: blockedStageKeys.length > 0,
+      actionCompletionCriteria: completionCriteria,
+      actionCompletionCriteriaCount: completionCriteria.length,
+      actionHasCompletionCriteria: completionCriteria.length > 0,
+    };
     const actionEvidenceCaptureSummary = {
       actionEvidenceCaptureFields: evidenceCaptureFields,
       actionEvidenceCaptureFieldKeys: evidenceFieldValues("key"),
@@ -317,37 +350,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       actionOptionalEvidenceCaptureFieldCount: optionalEvidenceCaptureFields.length,
       actionHasEvidenceCaptureFields: evidenceCaptureFields.length > 0,
     };
-
-    return {
-      step: stage.step,
-      key: stage.key,
-      label: stage.label,
-      actionType: getStageActionType(stage),
-      actionLabel: getStageActionLabel(stage),
-      actionInstruction: getStageActionInstruction(stage),
-      actionButtonLabel: getStageActionButtonLabel(stage),
-      actionAffordance: getStageActionAffordance(stage),
-      actionEnabled: getStageActionEnabled(stage),
-      actionStatus: getStageActionStatus(stage),
-      actionStatusLabel: getStageActionStatusLabel(stage),
-      actionStatusTone: getStageActionStatusTone(stage),
-      actionDisabledReasonCode: getStageActionDisabledReasonCode(stage),
-      actionDisabledReason: getStageActionDisabledReason(stage),
-      actionPrerequisiteKeys: prerequisiteKeys,
-      actionPrerequisiteLabels: getStageActionPrerequisiteLabels(stage, stages),
-      actionPrerequisiteCount: prerequisiteKeys.length,
-      actionHasPrerequisites: prerequisiteKeys.length > 0,
-      actionDependencyReasonCode: getStageActionDependencyReasonCode(stage),
-      actionDependencyReason: getStageActionDependencyReason(stage),
-      actionBlockedStageKeys: blockedStageKeys,
-      actionBlockedStageLabels: blockedStageKeys.map((stageKey) => getStageLabel(stages, stageKey)),
-      actionBlockedStageCount: blockedStageKeys.length,
-      actionBlocksStages: blockedStageKeys.length > 0,
-      actionCompletionCriteria: completionCriteria,
-      actionCompletionCriteriaCount: completionCriteria.length,
-      actionHasCompletionCriteria: completionCriteria.length > 0,
-      ...actionEvidenceSummary,
-      ...actionEvidenceCaptureSummary,
+    const actionExecutionSummary = {
       required: stage.required,
       runPolicy: stage.runPolicy,
       safetyLevel: stage.safetyLevel,
@@ -358,6 +361,15 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       writesLocalFile: stage.writesLocalFile,
       externalCalls: stage.externalCalls,
       targetRepoMutation: stage.targetRepoMutation,
+    };
+
+    return {
+      ...actionIdentity,
+      ...actionStatusSummary,
+      ...actionDependencySummary,
+      ...actionEvidenceSummary,
+      ...actionEvidenceCaptureSummary,
+      ...actionExecutionSummary,
     };
   });
   const byKey = (rows, getValue) => Object.fromEntries(
