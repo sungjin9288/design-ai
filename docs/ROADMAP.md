@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 721 — Website Improvement Bundle Handoff Runbook Return Snapshot Cleanup (unreleased)
+
+Website Improvement bundle handoff runbook return assembly now groups count, stage identity, human-line, action, evidence-capture, execution, and next-step fields into named internal snapshots before returning the same public fields.
+
+### Changed
+- Added internal return snapshots for runbook counts, stage identity maps, human-line maps, action status maps, action dependency maps, action evidence maps, evidence-capture maps, stage execution maps, and next-step summary fields.
+- Replaced the long inline operator runbook return assembly with snapshot spreads while keeping the existing returned field names unchanged.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same top-level operator runbook contract.
+- Website Improvement handoff wrappers can continue to consume the same stage maps, action maps, evidence-capture maps, `actionSummary`, next-stage fields, next-command fields, and `stages` array without migration.
+- No CLI flags, bundle files, command manifest fields, stage/action field names, evidence field names, validation status values, next-action keys, target-repo mutation rules, external-call boundaries, human runbook lines, or generated output files change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run release:check`
+
 ## Phase 720 — Website Improvement Bundle Handoff Runbook Action Summary Snapshot Cleanup (unreleased)
 
 Website Improvement bundle handoff runbook action summary now groups action count, dependency, evidence, evidence-capture, validation, human-line, lookup, and boundary aggregates into named internal snapshots.

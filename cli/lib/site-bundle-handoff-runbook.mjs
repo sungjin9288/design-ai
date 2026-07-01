@@ -1059,9 +1059,7 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     ...firstActionLookupSummary,
     ...actionBoundarySummary,
   };
-  return {
-    version: 1,
-    source: "bundle-handoff",
+  const runbookCountSummary = {
     stageCount: stages.length,
     commandStageCount: commandStages.length,
     manualStageCount: countBy(isManualStage),
@@ -1073,10 +1071,14 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     targetRepoMutationCommandStageCount: countBy(mutatesTargetRepo),
     effectiveTaskId: commandManifest?.effectiveTaskId || "",
     effectiveStrictTaskCommandKey,
+  };
+  const stageIdentityMaps = {
     stageKeys,
     stageByKey,
     stageLabelByKey,
     stageSummaryByKey,
+  };
+  const stageHumanLineMaps = {
     stageHumanLines,
     stageHumanLineByKey,
     stageHumanLineDisplayRows,
@@ -1085,6 +1087,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageHumanLineDisplayRowKeysByEvidenceProgressStatus,
     stageHumanLineDisplayRowSummary,
     stageHumanLineSummary,
+  };
+  const stageActionStatusMaps = {
     stageActionRows,
     stageActionTypeByKey,
     stageActionLabelByKey,
@@ -1097,6 +1101,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionStatusToneByKey,
     stageActionDisabledReasonCodeByKey,
     stageActionDisabledReasonByKey,
+  };
+  const stageActionDependencyMaps = {
     stageActionPrerequisiteKeysByKey,
     stageActionPrerequisiteLabelsByKey,
     stageActionPrerequisiteCountByKey,
@@ -1110,11 +1116,15 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionCompletionCriteriaByKey,
     stageActionCompletionCriteriaCountByKey,
     stageActionHasCompletionCriteriaByKey,
+  };
+  const stageActionEvidenceMaps = {
     stageActionEvidenceRequirementsByKey,
     stageActionEvidenceRequirementCountByKey,
     stageActionRequiresEvidenceByKey,
     stageActionEvidenceTargetByKey,
     stageActionEvidenceTargetLabelByKey,
+  };
+  const stageActionEvidenceCaptureMaps = {
     stageActionEvidenceCaptureFieldsByKey,
     stageActionEvidenceCaptureFieldKeysByKey,
     stageActionEvidenceCaptureFieldLabelsByKey,
@@ -1155,7 +1165,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageActionRequiredEvidenceCaptureFieldCountByKey,
     stageActionOptionalEvidenceCaptureFieldCountByKey,
     stageActionHasEvidenceCaptureFieldsByKey,
-    actionSummary,
+  };
+  const stageExecutionMaps = {
     stageKindByKey,
     stageRequiredByKey,
     stageRunPolicyByKey,
@@ -1175,6 +1186,8 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     stageTargetRepoMutationByKey,
     commandStageKeys,
     manualStageKeys,
+  };
+  const nextStepSummary = {
     nextStageKey,
     nextStage,
     ...nextStageIdentity,
@@ -1185,6 +1198,20 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     ...nextStageCommandSummary,
     nextCommandKey,
     ...nextCommandSummary,
+  };
+  return {
+    version: 1,
+    source: "bundle-handoff",
+    ...runbookCountSummary,
+    ...stageIdentityMaps,
+    ...stageHumanLineMaps,
+    ...stageActionStatusMaps,
+    ...stageActionDependencyMaps,
+    ...stageActionEvidenceMaps,
+    ...stageActionEvidenceCaptureMaps,
+    actionSummary,
+    ...stageExecutionMaps,
+    ...nextStepSummary,
     stages,
   };
 }
