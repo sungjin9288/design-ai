@@ -536,27 +536,22 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const nextCommandSafety = nextCommandEntry?.safety || null;
   const sumActions = (getValue) => stageActionRows.reduce((sum, stage) => sum + getValue(stage), 0);
   const maxActionValue = (getValue) => Math.max(0, ...stageActionRows.map(getValue));
-  const countEvidenceCaptureFields = (predicate) => sumActions(
-    (stage) => stage.actionEvidenceCaptureFields.filter(predicate).length,
+  const countActionItems = (field, predicate) => sumActions(
+    (stage) => stage[field].filter(predicate).length,
   );
-  const countPayloadBindings = (predicate) => sumActions(
-    (stage) => stage.actionEvidenceCapturePayloadBindings.filter(predicate).length,
-  );
-  const countValidationSpecs = (predicate) => sumActions(
-    (stage) => stage.actionEvidenceCaptureValidationSpecs.filter(predicate).length,
-  );
-  const countInitialValidationStates = (predicate) => sumActions(
-    (stage) => stage.actionEvidenceCaptureInitialValidationStates.filter(predicate).length,
-  );
-  const countInitialDisplayRows = (predicate) => sumActions(
-    (stage) => stage.actionEvidenceCaptureInitialValidationDisplayMetadata.filter(predicate).length,
-  );
-  const countInitialChecklistItems = (predicate) => sumActions(
-    (stage) => stage.actionEvidenceCaptureInitialValidationChecklist.filter(predicate).length,
-  );
-  const maxEvidenceCaptureFieldValue = (getValue) => Math.max(
+  const countEvidenceCaptureFields = (predicate) => countActionItems("actionEvidenceCaptureFields", predicate);
+  const countPayloadBindings = (predicate) => countActionItems("actionEvidenceCapturePayloadBindings", predicate);
+  const countValidationSpecs = (predicate) => countActionItems("actionEvidenceCaptureValidationSpecs", predicate);
+  const countInitialValidationStates = (predicate) => countActionItems("actionEvidenceCaptureInitialValidationStates", predicate);
+  const countInitialDisplayRows = (predicate) => countActionItems("actionEvidenceCaptureInitialValidationDisplayMetadata", predicate);
+  const countInitialChecklistItems = (predicate) => countActionItems("actionEvidenceCaptureInitialValidationChecklist", predicate);
+  const maxActionItemValue = (field, getValue) => Math.max(
     0,
-    ...stageActionRows.flatMap((stage) => stage.actionEvidenceCaptureFields.map(getValue)),
+    ...stageActionRows.flatMap((stage) => stage[field].map(getValue)),
+  );
+  const maxEvidenceCaptureFieldValue = (getValue) => maxActionItemValue("actionEvidenceCaptureFields", getValue);
+  const firstActionWithEvidenceCaptureField = (predicate) => (
+    firstActionKey((stage) => stage.actionEvidenceCaptureFields.some(predicate))
   );
   const firstStageKey = (predicate) => stages.find(predicate)?.key || "";
   const actionSummary = {
@@ -778,9 +773,9 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     firstActionWithEvidenceCaptureFieldKey: firstActionKey((stage) => stage.actionHasEvidenceCaptureFields),
     firstActionWithOptionalEvidenceCaptureFieldKey: firstActionKey((stage) => stage.actionOptionalEvidenceCaptureFieldCount > 0),
     firstManualActionWithEvidenceCaptureFieldKey: firstActionKey((stage) => stage.manual && stage.actionHasEvidenceCaptureFields),
-    firstTextareaEvidenceCaptureActionKey: firstActionKey((stage) => stage.actionEvidenceCaptureFields.some((field) => field.inputType === "textarea")),
-    firstMultiValueEvidenceCaptureActionKey: firstActionKey((stage) => stage.actionEvidenceCaptureFields.some((field) => field.acceptsMultiple)),
-    firstValidationRuleEvidenceCaptureActionKey: firstActionKey((stage) => stage.actionEvidenceCaptureFields.some((field) => field.validationRule)),
+    firstTextareaEvidenceCaptureActionKey: firstActionWithEvidenceCaptureField((field) => field.inputType === "textarea"),
+    firstMultiValueEvidenceCaptureActionKey: firstActionWithEvidenceCaptureField((field) => field.acceptsMultiple),
+    firstValidationRuleEvidenceCaptureActionKey: firstActionWithEvidenceCaptureField((field) => field.validationRule),
     requiresTargetRepoWork: stages.some((stage) => stage.kind === "manual-target-repo"),
     requiresEvidenceReturn: stages.some((stage) => stage.kind === "manual-reporting"),
     externalCalls: stages.some((stage) => stage.externalCalls),
