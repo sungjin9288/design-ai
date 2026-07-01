@@ -228,8 +228,10 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     const completionCriteria = getStageActionCompletionCriteria(stage);
     const evidenceRequirements = getStageActionEvidenceRequirements(stage);
     const evidenceCaptureFields = getStageActionEvidenceCaptureFields(stage);
-    const evidenceCaptureSectionKeys = uniqueValues(evidenceCaptureFields.map((field) => field.sectionKey));
-    const evidenceCapturePayloadNamespaces = uniqueValues(evidenceCaptureFields.map((field) => field.payloadNamespace));
+    const evidenceFieldValues = (field) => evidenceCaptureFields.map((evidenceField) => evidenceField[field]);
+    const evidenceCaptureSectionKeys = uniqueValues(evidenceFieldValues("sectionKey"));
+    const evidenceCaptureSectionLabels = uniqueValues(evidenceFieldValues("sectionLabel"));
+    const evidenceCapturePayloadNamespaces = uniqueValues(evidenceFieldValues("payloadNamespace"));
     const requiredEvidenceCaptureFields = evidenceCaptureFields.filter((field) => field.required);
     const optionalEvidenceCaptureFields = evidenceCaptureFields.filter((field) => !field.required);
 
@@ -267,19 +269,19 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       actionEvidenceTarget: getStageActionEvidenceTarget(stage),
       actionEvidenceTargetLabel: getStageActionEvidenceTargetLabel(stage),
       actionEvidenceCaptureFields: evidenceCaptureFields,
-      actionEvidenceCaptureFieldKeys: evidenceCaptureFields.map((field) => field.key),
-      actionEvidenceCaptureFieldLabels: evidenceCaptureFields.map((field) => field.label),
-      actionEvidenceCaptureFieldPlaceholders: evidenceCaptureFields.map((field) => field.placeholder),
-      actionEvidenceCaptureFieldRequirementLabels: evidenceCaptureFields.map((field) => field.requirementLabel),
-      actionEvidenceCaptureFieldAriaLabels: evidenceCaptureFields.map((field) => field.ariaLabel),
-      actionEvidenceCaptureFieldHelpTexts: evidenceCaptureFields.map((field) => field.helpText),
-      actionEvidenceCaptureFieldSectionKeys: evidenceCaptureFields.map((field) => field.sectionKey),
-      actionEvidenceCaptureFieldSectionLabels: evidenceCaptureFields.map((field) => field.sectionLabel),
+      actionEvidenceCaptureFieldKeys: evidenceFieldValues("key"),
+      actionEvidenceCaptureFieldLabels: evidenceFieldValues("label"),
+      actionEvidenceCaptureFieldPlaceholders: evidenceFieldValues("placeholder"),
+      actionEvidenceCaptureFieldRequirementLabels: evidenceFieldValues("requirementLabel"),
+      actionEvidenceCaptureFieldAriaLabels: evidenceFieldValues("ariaLabel"),
+      actionEvidenceCaptureFieldHelpTexts: evidenceFieldValues("helpText"),
+      actionEvidenceCaptureFieldSectionKeys: evidenceFieldValues("sectionKey"),
+      actionEvidenceCaptureFieldSectionLabels: evidenceFieldValues("sectionLabel"),
       actionEvidenceCaptureSectionKeys: evidenceCaptureSectionKeys,
-      actionEvidenceCaptureSectionLabels: uniqueValues(evidenceCaptureFields.map((field) => field.sectionLabel)),
+      actionEvidenceCaptureSectionLabels: evidenceCaptureSectionLabels,
       actionEvidenceCaptureSectionCount: evidenceCaptureSectionKeys.length,
-      actionEvidenceCaptureFieldPayloadNamespaces: evidenceCaptureFields.map((field) => field.payloadNamespace),
-      actionEvidenceCaptureFieldPayloadPaths: evidenceCaptureFields.map((field) => field.payloadPath),
+      actionEvidenceCaptureFieldPayloadNamespaces: evidenceFieldValues("payloadNamespace"),
+      actionEvidenceCaptureFieldPayloadPaths: evidenceFieldValues("payloadPath"),
       actionEvidenceCapturePayloadNamespaces: evidenceCapturePayloadNamespaces,
       actionEvidenceCapturePayloadNamespaceCount: evidenceCapturePayloadNamespaces.length,
       actionEvidenceCapturePayloadTemplate: buildEvidenceCapturePayloadTemplate(evidenceCaptureFields),
@@ -291,15 +293,15 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
       actionEvidenceCaptureInitialValidationChecklist: buildEvidenceCaptureInitialValidationChecklist(evidenceCaptureFields),
       actionEvidenceCaptureInitialValidationChecklistSummary: buildEvidenceCaptureInitialValidationChecklistSummary(evidenceCaptureFields),
       actionEvidenceCaptureInitialValidationSummary: buildEvidenceCaptureInitialValidationSummary(evidenceCaptureFields),
-      actionEvidenceCaptureFieldInputTypes: evidenceCaptureFields.map((field) => field.inputType),
-      actionEvidenceCaptureFieldValueShapes: evidenceCaptureFields.map((field) => field.valueShape),
-      actionEvidenceCaptureFieldAcceptsMultiple: evidenceCaptureFields.map((field) => field.acceptsMultiple),
-      actionEvidenceCaptureFieldDefaultValues: evidenceCaptureFields.map((field) => field.defaultValue),
-      actionEvidenceCaptureFieldEmptyValues: evidenceCaptureFields.map((field) => field.emptyValue),
-      actionEvidenceCaptureFieldValidationRules: evidenceCaptureFields.map((field) => field.validationRule),
-      actionEvidenceCaptureFieldMinLengths: evidenceCaptureFields.map((field) => field.minLength),
-      actionEvidenceCaptureFieldExamples: evidenceCaptureFields.map((field) => field.example),
-      actionEvidenceCaptureFieldValidationHints: evidenceCaptureFields.map((field) => field.validationHint),
+      actionEvidenceCaptureFieldInputTypes: evidenceFieldValues("inputType"),
+      actionEvidenceCaptureFieldValueShapes: evidenceFieldValues("valueShape"),
+      actionEvidenceCaptureFieldAcceptsMultiple: evidenceFieldValues("acceptsMultiple"),
+      actionEvidenceCaptureFieldDefaultValues: evidenceFieldValues("defaultValue"),
+      actionEvidenceCaptureFieldEmptyValues: evidenceFieldValues("emptyValue"),
+      actionEvidenceCaptureFieldValidationRules: evidenceFieldValues("validationRule"),
+      actionEvidenceCaptureFieldMinLengths: evidenceFieldValues("minLength"),
+      actionEvidenceCaptureFieldExamples: evidenceFieldValues("example"),
+      actionEvidenceCaptureFieldValidationHints: evidenceFieldValues("validationHint"),
       actionRequiredEvidenceCaptureFieldKeys: requiredEvidenceCaptureFields.map((field) => field.key),
       actionOptionalEvidenceCaptureFieldKeys: optionalEvidenceCaptureFields.map((field) => field.key),
       actionEvidenceCaptureFieldCount: evidenceCaptureFields.length,

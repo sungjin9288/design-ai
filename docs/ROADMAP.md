@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 705 — Website Improvement Bundle Handoff Runbook Evidence Field Value Cleanup (unreleased)
+
+Website Improvement bundle handoff operator action rows now read evidence-capture field values through one local helper before assembling the row payload.
+
+### Changed
+- Added a local `evidenceFieldValues` helper inside the `stageActionRows` mapper.
+- Replaced repeated `evidenceCaptureFields.map(...)` field extraction calls with `evidenceFieldValues`.
+- Reused the same helper for evidence capture section labels and payload namespaces before returning action row metadata.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same evidence-capture field arrays, section metadata, payload namespace metadata, validation metadata, and action row contract.
+- Website Improvement handoff wrappers can continue to consume the same stage action evidence fields without migration.
+- No CLI flags, bundle files, command manifest fields, target-repo mutation rules, external-call boundaries, evidence field names, action counts, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 704 — Website Improvement Bundle Handoff Runbook Manual Stage Predicate Cleanup (unreleased)
 
 Website Improvement bundle handoff operator stages now use named predicates for command-backed and manual stage checks instead of repeating `commandCount` comparisons inline.
