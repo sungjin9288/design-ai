@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 716 — Website Improvement Bundle Handoff Runbook Evidence Predicate Cleanup (unreleased)
+
+Website Improvement bundle handoff evidence-capture summaries now use named predicates for evidence field input type, value shape, payload mapping, validation state, display state, and checklist item state.
+
+### Changed
+- Added evidence-capture field predicates for input type, value shape, multi-value behavior, empty values, placeholder, ARIA label, help text, section membership, payload mapping, and validation rules.
+- Added shared required/optional and multi-value predicates for evidence payload bindings, validation specs, and checklist items.
+- Added initial validation state, display row, and checklist item predicates for valid/invalid, blocking/non-blocking, checked/unchecked, and completion-blocking summary counts.
+- Reused those predicates in evidence-capture summary counts and first evidence-capture action lookups.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same evidence-capture summary fields and first-action lookup fields.
+- Website Improvement handoff wrappers can continue to consume the same runbook evidence summary contract without migration.
+- No CLI flags, bundle files, command manifest fields, stage fields, action field names, evidence field names, evidence targets, validation status values, first-action keys, target-repo mutation rules, external-call boundaries, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 715 — Website Improvement Bundle Handoff Runbook Action Predicate Cleanup (unreleased)
 
 Website Improvement bundle handoff action summaries now use named predicates for action enabled state, prerequisites, evidence targets, evidence-capture presence, and first-action lookups.
