@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 714 — Website Improvement Bundle Handoff Runbook Display Row Predicate Cleanup (unreleased)
+
+Website Improvement bundle handoff display-row summaries now use named predicates for required/manual rows, command rows, action status, and evidence-progress status.
+
+### Changed
+- Added display-row predicates for required, optional, command-backed, and manual rows.
+- Added display-row predicates for ready, optional, manual, and blocked action statuses.
+- Added display-row predicates for evidence-progress presence plus blocked and ready evidence-progress states.
+- Reused those predicates in display-row status key maps, summary counts, and first-row lookups.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same display-row summary fields.
+- Website Improvement handoff wrappers can continue to consume the same human-line display row contract without migration.
+- No CLI flags, bundle files, command manifest fields, stage fields, action fields, evidence field names, status labels, evidence-progress values, target-repo mutation rules, external-call boundaries, or human runbook lines change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 713 — Website Improvement Bundle Handoff Runbook Scope and Safety Predicate Cleanup (unreleased)
 
 Website Improvement bundle handoff command and operator summaries now use named predicates for command scope, safety flags, required stages, and external/target-repo boundary counts.

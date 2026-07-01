@@ -439,6 +439,17 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
   const displayRowKeysBy = (predicate) => stageHumanLineDisplayRows.filter(predicate).map((row) => row.key);
   const countDisplayRows = (predicate) => stageHumanLineDisplayRows.filter(predicate).length;
   const firstDisplayRowKey = (predicate) => stageHumanLineDisplayRows.find(predicate)?.key || "";
+  const isRequiredDisplayRow = (row) => row.required;
+  const isOptionalDisplayRow = (row) => !row.required;
+  const hasCommandDisplayRow = (row) => row.commandCount > 0;
+  const isManualDisplayRow = (row) => row.manual;
+  const hasReadyActionStatus = (row) => row.actionStatus === "ready";
+  const hasOptionalActionStatus = (row) => row.actionStatus === "optional";
+  const hasManualActionStatus = (row) => row.actionStatus === "manual";
+  const hasBlockedActionStatus = (row) => row.actionStatus === "blocked";
+  const hasDisplayRowEvidenceProgress = (row) => row.hasEvidenceProgress;
+  const hasBlockedDisplayRowEvidenceProgress = (row) => row.evidenceProgressStatus === "blocked";
+  const hasReadyDisplayRowEvidenceProgress = (row) => row.evidenceProgressStatus === "ready";
   const hasEvidenceProgress = (stage) => (
     stage.actionEvidenceCaptureInitialValidationChecklistSummary.itemCount > 0
   );
@@ -449,35 +460,35 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     stage.actionEvidenceCaptureInitialValidationChecklistSummary.status === "ready"
   );
   const stageHumanLineDisplayRowKeysByActionStatus = {
-    ready: displayRowKeysBy((row) => row.actionStatus === "ready"),
-    optional: displayRowKeysBy((row) => row.actionStatus === "optional"),
-    manual: displayRowKeysBy((row) => row.actionStatus === "manual"),
-    blocked: displayRowKeysBy((row) => row.actionStatus === "blocked"),
+    ready: displayRowKeysBy(hasReadyActionStatus),
+    optional: displayRowKeysBy(hasOptionalActionStatus),
+    manual: displayRowKeysBy(hasManualActionStatus),
+    blocked: displayRowKeysBy(hasBlockedActionStatus),
   };
   const stageHumanLineDisplayRowKeysByEvidenceProgressStatus = {
-    blocked: displayRowKeysBy((row) => row.evidenceProgressStatus === "blocked"),
-    ready: displayRowKeysBy((row) => row.evidenceProgressStatus === "ready"),
+    blocked: displayRowKeysBy(hasBlockedDisplayRowEvidenceProgress),
+    ready: displayRowKeysBy(hasReadyDisplayRowEvidenceProgress),
   };
   const stageHumanLineDisplayRowSummary = {
     count: stageHumanLineDisplayRows.length,
     byKeyCount: Object.keys(stageHumanLineDisplayRowByKey).length,
-    requiredCount: countDisplayRows((row) => row.required),
-    optionalCount: countDisplayRows((row) => !row.required),
-    commandCount: countDisplayRows(hasCommands),
-    manualCount: countDisplayRows((row) => row.manual),
-    readyActionStatusCount: countDisplayRows((row) => row.actionStatus === "ready"),
-    optionalActionStatusCount: countDisplayRows((row) => row.actionStatus === "optional"),
-    manualActionStatusCount: countDisplayRows((row) => row.actionStatus === "manual"),
-    blockedActionStatusCount: countDisplayRows((row) => row.actionStatus === "blocked"),
-    evidenceProgressCount: countDisplayRows((row) => row.hasEvidenceProgress),
-    blockedEvidenceProgressCount: countDisplayRows((row) => row.evidenceProgressStatus === "blocked"),
-    readyEvidenceProgressCount: countDisplayRows((row) => row.evidenceProgressStatus === "ready"),
+    requiredCount: countDisplayRows(isRequiredDisplayRow),
+    optionalCount: countDisplayRows(isOptionalDisplayRow),
+    commandCount: countDisplayRows(hasCommandDisplayRow),
+    manualCount: countDisplayRows(isManualDisplayRow),
+    readyActionStatusCount: countDisplayRows(hasReadyActionStatus),
+    optionalActionStatusCount: countDisplayRows(hasOptionalActionStatus),
+    manualActionStatusCount: countDisplayRows(hasManualActionStatus),
+    blockedActionStatusCount: countDisplayRows(hasBlockedActionStatus),
+    evidenceProgressCount: countDisplayRows(hasDisplayRowEvidenceProgress),
+    blockedEvidenceProgressCount: countDisplayRows(hasBlockedDisplayRowEvidenceProgress),
+    readyEvidenceProgressCount: countDisplayRows(hasReadyDisplayRowEvidenceProgress),
     firstRowKey: stageHumanLineDisplayRows[0]?.key || "",
-    firstReadyActionRowKey: firstDisplayRowKey((row) => row.actionStatus === "ready"),
-    firstOptionalActionRowKey: firstDisplayRowKey((row) => row.actionStatus === "optional"),
-    firstManualActionRowKey: firstDisplayRowKey((row) => row.actionStatus === "manual"),
-    firstBlockedEvidenceProgressRowKey: firstDisplayRowKey((row) => row.evidenceProgressStatus === "blocked"),
-    firstReadyEvidenceProgressRowKey: firstDisplayRowKey((row) => row.evidenceProgressStatus === "ready"),
+    firstReadyActionRowKey: firstDisplayRowKey(hasReadyActionStatus),
+    firstOptionalActionRowKey: firstDisplayRowKey(hasOptionalActionStatus),
+    firstManualActionRowKey: firstDisplayRowKey(hasManualActionStatus),
+    firstBlockedEvidenceProgressRowKey: firstDisplayRowKey(hasBlockedDisplayRowEvidenceProgress),
+    firstReadyEvidenceProgressRowKey: firstDisplayRowKey(hasReadyDisplayRowEvidenceProgress),
   };
   const stageHumanLineSummary = {
     count: stageHumanLines.length,
