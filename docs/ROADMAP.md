@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 731 — Website Improvement Bundle Handoff Next Stage Command Summary Snapshot Cleanup (unreleased)
+
+Website Improvement bundle handoff runbook next-stage command summary now groups stage classification, command metadata, and execution context into named internal snapshots before returning the same fields.
+
+### Changed
+- Added internal next-stage snapshots for stage classification, command metadata, and execution context.
+- Replaced the long inline `nextStageCommandSummary` assembly with ordered snapshot spreads while keeping the existing returned field names unchanged.
+
+### Impact
+- `buildBundleHandoffOperatorRunbook` keeps the same `nextStage*` command and execution contract.
+- Website Improvement handoff wrappers and tests can continue to consume the same next-stage kind, required flag, run policy, safety level, command lists, output files, command/manual state, and mutation boundary fields without migration.
+- No CLI flags, bundle files, command manifest fields, stage/action/evidence field names, validation status values, next-action keys, target-repo mutation rules, external-call boundaries, human runbook lines, or generated output files change.
+
+### Verification Plan
+- `node --check cli/lib/site-bundle-handoff-runbook.mjs`
+- `node --test cli/lib/site.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run package:check`
+- `npm run release:self-test`
+- `npm run release:check`
+
 ## Phase 730 — Website Improvement Bundle Handoff Next Action Summary Snapshot Cleanup (unreleased)
 
 Website Improvement bundle handoff runbook next-action summary now groups action basics, evidence-capture metadata, payload mapping, validation state, field rules, counts, and run context into named internal snapshots before returning the same fields.

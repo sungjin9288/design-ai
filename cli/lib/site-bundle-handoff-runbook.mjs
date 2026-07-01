@@ -737,17 +737,21 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     ...nextStageEvidenceCaptureFieldRules,
     ...nextStageEvidenceCaptureFieldCounts,
   };
-  const nextStageCommandSummary = {
+  const nextStageClassification = {
     nextStageKind: nextStageField("kind"),
     nextStageRequired: nextStage?.required === true,
     nextStageRunPolicy: nextStageField("runPolicy"),
     nextStageSafetyLevel: nextStageField("safetyLevel"),
+  };
+  const nextStageCommandMetadata = {
     nextStageCommandCount,
     nextStageCommandLabels: nextStageCommandValues((command) => command.label),
     nextStageCommands: nextStageCommandValues((command) => command.command),
     nextStageCommandArgsList: nextStageCommandValues((command) => command.commandArgs),
     nextStageCommandRunPolicies: nextStageCommandValues((command) => command.runPolicy),
     nextStageCommandSafetyLevels: nextStageCommandValues((command) => command.safety?.safetyLevel || ""),
+  };
+  const nextStageExecutionContext = {
     nextStageOutputFiles: nextStageListField("outputFiles"),
     nextStageHasCommands: nextStageCommandCount > 0,
     nextStageManual: nextStageCommandCount === 0,
@@ -755,6 +759,11 @@ export function buildBundleHandoffOperatorRunbook(commandManifest) {
     nextStageExternalCalls: nextStageBooleanField("externalCalls"),
     nextStageTargetRepoMutation: nextStageBooleanField("targetRepoMutation"),
     nextStageCommandKeys: nextStageListField("commandKeys"),
+  };
+  const nextStageCommandSummary = {
+    ...nextStageClassification,
+    ...nextStageCommandMetadata,
+    ...nextStageExecutionContext,
   };
   const nextCommandSummary = {
     nextCommand: nextCommandField("command"),
