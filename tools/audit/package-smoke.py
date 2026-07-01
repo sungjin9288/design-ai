@@ -50,6 +50,7 @@ from smoke_assertions import (
     assert_check_examples_json_component_spec,
     assert_check_stdin_json_component_spec,
     assert_command_alias_output,
+    assert_design_ai_mcp_protocol_responses,
     assert_doctor_json_clean,
     assert_doctor_strict_output,
     assert_examples_human_output,
@@ -135,6 +136,7 @@ from smoke_assertions import (
     format_cmd,
     help_alias_script,
     help_topic_script,
+    mcp_smoke_input,
     passing_doctor_report_json,
     passing_check_artifact_content,
     passing_site_mcp_check_probes_human,
@@ -543,65 +545,6 @@ def fail_package_smoke(context: str, cmd: list[str], message: str) -> None:
 def require_package_smoke(condition: bool, *, context: str, cmd: list[str], message: str) -> None:
     if not condition:
         fail_package_smoke(context, cmd, message)
-
-
-def mcp_smoke_input() -> str:
-    messages = [
-        {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-11-25"}},
-        {"jsonrpc": "2.0", "method": "notifications/initialized"},
-        {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
-        {
-            "jsonrpc": "2.0",
-            "id": 3,
-            "method": "tools/call",
-            "params": {
-                "name": "design_ai_search",
-                "arguments": {"query": "Pretendard", "limit": "10"},
-            },
-        },
-    ]
-    return "".join(f"{json.dumps(message, separators=(',', ':'))}\n" for message in messages)
-
-
-def assert_design_ai_mcp_protocol_responses(responses: list[object], *, context: str, cmd: list[str]) -> None:
-    by_id = {
-        response.get("id"): response
-        for response in responses
-        if isinstance(response, dict) and "id" in response
-    }
-    init = by_id.get(1)
-    tools = by_id.get(2)
-    invalid_call = by_id.get(3)
-
-    require_package_smoke(
-        isinstance(init, dict) and init.get("result", {}).get("serverInfo", {}).get("name") == "design-ai",
-        context=context,
-        cmd=cmd,
-        message="MCP initialize response missing design-ai serverInfo",
-    )
-    tool_names = [
-        item.get("name")
-        for item in tools.get("result", {}).get("tools", [])
-    ] if isinstance(tools, dict) else []
-    require_package_smoke(
-        "design_ai_route" in tool_names and "design_ai_search" in tool_names,
-        context=context,
-        cmd=cmd,
-        message="MCP tools/list response missing design-ai tools",
-    )
-    invalid_text = ""
-    if isinstance(invalid_call, dict):
-        content = invalid_call.get("result", {}).get("content", [])
-        if content and isinstance(content[0], dict):
-            invalid_text = str(content[0].get("text", ""))
-    require_package_smoke(
-        isinstance(invalid_call, dict)
-        and invalid_call.get("result", {}).get("isError") is True
-        and "design_ai_search.limit must be an integer" in invalid_text,
-        context=context,
-        cmd=cmd,
-        message="MCP invalid argument response did not preserve typed validation",
-    )
 
 
 def assert_design_ai_mcp_protocol_smoke(

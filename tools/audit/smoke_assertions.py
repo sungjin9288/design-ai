@@ -21,6 +21,7 @@ PLUGIN_INVENTORY_SECTIONS = (
     ("agents", "agent"),
 )
 OUTPUT_FORCE_OVERWRITE_SENTINEL = "__design-ai-smoke-force-overwrite-sentinel__"
+EXPECTED_MCP_INVALID_ARGUMENT_MESSAGE = "design_ai_search.limit must be an integer"
 
 
 def load_plugin_manifest() -> dict[str, object]:
@@ -33,6 +34,57 @@ def load_plugin_manifest() -> dict[str, object]:
 def count_manifest_section(manifest: dict[str, object], section: str) -> int:
     items = manifest.get(section)
     return len(items) if isinstance(items, list) else 0
+
+
+def mcp_smoke_input() -> str:
+    messages = [
+        {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-11-25"}},
+        {"jsonrpc": "2.0", "method": "notifications/initialized"},
+        {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
+        {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "tools/call",
+            "params": {
+                "name": "design_ai_search",
+                "arguments": {"query": "Pretendard", "limit": "10"},
+            },
+        },
+    ]
+    return "".join(f"{json.dumps(message, separators=(',', ':'))}\n" for message in messages)
+
+
+def assert_design_ai_mcp_protocol_responses(responses: list[object], *, context: str, cmd: list[str]) -> None:
+    by_id = {
+        response.get("id"): response
+        for response in responses
+        if isinstance(response, dict) and "id" in response
+    }
+    init = by_id.get(1)
+    tools = by_id.get(2)
+    invalid_call = by_id.get(3)
+
+    if not (isinstance(init, dict) and init.get("result", {}).get("serverInfo", {}).get("name") == "design-ai"):
+        raise SystemExit(f"{context}: MCP initialize response missing design-ai serverInfo")
+
+    tool_names = [
+        item.get("name")
+        for item in tools.get("result", {}).get("tools", [])
+    ] if isinstance(tools, dict) else []
+    if "design_ai_route" not in tool_names or "design_ai_search" not in tool_names:
+        raise SystemExit(f"{context}: MCP tools/list response missing design-ai tools")
+
+    invalid_text = ""
+    if isinstance(invalid_call, dict):
+        content = invalid_call.get("result", {}).get("content", [])
+        if content and isinstance(content[0], dict):
+            invalid_text = str(content[0].get("text", ""))
+    if not (
+        isinstance(invalid_call, dict)
+        and invalid_call.get("result", {}).get("isError") is True
+        and EXPECTED_MCP_INVALID_ARGUMENT_MESSAGE in invalid_text
+    ):
+        raise SystemExit(f"{context}: MCP invalid argument response did not preserve typed validation")
 
 
 def format_inventory_count(count: int, singular: str) -> str:

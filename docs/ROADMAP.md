@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 734 — design-ai MCP Public Registry Smoke Coverage (unreleased)
+
+Public registry smoke now verifies the published `design-ai-mcp` bin through `npm exec --package @design-ai/cli@<version>`, so the post-publish gate covers the same Claude Code and Codex stdio server path as the packed-tarball release smoke.
+
+### Changed
+- Moved the MCP protocol smoke input and response assertion into shared smoke helpers.
+- Added public registry `design-ai-mcp` protocol coverage after `npm exec` version metadata checks.
+- Added registry smoke self-test coverage for the MCP server name, expected tools, and typed invalid-argument response.
+
+### Impact
+- Public npm verification now catches a missing `design-ai-mcp` bin, broken stdio startup, missing design-ai tools, or lost typed validation after publish.
+- Package smoke and registry smoke share the same MCP protocol assertion for Claude/Codex setup paths.
+- No CLI command names, package names, Website Improvement readiness outputs, external MCP calls, target-repo mutation rules, or learning writes change.
+
+### Verification Plan
+- `python3 -m py_compile tools/audit/smoke_assertions.py tools/audit/package-smoke.py tools/audit/registry-smoke.py`
+- `python3 -B tools/audit/package-smoke.py --self-test`
+- `python3 -B tools/audit/registry-smoke.py --self-test`
+- `npm run package:smoke:self-test`
+- `npm run registry:smoke:self-test`
+- `npm run release:self-test`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `python3 -B tools/audit/local-ci.py --docs-only`
+- `git diff --check`
+- `npm run release:check`
+
 ## Phase 733 — design-ai MCP Package Entrypoint Smoke Coverage (unreleased)
 
 Packed-tarball release smoke now verifies the standalone `design-ai-mcp` bin after package installation and through one-shot `npm exec`, so Claude Code and Codex MCP setup cannot silently lose the stdio server entrypoint.

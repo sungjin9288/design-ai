@@ -55,6 +55,7 @@ from smoke_assertions import (
     assert_check_examples_json_component_spec,
     assert_check_stdin_json_component_spec,
     assert_command_alias_output,
+    assert_design_ai_mcp_protocol_responses,
     assert_examples_human_output,
     assert_examples_json_route_hit,
     assert_force_overwrite_replaced,
@@ -127,6 +128,7 @@ from smoke_assertions import (
     format_cmd,
     help_alias_script,
     help_topic_script,
+    mcp_smoke_input,
     parse_help_topics,
     passing_doctor_report_json,
     passing_check_artifact_content,
@@ -264,6 +266,18 @@ def npm_exec_cmd(package_spec: str, *args: str) -> list[str]:
         "--",
         "design-ai",
         *args,
+    ]
+
+
+def npm_exec_mcp_cmd(package_spec: str) -> list[str]:
+    return [
+        "npm",
+        "exec",
+        "--yes",
+        "--package",
+        package_spec,
+        "--",
+        "design-ai-mcp",
     ]
 
 
@@ -2719,6 +2733,45 @@ def assert_version_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path 
     assert_version_json(result.stdout, context=context, cmd=cmd)
 
 
+def assert_design_ai_mcp_protocol_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None,
+    context: str,
+) -> None:
+    print(f"$ {format_cmd(cmd)} < MCP smoke", flush=True)
+    result = subprocess.run(
+        cmd,
+        cwd=cwd,
+        env=env,
+        input=mcp_smoke_input(),
+        text=True,
+        capture_output=True,
+        timeout=15,
+    )
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+
+    if result.returncode != 0:
+        raise SystemExit(f"command failed with exit code {result.returncode}: {format_cmd(cmd)}")
+
+    output = f"{result.stdout}\n{result.stderr}"
+    assert_no_ansi(output, cmd)
+
+    responses = []
+    for line in result.stdout.splitlines():
+        if not line.strip():
+            continue
+        try:
+            responses.append(json.loads(line))
+        except json.JSONDecodeError as error:
+            raise SystemExit(f"{context}: MCP stdout line is not JSON: {error}") from error
+    assert_design_ai_mcp_protocol_responses(responses, context=context, cmd=cmd)
+
+
 def assert_workspace_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_workspace_json(result.stdout, context=context, cmd=cmd)
@@ -5074,6 +5127,12 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec version JSON",
         )
+        assert_design_ai_mcp_protocol_smoke(
+            npm_exec_mcp_cmd(package_spec),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec design-ai-mcp protocol",
+        )
         assert_workspace_json_smoke(
             npm_exec_cmd(package_spec, "workspace", "--json"),
             cwd=npx_root,
@@ -6464,6 +6523,47 @@ def run_self_test() -> None:
                 cmd=site_mcp_check_probes_out_cmd,
             ),
             expected="without external calls",
+            scope="registry smoke",
+        )
+        mcp_protocol_cmd = ["design-ai-mcp"]
+        assert_design_ai_mcp_protocol_responses(
+            [
+                {"jsonrpc": "2.0", "id": 1, "result": {"serverInfo": {"name": "design-ai"}}},
+                {"jsonrpc": "2.0", "id": 2, "result": {"tools": [{"name": "design_ai_route"}, {"name": "design_ai_search"}]}},
+                {
+                    "jsonrpc": "2.0",
+                    "id": 3,
+                    "result": {
+                        "isError": True,
+                        "content": [{"type": "text", "text": "design_ai_search.limit must be an integer"}],
+                    },
+                },
+            ],
+            context="registry smoke self-test design-ai MCP protocol",
+            cmd=mcp_protocol_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_design_ai_mcp_protocol_responses(
+                [
+                    {"jsonrpc": "2.0", "id": 1, "result": {"serverInfo": {"name": "design-ai"}}},
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 2,
+                        "result": {"tools": [{"name": "design_ai_route"}, {"name": "design_ai_search"}]},
+                    },
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 3,
+                        "result": {
+                            "isError": True,
+                            "content": [{"type": "text", "text": "wrong validation message"}],
+                        },
+                    },
+                ],
+                context="registry smoke self-test design-ai MCP protocol",
+                cmd=mcp_protocol_cmd,
+            ),
+            expected="MCP invalid argument response did not preserve typed validation",
             scope="registry smoke",
         )
         assert_site_mcp_plan_markdown(

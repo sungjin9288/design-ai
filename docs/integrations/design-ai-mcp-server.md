@@ -164,6 +164,8 @@ The output must contain valid one-line JSON-RPC responses and a `tools` list.
 
 The packed-tarball release smoke also checks `design-ai-mcp` after install and through one-shot `npm exec`, so package releases catch missing bin shims or broken stdio startup before publish.
 
+After publish, the public registry smoke also runs `npm exec --package @design-ai/cli@<version> -- design-ai-mcp` with the same JSON-RPC protocol checks, so npm propagation verification covers the Claude/Codex MCP entrypoint as installed by users.
+
 ## Troubleshooting
 
 | Symptom | What to check |
