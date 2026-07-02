@@ -33,6 +33,7 @@
 - `evidence/cli-logs/npm-publish-v4.56.0-failed.log`
 - `evidence/cli-logs/npm-publish-v4.56.0-preflight-failed.log`
 - `evidence/cli-logs/npm-publish-v4.56.0-bypass-2fa-required-20260702.log`
+- `evidence/cli-logs/npm-publish-v4.56.0-success.log`
 - `evidence/cli-logs/homebrew-formula-status.log`
 - `evidence/cli-logs/vscode-marketplace-status.log`
 - `evidence/cli-logs/zip-integrity.log`
@@ -102,7 +103,7 @@
 | portfolio zip integrity | 통과 - `unzip -t _portfolio_export/design_ai_portfolio_pack.zip` |
 | portfolio zip contents | 확인 완료 - `zipinfo -1 _portfolio_export/design_ai_portfolio_pack.zip` |
 | secret pattern scan | 통과 - API key, GitHub token, Slack token, AWS key, private key 패턴 매치 없음 |
-| public npm registry status | 부분 통과 - `@design-ai/cli@4.55.0` published, registry smoke passed; latest `v4.56.0` publish run authenticated `NPM_TOKEN`, passed package smoke, signed provenance, then failed with npm registry `E403` because token-based CI publish requires interactive 2FA or a granular access token with Bypass 2FA enabled |
+| public npm registry status | 통과 - `@design-ai/cli@4.56.0` published as npm latest, publish workflow `28569283984` succeeded, public registry smoke passed |
 | GitHub Pages status | 통과 - documented URL HTTP 200 |
 | GitHub Release status | 통과 - `v4.56.0` published with release asset |
 | Homebrew formula status | 부분 통과 - `v4.56.0` tarball SHA, Ruby syntax, `brew style` passed; path-based `brew audit` blocked by current Homebrew |

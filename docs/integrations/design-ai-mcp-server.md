@@ -43,7 +43,7 @@ cd "$tmp"
 printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25"}}' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
-  | npm exec --yes --package=@design-ai/cli@4.55.0 -- design-ai-mcp
+  | npm exec --yes --package=@design-ai/cli@4.56.0 -- design-ai-mcp
 ```
 
 Running that one-shot command from the package source root can make npm prefer the local checkout context, which may hide the temporary package bin shim.
