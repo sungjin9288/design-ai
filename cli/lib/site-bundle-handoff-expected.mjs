@@ -1,0 +1,173 @@
+// Expected next-action initial-validation fixtures for bundle-handoff contract tests.
+
+export   const buildExpectedInitialValidationChecklistSummary = (checklist) => {
+    const checkedItems = checklist.filter((item) => item.checkedInitially);
+    const uncheckedItems = checklist.filter((item) => !item.checkedInitially);
+    const blockingItems = checklist.filter((item) => item.completionBlocking);
+    const blockingUncheckedItems = checklist.filter((item) => item.completionBlocking && !item.checkedInitially);
+    const firstUncheckedItem = uncheckedItems[0] || {};
+    const status = blockingUncheckedItems.length > 0 ? "blocked" : "ready";
+    return {
+      status,
+      statusLabel: status === "blocked" ? "Checklist blocked" : "Checklist ready",
+      statusTone: status === "blocked" ? "danger" : "success",
+      iconName: status === "blocked" ? "list-x" : "list-checks",
+      actionLabel: status === "blocked" ? "Complete required evidence" : "Continue",
+      helperText: status === "blocked"
+        ? `${blockingUncheckedItems.length} required checklist item(s) need evidence before completion.`
+        : "No required checklist items are unchecked on first render.",
+      itemCount: checklist.length,
+      checkedCount: checkedItems.length,
+      uncheckedCount: uncheckedItems.length,
+      requiredCount: checklist.filter((item) => item.required).length,
+      optionalCount: checklist.filter((item) => !item.required).length,
+      blockingCount: blockingItems.length,
+      blockingUncheckedCount: blockingUncheckedItems.length,
+      nonBlockingCount: checklist.filter((item) => !item.completionBlocking).length,
+      completionPercent: checklist.length > 0 ? Math.round((checkedItems.length / checklist.length) * 100) : 100,
+      progressLabel: `${checkedItems.length}/${checklist.length} complete`,
+      allCheckedInitially: uncheckedItems.length === 0,
+      hasUncheckedItems: uncheckedItems.length > 0,
+      hasBlockingUncheckedItems: blockingUncheckedItems.length > 0,
+      canCompleteInitially: blockingUncheckedItems.length === 0,
+      firstUncheckedItemKey: firstUncheckedItem.key || "",
+      firstUncheckedItemLabel: firstUncheckedItem.label || "",
+      firstUncheckedItemMessage: firstUncheckedItem.message || "",
+    };
+  };
+
+export function buildExpectedNextInitialValidation(bundle) {
+  const expectedNextInitialValidationStates = [
+    {
+      key: "strictBundleCheckOutput",
+      label: "Strict bundle-check output",
+      rule: "non-empty-text",
+      status: "missing-required",
+      statusLabel: "Missing required",
+      statusTone: "danger",
+      iconName: "alert-circle",
+      actionLabel: "Provide evidence",
+      helperText: "Required before completion",
+      valid: false,
+      blocking: true,
+      severity: "error",
+      required: true,
+      allowsEmpty: false,
+      touched: false,
+      dirty: false,
+      valuePresent: false,
+      valueLength: 0,
+      minLength: 20,
+      valueShape: "long-text",
+      acceptsMultiple: false,
+      emptyValue: "",
+      payloadPath: "sourceBundle.verification.strictBundleCheckOutput",
+      message: "Provide strict bundle-check output before marking this action complete.",
+    },
+    {
+      key: "bundleDigest",
+      label: "Bundle digest",
+      rule: "checksum-or-digest-text",
+      status: "missing-required",
+      statusLabel: "Missing required",
+      statusTone: "danger",
+      iconName: "alert-circle",
+      actionLabel: "Provide evidence",
+      helperText: "Required before completion",
+      valid: false,
+      blocking: true,
+      severity: "error",
+      required: true,
+      allowsEmpty: false,
+      touched: false,
+      dirty: false,
+      valuePresent: false,
+      valueLength: 0,
+      minLength: 8,
+      valueShape: "short-text",
+      acceptsMultiple: false,
+      emptyValue: "",
+      payloadPath: "sourceBundle.verification.bundleDigest",
+      message: "Provide bundle digest before marking this action complete.",
+    },
+  ];
+  const expectedNextInitialValidationDisplayMetadata = [
+    {
+      key: "strictBundleCheckOutput",
+      label: "Strict bundle-check output",
+      status: "missing-required",
+      statusLabel: "Missing required",
+      statusTone: "danger",
+      iconName: "alert-circle",
+      actionLabel: "Provide evidence",
+      helperText: "Required before completion",
+      blocking: true,
+      required: true,
+      message: "Provide strict bundle-check output before marking this action complete.",
+    },
+    {
+      key: "bundleDigest",
+      label: "Bundle digest",
+      status: "missing-required",
+      statusLabel: "Missing required",
+      statusTone: "danger",
+      iconName: "alert-circle",
+      actionLabel: "Provide evidence",
+      helperText: "Required before completion",
+      blocking: true,
+      required: true,
+      message: "Provide bundle digest before marking this action complete.",
+    },
+  ];
+  const expectedNextInitialValidationChecklist = expectedNextInitialValidationStates.map((state) => ({
+    key: state.key,
+    label: state.label,
+    status: state.status,
+    statusLabel: state.statusLabel,
+    statusTone: state.statusTone,
+    iconName: state.iconName,
+    actionLabel: state.actionLabel,
+    helperText: state.helperText,
+    required: state.required,
+    blocking: state.blocking,
+    completionBlocking: state.blocking,
+    checkedInitially: state.valid,
+    disabled: false,
+    message: state.message,
+    payloadPath: state.payloadPath,
+  }));
+  const expectedNextInitialValidationChecklistSummary = buildExpectedInitialValidationChecklistSummary(
+    expectedNextInitialValidationChecklist,
+  );
+  const expectedNextInitialValidationSummary = {
+    status: "blocked",
+    statusLabel: "Blocked by required evidence",
+    statusTone: "danger",
+    iconName: "alert-circle",
+    actionLabel: "Provide required evidence",
+    helperText: "2 required evidence field(s) need input before completion.",
+    fieldCount: 2,
+    requiredCount: 2,
+    optionalCount: 0,
+    validCount: 0,
+    invalidCount: 2,
+    blockingCount: 2,
+    nonBlockingCount: 0,
+    missingRequiredCount: 2,
+    optionalEmptyCount: 0,
+    dangerDisplayCount: 2,
+    infoDisplayCount: 0,
+    allFieldsPristine: true,
+    canCompleteInitially: false,
+    firstBlockingFieldKey: "strictBundleCheckOutput",
+    firstBlockingFieldLabel: "Strict bundle-check output",
+    firstBlockingMessage: "Provide strict bundle-check output before marking this action complete.",
+  };
+  return {
+    expectedNextInitialValidationChecklist,
+    expectedNextInitialValidationChecklistSummary,
+    expectedNextInitialValidationDisplayMetadata,
+    expectedNextInitialValidationStates,
+    expectedNextInitialValidationSummary,
+  };
+}
