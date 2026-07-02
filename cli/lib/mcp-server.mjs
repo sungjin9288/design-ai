@@ -479,6 +479,9 @@ function validateInitializeParams(params) {
   if (Object.hasOwn(params, "protocolVersion") && typeof params.protocolVersion !== "string") {
     return "initialize params.protocolVersion must be a string";
   }
+  if (typeof params.protocolVersion === "string" && params.protocolVersion.trim() === "") {
+    return "initialize params.protocolVersion must be a non-empty string";
+  }
   return "";
 }
 

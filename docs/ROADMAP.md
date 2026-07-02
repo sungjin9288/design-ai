@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 751 — design-ai MCP Initialize Blank Protocol Version Guard (unreleased)
+
+The MCP stdio server now rejects blank-only `initialize.params.protocolVersion` strings with JSON-RPC `-32602`, so version negotiation inputs must be meaningful strings when provided.
+
+### Changed
+- Added a blank-string guard for `initialize.params.protocolVersion`.
+- Added unit coverage for whitespace-only protocol versions.
+- Preserved fallback behavior for unsupported but non-empty protocol version strings.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get clear invalid-params feedback for malformed initialize version negotiation.
+- Valid initialize requests, omitted initialize params, unsupported non-empty string protocol versions, notifications, ping, tools/list, tools/call, resources/list, prompts/list, package smoke, Website Improvement readiness behavior, and CLI runtime failure reporting stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 750 — design-ai MCP Blank String Argument Guard (unreleased)
 
 The MCP stdio server now rejects blank-only string arguments for schema fields that declare `minLength`, so required text inputs fail as JSON-RPC `-32602` before CLI invocation instead of surfacing later as tool execution errors.
