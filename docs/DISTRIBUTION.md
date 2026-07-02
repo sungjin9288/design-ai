@@ -126,7 +126,7 @@ For releases, both must match. The publish workflow enforces this:
 The workflow:
 - Verifies tag matches `package.json` version.
 - Verifies `package.json` and `plugin.json` versions match.
-- Verifies `NPM_TOKEN` can authenticate and list `@design-ai/cli` before the long package smoke runs.
+- Verifies `NPM_TOKEN` can authenticate before the long package smoke runs; package-list access is advisory because package-scoped granular tokens can refuse broader scope listing.
 - Runs `npm run audit:strict` for all 8 audits (frontmatter / link / Korean copy / raw hex / integration / stale / coverage / example QA).
 - Runs `npm test` CLI unit tests before publishing or attaching release assets.
 - Runs whitespace checks with `git diff --check` before packaging.
