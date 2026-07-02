@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 746 — design-ai MCP Response Request ID Guard (unreleased)
+
+The MCP stdio server now requires request ids for every response-bearing MCP method, so `initialize`, `ping`, `tools/list`, `tools/call`, `resources/list`, and `prompts/list` cannot be sent as silent notifications.
+
+### Changed
+- Added an explicit response-method set for MCP methods that must include a request id.
+- Reused the same request-id guard across initialize, ping, list methods, and tools/call.
+- Added unit and subprocess coverage for id-less response-bearing MCP methods while preserving silent handling for valid initialized notifications.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get deterministic feedback when response-bearing MCP requests are accidentally sent without correlation ids.
+- Valid initialize, id-less initialized notifications, ping, tools/list, resources/list, prompts/list, id-bearing tools/call, request id validation, argument validation, output truncation, package smoke, Website Improvement readiness behavior, external MCP call boundaries, target-repo mutation rules, and learning write behavior stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 745 — design-ai MCP Tool Call Request ID Guard (unreleased)
 
 The MCP stdio server now rejects `tools/call` payloads that omit a request id before any CLI work starts, so request-shaped tool execution cannot run silently as a JSON-RPC notification.

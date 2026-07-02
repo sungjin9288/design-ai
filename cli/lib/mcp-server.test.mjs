@@ -247,7 +247,18 @@ test("tools/call rejects unknown tools before running the CLI", async () => {
   assert.equal(response.error.message, "Unknown tool: design_ai_missing");
 });
 
-test("tools/call requires a request id before running the CLI", async () => {
+test("MCP response methods require request ids", async () => {
+  for (const method of ["initialize", "ping", "tools/list", "resources/list", "prompts/list"]) {
+    const response = await handleMcpRequest({
+      jsonrpc: "2.0",
+      method,
+    });
+
+    assert.equal(response.id, null);
+    assert.equal(response.error.code, -32600);
+    assert.equal(response.error.message, `Invalid MCP request: ${method} must include id`);
+  }
+
   let cliWasCalled = false;
   const response = await handleMcpRequest({
     jsonrpc: "2.0",
@@ -496,25 +507,30 @@ test("design-ai MCP stdio subprocess reports invalid requests and preserves vali
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: true, method: "tools/list" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: 42 })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "" })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "initialize", params: {} })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "ping" })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "tools/list" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "tools/call", params: { name: "design_ai_version", arguments: {} } })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "resources/list" })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "prompts/list" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 99, method: "notifications/initialized" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
 
   await waitForMcpResponse(
     child,
     responses,
-    () => responses.length === 12,
+    () => responses.length === 17,
     `Timed out waiting for invalid request responses. Responses: ${JSON.stringify(responses)}`,
   );
   await stopMcpSubprocess(child);
 
   assert.deepEqual(
     responses.map((response) => response.error.code),
-    [-32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600],
+    [-32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600],
   );
   assert.deepEqual(
     responses.map((response) => response.id),
-    [null, null, null, null, null, null, null, null, null, null, null, 99],
+    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 99],
   );
 });
 

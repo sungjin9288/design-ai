@@ -10,6 +10,14 @@ import { DESIGN_AI_HOME, PACKAGE_ROOT } from "./paths.mjs";
 const PROTOCOL_VERSION = "2025-11-25";
 const MAX_TOOL_OUTPUT_BYTES = 220_000;
 const DESIGN_AI_BIN = path.join(PACKAGE_ROOT, "cli", "bin", "design-ai.mjs");
+const MCP_RESPONSE_METHODS = new Set([
+  "initialize",
+  "ping",
+  "tools/list",
+  "tools/call",
+  "resources/list",
+  "prompts/list",
+]);
 
 function optionalString(description = "") {
   return { type: "string", description };
@@ -433,8 +441,8 @@ function validateMcpNotificationRequest(message) {
 }
 
 function validateMcpRequestIdRequirement(message) {
-  if (message.method === "tools/call" && !hasRequestId(message)) {
-    return "Invalid MCP request: tools/call must include id";
+  if (MCP_RESPONSE_METHODS.has(message.method) && !hasRequestId(message)) {
+    return `Invalid MCP request: ${message.method} must include id`;
   }
   return "";
 }
