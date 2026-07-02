@@ -1,0 +1,66 @@
+publish	Verify npm publish token access	﻿2026-07-02T03:17:50.9593829Z ##[group]Run set -euo pipefail
+publish	Verify npm publish token access	2026-07-02T03:17:50.9594223Z [36;1mset -euo pipefail[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9594468Z [36;1m[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9594768Z [36;1mPACKAGE_NAME=$(node -p "require('./package.json').name")[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9595159Z [36;1mPACKAGE_SCOPE="${PACKAGE_NAME%%/*}"[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9595439Z [36;1m[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9595653Z [36;1mif [ -z "${NODE_AUTH_TOKEN:-}" ]; then[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9596172Z [36;1m  echo "::error::NPM_TOKEN is not configured. Add a token that can publish ${PACKAGE_NAME}."[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9596628Z [36;1m  exit 1[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9596828Z [36;1mfi[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9597018Z [36;1m[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9597307Z [36;1mif ! npm whoami >/tmp/npm-whoami.txt 2>/tmp/npm-whoami.err; then[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9597989Z [36;1m  echo "::error::NPM_TOKEN was rejected by npm. Replace the GitHub secret with a valid publish token for ${PACKAGE_NAME}."[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9598574Z [36;1m  sed 's/^/npm: /' /tmp/npm-whoami.err[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9598896Z [36;1m  exit 1[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9599091Z [36;1mfi[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9599273Z [36;1m[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9599706Z [36;1mif ! npm access list packages "${PACKAGE_SCOPE}" --json >/tmp/npm-access.json 2>/tmp/npm-access.err; then[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9600987Z [36;1m  echo "::error::NPM_TOKEN cannot list packages for ${PACKAGE_SCOPE}. Replace it with a token that can publish ${PACKAGE_NAME}."[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9601652Z [36;1m  sed 's/^/npm: /' /tmp/npm-access.err[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9601966Z [36;1m  exit 1[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9602167Z [36;1mfi[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9602357Z [36;1m[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9602594Z [36;1mPACKAGE_NAME="${PACKAGE_NAME}" node <<'NODE'[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9602925Z [36;1mconst fs = require("node:fs");[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9603190Z [36;1m[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9603452Z [36;1mconst packageName = process.env.PACKAGE_NAME;[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9603889Z [36;1mconst raw = fs.readFileSync("/tmp/npm-access.json", "utf8").trim();[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9604337Z [36;1mconst packages = raw ? JSON.parse(raw) : {};[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9604634Z [36;1m[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9604860Z [36;1mconst names = Array.isArray(packages)[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9605282Z [36;1m  ? packages.map((entry) => (typeof entry === "string" ? entry : entry?.name))[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9605701Z [36;1m  : Object.keys(packages);[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9605960Z [36;1m[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9606180Z [36;1mif (!names.includes(packageName)) {[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9606912Z [36;1m  console.error(`::error::NPM_TOKEN does not include publish access for ${packageName}. Create a granular token scoped to this package and update the GitHub secret.`);[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9607624Z [36;1m  process.exit(1);[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9607860Z [36;1m}[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9608045Z [36;1m[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9608384Z [36;1mconst permission = Array.isArray(packages) ? null : packages[packageName];[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9608922Z [36;1mconst serialized = JSON.stringify(permission ?? "").toLowerCase();[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9609535Z [36;1mconst canWrite = permission == null || serialized.includes("write") || serialized.includes("owner");[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9610020Z [36;1m[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9610208Z [36;1mif (!canWrite) {[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9611058Z [36;1m  console.error(`::error::NPM_TOKEN only reports ${permission} for ${packageName}. A publish token needs read-write or owner access.`);[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9611867Z [36;1m  process.exit(1);[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9612101Z [36;1m}[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9612285Z [36;1mNODE[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9612476Z [36;1m[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9612743Z [36;1mecho "NPM publish token can access ${PACKAGE_NAME} ✓"[0m
+publish	Verify npm publish token access	2026-07-02T03:17:50.9648067Z shell: /usr/bin/bash -e {0}
+publish	Verify npm publish token access	2026-07-02T03:17:50.9648336Z env:
+publish	Verify npm publish token access	2026-07-02T03:17:50.9648607Z   NPM_CONFIG_USERCONFIG: /home/runner/work/_temp/.npmrc
+publish	Verify npm publish token access	2026-07-02T03:17:50.9649159Z   NODE_AUTH_TOKEN: ***
+publish	Verify npm publish token access	2026-07-02T03:17:50.9649726Z   pythonLocation: /opt/hostedtoolcache/Python/3.11.15/x64
+publish	Verify npm publish token access	2026-07-02T03:17:50.9650179Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib/pkgconfig
+publish	Verify npm publish token access	2026-07-02T03:17:50.9650976Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+publish	Verify npm publish token access	2026-07-02T03:17:50.9651395Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+publish	Verify npm publish token access	2026-07-02T03:17:50.9651804Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.11.15/x64
+publish	Verify npm publish token access	2026-07-02T03:17:50.9652207Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.11.15/x64/lib
+publish	Verify npm publish token access	2026-07-02T03:17:50.9652543Z ##[endgroup]
+publish	Verify npm publish token access	2026-07-02T03:17:51.2972706Z ##[error]NPM_TOKEN was rejected by npm. Replace the GitHub secret with a valid publish token for @design-ai/cli.
+publish	Verify npm publish token access	2026-07-02T03:17:51.2982409Z npm: npm error code E401
+publish	Verify npm publish token access	2026-07-02T03:17:51.2982994Z npm: npm error 401 Unauthorized - GET https://registry.npmjs.org/-/whoami
+publish	Verify npm publish token access	2026-07-02T03:17:51.2983818Z npm: npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2026-07-02T03_17_51_056Z-debug-0.log
+publish	Verify npm publish token access	2026-07-02T03:17:51.2986109Z ##[error]Process completed with exit code 1.
