@@ -53,6 +53,61 @@ jobs:
           fi
           echo "Plugin manifest version: $PLUGIN_VERSION ✓"
 
+      - name: Verify npm publish token access
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_SCOPE="${PACKAGE_NAME%%/*}"
+
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "::error::NPM_TOKEN is not configured. Add a token that can publish ${PACKAGE_NAME}."
+            exit 1
+          fi
+
+          if ! npm whoami >/tmp/npm-whoami.txt 2>/tmp/npm-whoami.err; then
+            echo "::error::NPM_TOKEN was rejected by npm. Replace the GitHub secret with a valid publish token for ${PACKAGE_NAME}."
+            sed 's/^/npm: /' /tmp/npm-whoami.err
+            exit 1
+          fi
+
+          if ! npm access list packages "${PACKAGE_SCOPE}" --json >/tmp/npm-access.json 2>/tmp/npm-access.err; then
+            echo "::error::NPM_TOKEN cannot list packages for ${PACKAGE_SCOPE}. Replace it with a token that can publish ${PACKAGE_NAME}."
+            sed 's/^/npm: /' /tmp/npm-access.err
+            exit 1
+          fi
+
+          PACKAGE_NAME="${PACKAGE_NAME}" node <<'NODE'
+          const fs = require("node:fs");
+
+          const packageName = process.env.PACKAGE_NAME;
+          const raw = fs.readFileSync("/tmp/npm-access.json", "utf8").trim();
+          const packages = raw ? JSON.parse(raw) : {};
+
+          const names = Array.isArray(packages)
+            ? packages.map((entry) => (typeof entry === "string" ? entry : entry?.name))
+            : Object.keys(packages);
+
+          if (!names.includes(packageName)) {
+            console.error(`::error::NPM_TOKEN does not include publish access for ${packageName}. Create a granular token scoped to this package and update the GitHub secret.`);
+            process.exit(1);
+          }
+
+          const permission = Array.isArray(packages) ? null : packages[packageName];
+          const serialized = JSON.stringify(permission ?? "").toLowerCase();
+          const canWrite = permission == null || serialized.includes("write") || serialized.includes("owner");
+
+          if (!canWrite) {
+            console.error(`::error::NPM_TOKEN only reports ${permission} for ${packageName}. A publish token needs read-write or owner access.`);
+            process.exit(1);
+          }
+          NODE
+
+          echo "NPM publish token can access ${PACKAGE_NAME} ✓"
+
       - name: Run all 8 audits before publishing
         run: python3 tools/audit/run-all.py --strict
 
