@@ -432,6 +432,11 @@ function validateMcpNotificationRequest(message) {
   return "";
 }
 
+function validateOptionalObjectParams(method, params) {
+  if (params === undefined || isObjectRecord(params)) return "";
+  return `${method} params must be an object when provided`;
+}
+
 function validateToolCallParams(params) {
   if (!isObjectRecord(params)) {
     return "tools/call params must be an object";
@@ -500,9 +505,15 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
   }
 
   if (method === "notifications/initialized") return null;
-  if (method === "ping") return successResponse(id, {});
+  if (method === "ping") {
+    const paramsError = validateOptionalObjectParams(method, params);
+    if (paramsError) return errorResponse(id, -32602, paramsError);
+    return successResponse(id, {});
+  }
 
   if (method === "tools/list") {
+    const paramsError = validateOptionalObjectParams(method, params);
+    if (paramsError) return errorResponse(id, -32602, paramsError);
     return successResponse(id, { tools: MCP_TOOLS });
   }
 
@@ -524,8 +535,16 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
     }
   }
 
-  if (method === "resources/list") return successResponse(id, { resources: [] });
-  if (method === "prompts/list") return successResponse(id, { prompts: [] });
+  if (method === "resources/list") {
+    const paramsError = validateOptionalObjectParams(method, params);
+    if (paramsError) return errorResponse(id, -32602, paramsError);
+    return successResponse(id, { resources: [] });
+  }
+  if (method === "prompts/list") {
+    const paramsError = validateOptionalObjectParams(method, params);
+    if (paramsError) return errorResponse(id, -32602, paramsError);
+    return successResponse(id, { prompts: [] });
+  }
 
   return errorResponse(id, -32601, `Method not found: ${method}`);
 }

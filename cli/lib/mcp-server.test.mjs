@@ -112,6 +112,60 @@ test("MCP initialize validates request params", async () => {
   assert.equal(arrayParams.error.message, "initialize params must be an object");
 });
 
+test("MCP optional object params reject malformed containers", async () => {
+  const pingWithObjectParams = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: "ping-object",
+    method: "ping",
+    params: {},
+  });
+  assert.deepEqual(pingWithObjectParams.result, {});
+
+  const listWithObjectParams = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: "list-object",
+    method: "tools/list",
+    params: {},
+  });
+  assert.ok(listWithObjectParams.result.tools.some((tool) => tool.name === "design_ai_route"));
+
+  const pingWithArrayParams = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: "ping-array",
+    method: "ping",
+    params: [],
+  });
+  assert.equal(pingWithArrayParams.error.code, -32602);
+  assert.equal(pingWithArrayParams.error.message, "ping params must be an object when provided");
+
+  const listWithStringParams = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: "list-string",
+    method: "tools/list",
+    params: "all",
+  });
+  assert.equal(listWithStringParams.error.code, -32602);
+  assert.equal(listWithStringParams.error.message, "tools/list params must be an object when provided");
+
+  const resourcesWithNullParams = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: "resources-null",
+    method: "resources/list",
+    params: null,
+  });
+  assert.equal(resourcesWithNullParams.error.code, -32602);
+  assert.equal(resourcesWithNullParams.error.message, "resources/list params must be an object when provided");
+
+  const promptsWithBooleanParams = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: "prompts-boolean",
+    method: "prompts/list",
+    params: false,
+  });
+  assert.equal(promptsWithBooleanParams.error.code, -32602);
+  assert.equal(promptsWithBooleanParams.error.message, "prompts/list params must be an object when provided");
+});
+
 test("buildCliInvocation maps MCP tool args to existing CLI commands", () => {
   assert.deepEqual(
     buildCliInvocation("design_ai_route", { brief: "Spec a Button", limit: 1, explain: true }),

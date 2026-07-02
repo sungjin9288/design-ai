@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 744 — design-ai MCP Optional Params Container Guard (unreleased)
+
+The MCP stdio server now validates optional `params` containers for `ping`, `tools/list`, `resources/list`, and `prompts/list`, so malformed array, string, null, or boolean params receive deterministic `-32602` feedback instead of being silently accepted.
+
+### Changed
+- Added a shared optional object-params guard for no-body MCP methods that still accept future object-shaped params.
+- Preserved successful handling for omitted params and `{}` params on `ping` and `tools/list`.
+- Added unit coverage for malformed optional params on `ping`, `tools/list`, `resources/list`, and `prompts/list`.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get clearer invalid-params feedback when list or ping requests carry malformed params.
+- Valid initialize, id-less initialized notifications, ping, tools/list, resources/list, prompts/list, tools/call, request id validation, argument validation, output truncation, package smoke, Website Improvement readiness behavior, external MCP call boundaries, target-repo mutation rules, and learning write behavior stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 743 — design-ai MCP Initialized Notification ID Guard (unreleased)
 
 The MCP stdio server now rejects `notifications/initialized` payloads that include an `id`, so request-shaped initialized notifications receive deterministic `-32600` feedback instead of being silently dropped.
