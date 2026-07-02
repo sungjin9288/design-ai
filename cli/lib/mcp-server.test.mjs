@@ -423,6 +423,23 @@ test("malformed MCP requests return protocol errors", async () => {
   });
   assert.equal(initializedNotification, null);
 
+  const progressWithId = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 3108,
+    method: "notifications/progress",
+    params: { progressToken: "route", progress: 0.5 },
+  });
+  assert.equal(progressWithId.id, 3108);
+  assert.equal(progressWithId.error.code, -32600);
+  assert.equal(progressWithId.error.message, "Invalid MCP request: notifications/progress must not include id");
+
+  const progressNotification = await handleMcpRequest({
+    jsonrpc: "2.0",
+    method: "notifications/progress",
+    params: { progressToken: "route", progress: 0.5 },
+  });
+  assert.equal(progressNotification, null);
+
   const unknownMethod = await handleMcpRequest({
     jsonrpc: "2.0",
     id: 32,
@@ -524,22 +541,24 @@ test("design-ai MCP stdio subprocess reports invalid requests and preserves vali
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "prompts/list" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 99, method: "notifications/initialized" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 100, method: "notifications/progress" })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/progress" })}\n`);
 
   await waitForMcpResponse(
     child,
     responses,
-    () => responses.length === 17,
+    () => responses.length === 18,
     `Timed out waiting for invalid request responses. Responses: ${JSON.stringify(responses)}`,
   );
   await stopMcpSubprocess(child);
 
   assert.deepEqual(
     responses.map((response) => response.error.code),
-    [-32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600],
+    [-32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600],
   );
   assert.deepEqual(
     responses.map((response) => response.id),
-    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 99],
+    [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, 99, 100],
   );
 });
 

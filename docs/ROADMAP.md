@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 749 — design-ai MCP Notification Namespace Guard (unreleased)
+
+The MCP stdio server now treats the whole `notifications/` method namespace consistently: notification messages must not include request ids, and valid id-less notifications are ignored without writing a response.
+
+### Changed
+- Added a small notification-method predicate for the `notifications/` namespace.
+- Generalized the request-id rejection from `notifications/initialized` to every `notifications/*` method.
+- Preserved silent handling for valid id-less notifications, including unsupported notification names that the local server does not need to act on.
+- Added unit and subprocess coverage for `notifications/progress` with and without ids.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get deterministic `-32600` feedback when a notification is accidentally sent as a request.
+- Valid initialized notifications, progress-style notifications without ids, initialize, ping, tools/list, tools/call, resources/list, prompts/list, package smoke, Website Improvement readiness behavior, and CLI runtime failure reporting stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 748 — design-ai MCP Initialize Protocol Version Type Guard (unreleased)
 
 The MCP stdio server now rejects non-string `initialize.params.protocolVersion` values with JSON-RPC `-32602`, so malformed initialize payloads get the same explicit invalid-params handling as other MCP request parameter mistakes.

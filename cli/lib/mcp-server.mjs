@@ -433,9 +433,13 @@ function validateMcpRequestMethod(message) {
   return "";
 }
 
+function isMcpNotificationMethod(method) {
+  return typeof method === "string" && method.startsWith("notifications/");
+}
+
 function validateMcpNotificationRequest(message) {
-  if (message.method === "notifications/initialized" && hasRequestId(message)) {
-    return "Invalid MCP request: notifications/initialized must not include id";
+  if (isMcpNotificationMethod(message.method) && hasRequestId(message)) {
+    return `Invalid MCP request: ${message.method} must not include id`;
   }
   return "";
 }
@@ -531,7 +535,7 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
     });
   }
 
-  if (method === "notifications/initialized") return null;
+  if (isMcpNotificationMethod(method)) return null;
   if (method === "ping") {
     const paramsError = validateOptionalObjectParams(method, params);
     if (paramsError) return errorResponse(id, -32602, paramsError);
