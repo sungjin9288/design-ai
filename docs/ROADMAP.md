@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 750 — design-ai MCP Blank String Argument Guard (unreleased)
+
+The MCP stdio server now rejects blank-only string arguments for schema fields that declare `minLength`, so required text inputs fail as JSON-RPC `-32602` before CLI invocation instead of surfacing later as tool execution errors.
+
+### Changed
+- Added whitespace-only validation for MCP string inputs with `minLength`.
+- Added unit coverage proving a blank `design_ai_route.brief` is rejected before the CLI runner is called.
+- Kept optional string fields without `minLength` on their existing CLI-mapping path.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get immediate invalid-params feedback for blank required text fields.
+- Valid non-empty strings, optional string omission, initialize, notifications, ping, tools/list, tools/call success, resources/list, prompts/list, package smoke, Website Improvement readiness behavior, and CLI runtime failure reporting stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 749 — design-ai MCP Notification Namespace Guard (unreleased)
 
 The MCP stdio server now treats the whole `notifications/` method namespace consistently: notification messages must not include request ids, and valid id-less notifications are ignored without writing a response.

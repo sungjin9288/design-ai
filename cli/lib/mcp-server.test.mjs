@@ -334,6 +334,28 @@ test("tools/call validates MCP argument types before running the CLI", async () 
   assert.equal(response.error.message, "design_ai_search.limit must be an integer");
 });
 
+test("tools/call rejects blank required string arguments before running the CLI", async () => {
+  let cliWasCalled = false;
+  const response = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 6,
+    method: "tools/call",
+    params: {
+      name: "design_ai_route",
+      arguments: { brief: "   " },
+    },
+  }, {
+    runCli: async () => {
+      cliWasCalled = true;
+      return { code: 0, stdout: "", stderr: "" };
+    },
+  });
+
+  assert.equal(cliWasCalled, false);
+  assert.equal(response.error.code, -32602);
+  assert.equal(response.error.message, "design_ai_route.brief must be a non-empty string");
+});
+
 test("malformed MCP requests return protocol errors", async () => {
   const missingJsonrpc = await handleMcpRequest({
     id: 3103,

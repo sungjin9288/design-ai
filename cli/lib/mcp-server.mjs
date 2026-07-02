@@ -207,6 +207,9 @@ function assertString(value, name) {
 function assertMcpInputValue(name, value, schema) {
   if (schema.type === "string") {
     if (typeof value !== "string") throw new Error(`${name} must be a string`);
+    if (schema.minLength && value.trim() === "") {
+      throw new Error(`${name} must be a non-empty string`);
+    }
     if (schema.minLength && value.length < schema.minLength) {
       throw new Error(`${name} must be at least ${schema.minLength} characters`);
     }
