@@ -14,6 +14,7 @@ from doctor_assertions import EXPECTED_DOCTOR_PASS_LABELS, assert_doctor_report_
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 ROOT = Path(__file__).resolve().parents[2]
+PACKAGE_JSON = ROOT / "package.json"
 PLUGIN_MANIFEST = ROOT / ".claude-plugin" / "plugin.json"
 PLUGIN_INVENTORY_SECTIONS = (
     ("skills", "skill"),
@@ -31,9 +32,19 @@ def load_plugin_manifest() -> dict[str, object]:
         raise SystemExit(f"failed to load plugin manifest for smoke assertions: {PLUGIN_MANIFEST}") from error
 
 
+def load_package_json() -> dict[str, object]:
+    try:
+        return json.loads(PACKAGE_JSON.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise SystemExit(f"failed to load package metadata for smoke assertions: {PACKAGE_JSON}") from error
+
+
 def count_manifest_section(manifest: dict[str, object], section: str) -> int:
     items = manifest.get(section)
     return len(items) if isinstance(items, list) else 0
+
+
+EXPECTED_RELEASE_VERSION = str(load_package_json().get("version", ""))
 
 
 def mcp_smoke_input() -> str:
@@ -377,7 +388,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
 EXPECTED_VERSION_FRAGMENTS = (
     "design-ai CLI:",
     "Plugin / corpus:",
-    "4.55.0",
+    EXPECTED_RELEASE_VERSION,
     "Source:",
 )
 EXPECTED_INSTALL_OUTPUT_FRAGMENTS = (
@@ -417,7 +428,7 @@ EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "Target:",
     "Prefix:",
     "Source layout: complete",
-    "Version alignment: 4.55.0",
+    f"Version alignment: {EXPECTED_RELEASE_VERSION}",
     "Manifest paths: 41 referenced artifact(s) exist",
     "Node runtime:",
     "Python runtime:",
@@ -1558,7 +1569,7 @@ def passing_list_catalog_output(kind: str = "skills") -> str:
         "",
         "  design-ai catalog",
         "",
-        "Plugin: design-ai v4.55.0",
+        f"Plugin: design-ai v{EXPECTED_RELEASE_VERSION}",
         "",
         "",
         f"{kind} ({len(items)})",
@@ -1590,7 +1601,7 @@ def passing_list_catalog_json(kind: str = "skills") -> str:
     return json.dumps(
         {
             "name": "design-ai",
-            "version": "4.55.0",
+            "version": EXPECTED_RELEASE_VERSION,
             "kind": kind,
             "sections": [
                 {
@@ -2011,7 +2022,7 @@ def passing_examples_human_output() -> str:
 def passing_route_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.55.0",
+        "version": EXPECTED_RELEASE_VERSION,
         "routes": [
             {
                 "id": EXPECTED_ROUTE_ID,
@@ -2085,7 +2096,7 @@ def passing_route_explain_human_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design-ai",
-        "Corpus version: 4.55.0",
+        f"Corpus version: {EXPECTED_RELEASE_VERSION}",
         "",
         f"1. {EXPECTED_ROUTE_LABEL} (high, score {len(EXPECTED_ROUTE_MATCHED_KEYWORDS)})",
         f"   id:      {EXPECTED_ROUTE_ID}",
@@ -2174,7 +2185,7 @@ def passing_route_catalog_json() -> str:
         routes.append(route)
 
     return json.dumps({
-        "version": "4.55.0",
+        "version": EXPECTED_RELEASE_VERSION,
         "routes": routes,
     })
 
@@ -2182,7 +2193,7 @@ def passing_route_catalog_json() -> str:
 def passing_prompt_payload() -> dict:
     return {
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.55.0",
+        "version": EXPECTED_RELEASE_VERSION,
         "route": {
             "id": EXPECTED_ROUTE_ID,
             "label": EXPECTED_ROUTE_LABEL,
@@ -2287,7 +2298,7 @@ def passing_prompt_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.55.0",
+        f"Corpus version: {EXPECTED_RELEASE_VERSION}",
         "",
         "# design-ai task prompt",
         f"Task: {EXPECTED_ROUTE_BRIEF}",
@@ -2313,7 +2324,7 @@ def passing_prompt_markdown_output() -> str:
 def passing_pack_json() -> str:
     return json.dumps({
         "brief": EXPECTED_ROUTE_BRIEF,
-        "version": "4.55.0",
+        "version": EXPECTED_RELEASE_VERSION,
         "maxBytes": EXPECTED_PACK_MAX_BYTES,
         "usedBytes": EXPECTED_PACK_MAX_BYTES,
         "summary": {
@@ -2361,7 +2372,7 @@ def passing_pack_markdown_output() -> str:
         f"  {EXPECTED_ROUTE_BRIEF}",
         "",
         "Source: /tmp/design",
-        "Corpus version: 4.55.0",
+        f"Corpus version: {EXPECTED_RELEASE_VERSION}",
         f"Context: partial, {EXPECTED_PACK_MAX_BYTES}/{EXPECTED_PACK_MAX_BYTES} bytes, 2 warnings",
         "",
         "# design-ai prompt pack",
@@ -4231,8 +4242,8 @@ def passing_main_help_output() -> str:
 
 def passing_version_output() -> str:
     return "\n".join([
-        "design-ai CLI:    4.55.0",
-        "Plugin / corpus:  4.55.0",
+        f"design-ai CLI:    {EXPECTED_RELEASE_VERSION}",
+        f"Plugin / corpus:  {EXPECTED_RELEASE_VERSION}",
         "Source:           /tmp/design-ai",
         "",
     ])
@@ -4245,8 +4256,8 @@ def passing_version_json() -> str:
                 "sourceRoot": "/tmp/design-ai",
             },
             "versions": {
-                "cli": "4.55.0",
-                "plugin": "4.55.0",
+                "cli": EXPECTED_RELEASE_VERSION,
+                "plugin": EXPECTED_RELEASE_VERSION,
                 "aligned": True,
             },
         },
@@ -4263,7 +4274,7 @@ def passing_workspace_json() -> str:
                 "root": "/tmp/project",
                 "sourceRoot": "/tmp/design-ai",
                 "packageName": "@design-ai/cli",
-                "version": "4.55.0",
+                "version": EXPECTED_RELEASE_VERSION,
             },
             "git": {
                 "isRepo": False,
@@ -4317,7 +4328,7 @@ def passing_workspace_json() -> str:
             "learningRestoreBackups": None,
             "release": {
                 "packageName": "@design-ai/cli",
-                "version": "4.55.0",
+                "version": EXPECTED_RELEASE_VERSION,
                 "scripts": {
                     "test": "node --test cli/lib/*.test.mjs",
                     "audit:strict": "python3 -B tools/audit/run-all.py --strict",
@@ -5618,7 +5629,7 @@ def passing_doctor_strict_output() -> str:
         "ℹ  Prefix: smoke-design-",
         "",
         "✓  Source layout: complete at /tmp/design-ai",
-        "✓  Version alignment: 4.55.0",
+        f"✓  Version alignment: {EXPECTED_RELEASE_VERSION}",
         "✓  Manifest paths: 41 referenced artifact(s) exist",
         "✓  Node runtime: v24.13.1",
         "✓  Python runtime: Python 3.12.12",
@@ -5643,7 +5654,7 @@ def passing_install_output() -> str:
     return "\n".join([
         "",
         "  design-ai installer",
-        "  v4.55.0",
+        f"  v{EXPECTED_RELEASE_VERSION}",
         "",
         "Source: /tmp/design-ai",
         "Target: /tmp/claude-home",
@@ -6072,7 +6083,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
     )
     if workspace_context.get("packageName") != "@design-ai/cli":
         raise SystemExit(f"workspace JSON after {context} packageName differs from expected package")
-    if workspace_context.get("version") != "4.55.0":
+    if workspace_context.get("version") != EXPECTED_RELEASE_VERSION:
         raise SystemExit(f"workspace JSON after {context} version differs from expected release version")
     for key in ("cwd", "root", "sourceRoot"):
         if not isinstance(workspace_context.get(key), str) or not workspace_context[key]:
@@ -6405,7 +6416,7 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         command_label="workspace JSON",
     )
-    if release.get("packageName") != "@design-ai/cli" or release.get("version") != "4.55.0":
+    if release.get("packageName") != "@design-ai/cli" or release.get("version") != EXPECTED_RELEASE_VERSION:
         raise SystemExit(f"workspace JSON after {context} release package metadata differs from expected values")
     if not isinstance(release.get("scripts"), dict):
         raise SystemExit(f"workspace JSON after {context} release scripts is not an object")
@@ -10830,7 +10841,7 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_version_json(
-            passing_version_json().replace('"plugin": "4.55.0"', '"plugin": "unknown"'),
+            passing_version_json().replace(f'"plugin": "{EXPECTED_RELEASE_VERSION}"', '"plugin": "unknown"'),
             context=context,
             cmd=[*version_cmd, "--json"],
         ),

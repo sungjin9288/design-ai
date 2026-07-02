@@ -2,6 +2,42 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.56.0 — MCP Protocol Hardening and Published Client Evidence (2026-07)
+
+Hardened the local stdio MCP server that Claude Code, Codex, and other MCP clients use to call design-ai. This release turns malformed JSON-RPC envelopes, request ids, notifications, initialize params, and tool arguments into deterministic protocol errors before CLI execution, then refreshes evidence that the published npm MCP entrypoint and local Claude/Codex registrations work.
+
+### Added
+- MCP tool argument validation now rejects unsupported fields, wrong JSON types, non-integer integer fields, out-of-range values, and blank required strings before invoking CLI commands.
+- Public npm `design-ai-mcp` evidence now records initialize and tools/list protocol smoke from a clean one-shot `npm exec --package @design-ai/cli@4.55.0 -- design-ai-mcp` path.
+- Local Claude Code and Codex client evidence now records the clone-backed `design-ai` MCP server as configured and connected.
+
+### Changed
+- Website Improvement runbook helpers were split into clearer, smaller modules and named predicates while preserving the existing handoff JSON and Markdown contracts.
+- MCP subprocess tests now use a shared stdio response helper, making negative protocol scenarios easier to read and extend.
+- MCP setup docs now explain why one-shot public npm verification should run outside the source checkout.
+
+### Fixed
+- MCP initialize now rejects malformed `protocolVersion` values, including non-string and blank-only protocol versions.
+- MCP notifications now reject request ids across the whole `notifications/` namespace while preserving silent handling for valid id-less notifications.
+- MCP response-producing methods now require ids, and malformed JSON-RPC request ids, methods, params, and tool-call containers return deterministic JSON-RPC errors.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `npm run release:metadata`.
+- `npm run audit:strict`.
+- `git diff --check`.
+- Public npm MCP protocol smoke returned server version `4.55.0` and 10 tools before the release bump.
+- Main-branch GitHub Actions passed for `Design-AI audit` and `Deploy doc site` after the MCP client evidence refresh.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.55.0 → 4.56.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- Claude Code and Codex users get stricter, more predictable MCP error behavior without changing the design-ai tool surface.
+- Maintainers can verify the published MCP entrypoint and local client registrations from concrete evidence before and after publishing.
+
 ## Unreleased — Agent Eval, Learning Signals, Skill Proposals, MCP Probes, Workflow Graphs, and Handoff Evidence
 
 Added deterministic route, prompt-plan, prompt-pack eval surfaces, a read-only learning signal registry with deterministic agent development backlog actions and structured readiness summaries, focused backlog readiness pass-through for local AI/agent handoffs with packed-tarball smoke coverage and release metadata guard coverage, preview-only skill evolution proposals, optional Website Console MCP probes with output-file smoke persistence and executable embedded follow-up commands, shared MCP probe output-file smoke assertions, release metadata guard coverage for shared MCP probe output-file smoke assertions, embedded MCP check probe next-step commands, executable embedded MCP check probe command smoke coverage, human-readable MCP check probe command guidance, packed/public smoke coverage for that human guidance, human report output-file persistence smoke coverage, embedded human report output commands, release metadata guard coverage for embedded human report output commands, MCP action plan JSON parity for embedded human report output commands, release metadata guard coverage for that action-plan parity, and packed/public smoke execution for action-plan emitted human report commands, structured Website Console MCP action plan JSON export with output-file persistence and embedded probe output-file commands, release metadata guard coverage for embedded MCP action plan probe output-file commands, next-action operator checklist output-file smoke persistence, portable Website Console workflow graph export, static Website Console graph rendering, browser-local Website Console handoff evidence tracking, CLI/bundle handoff evidence export, verified bundle evidence metadata, generated bundle contract verification with per-file diagnostics, repair guidance, repair preview/apply, repair report output-file persistence, repair report command guidance, executable repair guidance smoke coverage, shared repair guidance smoke helpers, shared repair report assertion helpers, release metadata guard coverage for shared repair guidance smoke helpers and shared repair report assertion helpers, public registry Website Console MCP probe smoke coverage, MCP probe action plan smoke coverage, shared Website Console site help topic example smoke assertions, release metadata guard coverage for shared Website Console site help topic example smoke assertions, release metadata guard coverage and packed-tarball smoke coverage for optional refresh-only agent backlog runbook selection semantics, post-commit release evidence for that refresh-only backlog smoke contract, full `release:check` evidence after the refresh-only backlog closeout, and packed-tarball evidence preservation smoke coverage for local AI/agent development drift review.

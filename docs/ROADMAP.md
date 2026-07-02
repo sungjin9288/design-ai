@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 753 — MCP Protocol Hardening Release (v4.56.0) ✓ ready
+
+The next public package release groups the post-v4.55 MCP protocol hardening work and the published MCP client evidence refresh into one versioned handoff.
+
+### Changed
+- Hardened JSON-RPC envelope, method, id, params, notification, initialize, and tools/call validation paths so malformed MCP requests fail before CLI execution.
+- Preserved existing Claude Code, Codex, Website Improvement, package smoke, and registry smoke contracts while making invalid inputs easier to diagnose.
+- Refreshed public npm MCP entrypoint evidence and local Claude/Codex MCP client connection evidence.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `npm run release:metadata`.
+- `npm run audit:strict`.
+- `git diff --check`.
+- Main-branch GitHub Actions passed for `Design-AI audit` and `Deploy doc site` after the MCP evidence refresh.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.55.0 → 4.56.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- Claude Code and Codex users get deterministic MCP protocol errors for malformed requests while valid local stdio tool calls stay unchanged.
+- Maintainers can publish the hardened MCP server with current evidence for public npm and local client connection paths.
+
+### What's still ahead
+- Push the v4.56.0 release commit and tag, then verify npm publish, GitHub Release, registry smoke, and docs deployment workflows.
+- Refresh Homebrew formula SHA-256 after the v4.56.0 tag tarball is available.
+
 ## Phase 752 — Published MCP Client Connection Evidence Refresh (unreleased)
 
 The external distribution status now includes current proof that the published npm MCP entrypoint and local Claude Code / Codex MCP client registrations are usable.
