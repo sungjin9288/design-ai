@@ -1,6 +1,6 @@
 # 릴리스 게이트 상세 (v4.56.0)
 
-> [README.ko.md](../README.ko.md)의 상태·기여하기 요약을 뒷받침하는 전체 증빙 문구 모음이에요.
+> `README.ko.md`의 상태·기여하기 요약을 뒷받침하는 전체 증빙 문구 모음이에요.
 > 영어판 전체 증빙은 [RELEASE-GATES.md](RELEASE-GATES.md)를 참고하세요.
 > 릴리스 정책 가드(`npm run release:metadata`)는 README.ko.md와 이 문서를 함께 검사해요.
 

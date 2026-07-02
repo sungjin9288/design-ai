@@ -8,7 +8,7 @@ actually verify. Nothing below has been dropped or reworded from the
 original README prose — only split into bullets at natural boundaries
 (", plus ", " also verifies ", "and ", etc.) for readability.
 
-See [`README.md`](../README.md) for the short version, [`docs/ROADMAP.md`](ROADMAP.md)
+See `README.md` for the short version, [`docs/ROADMAP.md`](ROADMAP.md)
 for the full phase log, and [`docs/PRODUCT-READINESS.md`](PRODUCT-READINESS.md)
 for the current completion boundary.
 
