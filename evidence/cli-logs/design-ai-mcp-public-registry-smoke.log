@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-07-02T02:17:28.199Z",
+  "command": "npm exec --yes --package=@design-ai/cli@4.55.0 -- design-ai-mcp",
+  "cwd": "temporary directory outside the source checkout",
+  "serverName": "design-ai",
+  "serverVersion": "4.55.0",
+  "protocolVersion": "2025-11-25",
+  "toolCount": 10,
+  "tools": [
+    "design_ai_route",
+    "design_ai_prompt",
+    "design_ai_pack",
+    "design_ai_search",
+    "design_ai_show",
+    "design_ai_examples",
+    "design_ai_check",
+    "design_ai_site_mcp_check",
+    "design_ai_site_mcp_plan",
+    "design_ai_version"
+  ]
+}

@@ -1,0 +1,15 @@
+# Claude/Codex MCP client status recheck
+checked_at_utc=2026-07-02T02:17:28Z
+
+## Codex
+design-ai
+  enabled: true
+  transport: stdio
+  command: node
+  args: /Users/sungjin/dev/design/cli/bin/design-ai-mcp.mjs
+  cwd: -
+  env: -
+  remove: codex mcp remove design-ai
+
+## Claude Code
+design-ai: node /Users/sungjin/dev/design/cli/bin/design-ai-mcp.mjs - ✔ Connected

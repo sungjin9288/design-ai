@@ -35,6 +35,19 @@ design-ai mcp
 design-ai-mcp
 ```
 
+To verify the public npm package without installing it globally, run the one-shot command from a clean directory outside a `@design-ai/cli` source checkout:
+
+```bash
+tmp="$(mktemp -d)"
+cd "$tmp"
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25"}}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  | npm exec --yes --package=@design-ai/cli@4.55.0 -- design-ai-mcp
+```
+
+Running that one-shot command from the package source root can make npm prefer the local checkout context, which may hide the temporary package bin shim.
+
 Do not run the server as a normal terminal command unless an MCP client is connected. It waits for newline-delimited JSON-RPC messages on stdin and writes MCP responses to stdout.
 
 ## Connect Claude Code

@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 752 — Published MCP Client Connection Evidence Refresh (unreleased)
+
+The external distribution status now includes current proof that the published npm MCP entrypoint and local Claude Code / Codex MCP client registrations are usable.
+
+### Changed
+- Refreshed npm registry and VS Code Marketplace status evidence for the current published versions.
+- Added public npm `design-ai-mcp` protocol-smoke evidence from a clean temporary directory.
+- Added local Claude Code and Codex MCP client status evidence for the clone-backed `design-ai` server.
+- Documented the npm one-shot verification gotcha when running from inside the package source checkout.
+
+### Impact
+- Operators can distinguish already-published package state from actions that would fail by republishing the same version.
+- Claude Code and Codex setup guidance now has current evidence for both client connection and public npm entrypoint behavior.
+- No runtime code, package version, public API, or release workflow behavior changed.
+
+### Verification Plan
+- `npm view @design-ai/cli version name time.modified dist-tags --json`
+- VS Code Marketplace Gallery API query for `sungjin.design-ai-vscode`
+- Public npm MCP protocol smoke with `npm exec --yes --package=@design-ai/cli@4.55.0 -- design-ai-mcp`
+- `codex mcp get design-ai`
+- `claude mcp list`
+- `git diff --check`
+
 ## Phase 751 — design-ai MCP Initialize Blank Protocol Version Guard (unreleased)
 
 The MCP stdio server now rejects blank-only `initialize.params.protocolVersion` strings with JSON-RPC `-32602`, so version negotiation inputs must be meaningful strings when provided.
