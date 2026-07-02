@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 745 — design-ai MCP Tool Call Request ID Guard (unreleased)
+
+The MCP stdio server now rejects `tools/call` payloads that omit a request id before any CLI work starts, so request-shaped tool execution cannot run silently as a JSON-RPC notification.
+
+### Changed
+- Added a `tools/call` request-id requirement guard before tool lookup or CLI invocation.
+- Preserved normal `tools/call` behavior for valid string, number, and null ids.
+- Added unit and subprocess coverage proving id-less `tools/call` receives `-32600` feedback and does not execute the CLI.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get deterministic feedback when a tool invocation is accidentally sent without a correlation id.
+- Valid initialize, id-less initialized notifications, ping, tools/list, resources/list, prompts/list, id-bearing tools/call, request id validation, argument validation, output truncation, package smoke, Website Improvement readiness behavior, external MCP call boundaries, target-repo mutation rules, and learning write behavior stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 744 — design-ai MCP Optional Params Container Guard (unreleased)
 
 The MCP stdio server now validates optional `params` containers for `ping`, `tools/list`, `resources/list`, and `prompts/list`, so malformed array, string, null, or boolean params receive deterministic `-32602` feedback instead of being silently accepted.

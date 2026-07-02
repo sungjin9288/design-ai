@@ -432,6 +432,13 @@ function validateMcpNotificationRequest(message) {
   return "";
 }
 
+function validateMcpRequestIdRequirement(message) {
+  if (message.method === "tools/call" && !hasRequestId(message)) {
+    return "Invalid MCP request: tools/call must include id";
+  }
+  return "";
+}
+
 function validateOptionalObjectParams(method, params) {
   if (params === undefined || isObjectRecord(params)) return "";
   return `${method} params must be an object when provided`;
@@ -482,6 +489,9 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
 
   const notificationError = validateMcpNotificationRequest(message);
   if (notificationError) return errorResponse(id, -32600, notificationError);
+
+  const requestIdError = validateMcpRequestIdRequirement(message);
+  if (requestIdError) return errorResponse(id, -32600, requestIdError);
 
   const { method, params } = message;
 
