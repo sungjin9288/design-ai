@@ -298,9 +298,8 @@ test("tools/call rejects invalid MCP arguments before running the CLI", async ()
   });
 
   assert.equal(cliWasCalled, false);
-  assert.equal(response.error, undefined);
-  assert.equal(response.result.isError, true);
-  assert.match(response.result.content[0].text, /Unknown argument for design_ai_route: unexpected/);
+  assert.equal(response.error.code, -32602);
+  assert.equal(response.error.message, "Unknown argument for design_ai_route: unexpected");
 });
 
 test("tools/call validates MCP argument types before running the CLI", async () => {
@@ -321,8 +320,8 @@ test("tools/call validates MCP argument types before running the CLI", async () 
   });
 
   assert.equal(cliWasCalled, false);
-  assert.equal(response.result.isError, true);
-  assert.match(response.result.content[0].text, /design_ai_search.limit must be an integer/);
+  assert.equal(response.error.code, -32602);
+  assert.equal(response.error.message, "design_ai_search.limit must be an integer");
 });
 
 test("malformed MCP requests return protocol errors", async () => {

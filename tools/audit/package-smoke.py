@@ -12550,10 +12550,7 @@ def run_self_test() -> None:
             {
                 "jsonrpc": "2.0",
                 "id": 3,
-                "result": {
-                    "isError": True,
-                    "content": [{"type": "text", "text": "design_ai_search.limit must be an integer"}],
-                },
+                "error": {"code": -32602, "message": "design_ai_search.limit must be an integer"},
             },
         ],
         context=f"{context} design-ai MCP protocol",
@@ -12567,16 +12564,13 @@ def run_self_test() -> None:
                 {
                     "jsonrpc": "2.0",
                     "id": 3,
-                    "result": {
-                        "isError": True,
-                        "content": [{"type": "text", "text": "wrong validation message"}],
-                    },
+                    "error": {"code": -32602, "message": "wrong validation message"},
                 },
             ],
             context=f"{context} design-ai MCP protocol",
             cmd=mcp_protocol_cmd,
         ),
-        expected="MCP invalid argument response did not preserve typed validation",
+        expected="MCP invalid argument response did not preserve invalid params validation",
         scope="package smoke",
     )
     for label in (

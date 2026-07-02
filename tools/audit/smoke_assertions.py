@@ -74,17 +74,15 @@ def assert_design_ai_mcp_protocol_responses(responses: list[object], *, context:
     if "design_ai_route" not in tool_names or "design_ai_search" not in tool_names:
         raise SystemExit(f"{context}: MCP tools/list response missing design-ai tools")
 
-    invalid_text = ""
-    if isinstance(invalid_call, dict):
-        content = invalid_call.get("result", {}).get("content", [])
-        if content and isinstance(content[0], dict):
-            invalid_text = str(content[0].get("text", ""))
+    invalid_error = invalid_call.get("error", {}) if isinstance(invalid_call, dict) else {}
+    invalid_text = str(invalid_error.get("message", "")) if isinstance(invalid_error, dict) else ""
     if not (
         isinstance(invalid_call, dict)
-        and invalid_call.get("result", {}).get("isError") is True
+        and isinstance(invalid_error, dict)
+        and invalid_error.get("code") == -32602
         and EXPECTED_MCP_INVALID_ARGUMENT_MESSAGE in invalid_text
     ):
-        raise SystemExit(f"{context}: MCP invalid argument response did not preserve typed validation")
+        raise SystemExit(f"{context}: MCP invalid argument response did not preserve invalid params validation")
 
 
 def format_inventory_count(count: int, singular: str) -> str:

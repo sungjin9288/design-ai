@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 747 — design-ai MCP Tool Argument Invalid Params Guard (unreleased)
+
+The MCP stdio server now returns JSON-RPC `-32602` for schema-invalid `tools/call.params.arguments` payloads before CLI execution, so known-tool argument errors use the same invalid-params response shape as malformed `tools/call.params`.
+
+### Changed
+- Added pre-execution tool schema argument validation inside the `tools/call` request branch.
+- Converted unknown tool arguments and wrong argument types from successful MCP tool-result errors to JSON-RPC invalid params errors.
+- Preserved CLI failure reporting as successful MCP tool results with `isError: true`.
+- Updated package and registry smoke assertions so publish-time MCP protocol checks verify the JSON-RPC invalid-params response shape.
+
+### Impact
+- Claude Code, Codex, and other MCP clients can handle known-tool schema mistakes through standard JSON-RPC invalid-params handling.
+- Valid initialize, id-less initialized notifications, ping, tools/list, resources/list, prompts/list, id-bearing tools/call, request id validation, output truncation, Website Improvement readiness behavior, external MCP call boundaries, target-repo mutation rules, learning write behavior, and CLI runtime failure reporting stay unchanged.
+- Package and registry smoke coverage now treats schema-invalid known-tool arguments as JSON-RPC invalid params instead of successful MCP tool-result errors.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 746 — design-ai MCP Response Request ID Guard (unreleased)
 
 The MCP stdio server now requires request ids for every response-bearing MCP method, so `initialize`, `ping`, `tools/list`, `tools/call`, `resources/list`, and `prompts/list` cannot be sent as silent notifications.

@@ -542,8 +542,16 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
     const name = params.name;
     const tool = MCP_TOOLS.find((item) => item.name === name);
     if (!tool) return errorResponse(id, -32602, `Unknown tool: ${name}`);
+
+    const toolArguments = params.arguments === undefined ? {} : params.arguments;
     try {
-      const result = await callMcpTool(name, params.arguments === undefined ? {} : params.arguments, runCli);
+      assertMcpToolInput(tool, toolArguments);
+    } catch (validationError) {
+      return errorResponse(id, -32602, validationError.message || String(validationError));
+    }
+
+    try {
+      const result = await callMcpTool(name, toolArguments, runCli);
       return successResponse(id, result);
     } catch (error) {
       return successResponse(id, {
