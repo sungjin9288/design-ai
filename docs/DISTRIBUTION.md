@@ -2,7 +2,7 @@
 
 How design-ai gets from this repo into adopters' Claude Code installations.
 
-> Distribution status, checked 2026-07-02: local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.56.0` is published, the Homebrew formula is pinned to `v4.56.0`, `@design-ai/cli@4.55.0` remains the latest public npm package with registry smoke coverage, and `sungjin.design-ai-vscode@0.4.1` is published to the VS Code Marketplace by Gallery API evidence. The `v4.56.0` npm publish workflow is waiting on an `NPM_TOKEN` with `@design-ai/cli` publish permission. See [`external-status.md`](external-status.md).
+> Distribution status, checked 2026-07-02: local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.56.0` is published, the Homebrew formula is pinned to `v4.56.0`, `@design-ai/cli@4.55.0` remains the latest public npm package with registry smoke coverage, and `sungjin.design-ai-vscode@0.4.1` is published to the VS Code Marketplace by Gallery API evidence. The `v4.56.0` npm publish workflow now authenticates `NPM_TOKEN` and passes package smoke, but npm rejects publish unless the granular token has Bypass 2FA enabled or the workflow uses Trusted Publishing. See [`external-status.md`](external-status.md).
 
 ## Install paths
 
@@ -127,6 +127,7 @@ The workflow:
 - Verifies tag matches `package.json` version.
 - Verifies `package.json` and `plugin.json` versions match.
 - Verifies `NPM_TOKEN` can authenticate before the long package smoke runs; package-list access is advisory because package-scoped granular tokens can refuse broader scope listing.
+- For token-based CI publish, npm requires either an interactive 2FA flow or a granular access token with Bypass 2FA enabled. Trusted Publishing is the preferred long-term path when it is available for the package/workflow.
 - Runs `npm run audit:strict` for all 8 audits (frontmatter / link / Korean copy / raw hex / integration / stale / coverage / example QA).
 - Runs `npm test` CLI unit tests before publishing or attaching release assets.
 - Runs whitespace checks with `git diff --check` before packaging.

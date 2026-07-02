@@ -1,0 +1,23 @@
+Publish to npm run: 28568106904
+Checked: 2026-07-02
+Workflow: .github/workflows/publish.yml
+Package: @design-ai/cli@4.56.0
+
+Summary:
+- NPM_TOKEN authenticated as sungjin9288.
+- Package-list access for @design-ai returned a warning, which is expected for package-scoped granular tokens.
+- Repository audits, CLI unit tests, release assertion self-tests, package contents, tarball pack, and installed-package smoke all passed.
+- The actual `npm publish --provenance --access public` step reached the npm registry, signed provenance, and then failed with E403.
+
+Key failed-step lines:
+
+```text
+npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access
+npm notice publish Signed provenance statement with source and build information from GitHub Actions
+npm notice publish Provenance statement published to transparency log: https://search.sigstore.dev/?logIndex=2044408629
+npm error code E403
+npm error 403 403 Forbidden - PUT https://registry.npmjs.org/@design-ai%2fcli - Two-factor authentication or granular access token with bypass 2fa enabled is required to publish packages.
+```
+
+Conclusion:
+`NPM_TOKEN` is valid enough to authenticate, but not valid enough for non-interactive CI publish under this npm account/package policy. Replace the GitHub Actions `NPM_TOKEN` secret with a granular access token scoped to `@design-ai/cli` that has Bypass 2FA enabled, or migrate the package workflow to npm Trusted Publishing.
