@@ -38,6 +38,10 @@ REQUIRED_RELEASE_POLICY_DOC_LABELS = (
 RELEASE_POLICY_DOC_PATHS = tuple(
     (label, ROOT / label) for label in REQUIRED_RELEASE_POLICY_DOC_LABELS
 )
+RELEASE_POLICY_COMPANION_DOC_PATHS: dict[str, Path] = {
+    "README.md": ROOT / "docs" / "RELEASE-GATES.md",
+    "README.ko.md": ROOT / "docs" / "RELEASE-GATES.ko.md",
+}
 PRODUCT_READINESS_WARNING_STRICT_COMPARE_TERM_GROUPS = (
     (
         "warning-state Website Console bundle-compare strict smoke coverage",
@@ -3837,16 +3841,32 @@ def load_text_input(label: str, path: Path) -> tuple[str, list[str]]:
 
 def load_release_policy_docs(
     policy_doc_paths: tuple[tuple[str, Path], ...] = RELEASE_POLICY_DOC_PATHS,
+    companion_doc_paths: dict[str, Path] | None = None,
 ) -> tuple[dict[str, str], list[str]]:
+    if companion_doc_paths is None:
+        companion_doc_paths = RELEASE_POLICY_COMPANION_DOC_PATHS
     docs: dict[str, str] = {}
     errors: list[str] = []
     for label, path in policy_doc_paths:
         try:
-            docs[label] = path.read_text(encoding="utf-8")
+            text = path.read_text(encoding="utf-8")
         except FileNotFoundError:
             errors.append(f"release policy docs required file is missing on disk: {label} ({path})")
+            continue
         except OSError as exc:
             errors.append(f"release policy docs required file cannot be read: {label} ({path}): {exc}")
+            continue
+        companion_path = companion_doc_paths.get(label)
+        if companion_path is not None and companion_path.exists():
+            try:
+                companion_text = companion_path.read_text(encoding="utf-8")
+            except OSError as exc:
+                errors.append(
+                    f"release policy companion doc cannot be read: {label} ({companion_path}): {exc}"
+                )
+            else:
+                text = f"{text}\n\n{companion_text}"
+        docs[label] = text
     return docs, errors
 
 
@@ -9735,6 +9755,32 @@ class AuditResult:
         "release policy docs required file is missing on disk: docs/MISSING-POLICY.md" in joined_load_errors,
         "release policy doc loader should report missing files without a traceback",
     )
+
+    with tempfile.TemporaryDirectory() as companion_temp_dir:
+        companion_root = Path(companion_temp_dir)
+        base_doc = companion_root / "README.md"
+        base_doc.write_text("summary only\n", encoding="utf-8")
+        companion_doc = companion_root / "RELEASE-GATES.md"
+        companion_doc.write_text("companion evidence phrase\n", encoding="utf-8")
+        companion_docs, companion_errors = load_release_policy_docs(
+            (("README.md", base_doc),),
+            {"README.md": companion_doc},
+        )
+        assert_condition(
+            companion_errors == []
+            and "summary only" in companion_docs["README.md"]
+            and "companion evidence phrase" in companion_docs["README.md"],
+            "release policy doc loader should append companion evidence docs to their base doc",
+        )
+        missing_companion_docs, missing_companion_errors = load_release_policy_docs(
+            (("README.md", base_doc),),
+            {"README.md": companion_root / "MISSING-GATES.md"},
+        )
+        assert_condition(
+            missing_companion_errors == []
+            and missing_companion_docs["README.md"] == "summary only\n",
+            "release policy doc loader should treat a missing companion doc as optional",
+        )
 
     with tempfile.TemporaryDirectory() as temp_dir:
         temp_path = Path(temp_dir)
