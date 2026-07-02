@@ -2,7 +2,7 @@
 
 How design-ai gets from this repo into adopters' Claude Code installations.
 
-> Distribution status, checked 2026-06-30: local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.55.0` is published, `@design-ai/cli@4.55.0` is public on npm with registry smoke coverage, and `sungjin.design-ai-vscode@0.4.1` is published to the VS Code Marketplace by Gallery API evidence. See [`external-status.md`](external-status.md).
+> Distribution status, checked 2026-07-02: local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.56.0` is published, the Homebrew formula is pinned to `v4.56.0`, `@design-ai/cli@4.55.0` remains the latest public npm package with registry smoke coverage, and `sungjin.design-ai-vscode@0.4.1` is published to the VS Code Marketplace by Gallery API evidence. The `v4.56.0` npm publish workflow is waiting on an `NPM_TOKEN` with `@design-ai/cli` publish permission. See [`external-status.md`](external-status.md).
 
 ## Install paths
 
@@ -23,7 +23,7 @@ Use this path if you want to:
 
 ### B. NPM
 
-Use this path for the public package. `@design-ai/cli@4.55.0` is published and public registry smoke has passed.
+Use this path for the public package. `@design-ai/cli@4.55.0` is published and public registry smoke has passed. `v4.56.0` is available as a GitHub Release, but it is not on npm until the publish token is replaced and the workflow is rerun successfully.
 
 ```bash
 # One-shot via npx (no global install)

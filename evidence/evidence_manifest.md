@@ -29,6 +29,8 @@
 - `evidence/cli-logs/npm-registry-smoke.log`
 - `evidence/cli-logs/github-pages-status.log`
 - `evidence/cli-logs/github-release-v4.55.0.log`
+- `evidence/cli-logs/github-release-v4.56.0.log`
+- `evidence/cli-logs/npm-publish-v4.56.0-failed.log`
 - `evidence/cli-logs/homebrew-formula-status.log`
 - `evidence/cli-logs/vscode-marketplace-status.log`
 - `evidence/cli-logs/zip-integrity.log`
@@ -98,10 +100,10 @@
 | portfolio zip integrity | 통과 - `unzip -t _portfolio_export/design_ai_portfolio_pack.zip` |
 | portfolio zip contents | 확인 완료 - `zipinfo -1 _portfolio_export/design_ai_portfolio_pack.zip` |
 | secret pattern scan | 통과 - API key, GitHub token, Slack token, AWS key, private key 패턴 매치 없음 |
-| public npm registry status | 통과 - `@design-ai/cli@4.55.0` published, registry smoke passed |
+| public npm registry status | 부분 통과 - `@design-ai/cli@4.55.0` published, registry smoke passed; `v4.56.0` publish attempt failed with npm registry `E404` until `NPM_TOKEN` has `@design-ai/cli` publish permission |
 | GitHub Pages status | 통과 - documented URL HTTP 200 |
-| GitHub Release status | 통과 - `v4.55.0` published with release asset |
-| Homebrew formula status | 부분 통과 - `v4.55.0` tarball SHA, Ruby syntax, `brew style` passed; path-based `brew audit` blocked by current Homebrew |
+| GitHub Release status | 통과 - `v4.56.0` published with release asset |
+| Homebrew formula status | 부분 통과 - `v4.56.0` tarball SHA, Ruby syntax, `brew style` passed; path-based `brew audit` blocked by current Homebrew |
 | VS Code Marketplace status | 통과 - `sungjin.design-ai-vscode@0.4.1` public listing 확인, Gallery API visible version `0.4.1`, browser item URL HTTP 200 |
 | API response capture | 해당 없음 |
 

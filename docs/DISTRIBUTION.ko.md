@@ -2,7 +2,7 @@
 
 design-ai를 이 레포에서 어댑터의 Claude Code 환경으로 가져오는 방법.
 
-> 배포 상태, 2026-06-30 확인: 로컬 `npm run release:check`는 통과했고 GitHub Pages 문서는 공개 URL에서 확인됐으며, GitHub Release `v4.55.0`과 npm `@design-ai/cli@4.55.0` publish 및 public registry smoke가 확인됐어요. `sungjin.design-ai-vscode@0.4.1`도 VS Code Marketplace Gallery API 기준으로 publish가 확인됐어요. 자세한 내용은 [`external-status.md`](external-status.md)를 확인하세요.
+> 배포 상태, 2026-07-02 확인: 로컬 `npm run release:check`는 통과했고 GitHub Pages 문서는 공개 URL에서 확인됐으며, GitHub Release `v4.56.0`과 Homebrew formula `v4.56.0` pinning이 확인됐어요. npm은 아직 `@design-ai/cli@4.55.0`이 최신 public package이고 public registry smoke도 이 버전 기준으로 통과했어요. `v4.56.0` npm publish workflow는 `@design-ai/cli` publish 권한이 있는 `NPM_TOKEN` 교체 후 다시 실행해야 해요. `sungjin.design-ai-vscode@0.4.1`도 VS Code Marketplace Gallery API 기준으로 publish가 확인됐어요. 자세한 내용은 [`external-status.md`](external-status.md)를 확인하세요.
 
 ## 설치 경로
 
@@ -23,7 +23,7 @@ cd design-ai
 
 ### B. NPM
 
-public package 설치 경로예요. `@design-ai/cli@4.55.0` publish와 public registry smoke 통과가 확인됐어요.
+public package 설치 경로예요. `@design-ai/cli@4.55.0` publish와 public registry smoke 통과가 확인됐어요. `v4.56.0`은 GitHub Release로는 공개됐지만, npm에는 publish token 교체와 workflow 재실행이 끝난 뒤 올라가요.
 
 ```bash
 # npx로 일회성 (글로벌 설치 없음)
