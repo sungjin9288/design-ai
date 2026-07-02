@@ -4,6 +4,7 @@ import { LEARNING_FEEDBACK_OUTCOMES } from "../lib/learn.mjs";
 
 export function printHelp() {
   console.log("Usage:  design-ai learn [--list] [--category kind] [--query text] [--explain] [--limit N] [--json] [--out file] [--force]");
+  console.log("        design-ai learn <mode> ...  Bare-word alias for a mode flag, e.g. `learn signals --json` = `learn --signals --json`");
   console.log("        design-ai learn --init [--yes|--dry-run] [--json] [--out file] [--force]");
   console.log("        design-ai learn --remember text [--category kind] [--json] [--out file] [--force]");
   console.log("        design-ai learn --feedback text [--outcome keep|improve|avoid] [--category kind] [--json] [--out file] [--force]");

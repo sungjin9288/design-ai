@@ -126,7 +126,36 @@ export function parseLearningMinEvidence(rawMinEvidence) {
   return minEvidence;
 }
 
-export function parseLearnArgs(args) {
+export const LEARN_SUBCOMMANDS = Object.freeze([
+  "agent-backlog",
+  "audit",
+  "backup",
+  "clear",
+  "curate",
+  "diff",
+  "eval",
+  "eval-template",
+  "export",
+  "feedback",
+  "forget",
+  "import",
+  "init",
+  "list",
+  "propose-skills",
+  "redact",
+  "remember",
+  "restore",
+  "restore-backups",
+  "signals",
+  "stats",
+  "usage",
+  "verify",
+]);
+
+export function parseLearnArgs(rawArgs) {
+  const args = rawArgs.length > 0 && LEARN_SUBCOMMANDS.includes(rawArgs[0])
+    ? [`--${rawArgs[0]}`, ...rawArgs.slice(1)]
+    : rawArgs;
   const out = {
     action: "",
     noteParts: [],

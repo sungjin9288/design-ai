@@ -3,6 +3,7 @@
 export {
   LEARNING_CATEGORIES,
   LEARNING_FEEDBACK_OUTCOMES,
+  LEARN_SUBCOMMANDS,
   normalizeCategory,
   normalizeFeedbackOutcome,
   parseLearnArgs,

@@ -120,6 +120,16 @@ async function withLearningEnv({ learningFile, usageFile }, fn) {
   }
 }
 
+test("parseLearnArgs supports bare subcommand aliases for mode flags", () => {
+  assert.deepEqual(parseLearnArgs(["signals", "--json"]), parseLearnArgs(["--signals", "--json"]));
+  assert.deepEqual(parseLearnArgs(["restore-backups", "--prune", "--keep", "3"]), parseLearnArgs(["--restore-backups", "--prune", "--keep", "3"]));
+  assert.deepEqual(parseLearnArgs(["forget", "abc123"]), parseLearnArgs(["--forget", "abc123"]));
+  assert.equal(parseLearnArgs(["propose-skills", "--strict"]).action, "propose-skills");
+  const note = parseLearnArgs(["remembering", "tables"]);
+  assert.equal(note.action, "remember");
+  assert.deepEqual(note.briefParts, ["remembering", "tables"]);
+});
+
 test("parseLearnArgs defaults to list and supports remember notes", () => {
   const listArgs = parseLearnArgs([]);
   assert.equal(listArgs.action, "list");
