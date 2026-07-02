@@ -110,6 +110,16 @@ test("MCP initialize validates request params", async () => {
 
   assert.equal(arrayParams.error.code, -32602);
   assert.equal(arrayParams.error.message, "initialize params must be an object");
+
+  const numericProtocolVersion = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: "init-numeric-version",
+    method: "initialize",
+    params: { protocolVersion: 20251125 },
+  });
+
+  assert.equal(numericProtocolVersion.error.code, -32602);
+  assert.equal(numericProtocolVersion.error.message, "initialize params.protocolVersion must be a string");
 });
 
 test("MCP optional object params reject malformed containers", async () => {

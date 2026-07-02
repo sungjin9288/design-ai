@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 748 — design-ai MCP Initialize Protocol Version Type Guard (unreleased)
+
+The MCP stdio server now rejects non-string `initialize.params.protocolVersion` values with JSON-RPC `-32602`, so malformed initialize payloads get the same explicit invalid-params handling as other MCP request parameter mistakes.
+
+### Changed
+- Added a focused initialize params validator that keeps optional params supported while checking `protocolVersion` when provided.
+- Added unit coverage for numeric `protocolVersion` values so the server no longer silently falls back when the client sends the wrong JSON type.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get deterministic feedback when initialize version negotiation is malformed.
+- Valid initialize requests, omitted initialize params, unsupported string protocol versions, initialized notifications, ping, tools/list, tools/call, resources/list, prompts/list, package smoke, Website Improvement readiness behavior, and CLI runtime failure reporting stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 747 — design-ai MCP Tool Argument Invalid Params Guard (unreleased)
 
 The MCP stdio server now returns JSON-RPC `-32602` for schema-invalid `tools/call.params.arguments` payloads before CLI execution, so known-tool argument errors use the same invalid-params response shape as malformed `tools/call.params`.

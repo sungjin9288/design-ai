@@ -465,6 +465,16 @@ function validateToolCallParams(params) {
   return "";
 }
 
+function validateInitializeParams(params) {
+  if (!isObjectRecord(params)) {
+    return "initialize params must be an object";
+  }
+  if (Object.hasOwn(params, "protocolVersion") && typeof params.protocolVersion !== "string") {
+    return "initialize params.protocolVersion must be a string";
+  }
+  return "";
+}
+
 function hasRequestId(message) {
   return isObjectRecord(message) && Object.hasOwn(message, "id");
 }
@@ -505,9 +515,8 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
 
   if (method === "initialize") {
     const initializeParams = params === undefined ? {} : params;
-    if (!isObjectRecord(initializeParams)) {
-      return errorResponse(id, -32602, "initialize params must be an object");
-    }
+    const paramsError = validateInitializeParams(initializeParams);
+    if (paramsError) return errorResponse(id, -32602, paramsError);
 
     return successResponse(id, {
       protocolVersion: chooseProtocolVersion(initializeParams.protocolVersion),
