@@ -425,6 +425,13 @@ function validateMcpRequestMethod(message) {
   return "";
 }
 
+function validateMcpNotificationRequest(message) {
+  if (message.method === "notifications/initialized" && hasRequestId(message)) {
+    return "Invalid MCP request: notifications/initialized must not include id";
+  }
+  return "";
+}
+
 function validateToolCallParams(params) {
   if (!isObjectRecord(params)) {
     return "tools/call params must be an object";
@@ -467,6 +474,9 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
 
   const methodError = validateMcpRequestMethod(message);
   if (methodError) return errorResponse(id, -32600, methodError);
+
+  const notificationError = validateMcpNotificationRequest(message);
+  if (notificationError) return errorResponse(id, -32600, notificationError);
 
   const { method, params } = message;
 

@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 743 — design-ai MCP Initialized Notification ID Guard (unreleased)
+
+The MCP stdio server now rejects `notifications/initialized` payloads that include an `id`, so request-shaped initialized notifications receive deterministic `-32600` feedback instead of being silently dropped.
+
+### Changed
+- Added a notification-shape guard for `notifications/initialized`.
+- Preserved silent handling for valid id-less initialized notifications.
+- Added unit and subprocess coverage for request-shaped initialized notification payloads.
+
+### Impact
+- Claude Code, Codex, and other MCP clients get a clear protocol error when an initialized notification is accidentally sent as a request.
+- Valid id-less notifications, initialize, tools/list, tools/call, request id validation, argument validation, output truncation, package smoke, Website Improvement readiness behavior, external MCP call boundaries, target-repo mutation rules, and learning write behavior stay unchanged.
+
+### Verification Plan
+- `node --check cli/lib/mcp-server.mjs`
+- `node --test cli/lib/mcp-server.test.mjs`
+- `npm test`
+- `npm run audit:strict`
+- `npm run release:metadata`
+- `npm run package:smoke:self-test`
+- `npm run release:check`
+- `git diff --check`
+
 ## Phase 742 — design-ai MCP Request ID Guard (unreleased)
 
 The MCP stdio server now validates JSON-RPC request ids before dispatch, so malformed object, array, or boolean ids receive deterministic `-32600` feedback with `id: null` instead of being echoed back to clients.

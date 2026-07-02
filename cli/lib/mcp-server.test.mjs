@@ -312,6 +312,21 @@ test("malformed MCP requests return protocol errors", async () => {
   assert.equal(emptyMethod.error.code, -32600);
   assert.equal(emptyMethod.error.message, "Invalid MCP request: method must be a non-empty string");
 
+  const initializedWithId = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 3107,
+    method: "notifications/initialized",
+  });
+  assert.equal(initializedWithId.id, 3107);
+  assert.equal(initializedWithId.error.code, -32600);
+  assert.equal(initializedWithId.error.message, "Invalid MCP request: notifications/initialized must not include id");
+
+  const initializedNotification = await handleMcpRequest({
+    jsonrpc: "2.0",
+    method: "notifications/initialized",
+  });
+  assert.equal(initializedNotification, null);
+
   const unknownMethod = await handleMcpRequest({
     jsonrpc: "2.0",
     id: 32,
@@ -392,7 +407,7 @@ test("design-ai MCP stdio subprocess reports JSON parse errors", async () => {
   assert.match(responses[0].error.message, /Parse error/);
 });
 
-test("design-ai MCP stdio subprocess reports invalid requests without ids", async () => {
+test("design-ai MCP stdio subprocess reports invalid requests and preserves valid notifications", async () => {
   const { child, responses } = startMcpSubprocess();
 
   child.stdin.write("{}\n");
@@ -405,23 +420,24 @@ test("design-ai MCP stdio subprocess reports invalid requests without ids", asyn
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: true, method: "tools/list" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: 42 })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "" })}\n`);
+  child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", id: 99, method: "notifications/initialized" })}\n`);
   child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
 
   await waitForMcpResponse(
     child,
     responses,
-    () => responses.length === 10,
+    () => responses.length === 11,
     `Timed out waiting for invalid request responses. Responses: ${JSON.stringify(responses)}`,
   );
   await stopMcpSubprocess(child);
 
   assert.deepEqual(
     responses.map((response) => response.error.code),
-    [-32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600],
+    [-32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600, -32600],
   );
   assert.deepEqual(
     responses.map((response) => response.id),
-    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null, 99],
   );
 });
 
