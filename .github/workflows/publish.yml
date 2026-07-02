@@ -81,30 +81,7 @@ jobs:
             echo "::warning::NPM_TOKEN authenticated, but npm refused package-list access for ${PACKAGE_SCOPE}. Package-scoped granular tokens can behave this way; npm publish remains the authoritative permission check."
             sed 's/^/npm: /' /tmp/npm-access.err
           else
-            PACKAGE_NAME="${PACKAGE_NAME}" node <<'NODE'
-            const fs = require("node:fs");
-
-            const packageName = process.env.PACKAGE_NAME;
-            const raw = fs.readFileSync("/tmp/npm-access.json", "utf8").trim();
-            const packages = raw ? JSON.parse(raw) : {};
-
-            const names = Array.isArray(packages)
-              ? packages.map((entry) => (typeof entry === "string" ? entry : entry?.name))
-              : Object.keys(packages);
-
-            if (!names.includes(packageName)) {
-              console.warn(`::warning::NPM_TOKEN authenticated, but ${packageName} was not present in npm access list output. npm publish remains the authoritative permission check.`);
-              process.exit(0);
-            }
-
-            const permission = Array.isArray(packages) ? null : packages[packageName];
-            const serialized = JSON.stringify(permission ?? "").toLowerCase();
-            const canWrite = permission == null || serialized.includes("write") || serialized.includes("owner");
-
-            if (!canWrite) {
-              console.warn(`::warning::NPM_TOKEN access list reports ${permission} for ${packageName}. npm publish remains the authoritative permission check.`);
-            }
-            NODE
+            PACKAGE_NAME="${PACKAGE_NAME}" node -e 'const fs = require("node:fs"); const packageName = process.env.PACKAGE_NAME; const raw = fs.readFileSync("/tmp/npm-access.json", "utf8").trim(); const packages = raw ? JSON.parse(raw) : {}; const names = Array.isArray(packages) ? packages.map((entry) => (typeof entry === "string" ? entry : entry?.name)) : Object.keys(packages); if (!names.includes(packageName)) { console.warn(`::warning::NPM_TOKEN authenticated, but ${packageName} was not present in npm access list output. npm publish remains the authoritative permission check.`); process.exit(0); } const permission = Array.isArray(packages) ? null : packages[packageName]; const serialized = JSON.stringify(permission ?? "").toLowerCase(); const canWrite = permission == null || serialized.includes("write") || serialized.includes("owner"); if (!canWrite) { console.warn(`::warning::NPM_TOKEN access list reports ${permission} for ${packageName}. npm publish remains the authoritative permission check.`); }'
           }
 
           echo "NPM publish token authentication preflight completed for ${PACKAGE_NAME} ✓"
