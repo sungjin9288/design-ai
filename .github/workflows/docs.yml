@@ -98,8 +98,20 @@ jobs:
     name: Deploy to GitHub Pages
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     steps:
+      # GitHub Pages deployments intermittently fail with "Deployment failed, try
+      # again later" while the service reports operational (observed repeatedly on
+      # 2026-07-02/03, including mid-sync). Retry once after a cool-down before
+      # failing the workflow for real.
       - name: Deploy
         id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Wait before deploy retry
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 90
+      - name: Deploy (retry)
+        id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
         uses: actions/deploy-pages@v5
