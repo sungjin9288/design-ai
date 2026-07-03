@@ -10,6 +10,7 @@ export {
   collectLearningReport,
   collectLearningRestoreBackupsReport,
   collectLearningUsageReport,
+  collectRetrievalIndexReport,
   defaultLearningCurationReportPath,
   defaultLearningEvalPath,
   defaultLearningUsagePath,

@@ -3,47 +3,31 @@
 import { normalizeCategory } from "./learn-args.mjs";
 import { auditLearningProfile, loadLearningProfile } from "./learn-profile.mjs";
 import { cleanNoteText, defaultLearningFile } from "./learn-shared.mjs";
-
-function learningQueryTokens(query) {
-  return Array.from(new Set(
-    String(query || "")
-      .toLowerCase()
-      .match(/[\p{L}\p{N}]+/gu) || [],
-  )).filter((token) => token.length >= 2);
-}
-
-function learningEntryRelevance(entry, queryTokens) {
-  if (queryTokens.length === 0) {
-    return { score: 0, matchedTokens: [] };
-  }
-
-  const text = cleanNoteText(`${entry.category || ""} ${entry.text || ""}`).toLowerCase();
-  if (!text) return { score: 0, matchedTokens: [] };
-
-  let score = 0;
-  const matchedTokens = [];
-  for (const token of queryTokens) {
-    if (text.includes(token)) {
-      score += token.length >= 4 ? 2 : 1;
-      matchedTokens.push(token);
-    }
-  }
-  return { score, matchedTokens };
-}
+import { bm25Score, buildLexicalStats, lexicalQueryTokens } from "./lexical.mjs";
 
 function learningEntryTime(entry) {
   const time = Date.parse(entry.createdAt || "");
   return Number.isNaN(time) ? 0 : time;
 }
 
+// Shared lexical (BM25-style) scorer from lexical.mjs — the same auditable algorithm
+// that ranks `design-ai search --ranked` (docs/AI-LEARNING-PHASE2.md, Phase A).
 function rankLearningEntries(entries, { query = "" } = {}) {
-  const queryTokens = learningQueryTokens(query);
+  const queryTokens = lexicalQueryTokens(query);
+  const stats = buildLexicalStats(entries.map((entry, index) => ({
+    id: String(index),
+    text: cleanNoteText(`${entry.category || ""} ${entry.text || ""}`),
+  })));
+  const docByIndex = new Map(stats.documents.map((doc) => [doc.id, doc]));
   const ranked = entries.map((entry, index) => {
-    const relevance = learningEntryRelevance(entry, queryTokens);
+    const doc = docByIndex.get(String(index));
+    const relevance = queryTokens.length === 0 || !doc
+      ? { score: 0, matchedTokens: [] }
+      : bm25Score(queryTokens, doc, stats);
     return {
       entry,
       index,
-      score: relevance.score,
+      score: Number(relevance.score.toFixed(6)),
       matchedTokens: relevance.matchedTokens,
       time: learningEntryTime(entry),
     };

@@ -34,6 +34,8 @@ from smoke_assertions import (
     EXPECTED_HELP_ALIASES,
     EXPECTED_NUMERIC_VALUE_SMOKES,
     EXPECTED_PACK_MAX_BYTES,
+    EXPECTED_RANKED_SEARCH_LIMIT,
+    EXPECTED_RANKED_SEARCH_NOT_BUILT_NOTICE,
     EXPECTED_REPOSITORY_URL,
     EXPECTED_ROUTE_BRIEF,
     EXPECTED_ROUTE_ID,
@@ -58,6 +60,9 @@ from smoke_assertions import (
     assert_force_overwrite_replaced,
     assert_functional_alias_smokes,
     assert_help_topic_output,
+    assert_index_build_json,
+    assert_index_status_json,
+    assert_index_verify_json,
     assert_install_doctor_lifecycle_output,
     assert_install_output,
     assert_list_catalog_output,
@@ -76,6 +81,8 @@ from smoke_assertions import (
     assert_prompt_json_component_spec,
     assert_prompt_markdown_body_component_spec,
     assert_prompt_markdown_component_spec,
+    assert_ranked_search_determinism,
+    assert_ranked_search_json,
     assert_route_catalog_json,
     assert_route_explain_human_output,
     assert_route_json_component_spec,
@@ -8215,7 +8222,7 @@ def assert_learning_relevance_context(payload: dict[str, object], *, context: st
         message="learning selection explanation should mark the relevant entry as a brief match",
     )
     require_package_smoke(
-        isinstance(selected_entry.get("score"), int) and selected_entry.get("score") > 0,
+        type(selected_entry.get("score")) in (int, float) and selected_entry.get("score") > 0,
         context=context,
         cmd=cmd,
         message="learning selection explanation should include a positive relevance score",
@@ -11067,7 +11074,7 @@ def assert_learning_query_json(
     require_package_smoke(
         selected[0].get("id") == "learn-relevant"
         and selected[0].get("reason") == "brief-match"
-        and isinstance(selected[0].get("score"), int)
+        and type(selected[0].get("score")) in (int, float)
         and selected[0].get("score") > 0,
         context=context,
         cmd=cmd,
@@ -11093,7 +11100,7 @@ def assert_learning_query_human(raw: str, *, context: str, cmd: list[str]) -> No
         "Limit: 2",
         "Explain: selection score, matched tokens, and reason",
         "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
-        "matched keyboard, accessibility",
+        "matched accessibility, keyboard",
         "reason brief-match",
     ):
         require_package_smoke(
@@ -12451,6 +12458,87 @@ def assert_learning_relevance_smoke(
         eval_path=eval_path,
         context=f"{context} learn eval out file",
         cmd=eval_out_cmd,
+    )
+
+
+def assert_index_roundtrip_smoke(
+    command_factory,
+    index_dir: Path,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    index_dir.mkdir(parents=True, exist_ok=True)
+    write_learning_relevance_fixture(profile_path)
+    index_env = env.copy()
+    index_env["DESIGN_AI_INDEX_DIR"] = str(index_dir)
+    index_env["DESIGN_AI_LEARNING_FILE"] = str(profile_path)
+
+    build_cmd = command_factory("index", "--build", "--json")
+    build_result = run_plain(build_cmd, cwd=cwd, env=index_env)
+    assert_index_build_json(
+        build_result.stdout,
+        index_dir=str(index_dir),
+        context=f"{context} build",
+        cmd=build_cmd,
+    )
+
+    status_cmd = command_factory("index", "--status", "--json")
+    status_result = run_plain(status_cmd, cwd=cwd, env=index_env)
+    assert_index_status_json(
+        status_result.stdout,
+        index_dir=str(index_dir),
+        context=f"{context} status",
+        cmd=status_cmd,
+    )
+
+    verify_cmd = command_factory("index", "--verify", "--json")
+    verify_result = run_plain(verify_cmd, cwd=cwd, env=index_env)
+    assert_index_verify_json(
+        verify_result.stdout,
+        index_dir=str(index_dir),
+        context=f"{context} verify",
+        cmd=verify_cmd,
+    )
+
+
+def assert_ranked_search_determinism_smoke(
+    command_factory,
+    index_dir: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    index_dir.mkdir(parents=True, exist_ok=True)
+    ranked_env = env.copy()
+    ranked_env["DESIGN_AI_INDEX_DIR"] = str(index_dir)
+
+    ranked_cmd = command_factory(
+        "search",
+        EXPECTED_CORPUS_SEARCH_QUERY,
+        "--dir",
+        "knowledge",
+        "--limit",
+        str(EXPECTED_RANKED_SEARCH_LIMIT),
+        "--ranked",
+        "--json",
+    )
+    first_result = run_plain(ranked_cmd, cwd=cwd, env=ranked_env)
+    second_result = run_plain(ranked_cmd, cwd=cwd, env=ranked_env)
+    assert_ranked_search_json(
+        first_result.stdout,
+        context=f"{context} payload",
+        cmd=ranked_cmd,
+        expected_notice=EXPECTED_RANKED_SEARCH_NOT_BUILT_NOTICE,
+    )
+    assert_ranked_search_determinism(
+        first_result.stdout,
+        second_result.stdout,
+        context=context,
+        cmd=ranked_cmd,
     )
 
 
@@ -14059,8 +14147,8 @@ def run_self_test() -> None:
                     {
                         "id": "learn-relevant",
                         "category": "accessibility",
-                        "score": 4,
-                        "matchedTokens": ["keyboard", "accessibility"],
+                        "score": 2.114533,
+                        "matchedTokens": ["accessibility", "keyboard"],
                         "reason": "brief-match",
                     },
                 ],
@@ -14126,7 +14214,7 @@ def run_self_test() -> None:
                 "",
                 "1. [accessibility] Prioritize keyboard accessibility details for Button component API specs",
                 "   learn-relevant · 2026-05-22T00:00:01.000Z",
-                "   score 4 · matched keyboard, accessibility · reason brief-match",
+                "   score 2.114533 · matched accessibility, keyboard · reason brief-match",
             ]),
             context=context,
             cmd=learn_query_human_cmd,
@@ -14140,7 +14228,7 @@ def run_self_test() -> None:
                     "Limit: 2",
                     "Explain: selection score, matched tokens, and reason",
                     "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
-                    "matched keyboard, accessibility",
+                    "matched accessibility, keyboard",
                 ]),
                 context=context,
                 cmd=learn_query_human_cmd,
@@ -14167,8 +14255,8 @@ def run_self_test() -> None:
                     {
                         "id": "learn-relevant",
                         "category": "accessibility",
-                        "score": 4,
-                        "matchedTokens": ["keyboard", "accessibility"],
+                        "score": 2.114533,
+                        "matchedTokens": ["accessibility", "keyboard"],
                         "reason": "brief-match",
                     },
                 ],
@@ -20565,6 +20653,19 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin search human corpus",
         )
+        assert_index_roundtrip_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-retrieval-index",
+            tmp_root / "installed-index-learning.json",
+            env=smoke_env,
+            context="package smoke installed bin index round-trip",
+        )
+        assert_ranked_search_determinism_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-ranked-index",
+            env=smoke_env,
+            context="package smoke installed bin ranked search determinism",
+        )
         assert_show_smoke(
             [str(bin_path), "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"],
             env=smoke_env,
@@ -21942,6 +22043,21 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec search human corpus",
+        )
+        assert_index_roundtrip_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-retrieval-index",
+            npx_root / "npx-index-learning.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec index round-trip",
+        )
+        assert_ranked_search_determinism_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-ranked-index",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec ranked search determinism",
         )
         assert_show_smoke(
             npm_exec_cmd(tarball, "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"),

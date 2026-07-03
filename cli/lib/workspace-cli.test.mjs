@@ -65,7 +65,7 @@ test("formatWorkspaceJson emits a stable machine-readable object", () => {
   });
   const payload = JSON.parse(formatted);
 
-  assert.deepEqual(Object.keys(payload), ["context", "git", "repository", "learning", "learningUsage", "learningEval", "learningRestoreBackups", "release", "nextActions"]);
+  assert.deepEqual(Object.keys(payload), ["context", "git", "repository", "learning", "learningUsage", "learningEval", "learningRestoreBackups", "retrievalIndex", "release", "nextActions"]);
   assert.equal(payload.context.root, "/repo");
   assert.equal(payload.learningRestoreBackups, null);
 });

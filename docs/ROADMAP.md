@@ -7,9 +7,9 @@ Opens the deeper AI-learning phase chosen in Product Readiness ("Recommended nex
 ### Plan
 - [x] Phase A: zero-dependency lexical retrieval index (tokenized BM25-style scoring) over `knowledge/`, `examples/`, `skills/`, `docs/`, `agents/`, `commands/`, and `learning.json`, built only by an explicit `design-ai index --build`.
 - [x] Phase A: opt-in `design-ai search --ranked` ranked corpus search with deterministic, fully ordered output.
-- [ ] Phase A: shared lexical scorer behind `prompt --with-learning` / `pack --with-learning` selection, gated by `learn --eval --strict` checkpoints before and after.
-- [ ] Phase A: `design-ai index --status/--verify` staleness and digest reporting, plus `workspace` readiness integration.
-- [ ] Phase A: verification gates — `npm test` unit coverage, `npm run audit` 8/8, `npm run release:metadata`, and `release:check` packed-tarball smoke for index build/verify round-trip and ranked-search determinism.
+- [x] Phase A: shared lexical scorer behind `prompt --with-learning` / `pack --with-learning` selection, gated by `learn --eval --strict` checkpoints before and after. _Selection-drift callout: tf-aware BM25 ranking can reorder entries that the old containment scorer tied (text-relevant entries now outrank category-only matches); checkpoints record `ranker: "lexical"` so eval templates regenerate against the shared scorer._
+- [x] Phase A: `design-ai index --status/--verify` staleness and digest reporting, plus `workspace` readiness integration.
+- [x] Phase A: verification gates — `npm test` unit coverage, `npm run audit` 8/8, `npm run release:metadata`, and `release:check` packed-tarball smoke for index build/verify round-trip and ranked-search determinism.
 - [ ] Phase B (optional, after Phase A review): opt-in local embedding rerank via a user-supplied local provider executable, never a default, never external HTTP, with graceful degradation to Phase A.
 - [ ] Phase B: deterministic stub-provider test coverage and packed-tarball smoke proving off-by-default and missing-provider fallback behavior.
 - [ ] Answer the open questions in [AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md) (ranked-search default, index location, route boundary, Korean tokenization, Phase B configuration home) before scheduling Phase B.

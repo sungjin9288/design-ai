@@ -21,6 +21,7 @@ import {
   collectLearningReport,
   collectLearningRestoreBackupsReport,
   collectLearningUsageReport,
+  collectRetrievalIndexReport,
   defaultLearningCurationReportPath,
   defaultLearningEvalPath,
   defaultLearningUsagePath,
@@ -43,9 +44,18 @@ export function buildWorkspaceNextActions({
   learningUsage,
   learningEval,
   learningRestoreBackups,
+  retrievalIndex = null,
   release,
 }) {
   const actions = [];
+
+  if (retrievalIndex && !retrievalIndex.fresh) {
+    actions.push(action(
+      "warn",
+      "Retrieval index is stale or unreadable for the current corpus/learning sources. Rebuild it before relying on ranked retrieval.",
+      retrievalIndex.buildCommand || "design-ai index --build",
+    ));
+  }
 
   if (!git.isRepo) {
     actions.push(action("warn", "Open design-ai from a git workspace before preparing shared changes."));
@@ -220,6 +230,10 @@ export function collectWorkspaceReport({
         freshness: assessLearningEvalFreshness({ learning, learningEval }),
       }
     : null;
+  const retrievalIndex = collectRetrievalIndexReport({
+    sourceRoot: resolvedSourceRoot,
+    learningFilePath: resolvedLearningFile,
+  });
   const release = collectReleaseScriptReport({ sourceRoot: resolvedSourceRoot });
   const repository = collectRepositoryReport({ sourceRoot: resolvedSourceRoot, git });
   const nextActions = buildWorkspaceNextActions({
@@ -229,6 +243,7 @@ export function collectWorkspaceReport({
     learningUsage,
     learningEval: learningEvalWithFreshness,
     learningRestoreBackups,
+    retrievalIndex,
     release,
   });
 
@@ -246,6 +261,7 @@ export function collectWorkspaceReport({
     learningUsage,
     learningEval: learningEvalWithFreshness,
     learningRestoreBackups,
+    retrievalIndex,
     release,
     nextActions,
   };
@@ -260,6 +276,7 @@ export function formatWorkspaceJson(report) {
     learningUsage: report.learningUsage || null,
     learningEval: report.learningEval || null,
     learningRestoreBackups: report.learningRestoreBackups || null,
+    retrievalIndex: report.retrievalIndex || null,
     release: report.release,
     nextActions: report.nextActions,
   }, null, 2);

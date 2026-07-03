@@ -3,6 +3,13 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
+import { existsSync as retrievalIndexFileExists } from "node:fs";
+
+import {
+  corpusIndexFile,
+  learningIndexFile,
+  retrievalIndexStatus,
+} from "./retrieval-index.mjs";
 import {
   defaultLearningFile,
   defaultLearningUsageFile,
@@ -444,5 +451,33 @@ export function assessLearningUsageReadiness({ learningFilePath = defaultLearnin
     profileFile: usage.profileFile || "",
     profileFileMatches,
     staleSelectedEntryCount,
+  };
+}
+
+// Retrieval-index readiness (docs/AI-LEARNING-PHASE2.md, Phase A): the index is an
+// opt-in derived cache, so a missing index is "unused" (null section), while a
+// present-but-stale or unreadable index is a readiness warning.
+export function collectRetrievalIndexReport({
+  sourceRoot,
+  learningFilePath = defaultLearningFile(),
+  retrievalIndexStatusProvider = retrievalIndexStatus,
+} = {}) {
+  const corpusFile = corpusIndexFile();
+  const learningIdxFile = learningIndexFile();
+  if (!retrievalIndexFileExists(corpusFile) && !retrievalIndexFileExists(learningIdxFile)) {
+    return null;
+  }
+
+  const status = retrievalIndexStatusProvider({
+    designAiPath: sourceRoot,
+    learningFile: learningFilePath,
+  });
+  return {
+    indexDir: status.indexDir,
+    corpus: status.corpus,
+    learning: status.learning,
+    fresh: status.fresh,
+    status: status.fresh ? "pass" : "warn",
+    buildCommand: status.buildCommand,
   };
 }

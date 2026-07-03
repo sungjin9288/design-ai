@@ -2,7 +2,7 @@
 
 This document opens the deeper AI-learning phase selected in [PRODUCT-READINESS.md](PRODUCT-READINESS.md) ("Recommended next decision", option 2). It defines the scope, data boundaries, and phased plan for local retrieval memory on top of the shipped learning system described in [AI-LEARNING.md](AI-LEARNING.md).
 
-Status: **planning**. Nothing in this document is shipped. Until a phase below is implemented and release-gated, the shipped scope remains exactly what [AI-LEARNING.md](AI-LEARNING.md) documents.
+Status: **Phase A implemented and release-gated** (see the Phase 754 checklist in [ROADMAP.md](ROADMAP.md)); **Phase B remains planning**. Everything Phase A shipped is local, derived, opt-in retrieval — the shipped learning scope otherwise remains what [AI-LEARNING.md](AI-LEARNING.md) documents, and the README stance is unchanged.
 
 ## Goal
 

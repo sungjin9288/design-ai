@@ -1,6 +1,7 @@
 // Tests for workspace learning usage/eval/restore-backup readiness reports.
 
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -10,8 +11,10 @@ import {
   assessLearningEvalFreshness,
   assessLearningRestoreBackupReadiness,
   assessLearningUsageReadiness,
+  buildWorkspaceNextActions,
   collectLearningRestoreBackupsReport,
   collectLearningUsageReport,
+  collectRetrievalIndexReport,
   collectWorkspaceReport,
   defaultLearningCurationReportPath,
   defaultLearningEvalPath,
@@ -598,4 +601,73 @@ test("assessLearningEvalFreshness detects source profile drift", () => {
   assert.equal(freshness.status, "warn");
   assert.match(freshness.reason, /source-profile-file-mismatch/);
   assert.match(freshness.reason, /source-profile-entry-count-changed/);
+});
+
+test("collectRetrievalIndexReport treats a missing index as unused and stale digests as a warning", () => {
+  const unused = collectRetrievalIndexReport({
+    sourceRoot: "/tmp/design-ai-nonexistent-source",
+    learningFilePath: "/tmp/design-ai-nonexistent-learning.json",
+  });
+  assert.equal(unused, null);
+
+  const previousIndexDir = process.env.DESIGN_AI_INDEX_DIR;
+  const indexDir = mkdtempSync(path.join(tmpdir(), "design-ai-ws-retrieval-test-"));
+  process.env.DESIGN_AI_INDEX_DIR = indexDir;
+  try {
+    writeFileSync(path.join(indexDir, "corpus-index.json"), "{}", "utf8");
+    const staleStatus = {
+      indexDir,
+      corpus: { present: true, fresh: false },
+      learning: { present: false, fresh: false },
+      fresh: false,
+      buildCommand: "design-ai index --build",
+    };
+    const stale = collectRetrievalIndexReport({
+      sourceRoot: "/tmp/design-ai-source",
+      learningFilePath: "/tmp/learning.json",
+      retrievalIndexStatusProvider: () => staleStatus,
+    });
+    assert.equal(stale.status, "warn");
+    assert.equal(stale.fresh, false);
+    assert.equal(stale.buildCommand, "design-ai index --build");
+
+    const fresh = collectRetrievalIndexReport({
+      sourceRoot: "/tmp/design-ai-source",
+      learningFilePath: "/tmp/learning.json",
+      retrievalIndexStatusProvider: () => ({ ...staleStatus, fresh: true }),
+    });
+    assert.equal(fresh.status, "pass");
+  } finally {
+    if (previousIndexDir === undefined) delete process.env.DESIGN_AI_INDEX_DIR;
+    else process.env.DESIGN_AI_INDEX_DIR = previousIndexDir;
+    rmSync(indexDir, { recursive: true, force: true });
+  }
+});
+
+test("buildWorkspaceNextActions warns with an index rebuild command only when the index is stale", () => {
+  const base = {
+    git: { isRepo: true, clean: true, hasIgnoredLocalArtifacts: false, upstream: "origin/main", branch: "main", behind: 0, ahead: 0 },
+    repository: { checks: [] },
+    learning: { exists: false, entryCount: 0, error: "", auditSummary: { status: "pass" } },
+    learningUsage: null,
+    learningEval: null,
+    learningRestoreBackups: null,
+    release: { missing: [], available: [] },
+  };
+  const stale = buildWorkspaceNextActions({
+    ...base,
+    retrievalIndex: { fresh: false, status: "warn", buildCommand: "design-ai index --build" },
+  });
+  const staleAction = stale.find((item) => item.command === "design-ai index --build");
+  assert.ok(staleAction);
+  assert.equal(staleAction.level, "warn");
+
+  const freshActions = buildWorkspaceNextActions({
+    ...base,
+    retrievalIndex: { fresh: true, status: "pass", buildCommand: "design-ai index --build" },
+  });
+  assert.equal(freshActions.some((item) => item.command === "design-ai index --build"), false);
+
+  const unusedActions = buildWorkspaceNextActions({ ...base, retrievalIndex: null });
+  assert.equal(unusedActions.some((item) => item.command === "design-ai index --build"), false);
 });

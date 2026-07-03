@@ -579,6 +579,25 @@ EXPECTED_ERROR_PREFIX = "\u2717"
 EXPECTED_CORPUS_SEARCH_QUERY = "Pretendard"
 EXPECTED_CORPUS_SEARCH_HIT = "knowledge/PRINCIPLES.md"
 EXPECTED_CORPUS_SEARCH_PREVIEW = "Pretendard for Korean primary"
+EXPECTED_RANKED_SEARCH_LIMIT = 3
+EXPECTED_RANKED_SEARCH_NOT_BUILT_NOTICE = (
+    "no corpus index built yet; ranked results come from a live corpus scan (design-ai index --build)"
+)
+EXPECTED_INDEX_BUILD_COMMAND = "design-ai index --build"
+EXPECTED_INDEX_FILE_BASENAMES = {
+    "corpus": "corpus-index.json",
+    "learning": "learning-index.json",
+}
+EXPECTED_INDEX_STATUS_SECTION_KEYS = [
+    "file",
+    "present",
+    "fresh",
+    "generatedAt",
+    "documentCount",
+    "storedDigest",
+    "currentDigest",
+    "error",
+]
 EXPECTED_CORPUS_SHOW_TARGET = "knowledge/PRINCIPLES.md:1"
 EXPECTED_CORPUS_SHOW_REL_PATH = "knowledge/PRINCIPLES.md"
 EXPECTED_CORPUS_SHOW_TEXT = "<!-- hand-written -->"
@@ -807,7 +826,8 @@ EXPECTED_CHECK_EXAMPLES_PAYLOAD_KEYS = [
     "examples",
 ]
 EXPECTED_CHECK_EXAMPLE_ENTRY_KEYS = ["example", "report"]
-EXPECTED_WORKSPACE_PAYLOAD_KEYS = ["context", "git", "repository", "learning", "learningUsage", "learningEval", "learningRestoreBackups", "release", "nextActions"]
+EXPECTED_WORKSPACE_PAYLOAD_KEYS = ["context", "git", "repository", "learning", "learningUsage", "learningEval", "learningRestoreBackups", "retrievalIndex", "release", "nextActions"]
+EXPECTED_WORKSPACE_RETRIEVAL_INDEX_KEYS = ["indexDir", "corpus", "learning", "fresh", "status", "buildCommand"]
 EXPECTED_WORKSPACE_CONTEXT_KEYS = ["cwd", "root", "sourceRoot", "packageName", "version"]
 EXPECTED_WORKSPACE_GIT_KEYS = [
     "isRepo",
@@ -1935,6 +1955,85 @@ def passing_search_human_output() -> str:
     ])
 
 
+def passing_ranked_search_json() -> str:
+    return json.dumps({
+        "query": EXPECTED_CORPUS_SEARCH_QUERY,
+        "ranked": True,
+        "notice": EXPECTED_RANKED_SEARCH_NOT_BUILT_NOTICE,
+        "hits": [
+            {
+                "relPath": EXPECTED_CORPUS_SEARCH_HIT,
+                "file": f"/tmp/design-ai/{EXPECTED_CORPUS_SEARCH_HIT}",
+                "score": 2.886971,
+                "matchedTokens": [EXPECTED_CORPUS_SEARCH_QUERY.lower()],
+                "preview": EXPECTED_CORPUS_SEARCH_PREVIEW,
+            }
+        ],
+    })
+
+
+def passing_index_build_json(index_dir: str = "/tmp/design-ai-index") -> str:
+    return json.dumps({
+        "action": "build",
+        "indexDir": index_dir,
+        "corpus": {
+            "file": f"{index_dir}/{EXPECTED_INDEX_FILE_BASENAMES['corpus']}",
+            "documentCount": 460,
+            "digest": f"sha256:{'0' * 64}",
+        },
+        "learning": {
+            "file": f"{index_dir}/{EXPECTED_INDEX_FILE_BASENAMES['learning']}",
+            "documentCount": 3,
+            "digest": f"sha256:{'1' * 64}",
+        },
+    })
+
+
+def passing_index_status_section(index_dir: str, label: str, digest: str) -> dict:
+    return {
+        "file": f"{index_dir}/{EXPECTED_INDEX_FILE_BASENAMES[label]}",
+        "present": True,
+        "fresh": True,
+        "generatedAt": "2026-05-22T00:00:03.000Z",
+        "documentCount": 460 if label == "corpus" else 3,
+        "storedDigest": digest,
+        "currentDigest": digest,
+        "error": "",
+    }
+
+
+def passing_index_status_json(index_dir: str = "/tmp/design-ai-index") -> str:
+    return json.dumps({
+        "action": "status",
+        "indexDir": index_dir,
+        "corpus": passing_index_status_section(index_dir, "corpus", f"sha256:{'0' * 64}"),
+        "learning": passing_index_status_section(index_dir, "learning", f"sha256:{'1' * 64}"),
+        "fresh": True,
+        "buildCommand": EXPECTED_INDEX_BUILD_COMMAND,
+    })
+
+
+def passing_index_verify_json(index_dir: str = "/tmp/design-ai-index") -> str:
+    return json.dumps({
+        "action": "verify",
+        "ok": True,
+        "checks": [
+            {
+                "name": "corpus",
+                "file": f"{index_dir}/{EXPECTED_INDEX_FILE_BASENAMES['corpus']}",
+                "matches": True,
+                "reason": "",
+            },
+            {
+                "name": "learning",
+                "file": f"{index_dir}/{EXPECTED_INDEX_FILE_BASENAMES['learning']}",
+                "matches": True,
+                "reason": "",
+            },
+        ],
+    })
+
+
 def passing_show_json() -> str:
     return json.dumps({
         "file": "/tmp/design-ai/knowledge/PRINCIPLES.md",
@@ -2668,6 +2767,263 @@ def assert_search_human_output(raw: str, *, context: str, cmd: list[str]) -> Non
         context=context,
         label="search human output",
     )
+
+
+def is_ranked_search_positive_score(value: object) -> bool:
+    return type(value) in (int, float) and value > 0
+
+
+def is_index_sha256_digest(value: object) -> bool:
+    if not isinstance(value, str) or not value.startswith("sha256:"):
+        return False
+    digest = value[len("sha256:"):]
+    return len(digest) == 64 and all(char in "0123456789abcdef" for char in digest)
+
+
+def assert_index_file_path(
+    value: object,
+    *,
+    index_dir: str,
+    label: str,
+    context: str,
+    command_label: str,
+) -> None:
+    expected = str(Path(index_dir) / EXPECTED_INDEX_FILE_BASENAMES[label])
+    if value != expected:
+        raise SystemExit(f"{command_label} after {context} {label} file differs from expected index path")
+
+
+def assert_ranked_search_json(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+    expected_notice: str | None = None,
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse ranked search JSON after {context}") from error
+
+    payload = assert_corpus_json_keys(
+        payload,
+        ["query", "ranked", "notice", "hits"],
+        label="top-level",
+        context=context,
+        command_label="ranked search JSON",
+    )
+
+    if payload.get("query") != EXPECTED_CORPUS_SEARCH_QUERY:
+        raise SystemExit(f"ranked search JSON after {context} query differs from expected query")
+    if payload.get("ranked") is not True:
+        raise SystemExit(f"ranked search JSON after {context} ranked flag is not true")
+    notice = payload.get("notice")
+    if not isinstance(notice, str):
+        raise SystemExit(f"ranked search JSON after {context} notice is not a string")
+    if expected_notice is not None and notice != expected_notice:
+        raise SystemExit(f"ranked search JSON after {context} notice differs from expected notice")
+
+    hits = payload.get("hits")
+    if not isinstance(hits, list):
+        raise SystemExit(f"ranked search JSON after {context} hits is not a list")
+    if not hits:
+        raise SystemExit(f"ranked search JSON after {context} does not contain any hits")
+    if len(hits) > EXPECTED_RANKED_SEARCH_LIMIT:
+        raise SystemExit(f"ranked search JSON after {context} hit count exceeds the expected limit")
+
+    query_token = EXPECTED_CORPUS_SEARCH_QUERY.lower()
+    query_token_matched = False
+    for hit in hits:
+        hit = assert_corpus_json_keys(
+            hit,
+            ["relPath", "file", "score", "matchedTokens", "preview"],
+            label="hit",
+            context=context,
+            command_label="ranked search JSON",
+        )
+        rel_path = hit.get("relPath")
+        if not isinstance(rel_path, str) or not rel_path.startswith("knowledge/"):
+            raise SystemExit(f"ranked search JSON after {context} hit relPath is outside the knowledge dir")
+        assert_corpus_file_path(
+            hit.get("file"),
+            rel_path,
+            label="hit",
+            context=context,
+            command_label="ranked search JSON",
+        )
+        if not is_ranked_search_positive_score(hit.get("score")):
+            raise SystemExit(f"ranked search JSON after {context} hit score is not a positive number")
+        matched_tokens = hit.get("matchedTokens")
+        if not isinstance(matched_tokens, list) or not matched_tokens:
+            raise SystemExit(f"ranked search JSON after {context} hit matchedTokens is empty")
+        if not all(isinstance(token, str) and token for token in matched_tokens):
+            raise SystemExit(f"ranked search JSON after {context} hit matchedTokens contains an invalid token")
+        if not isinstance(hit.get("preview"), str) or not hit.get("preview"):
+            raise SystemExit(f"ranked search JSON after {context} hit preview is empty")
+        if query_token in matched_tokens:
+            query_token_matched = True
+
+    if not query_token_matched:
+        raise SystemExit(f"ranked search JSON after {context} is missing a hit matching the query token")
+
+
+def assert_ranked_search_determinism(
+    first_raw: str,
+    second_raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(first_raw, cmd)
+    assert_no_ansi(second_raw, cmd)
+    if first_raw != second_raw:
+        raise SystemExit(f"ranked search JSON after {context} differs between identical runs")
+
+
+def assert_index_build_json(raw: str, *, index_dir: str, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse index build JSON after {context}") from error
+
+    payload = assert_corpus_json_keys(
+        payload,
+        ["action", "indexDir", "corpus", "learning"],
+        label="top-level",
+        context=context,
+        command_label="index build JSON",
+    )
+
+    if payload.get("action") != "build":
+        raise SystemExit(f"index build JSON after {context} action differs from build")
+    if payload.get("indexDir") != str(index_dir):
+        raise SystemExit(f"index build JSON after {context} indexDir differs from expected directory")
+
+    for label in EXPECTED_INDEX_FILE_BASENAMES:
+        section = assert_corpus_json_keys(
+            payload.get(label),
+            ["file", "documentCount", "digest"],
+            label=label,
+            context=context,
+            command_label="index build JSON",
+        )
+        assert_index_file_path(
+            section.get("file"),
+            index_dir=index_dir,
+            label=label,
+            context=context,
+            command_label="index build JSON",
+        )
+        if not is_corpus_json_positive_int(section.get("documentCount")):
+            raise SystemExit(f"index build JSON after {context} {label} documentCount is not a positive integer")
+        if not is_index_sha256_digest(section.get("digest")):
+            raise SystemExit(f"index build JSON after {context} {label} digest is not a sha256 digest")
+
+
+def assert_index_status_json(raw: str, *, index_dir: str, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse index status JSON after {context}") from error
+
+    payload = assert_corpus_json_keys(
+        payload,
+        ["action", "indexDir", "corpus", "learning", "fresh", "buildCommand"],
+        label="top-level",
+        context=context,
+        command_label="index status JSON",
+    )
+
+    if payload.get("action") != "status":
+        raise SystemExit(f"index status JSON after {context} action differs from status")
+    if payload.get("indexDir") != str(index_dir):
+        raise SystemExit(f"index status JSON after {context} indexDir differs from expected directory")
+    if payload.get("fresh") is not True:
+        raise SystemExit(f"index status JSON after {context} is not fresh")
+    if payload.get("buildCommand") != EXPECTED_INDEX_BUILD_COMMAND:
+        raise SystemExit(f"index status JSON after {context} buildCommand differs from expected command")
+
+    for label in EXPECTED_INDEX_FILE_BASENAMES:
+        section = assert_corpus_json_keys(
+            payload.get(label),
+            EXPECTED_INDEX_STATUS_SECTION_KEYS,
+            label=label,
+            context=context,
+            command_label="index status JSON",
+        )
+        assert_index_file_path(
+            section.get("file"),
+            index_dir=index_dir,
+            label=label,
+            context=context,
+            command_label="index status JSON",
+        )
+        if section.get("present") is not True:
+            raise SystemExit(f"index status JSON after {context} {label} index is not present")
+        if section.get("fresh") is not True:
+            raise SystemExit(f"index status JSON after {context} {label} index is not fresh")
+        generated_at = section.get("generatedAt")
+        if not isinstance(generated_at, str) or not generated_at:
+            raise SystemExit(f"index status JSON after {context} {label} generatedAt is missing")
+        if not is_corpus_json_positive_int(section.get("documentCount")):
+            raise SystemExit(f"index status JSON after {context} {label} documentCount is not a positive integer")
+        if not is_index_sha256_digest(section.get("storedDigest")):
+            raise SystemExit(f"index status JSON after {context} {label} storedDigest is not a sha256 digest")
+        if section.get("storedDigest") != section.get("currentDigest"):
+            raise SystemExit(f"index status JSON after {context} {label} stored digest differs from current digest")
+        if section.get("error") != "":
+            raise SystemExit(f"index status JSON after {context} {label} error is not empty")
+
+
+def assert_index_verify_json(raw: str, *, index_dir: str, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse index verify JSON after {context}") from error
+
+    payload = assert_corpus_json_keys(
+        payload,
+        ["action", "ok", "checks"],
+        label="top-level",
+        context=context,
+        command_label="index verify JSON",
+    )
+
+    if payload.get("action") != "verify":
+        raise SystemExit(f"index verify JSON after {context} action differs from verify")
+    if payload.get("ok") is not True:
+        raise SystemExit(f"index verify JSON after {context} ok is not true")
+
+    checks = payload.get("checks")
+    if not isinstance(checks, list):
+        raise SystemExit(f"index verify JSON after {context} checks is not a list")
+    if [check.get("name") for check in checks if isinstance(check, dict)] != list(EXPECTED_INDEX_FILE_BASENAMES):
+        raise SystemExit(f"index verify JSON after {context} check names changed")
+
+    for check in checks:
+        check = assert_corpus_json_keys(
+            check,
+            ["name", "file", "matches", "reason"],
+            label="check",
+            context=context,
+            command_label="index verify JSON",
+        )
+        name = check.get("name")
+        assert_index_file_path(
+            check.get("file"),
+            index_dir=index_dir,
+            label=name,
+            context=context,
+            command_label="index verify JSON",
+        )
+        if check.get("matches") is not True:
+            raise SystemExit(f"index verify JSON after {context} {name} check does not match")
+        if check.get("reason") != "":
+            raise SystemExit(f"index verify JSON after {context} {name} check reason is not empty")
 
 
 def assert_show_json_line(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -4330,6 +4686,7 @@ def passing_workspace_json() -> str:
             "learningUsage": None,
             "learningEval": None,
             "learningRestoreBackups": None,
+            "retrievalIndex": None,
             "release": {
                 "packageName": "@design-ai/cli",
                 "version": EXPECTED_RELEASE_VERSION,
@@ -6412,6 +6769,44 @@ def assert_workspace_json(raw: str, *, context: str, cmd: list[str]) -> None:
             raise SystemExit(f"workspace JSON after {context} learningRestoreBackups privacy flags changed")
         if privacy.get("mutatesProfile") is not False:
             raise SystemExit(f"workspace JSON after {context} learningRestoreBackups mutation privacy flag changed")
+
+    retrieval_index = payload.get("retrievalIndex")
+    if retrieval_index is not None:
+        retrieval_index = assert_smoke_json_keys(
+            retrieval_index,
+            EXPECTED_WORKSPACE_RETRIEVAL_INDEX_KEYS,
+            label="retrievalIndex",
+            context=context,
+            command_label="workspace JSON",
+        )
+        if not isinstance(retrieval_index.get("indexDir"), str) or not retrieval_index["indexDir"]:
+            raise SystemExit(f"workspace JSON after {context} retrievalIndex indexDir is missing")
+        if type(retrieval_index.get("fresh")) is not bool:
+            raise SystemExit(f"workspace JSON after {context} retrievalIndex fresh is not boolean")
+        if retrieval_index.get("status") not in ("pass", "warn"):
+            raise SystemExit(f"workspace JSON after {context} retrievalIndex status is invalid")
+        if (retrieval_index.get("status") == "pass") is not retrieval_index.get("fresh"):
+            raise SystemExit(f"workspace JSON after {context} retrievalIndex status does not match freshness")
+        if retrieval_index.get("buildCommand") != EXPECTED_INDEX_BUILD_COMMAND:
+            raise SystemExit(f"workspace JSON after {context} retrievalIndex buildCommand differs from expected command")
+        for section_label in EXPECTED_INDEX_FILE_BASENAMES:
+            section = assert_smoke_json_keys(
+                retrieval_index.get(section_label),
+                EXPECTED_INDEX_STATUS_SECTION_KEYS,
+                label=f"retrievalIndex {section_label}",
+                context=context,
+                command_label="workspace JSON",
+            )
+            if not isinstance(section.get("file"), str) or not section["file"]:
+                raise SystemExit(f"workspace JSON after {context} retrievalIndex {section_label} file is missing")
+            for key in ("present", "fresh"):
+                if type(section.get(key)) is not bool:
+                    raise SystemExit(f"workspace JSON after {context} retrievalIndex {section_label} {key} is not boolean")
+            if not is_lifecycle_json_non_negative_int(section.get("documentCount")):
+                raise SystemExit(f"workspace JSON after {context} retrievalIndex {section_label} documentCount is invalid")
+            for key in ("generatedAt", "storedDigest", "currentDigest", "error"):
+                if not isinstance(section.get(key), str):
+                    raise SystemExit(f"workspace JSON after {context} retrievalIndex {section_label} {key} is not a string")
 
     release = assert_smoke_json_keys(
         payload.get("release"),
@@ -9153,6 +9548,307 @@ def run_self_test() -> None:
         scope="smoke assertions",
     )
 
+    ranked_search_cmd = [
+        "design-ai",
+        "search",
+        EXPECTED_CORPUS_SEARCH_QUERY,
+        "--dir",
+        "knowledge",
+        "--limit",
+        str(EXPECTED_RANKED_SEARCH_LIMIT),
+        "--ranked",
+        "--json",
+    ]
+    assert_ranked_search_json(passing_ranked_search_json(), context=context, cmd=ranked_search_cmd)
+    assert_ranked_search_json(
+        passing_ranked_search_json(),
+        context=context,
+        cmd=ranked_search_cmd,
+        expected_notice=EXPECTED_RANKED_SEARCH_NOT_BUILT_NOTICE,
+    )
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json("{", context=context, cmd=ranked_search_cmd),
+        expected="failed to parse ranked search JSON",
+        scope="smoke assertions",
+    )
+    ranked_wrong_query = json.loads(passing_ranked_search_json())
+    ranked_wrong_query["query"] = "Inter"
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(json.dumps(ranked_wrong_query), context=context, cmd=ranked_search_cmd),
+        expected="query differs",
+        scope="smoke assertions",
+    )
+    ranked_flag_false = json.loads(passing_ranked_search_json())
+    ranked_flag_false["ranked"] = False
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(json.dumps(ranked_flag_false), context=context, cmd=ranked_search_cmd),
+        expected="ranked flag is not true",
+        scope="smoke assertions",
+    )
+    ranked_wrong_notice = json.loads(passing_ranked_search_json())
+    ranked_wrong_notice["notice"] = "corpus index is stale"
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(
+            json.dumps(ranked_wrong_notice),
+            context=context,
+            cmd=ranked_search_cmd,
+            expected_notice=EXPECTED_RANKED_SEARCH_NOT_BUILT_NOTICE,
+        ),
+        expected="notice differs",
+        scope="smoke assertions",
+    )
+    ranked_no_hits = json.loads(passing_ranked_search_json())
+    ranked_no_hits["hits"] = []
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(json.dumps(ranked_no_hits), context=context, cmd=ranked_search_cmd),
+        expected="does not contain any hits",
+        scope="smoke assertions",
+    )
+    ranked_extra_hits = json.loads(passing_ranked_search_json())
+    while len(ranked_extra_hits["hits"]) <= EXPECTED_RANKED_SEARCH_LIMIT:
+        ranked_extra_hits["hits"].append(dict(ranked_extra_hits["hits"][0]))
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(json.dumps(ranked_extra_hits), context=context, cmd=ranked_search_cmd),
+        expected="hit count exceeds",
+        scope="smoke assertions",
+    )
+    ranked_zero_score = json.loads(passing_ranked_search_json())
+    ranked_zero_score["hits"][0]["score"] = 0
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(json.dumps(ranked_zero_score), context=context, cmd=ranked_search_cmd),
+        expected="score is not a positive number",
+        scope="smoke assertions",
+    )
+    ranked_bool_score = json.loads(passing_ranked_search_json())
+    ranked_bool_score["hits"][0]["score"] = True
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(json.dumps(ranked_bool_score), context=context, cmd=ranked_search_cmd),
+        expected="score is not a positive number",
+        scope="smoke assertions",
+    )
+    ranked_empty_tokens = json.loads(passing_ranked_search_json())
+    ranked_empty_tokens["hits"][0]["matchedTokens"] = []
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(json.dumps(ranked_empty_tokens), context=context, cmd=ranked_search_cmd),
+        expected="matchedTokens is empty",
+        scope="smoke assertions",
+    )
+    ranked_unmatched_tokens = json.loads(passing_ranked_search_json())
+    ranked_unmatched_tokens["hits"][0]["matchedTokens"] = ["inter"]
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(json.dumps(ranked_unmatched_tokens), context=context, cmd=ranked_search_cmd),
+        expected="missing a hit matching the query token",
+        scope="smoke assertions",
+    )
+    ranked_missing_hit_key = json.loads(passing_ranked_search_json())
+    del ranked_missing_hit_key["hits"][0]["preview"]
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(json.dumps(ranked_missing_hit_key), context=context, cmd=ranked_search_cmd),
+        expected="hit keys changed",
+        scope="smoke assertions",
+    )
+    ranked_relative_file = json.loads(passing_ranked_search_json())
+    ranked_relative_file["hits"][0]["file"] = EXPECTED_CORPUS_SEARCH_HIT
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(json.dumps(ranked_relative_file), context=context, cmd=ranked_search_cmd),
+        expected="file is not absolute",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json("\x1b[31m{}", context=context, cmd=ranked_search_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+    assert_ranked_search_determinism(
+        passing_ranked_search_json(),
+        passing_ranked_search_json(),
+        context=context,
+        cmd=ranked_search_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_ranked_search_determinism(
+            passing_ranked_search_json(),
+            passing_ranked_search_json() + "\n",
+            context=context,
+            cmd=ranked_search_cmd,
+        ),
+        expected="differs between identical runs",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_ranked_search_determinism(
+            "\x1b[31m{}",
+            "\x1b[31m{}",
+            context=context,
+            cmd=ranked_search_cmd,
+        ),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    index_dir = "/tmp/design-ai-index"
+    index_build_cmd = ["design-ai", "index", "--build", "--json"]
+    assert_index_build_json(passing_index_build_json(index_dir), index_dir=index_dir, context=context, cmd=index_build_cmd)
+    expect_self_test_failure(
+        lambda: assert_index_build_json("{", index_dir=index_dir, context=context, cmd=index_build_cmd),
+        expected="failed to parse index build JSON",
+        scope="smoke assertions",
+    )
+    index_build_wrong_action = json.loads(passing_index_build_json(index_dir))
+    index_build_wrong_action["action"] = "status"
+    expect_self_test_failure(
+        lambda: assert_index_build_json(
+            json.dumps(index_build_wrong_action), index_dir=index_dir, context=context, cmd=index_build_cmd
+        ),
+        expected="action differs from build",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_index_build_json(
+            passing_index_build_json("/tmp/other-index"), index_dir=index_dir, context=context, cmd=index_build_cmd
+        ),
+        expected="indexDir differs",
+        scope="smoke assertions",
+    )
+    index_build_zero_documents = json.loads(passing_index_build_json(index_dir))
+    index_build_zero_documents["corpus"]["documentCount"] = 0
+    expect_self_test_failure(
+        lambda: assert_index_build_json(
+            json.dumps(index_build_zero_documents), index_dir=index_dir, context=context, cmd=index_build_cmd
+        ),
+        expected="documentCount is not a positive integer",
+        scope="smoke assertions",
+    )
+    index_build_bad_digest = json.loads(passing_index_build_json(index_dir))
+    index_build_bad_digest["learning"]["digest"] = "md5:abc"
+    expect_self_test_failure(
+        lambda: assert_index_build_json(
+            json.dumps(index_build_bad_digest), index_dir=index_dir, context=context, cmd=index_build_cmd
+        ),
+        expected="digest is not a sha256 digest",
+        scope="smoke assertions",
+    )
+    index_build_missing_key = json.loads(passing_index_build_json(index_dir))
+    del index_build_missing_key["corpus"]["file"]
+    expect_self_test_failure(
+        lambda: assert_index_build_json(
+            json.dumps(index_build_missing_key), index_dir=index_dir, context=context, cmd=index_build_cmd
+        ),
+        expected="corpus keys changed",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_index_build_json("\x1b[31m{}", index_dir=index_dir, context=context, cmd=index_build_cmd),
+        expected="ANSI escape",
+        scope="smoke assertions",
+    )
+
+    index_status_cmd = ["design-ai", "index", "--status", "--json"]
+    assert_index_status_json(passing_index_status_json(index_dir), index_dir=index_dir, context=context, cmd=index_status_cmd)
+    expect_self_test_failure(
+        lambda: assert_index_status_json("{", index_dir=index_dir, context=context, cmd=index_status_cmd),
+        expected="failed to parse index status JSON",
+        scope="smoke assertions",
+    )
+    index_status_stale = json.loads(passing_index_status_json(index_dir))
+    index_status_stale["fresh"] = False
+    expect_self_test_failure(
+        lambda: assert_index_status_json(
+            json.dumps(index_status_stale), index_dir=index_dir, context=context, cmd=index_status_cmd
+        ),
+        expected="is not fresh",
+        scope="smoke assertions",
+    )
+    index_status_wrong_command = json.loads(passing_index_status_json(index_dir))
+    index_status_wrong_command["buildCommand"] = "design-ai rebuild"
+    expect_self_test_failure(
+        lambda: assert_index_status_json(
+            json.dumps(index_status_wrong_command), index_dir=index_dir, context=context, cmd=index_status_cmd
+        ),
+        expected="buildCommand differs",
+        scope="smoke assertions",
+    )
+    index_status_missing_section = json.loads(passing_index_status_json(index_dir))
+    index_status_missing_section["corpus"]["present"] = False
+    expect_self_test_failure(
+        lambda: assert_index_status_json(
+            json.dumps(index_status_missing_section), index_dir=index_dir, context=context, cmd=index_status_cmd
+        ),
+        expected="corpus index is not present",
+        scope="smoke assertions",
+    )
+    index_status_stale_section = json.loads(passing_index_status_json(index_dir))
+    index_status_stale_section["learning"]["fresh"] = False
+    expect_self_test_failure(
+        lambda: assert_index_status_json(
+            json.dumps(index_status_stale_section), index_dir=index_dir, context=context, cmd=index_status_cmd
+        ),
+        expected="learning index is not fresh",
+        scope="smoke assertions",
+    )
+    index_status_digest_drift = json.loads(passing_index_status_json(index_dir))
+    index_status_digest_drift["corpus"]["currentDigest"] = f"sha256:{'2' * 64}"
+    expect_self_test_failure(
+        lambda: assert_index_status_json(
+            json.dumps(index_status_digest_drift), index_dir=index_dir, context=context, cmd=index_status_cmd
+        ),
+        expected="stored digest differs from current digest",
+        scope="smoke assertions",
+    )
+    index_status_error = json.loads(passing_index_status_json(index_dir))
+    index_status_error["learning"]["error"] = "unreadable"
+    expect_self_test_failure(
+        lambda: assert_index_status_json(
+            json.dumps(index_status_error), index_dir=index_dir, context=context, cmd=index_status_cmd
+        ),
+        expected="error is not empty",
+        scope="smoke assertions",
+    )
+
+    index_verify_cmd = ["design-ai", "index", "--verify", "--json"]
+    assert_index_verify_json(passing_index_verify_json(index_dir), index_dir=index_dir, context=context, cmd=index_verify_cmd)
+    expect_self_test_failure(
+        lambda: assert_index_verify_json("{", index_dir=index_dir, context=context, cmd=index_verify_cmd),
+        expected="failed to parse index verify JSON",
+        scope="smoke assertions",
+    )
+    index_verify_not_ok = json.loads(passing_index_verify_json(index_dir))
+    index_verify_not_ok["ok"] = False
+    expect_self_test_failure(
+        lambda: assert_index_verify_json(
+            json.dumps(index_verify_not_ok), index_dir=index_dir, context=context, cmd=index_verify_cmd
+        ),
+        expected="ok is not true",
+        scope="smoke assertions",
+    )
+    index_verify_wrong_names = json.loads(passing_index_verify_json(index_dir))
+    index_verify_wrong_names["checks"] = index_verify_wrong_names["checks"][:1]
+    expect_self_test_failure(
+        lambda: assert_index_verify_json(
+            json.dumps(index_verify_wrong_names), index_dir=index_dir, context=context, cmd=index_verify_cmd
+        ),
+        expected="check names changed",
+        scope="smoke assertions",
+    )
+    index_verify_mismatch = json.loads(passing_index_verify_json(index_dir))
+    index_verify_mismatch["checks"][1]["matches"] = False
+    expect_self_test_failure(
+        lambda: assert_index_verify_json(
+            json.dumps(index_verify_mismatch), index_dir=index_dir, context=context, cmd=index_verify_cmd
+        ),
+        expected="learning check does not match",
+        scope="smoke assertions",
+    )
+    index_verify_reason = json.loads(passing_index_verify_json(index_dir))
+    index_verify_reason["checks"][0]["reason"] = "digest drift"
+    expect_self_test_failure(
+        lambda: assert_index_verify_json(
+            json.dumps(index_verify_reason), index_dir=index_dir, context=context, cmd=index_verify_cmd
+        ),
+        expected="corpus check reason is not empty",
+        scope="smoke assertions",
+    )
+
     show_cmd = ["design-ai", "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"]
     assert_show_json_line(passing_show_json(), context=context, cmd=show_cmd)
     expect_self_test_failure(
@@ -11016,6 +11712,54 @@ def run_self_test() -> None:
         expected="privacy flags changed",
         scope="smoke assertions",
     )
+    workspace_retrieval_index_payload = json.loads(passing_workspace_json())
+    workspace_retrieval_index_payload["retrievalIndex"] = {
+        "indexDir": "/tmp/design-ai-index",
+        "corpus": json.loads(passing_index_status_json())["corpus"],
+        "learning": json.loads(passing_index_status_json())["learning"],
+        "fresh": True,
+        "status": "pass",
+        "buildCommand": EXPECTED_INDEX_BUILD_COMMAND,
+    }
+    assert_workspace_json(json.dumps(workspace_retrieval_index_payload), context=context, cmd=workspace_cmd)
+    stale_retrieval_index_payload = json.loads(json.dumps(workspace_retrieval_index_payload))
+    stale_retrieval_index_payload["retrievalIndex"]["fresh"] = False
+    stale_retrieval_index_payload["retrievalIndex"]["status"] = "warn"
+    stale_retrieval_index_payload["retrievalIndex"]["corpus"]["fresh"] = False
+    assert_workspace_json(json.dumps(stale_retrieval_index_payload), context=context, cmd=workspace_cmd)
+    mismatched_retrieval_index_payload = json.loads(json.dumps(workspace_retrieval_index_payload))
+    mismatched_retrieval_index_payload["retrievalIndex"]["status"] = "warn"
+    expect_self_test_failure(
+        lambda: assert_workspace_json(
+            json.dumps(mismatched_retrieval_index_payload),
+            context=context,
+            cmd=workspace_cmd,
+        ),
+        expected="retrievalIndex status does not match freshness",
+        scope="smoke assertions",
+    )
+    wrong_build_command_retrieval_index_payload = json.loads(json.dumps(workspace_retrieval_index_payload))
+    wrong_build_command_retrieval_index_payload["retrievalIndex"]["buildCommand"] = "design-ai rebuild"
+    expect_self_test_failure(
+        lambda: assert_workspace_json(
+            json.dumps(wrong_build_command_retrieval_index_payload),
+            context=context,
+            cmd=workspace_cmd,
+        ),
+        expected="retrievalIndex buildCommand differs",
+        scope="smoke assertions",
+    )
+    missing_retrieval_index_key_payload = json.loads(json.dumps(workspace_retrieval_index_payload))
+    del missing_retrieval_index_key_payload["retrievalIndex"]["learning"]["documentCount"]
+    expect_self_test_failure(
+        lambda: assert_workspace_json(
+            json.dumps(missing_retrieval_index_key_payload),
+            context=context,
+            cmd=workspace_cmd,
+        ),
+        expected="retrievalIndex learning keys changed",
+        scope="smoke assertions",
+    )
     assert_workspace_strict_failure_json(
         passing_workspace_json(),
         returncode=1,
@@ -11072,6 +11816,7 @@ def run_self_test() -> None:
         "learningUsage": reordered_workspace_payload["learningUsage"],
         "learningEval": reordered_workspace_payload["learningEval"],
         "learningRestoreBackups": reordered_workspace_payload["learningRestoreBackups"],
+        "retrievalIndex": reordered_workspace_payload["retrievalIndex"],
         "release": reordered_workspace_payload["release"],
         "nextActions": reordered_workspace_payload["nextActions"],
     }

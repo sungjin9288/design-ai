@@ -29,6 +29,7 @@ function parseLearningEvalPayload(evalText, source = "input") {
   return {
     source,
     version: Number.isInteger(payload.version) ? payload.version : 1,
+    ranker: typeof payload.ranker === "string" && payload.ranker.trim() ? payload.ranker.trim() : "lexical",
     generatedAt: safeIsoString(payload.generatedAt),
     sourceProfile: summarizeLearningEvalSourceProfile(payload.sourceProfile),
     cases: payload.cases,
@@ -309,6 +310,7 @@ export function learningEvalReport({
     profileExists,
     profileEntryCount: profile.entries.length,
     checkpointVersion: checkpoint.version,
+    ranker: checkpoint.ranker,
     generatedAt: checkpoint.generatedAt,
     sourceProfile: checkpoint.sourceProfile,
     defaultLimit,
@@ -433,6 +435,7 @@ export function buildLearningEvalTemplate({
 
   return {
     version: 1,
+    ranker: "lexical",
     generatedAt: now.toISOString(),
     sourceProfile: {
       file: resolvedFile,

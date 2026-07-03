@@ -118,7 +118,7 @@ test("runLearn list and export filter learned entries by query without fallback"
   assert.match(listOutput, /Query: keyboard accessibility/);
   assert.match(listOutput, /Explain: selection score, matched tokens, and reason/);
   assert.match(listOutput, /\[accessibility\] Prioritize keyboard accessibility/);
-  assert.match(listOutput, /score \d+ .* matched keyboard, accessibility .* reason brief-match/);
+  assert.match(listOutput, /score [\d.]+ .* matched accessibility, keyboard .* reason brief-match/);
   assert.doesNotMatch(listOutput, /dense Korean mobile/);
   assert.doesNotMatch(listOutput, /quiet enterprise brand/);
 
@@ -142,7 +142,7 @@ test("runLearn list and export filter learned entries by query without fallback"
   assert.equal(listPayload.selection.selected[0].id, "learn-a11y");
   assert.equal(listPayload.selection.selected[0].reason, "brief-match");
   assert.ok(listPayload.selection.selected[0].score > 0);
-  assert.deepEqual(listPayload.selection.selected[0].matchedTokens, ["keyboard", "accessibility"]);
+  assert.deepEqual(listPayload.selection.selected[0].matchedTokens, ["accessibility", "keyboard"]);
 
   const exportJsonOutput = await captureStdout(() => runLearn([
     "--export",
@@ -398,8 +398,8 @@ test("buildLearningContext ranks learned entries by brief relevance with recency
     [
       {
         id: "learn-korean",
-        score: 4,
-        matchedTokens: ["korean", "checkout"],
+        score: 2.141202,
+        matchedTokens: ["checkout", "korean"],
         reason: "brief-match",
       },
       {
