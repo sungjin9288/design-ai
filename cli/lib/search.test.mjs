@@ -150,9 +150,17 @@ test("parseSearchArgs supports query, limit, dirs, and json", () => {
     limit: 3,
     json: true,
     ranked: false,
+    embeddings: false,
+    provider: "",
     help: false,
   });
   assert.equal(parseSearchArgs(["tokens", "--ranked"]).ranked, true);
+});
+
+test("parseSearchArgs supports --embeddings and --provider", () => {
+  const parsed = parseSearchArgs(["tokens", "--ranked", "--embeddings", "--provider", "./bin/local-embed --quiet"]);
+  assert.equal(parsed.embeddings, true);
+  assert.equal(parsed.provider, "./bin/local-embed --quiet");
 });
 
 test("parseSearchArgs rejects invalid options", () => {

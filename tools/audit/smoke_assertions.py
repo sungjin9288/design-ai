@@ -160,8 +160,8 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "uninstall": "design-ai uninstall [--json]",
     "status": "design-ai status [--json]",
     "list": "design-ai list [skills|commands|agents] [--json]",
-    "search": "design-ai search <query> [--dir kind] [--limit N] [--ranked] [--json]",
-    "index": "design-ai index [--build|--status|--verify] [--json]",
+    "search": "design-ai search <query> [--dir kind] [--limit N] [--ranked] [--embeddings [--provider \"cmd args\"]] [--json]",
+    "index": "design-ai index [--build|--status|--verify] [--json] [--embeddings [--provider \"cmd args\"]]",
     "show": "design-ai show <file[:line]> [--lines N:M] [--context N] [--json]",
     "route": "design-ai route <brief|--from-file file|--stdin|--list|--eval-template|--eval> [--limit N]",
     "routes": "design-ai routes [--json]",
@@ -184,8 +184,8 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "uninstall": ("Usage:", "design-ai uninstall [--json]"),
     "status": ("Usage:", "design-ai status [--json]"),
     "list": ("Usage:", "design-ai list [skills|commands|agents]"),
-    "search": ("Usage:", "design-ai search <query> [--limit N] [--dir kind] [--ranked] [--json]"),
-    "index": ("Usage:", "design-ai index [--build|--status|--verify] [--json]"),
+    "search": ("Usage:", "design-ai search <query> [--limit N] [--dir kind] [--ranked] [--embeddings [--provider \"cmd args\"]] [--json]"),
+    "index": ("Usage:", "design-ai index [--build|--status|--verify] [--json] [--embeddings [--provider \"cmd args\"]]"),
     "show": ("Usage:", "design-ai show <file[:line|start-end]> [--lines N:M] [--context N] [--json]"),
     "route": ("Usage:", "design-ai route <brief>", "design-ai route --list [--json]", "design-ai route --eval-template [--json]"),
     "routes": ("Usage:", "design-ai routes [--json]", "Equivalent to: design-ai route --list"),
@@ -588,6 +588,7 @@ EXPECTED_INDEX_FILE_BASENAMES = {
     "corpus": "corpus-index.json",
     "learning": "learning-index.json",
 }
+EXPECTED_EMBEDDING_INDEX_FILE_BASENAMES = {"embedding-index": "embedding-index.json"}
 EXPECTED_INDEX_STATUS_SECTION_KEYS = [
     "file",
     "present",
@@ -595,6 +596,18 @@ EXPECTED_INDEX_STATUS_SECTION_KEYS = [
     "sourceMatch",
     "generatedAt",
     "documentCount",
+    "storedDigest",
+    "currentDigest",
+    "error",
+]
+EXPECTED_INDEX_STATUS_EMBEDDINGS_KEYS = [
+    "file",
+    "present",
+    "fresh",
+    "sourceMatch",
+    "generatedAt",
+    "documentCount",
+    "provider",
     "storedDigest",
     "currentDigest",
     "error",
@@ -1956,8 +1969,8 @@ def passing_search_human_output() -> str:
     ])
 
 
-def passing_ranked_search_json() -> str:
-    return json.dumps({
+def passing_ranked_search_json(*, backend: str | None = None) -> str:
+    payload = {
         "query": EXPECTED_CORPUS_SEARCH_QUERY,
         "ranked": True,
         "notice": EXPECTED_RANKED_SEARCH_NOT_BUILT_NOTICE,
@@ -1970,7 +1983,10 @@ def passing_ranked_search_json() -> str:
                 "preview": EXPECTED_CORPUS_SEARCH_PREVIEW,
             }
         ],
-    })
+    }
+    if backend is not None:
+        payload["backend"] = backend
+    return json.dumps(payload)
 
 
 def passing_index_build_json(index_dir: str = "/tmp/design-ai-index") -> str:
@@ -2004,12 +2020,28 @@ def passing_index_status_section(index_dir: str, label: str, digest: str) -> dic
     }
 
 
-def passing_index_status_json(index_dir: str = "/tmp/design-ai-index") -> str:
+def passing_index_status_embeddings_section(index_dir: str) -> dict:
+    return {
+        "file": f"{index_dir}/{EXPECTED_EMBEDDING_INDEX_FILE_BASENAMES['embedding-index']}",
+        "present": True,
+        "fresh": True,
+        "sourceMatch": True,
+        "generatedAt": "2026-05-22T00:00:03.000Z",
+        "documentCount": 463,
+        "provider": {"command": "./bin/local-embed", "modelLabel": "stub", "dimensions": 3},
+        "storedDigest": f"sha256:{'0' * 64}",
+        "currentDigest": f"sha256:{'0' * 64}",
+        "error": "",
+    }
+
+
+def passing_index_status_json(index_dir: str = "/tmp/design-ai-index", *, with_embeddings: bool = False) -> str:
     return json.dumps({
         "action": "status",
         "indexDir": index_dir,
         "corpus": passing_index_status_section(index_dir, "corpus", f"sha256:{'0' * 64}"),
         "learning": passing_index_status_section(index_dir, "learning", f"sha256:{'1' * 64}"),
+        "embeddings": passing_index_status_embeddings_section(index_dir) if with_embeddings else None,
         "fresh": True,
         "buildCommand": EXPECTED_INDEX_BUILD_COMMAND,
     })
@@ -2801,6 +2833,7 @@ def assert_ranked_search_json(
     context: str,
     cmd: list[str],
     expected_notice: str | None = None,
+    expected_backend: str | None = None,
 ) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -2808,9 +2841,12 @@ def assert_ranked_search_json(
     except json.JSONDecodeError as error:
         raise SystemExit(f"failed to parse ranked search JSON after {context}") from error
 
+    expected_keys = ["query", "ranked", "notice", "hits"]
+    if expected_backend is not None:
+        expected_keys.append("backend")
     payload = assert_corpus_json_keys(
         payload,
-        ["query", "ranked", "notice", "hits"],
+        expected_keys,
         label="top-level",
         context=context,
         command_label="ranked search JSON",
@@ -2825,6 +2861,8 @@ def assert_ranked_search_json(
         raise SystemExit(f"ranked search JSON after {context} notice is not a string")
     if expected_notice is not None and notice != expected_notice:
         raise SystemExit(f"ranked search JSON after {context} notice differs from expected notice")
+    if expected_backend is not None and payload.get("backend") != expected_backend:
+        raise SystemExit(f"ranked search JSON after {context} backend differs from expected backend")
 
     hits = payload.get("hits")
     if not isinstance(hits, list):
@@ -2924,7 +2962,14 @@ def assert_index_build_json(raw: str, *, index_dir: str, context: str, cmd: list
             raise SystemExit(f"index build JSON after {context} {label} digest is not a sha256 digest")
 
 
-def assert_index_status_json(raw: str, *, index_dir: str, context: str, cmd: list[str]) -> None:
+def assert_index_status_json(
+    raw: str,
+    *,
+    index_dir: str,
+    context: str,
+    cmd: list[str],
+    expect_embeddings: bool = False,
+) -> None:
     assert_no_ansi(raw, cmd)
     try:
         payload = json.loads(raw)
@@ -2933,7 +2978,7 @@ def assert_index_status_json(raw: str, *, index_dir: str, context: str, cmd: lis
 
     payload = assert_corpus_json_keys(
         payload,
-        ["action", "indexDir", "corpus", "learning", "fresh", "buildCommand"],
+        ["action", "indexDir", "corpus", "learning", "embeddings", "fresh", "buildCommand"],
         label="top-level",
         context=context,
         command_label="index status JSON",
@@ -2979,8 +3024,43 @@ def assert_index_status_json(raw: str, *, index_dir: str, context: str, cmd: lis
         if section.get("error") != "":
             raise SystemExit(f"index status JSON after {context} {label} error is not empty")
 
+    embeddings = payload.get("embeddings")
+    if not expect_embeddings:
+        if embeddings is not None:
+            raise SystemExit(f"index status JSON after {context} embeddings is not null when embeddings were not built")
+        return
 
-def assert_index_verify_json(raw: str, *, index_dir: str, context: str, cmd: list[str]) -> None:
+    embeddings = assert_corpus_json_keys(
+        embeddings,
+        EXPECTED_INDEX_STATUS_EMBEDDINGS_KEYS,
+        label="embeddings",
+        context=context,
+        command_label="index status JSON",
+    )
+    expected_embeddings_file = str(Path(index_dir) / EXPECTED_EMBEDDING_INDEX_FILE_BASENAMES["embedding-index"])
+    if embeddings.get("file") != expected_embeddings_file:
+        raise SystemExit(f"index status JSON after {context} embeddings file differs from expected index path")
+    if embeddings.get("present") is not True:
+        raise SystemExit(f"index status JSON after {context} embeddings index is not present")
+    if embeddings.get("fresh") is not True:
+        raise SystemExit(f"index status JSON after {context} embeddings index is not fresh")
+    if not is_corpus_json_positive_int(embeddings.get("documentCount")):
+        raise SystemExit(f"index status JSON after {context} embeddings documentCount is not a positive integer")
+    provider = embeddings.get("provider")
+    if not isinstance(provider, dict) or not provider.get("command"):
+        raise SystemExit(f"index status JSON after {context} embeddings provider is missing a command")
+    if embeddings.get("error") != "":
+        raise SystemExit(f"index status JSON after {context} embeddings error is not empty")
+
+
+def assert_index_verify_json(
+    raw: str,
+    *,
+    index_dir: str,
+    context: str,
+    cmd: list[str],
+    expect_embeddings_check: bool = False,
+) -> None:
     assert_no_ansi(raw, cmd)
     try:
         payload = json.loads(raw)
@@ -3003,10 +3083,21 @@ def assert_index_verify_json(raw: str, *, index_dir: str, context: str, cmd: lis
     checks = payload.get("checks")
     if not isinstance(checks, list):
         raise SystemExit(f"index verify JSON after {context} checks is not a list")
-    if [check.get("name") for check in checks if isinstance(check, dict)] != list(EXPECTED_INDEX_FILE_BASENAMES):
+    expected_names = list(EXPECTED_INDEX_FILE_BASENAMES) + (["embeddings"] if expect_embeddings_check else [])
+    if [check.get("name") for check in checks if isinstance(check, dict)] != expected_names:
         raise SystemExit(f"index verify JSON after {context} check names changed")
 
     for check in checks:
+        name = check.get("name") if isinstance(check, dict) else None
+        if name == "embeddings":
+            if check.get("matches") is not True:
+                raise SystemExit(f"index verify JSON after {context} embeddings check does not match")
+            if not isinstance(check.get("file"), str) or not check.get("file"):
+                raise SystemExit(f"index verify JSON after {context} embeddings check file is missing")
+            if not isinstance(check.get("reason"), str):
+                raise SystemExit(f"index verify JSON after {context} embeddings check reason is not a string")
+            continue
+
         check = assert_corpus_json_keys(
             check,
             ["name", "file", "matches", "reason"],
@@ -3014,7 +3105,6 @@ def assert_index_verify_json(raw: str, *, index_dir: str, context: str, cmd: lis
             context=context,
             command_label="index verify JSON",
         )
-        name = check.get("name")
         assert_index_file_path(
             check.get("file"),
             index_dir=index_dir,
@@ -4574,8 +4664,10 @@ def passing_main_help_output() -> str:
         "        design-ai help [command|--json]",
         "",
         "  install                                                                Symlink design-ai into Claude Code (~/.claude)",
-        "  search <query> [--dir kind] [--limit N] [--ranked] [--json]            Search the local markdown corpus",
-        "  index [--build|--status|--verify] [--json]                             Build, inspect, and verify the local retrieval index",
+        "  search <query> [--dir kind] [--limit N] [--ranked] [--embeddings [--provider \"cmd args\"]] [--json]",
+        "    Search the local markdown corpus",
+        "  index [--build|--status|--verify] [--json] [--embeddings [--provider \"cmd args\"]]",
+        "    Build, inspect, and verify the local retrieval index",
         "  show <file[:line]> [--lines N:M] [--context N] [--json]                Print a corpus file or line range",
         "  route <brief|--from-file file|--stdin|--list|--eval-template|--eval> [--limit N]",
         "    Recommend commands, skills, knowledge, and route eval checkpoints",
@@ -9573,6 +9665,21 @@ def run_self_test() -> None:
         expected="failed to parse ranked search JSON",
         scope="smoke assertions",
     )
+    assert_ranked_search_json(
+        passing_ranked_search_json(backend="embeddings"),
+        context=context,
+        cmd=ranked_search_cmd,
+        expected_backend="embeddings",
+    )
+    ranked_wrong_backend = json.loads(passing_ranked_search_json(backend="embeddings"))
+    ranked_wrong_backend["backend"] = "lexical"
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(
+            json.dumps(ranked_wrong_backend), context=context, cmd=ranked_search_cmd, expected_backend="embeddings"
+        ),
+        expected="backend differs from expected backend",
+        scope="smoke assertions",
+    )
     ranked_wrong_query = json.loads(passing_ranked_search_json())
     ranked_wrong_query["query"] = "Inter"
     expect_self_test_failure(
@@ -9804,6 +9911,48 @@ def run_self_test() -> None:
             json.dumps(index_status_error), index_dir=index_dir, context=context, cmd=index_status_cmd
         ),
         expected="error is not empty",
+        scope="smoke assertions",
+    )
+    index_status_embeddings_present_unexpectedly = json.loads(passing_index_status_json(index_dir, with_embeddings=True))
+    expect_self_test_failure(
+        lambda: assert_index_status_json(
+            json.dumps(index_status_embeddings_present_unexpectedly), index_dir=index_dir, context=context, cmd=index_status_cmd
+        ),
+        expected="embeddings is not null when embeddings were not built",
+        scope="smoke assertions",
+    )
+
+    assert_index_status_json(
+        passing_index_status_json(index_dir, with_embeddings=True),
+        index_dir=index_dir,
+        context=context,
+        cmd=index_status_cmd,
+        expect_embeddings=True,
+    )
+    index_status_embeddings_stale = json.loads(passing_index_status_json(index_dir, with_embeddings=True))
+    index_status_embeddings_stale["embeddings"]["fresh"] = False
+    expect_self_test_failure(
+        lambda: assert_index_status_json(
+            json.dumps(index_status_embeddings_stale),
+            index_dir=index_dir,
+            context=context,
+            cmd=index_status_cmd,
+            expect_embeddings=True,
+        ),
+        expected="embeddings index is not fresh",
+        scope="smoke assertions",
+    )
+    index_status_embeddings_no_provider_command = json.loads(passing_index_status_json(index_dir, with_embeddings=True))
+    index_status_embeddings_no_provider_command["embeddings"]["provider"] = {"command": "", "modelLabel": "", "dimensions": 3}
+    expect_self_test_failure(
+        lambda: assert_index_status_json(
+            json.dumps(index_status_embeddings_no_provider_command),
+            index_dir=index_dir,
+            context=context,
+            cmd=index_status_cmd,
+            expect_embeddings=True,
+        ),
+        expected="embeddings provider is missing a command",
         scope="smoke assertions",
     )
 

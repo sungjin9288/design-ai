@@ -119,17 +119,27 @@ design-ai search "query" --ranked --embeddings                       # rerank le
 design-ai index --status --json                                      # reports embedding backend presence, digests, staleness
 ```
 
-Storage format sketch (sidecar next to the Phase A index):
+Storage format (sidecar next to the Phase A index, `embedding-index.json`; as shipped):
 
 ```json
 {
   "version": 1,
   "kind": "embedding-index",
-  "provider": { "command": "./bin/local-embed", "modelLabel": "user-supplied", "dimensions": 384 },
-  "source": { "corpusDigest": "sha256:...", "learningDigest": "sha256:..." },
+  "generatedAt": "2026-07-03T00:00:00.000Z",
+  "provider": { "command": "./bin/local-embed", "args": [], "modelLabel": "user-supplied", "dimensions": 384 },
+  "source": {
+    "designAiPath": "/absolute/path/to/this/checkout",
+    "corpusDirs": ["knowledge", "examples", "skills", "docs", "agents", "commands"],
+    "corpusDigest": "sha256:...",
+    "learningFile": "~/.design-ai/learning.json",
+    "learningDigest": "sha256:...",
+    "auditStatus": "ok"
+  },
   "vectors": [{ "id": "knowledge/a11y/contrast.md", "v": [0.0] }]
 }
 ```
+
+Same source-identity fields as the Phase A corpus/learning index (`designAiPath`, `learningFile`, both digests) so freshness and "not my index" rules are identical (FU-2). Learning entry documents are embedded alongside the corpus, with their id prefixed `learning:` in this sidecar only (never in `learning.json` or the Phase A learning index) so ids never collide with corpus paths. Configuration home: `~/.design-ai/config.json` (`{ "version": 1, "embeddings": { "provider": { "command": "...", "args": [...] }, "modelLabel": "..." } }`, user-authored, design-ai never writes it) supplies the durable per-machine provider; `--provider "cmd args"` overrides it for one invocation; either way the explicit `--embeddings` flag is still required per invocation (config alone never enables it).
 
 Determinism and reproducibility: design-ai's side is deterministic — candidate generation (Phase A), provider invocation order, cosine similarity, and tie-breaking are all fixed. Vector values depend on the user's provider; the index therefore records the provider command and source digests so results are reproducible for a given provider, and `index --status` surfaces any digest drift. Eval checkpoints for embedding-assisted selection are only valid against the same recorded provider.
 

@@ -12542,6 +12542,177 @@ def assert_ranked_search_determinism_smoke(
     )
 
 
+def assert_embeddings_off_by_default_smoke(
+    command_factory,
+    index_dir: Path,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    """Phase B is opt-in: a plain `index --build` never touches embeddings, and
+    `index --status` reports `embeddings: null` (the feature is simply unused)."""
+    index_dir.mkdir(parents=True, exist_ok=True)
+    write_learning_relevance_fixture(profile_path)
+    index_env = env.copy()
+    index_env["DESIGN_AI_INDEX_DIR"] = str(index_dir)
+    index_env["DESIGN_AI_LEARNING_FILE"] = str(profile_path)
+    # Point at a config file that is guaranteed not to exist, rather than relying on
+    # the ambient environment lacking DESIGN_AI_CONFIG_FILE — a real ~/.design-ai/
+    # config.json on the machine running this smoke must not leak into the test.
+    index_env["DESIGN_AI_CONFIG_FILE"] = str(index_dir.parent / "no-config-here" / "config.json")
+
+    build_cmd = command_factory("index", "--build", "--json")
+    build_result = run_plain(build_cmd, cwd=cwd, env=index_env)
+    build_payload = json.loads(build_result.stdout)
+    if "embeddings" in build_payload:
+        raise SystemExit(f"index build JSON after {context} unexpectedly ran provider execution with plain --build")
+
+    status_cmd = command_factory("index", "--status", "--json")
+    status_result = run_plain(status_cmd, cwd=cwd, env=index_env)
+    assert_index_status_json(
+        status_result.stdout,
+        index_dir=str(index_dir),
+        context=f"{context} status",
+        cmd=status_cmd,
+        expect_embeddings=False,
+    )
+
+
+def assert_search_embeddings_no_provider_fallback_smoke(
+    command_factory,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+    config_file: Path,
+) -> None:
+    """`search --ranked --embeddings` with no provider configured (flag or config)
+    degrades to the lexical backend with a notice and exit code 0."""
+    fallback_env = env.copy()
+    # Same isolation rationale as assert_embeddings_off_by_default_smoke: point at a
+    # config path guaranteed not to exist rather than trusting the ambient environment.
+    fallback_env["DESIGN_AI_CONFIG_FILE"] = str(config_file)
+
+    search_cmd = command_factory(
+        "search",
+        EXPECTED_CORPUS_SEARCH_QUERY,
+        "--dir",
+        "knowledge",
+        "--limit",
+        str(EXPECTED_RANKED_SEARCH_LIMIT),
+        "--ranked",
+        "--embeddings",
+        "--json",
+    )
+    result = run_plain(search_cmd, cwd=cwd, env=fallback_env)
+    assert_ranked_search_json(
+        result.stdout,
+        context=f"{context} payload",
+        cmd=search_cmd,
+        expected_backend="lexical",
+    )
+    payload = json.loads(result.stdout)
+    if "embedding provider" not in payload.get("notice", "") and "no embedding provider configured" not in payload.get("notice", ""):
+        raise SystemExit(f"search ranked JSON after {context} fallback notice does not mention the missing provider")
+
+
+STUB_EMBEDDING_PROVIDER_SCRIPT = """
+const chunks = [];
+process.stdin.on("data", (c) => chunks.push(c));
+process.stdin.on("end", () => {
+  const lines = Buffer.concat(chunks).toString("utf8").trim().split("\\n").filter(Boolean);
+  for (const line of lines) {
+    const { id } = JSON.parse(line);
+    let seed = 0;
+    for (const ch of id) seed = (seed * 31 + ch.charCodeAt(0)) % 997;
+    const vector = [seed / 997, (seed + 1) / 997, (seed + 2) / 997];
+    process.stdout.write(JSON.stringify({ id, vector }) + "\\n");
+  }
+});
+"""
+
+
+def write_stub_embedding_provider(root: Path) -> Path:
+    root.mkdir(parents=True, exist_ok=True)
+    script_path = root / "stub-embedding-provider.mjs"
+    script_path.write_text(STUB_EMBEDDING_PROVIDER_SCRIPT, encoding="utf-8")
+    return script_path
+
+
+def assert_embedding_stub_provider_roundtrip_smoke(
+    command_factory,
+    index_dir: Path,
+    profile_path: Path,
+    script_dir: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    """A tiny deterministic node stub provider round-trips through `index --build
+    --embeddings --provider`, `index --status`, `index --verify`, and
+    `search --ranked --embeddings` (installed-bin path; documents the --provider
+    "command args" convention of splitting a single string on spaces)."""
+    index_dir.mkdir(parents=True, exist_ok=True)
+    write_learning_relevance_fixture(profile_path)
+    script_path = write_stub_embedding_provider(script_dir)
+    provider_flag = f"node {script_path}"
+
+    index_env = env.copy()
+    index_env["DESIGN_AI_INDEX_DIR"] = str(index_dir)
+    index_env["DESIGN_AI_LEARNING_FILE"] = str(profile_path)
+    index_env.pop("DESIGN_AI_CONFIG_FILE", None)
+
+    build_cmd = command_factory("index", "--build", "--embeddings", "--provider", provider_flag, "--json")
+    build_result = run_plain(build_cmd, cwd=cwd, env=index_env)
+    build_payload = json.loads(build_result.stdout)
+    if build_payload.get("embeddings", {}).get("ok") is not True:
+        raise SystemExit(f"index build JSON after {context} embeddings did not build successfully")
+
+    status_cmd = command_factory("index", "--status", "--json")
+    status_result = run_plain(status_cmd, cwd=cwd, env=index_env)
+    assert_index_status_json(
+        status_result.stdout,
+        index_dir=str(index_dir),
+        context=f"{context} status",
+        cmd=status_cmd,
+        expect_embeddings=True,
+    )
+
+    verify_cmd = command_factory("index", "--verify", "--provider", provider_flag, "--json")
+    verify_result = run_plain(verify_cmd, cwd=cwd, env=index_env)
+    assert_index_verify_json(
+        verify_result.stdout,
+        index_dir=str(index_dir),
+        context=f"{context} verify",
+        cmd=verify_cmd,
+        expect_embeddings_check=True,
+    )
+
+    search_cmd = command_factory(
+        "search",
+        EXPECTED_CORPUS_SEARCH_QUERY,
+        "--dir",
+        "knowledge",
+        "--limit",
+        str(EXPECTED_RANKED_SEARCH_LIMIT),
+        "--ranked",
+        "--embeddings",
+        "--provider",
+        provider_flag,
+        "--json",
+    )
+    search_result = run_plain(search_cmd, cwd=cwd, env=index_env)
+    assert_ranked_search_json(
+        search_result.stdout,
+        context=f"{context} search payload",
+        cmd=search_cmd,
+        expected_backend="embeddings",
+    )
+
+
 def run_self_test() -> None:
     context = "package smoke self-test"
     cmd = ["design-ai", "doctor", "--json"]
@@ -20666,6 +20837,27 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin ranked search determinism",
         )
+        assert_embeddings_off_by_default_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-embeddings-off-index",
+            tmp_root / "installed-embeddings-off-learning.json",
+            env=smoke_env,
+            context="package smoke installed bin embeddings off by default",
+        )
+        assert_search_embeddings_no_provider_fallback_smoke(
+            lambda *args: [str(bin_path), *args],
+            env=smoke_env,
+            context="package smoke installed bin search embeddings no-provider fallback",
+            config_file=tmp_root / "installed-no-config-here" / "config.json",
+        )
+        assert_embedding_stub_provider_roundtrip_smoke(
+            lambda *args: [str(bin_path), *args],
+            tmp_root / "installed-embedding-index",
+            tmp_root / "installed-embedding-learning.json",
+            tmp_root / "installed-embedding-provider",
+            env=smoke_env,
+            context="package smoke installed bin embedding stub provider round-trip",
+        )
         assert_show_smoke(
             [str(bin_path), "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"],
             env=smoke_env,
@@ -22058,6 +22250,21 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec ranked search determinism",
+        )
+        assert_embeddings_off_by_default_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            npx_root / "npx-embeddings-off-index",
+            npx_root / "npx-embeddings-off-learning.json",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec embeddings off by default",
+        )
+        assert_search_embeddings_no_provider_fallback_smoke(
+            lambda *args: npm_exec_cmd(tarball, *args),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec search embeddings no-provider fallback",
+            config_file=npx_root / "npx-no-config-here" / "config.json",
         )
         assert_show_smoke(
             npm_exec_cmd(tarball, "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"),
