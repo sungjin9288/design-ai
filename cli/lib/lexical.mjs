@@ -4,12 +4,47 @@
 export const BM25_K1 = 1.2;
 export const BM25_B = 0.75;
 
-// Same token model as learn-select.mjs: Unicode letters/numbers, lowercased, length >= 2.
+// Hangul syllable block (U+AC00–U+D7A3). Korean surface forms are written without
+// spaces between stem and particle (버튼을, 접근성이), so a whitespace-delimited token
+// is an atomic surface form. To let a stem query match particle-attached documents
+// (and vice versa), we deterministically expand every Hangul run of length >= 2 into
+// its overlapping character bigrams and emit them ALONGSIDE the original token.
+//   버튼을 -> keep 버튼을, add 버튼, 튼을
+//   접근성 -> keep 접근성, add 접근, 근성
+//   버튼   -> the 2-char run's only bigram is itself; kept via dedupe
+// Latin/number tokens and mixed tokens' non-Hangul parts are unchanged. The rule is
+// pure and deterministic (no locale, no time, no randomness); order is normalized by
+// the dedupe+sort in lexicalQueryTokens and by termFrequencies for stats.
+const HANGUL_RUN = /[가-힣]{2,}/gu;
+
+function hangulBigrams(token) {
+  const bigrams = [];
+  for (const run of token.match(HANGUL_RUN) || []) {
+    for (let i = 0; i + 2 <= run.length; i += 1) {
+      bigrams.push(run.slice(i, i + 2));
+    }
+  }
+  return bigrams;
+}
+
+// Same base token model as learn-select.mjs: Unicode letters/numbers, lowercased,
+// length >= 2. Hangul tokens additionally emit character bigrams (see HANGUL_RUN).
 export function lexicalTokens(text) {
-  return (String(text || "")
+  const base = (String(text || "")
     .toLowerCase()
     .match(/[\p{L}\p{N}]+/gu) || [])
     .filter((token) => token.length >= 2);
+
+  const expanded = [];
+  for (const token of base) {
+    expanded.push(token);
+    for (const bigram of hangulBigrams(token)) {
+      // A 2-char Hangul run's only bigram is the token itself; do not re-emit it,
+      // which would double-count its term frequency and distort BM25.
+      if (bigram !== token) expanded.push(bigram);
+    }
+  }
+  return expanded;
 }
 
 export function lexicalQueryTokens(query) {

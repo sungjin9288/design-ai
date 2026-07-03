@@ -76,10 +76,11 @@ Storage format sketch (sidecar JSON, following `learning.json` conventions — v
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "kind": "retrieval-index",
   "generatedAt": "2026-07-03T00:00:00.000Z",
   "source": {
+    "designAiPath": "/absolute/path/to/this/checkout",
     "corpusDirs": ["knowledge", "examples", "skills", "docs", "agents", "commands"],
     "corpusDigest": "sha256:...",
     "learningFile": "~/.design-ai/learning.json",
@@ -189,8 +190,8 @@ This review answers the five open questions against the shipped Phase A implemen
 
 ### Follow-up work items
 
-- **FU-1 (Q4, before Phase B):** Add Hangul-aware tokenization (CJK bigramming or particle stripping) in `cli/lib/lexical.mjs` behind Korean `learn --eval` checkpoints; regression-test that `버튼`, `버튼을`, `버튼이` converge on the same button docs.
-- **FU-2 (Q2, before Phase B index-as-source-of-truth):** Key the corpus index by corpus digest / record `designAiPath` in the payload so multiple checkouts do not overwrite each other once the index is read for content rather than staleness.
+- **FU-1 (Q4, before Phase B):** Add Hangul-aware tokenization (CJK bigramming or particle stripping) in `cli/lib/lexical.mjs` behind Korean `learn --eval` checkpoints; regression-test that `버튼`, `버튼을`, `버튼이` converge on the same button docs. _Done (2026-07-03): Hangul runs >= 2 chars now emit overlapping character bigrams alongside the surface form; the review's zero-hit queries recover (`버튼` 0 → 3 ranked hits, `접근성이` 0 → 3), with unit regression coverage in `lexical.test.mjs`._
+- **FU-2 (Q2, before Phase B index-as-source-of-truth):** Key the corpus index by corpus digest / record `designAiPath` in the payload so multiple checkouts do not overwrite each other once the index is read for content rather than staleness. _Done (2026-07-03): sidecar format bumped to version 2 (auto-invalidating v1 files); the corpus payload records resolved `designAiPath` and the learning payload the resolved `learningFile`, and `index --status` reports `sourceMatch` and treats identity mismatch as not fresh._
 - **FU-3 (Q1, gates default promotion):** Land a ranked-search eval checkpoint so any future `--ranked` default promotion is evidence-backed and announced.
 - **FU-4 (Q5, Phase B):** Specify and implement `~/.design-ai/config.json` as the Phase B provider config home with per-invocation `--embeddings` still required.
 

@@ -54,7 +54,9 @@ test("buildCorpusIndex is deterministic apart from generatedAt and digests sourc
   const first = buildCorpusIndex({ designAiPath: root, dirs, now: FIXED_NOW });
   const second = buildCorpusIndex({ designAiPath: root, dirs, now: new Date("2027-01-01T00:00:00.000Z") });
 
+  assert.equal(first.version, 2);
   assert.equal(first.kind, "retrieval-index");
+  assert.equal(first.source.designAiPath, path.resolve(root));
   assert.deepEqual(first.documents.map((doc) => doc.id), ["examples/button.md", "knowledge/color.md"]);
   assert.match(first.source.corpusDigest, /^sha256:[0-9a-f]{64}$/);
   const { generatedAt: g1, ...restFirst } = first;
@@ -146,6 +148,60 @@ test("verify passes on a faithful build and fails when sources drift", () => wit
   assert.equal(drifted.ok, false);
   assert.equal(drifted.checks.find((check) => check.name === "learning").matches, false);
   assert.equal(drifted.checks.find((check) => check.name === "corpus").matches, true);
+}));
+
+test("status marks the corpus index not fresh when it was built from a different checkout", () => withTempDir((root) => {
+  const checkoutA = path.join(root, "checkout-a");
+  const checkoutB = path.join(root, "checkout-b");
+  for (const checkout of [checkoutA, checkoutB]) {
+    mkdirSync(checkout, { recursive: true });
+    writeFixtureCorpus(checkout);
+  }
+  const dirs = ["knowledge", "examples"];
+  const profileFile = path.join(root, "learning.json");
+  writeFixtureProfile(profileFile);
+  const indexDir = path.join(root, "index");
+
+  writeRetrievalIndexes({
+    indexDir,
+    corpus: buildCorpusIndex({ designAiPath: checkoutA, dirs, now: FIXED_NOW }),
+    learning: buildLearningIndex({ filePath: profileFile, now: FIXED_NOW }),
+  });
+
+  const sameCheckout = retrievalIndexStatus({ designAiPath: checkoutA, dirs, indexDir, learningFile: profileFile });
+  assert.equal(sameCheckout.corpus.fresh, true);
+  assert.equal(sameCheckout.corpus.sourceMatch, true);
+
+  // Identical corpus bytes (same digest), different checkout path: not my index.
+  const otherCheckout = retrievalIndexStatus({ designAiPath: checkoutB, dirs, indexDir, learningFile: profileFile });
+  assert.equal(otherCheckout.corpus.sourceMatch, false);
+  assert.equal(otherCheckout.corpus.fresh, false);
+  assert.equal(otherCheckout.fresh, false);
+}));
+
+test("status marks the learning index not fresh when it was built from a different learning file", () => withTempDir((root) => {
+  writeFixtureCorpus(root);
+  const dirs = ["knowledge", "examples"];
+  const profileA = path.join(root, "learning-a.json");
+  const profileB = path.join(root, "learning-b.json");
+  writeFixtureProfile(profileA);
+  writeFixtureProfile(profileB);
+  const indexDir = path.join(root, "index");
+
+  writeRetrievalIndexes({
+    indexDir,
+    corpus: buildCorpusIndex({ designAiPath: root, dirs, now: FIXED_NOW }),
+    learning: buildLearningIndex({ filePath: profileA, now: FIXED_NOW }),
+  });
+
+  const sameFile = retrievalIndexStatus({ designAiPath: root, dirs, indexDir, learningFile: profileA });
+  assert.equal(sameFile.learning.fresh, true);
+  assert.equal(sameFile.learning.sourceMatch, true);
+
+  // Identical profile bytes (same digest), different learning file path: not my index.
+  const otherFile = retrievalIndexStatus({ designAiPath: root, dirs, indexDir, learningFile: profileB });
+  assert.equal(otherFile.learning.sourceMatch, false);
+  assert.equal(otherFile.learning.fresh, false);
 }));
 
 test("loadIndexFile flags unreadable and wrong-version payloads", () => withTempDir((root) => {
