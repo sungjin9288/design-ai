@@ -39,6 +39,8 @@ from smoke_assertions import (
     EXPECTED_HELP_ALIASES,
     EXPECTED_NUMERIC_VALUE_SMOKES,
     EXPECTED_PACK_MAX_BYTES,
+    EXPECTED_RANKED_SEARCH_LIMIT,
+    EXPECTED_RANKED_SEARCH_NOT_BUILT_NOTICE,
     EXPECTED_REPOSITORY_URL,
     EXPECTED_ROUTE_BRIEF,
     EXPECTED_ROUTE_ID,
@@ -61,6 +63,9 @@ from smoke_assertions import (
     assert_force_overwrite_replaced,
     assert_functional_alias_smokes,
     assert_help_topic_output,
+    assert_index_build_json,
+    assert_index_status_json,
+    assert_index_verify_json,
     assert_install_doctor_lifecycle_output,
     assert_list_catalog_output,
     assert_list_catalog_json,
@@ -72,6 +77,8 @@ from smoke_assertions import (
     assert_pack_json_component_spec,
     assert_pack_markdown_body_component_spec,
     assert_pack_markdown_component_spec,
+    assert_ranked_search_determinism,
+    assert_ranked_search_json,
     assert_site_repair_apply_report_payload,
     assert_site_repair_guidance_report_contract,
     assert_site_repair_preview_report_payload,
@@ -132,6 +139,10 @@ from smoke_assertions import (
     parse_help_topics,
     passing_doctor_report_json,
     passing_check_artifact_content,
+    passing_index_build_json,
+    passing_index_status_json,
+    passing_index_verify_json,
+    passing_ranked_search_json,
     passing_site_json,
     passing_site_mcp_check_json,
     passing_site_mcp_check_probes_human,
@@ -5055,6 +5066,166 @@ def assert_learning_relevance_smoke(
     )
 
 
+def assert_index_roundtrip_smoke(
+    command_factory,
+    index_dir: Path,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    """`index --build` -> `index --status` -> `index --verify` round-trip against a
+    temp index dir and learning profile, isolated from the ambient environment."""
+    index_dir.mkdir(parents=True, exist_ok=True)
+    write_learning_relevance_fixture(profile_path)
+    index_env = env.copy()
+    index_env["DESIGN_AI_INDEX_DIR"] = str(index_dir)
+    index_env["DESIGN_AI_LEARNING_FILE"] = str(profile_path)
+
+    build_cmd = command_factory("index", "--build", "--json")
+    build_result = run_plain(build_cmd, cwd=cwd, env=index_env)
+    assert_index_build_json(
+        build_result.stdout,
+        index_dir=str(index_dir),
+        context=f"{context} build",
+        cmd=build_cmd,
+    )
+
+    status_cmd = command_factory("index", "--status", "--json")
+    status_result = run_plain(status_cmd, cwd=cwd, env=index_env)
+    assert_index_status_json(
+        status_result.stdout,
+        index_dir=str(index_dir),
+        context=f"{context} status",
+        cmd=status_cmd,
+    )
+
+    verify_cmd = command_factory("index", "--verify", "--json")
+    verify_result = run_plain(verify_cmd, cwd=cwd, env=index_env)
+    assert_index_verify_json(
+        verify_result.stdout,
+        index_dir=str(index_dir),
+        context=f"{context} verify",
+        cmd=verify_cmd,
+    )
+
+
+def assert_ranked_search_determinism_smoke(
+    command_factory,
+    index_dir: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    """Two identical `search --ranked --json` runs must produce byte-identical output."""
+    index_dir.mkdir(parents=True, exist_ok=True)
+    ranked_env = env.copy()
+    ranked_env["DESIGN_AI_INDEX_DIR"] = str(index_dir)
+
+    ranked_cmd = command_factory(
+        "search",
+        EXPECTED_CORPUS_SEARCH_QUERY,
+        "--dir",
+        "knowledge",
+        "--limit",
+        str(EXPECTED_RANKED_SEARCH_LIMIT),
+        "--ranked",
+        "--json",
+    )
+    first_result = run_plain(ranked_cmd, cwd=cwd, env=ranked_env)
+    second_result = run_plain(ranked_cmd, cwd=cwd, env=ranked_env)
+    assert_ranked_search_json(
+        first_result.stdout,
+        context=f"{context} payload",
+        cmd=ranked_cmd,
+        expected_notice=EXPECTED_RANKED_SEARCH_NOT_BUILT_NOTICE,
+    )
+    assert_ranked_search_determinism(
+        first_result.stdout,
+        second_result.stdout,
+        context=context,
+        cmd=ranked_cmd,
+    )
+
+
+def assert_embeddings_off_by_default_smoke(
+    command_factory,
+    index_dir: Path,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    """Phase B is opt-in: a plain `index --build` never touches embeddings, and
+    `index --status` reports `embeddings: null` (the feature is simply unused)."""
+    index_dir.mkdir(parents=True, exist_ok=True)
+    write_learning_relevance_fixture(profile_path)
+    index_env = env.copy()
+    index_env["DESIGN_AI_INDEX_DIR"] = str(index_dir)
+    index_env["DESIGN_AI_LEARNING_FILE"] = str(profile_path)
+    # Point at a config file that is guaranteed not to exist, rather than relying on
+    # the ambient environment lacking DESIGN_AI_CONFIG_FILE — a real ~/.design-ai/
+    # config.json on the machine running this smoke must not leak into the test.
+    index_env["DESIGN_AI_CONFIG_FILE"] = str(index_dir.parent / "no-config-here" / "config.json")
+
+    build_cmd = command_factory("index", "--build", "--json")
+    build_result = run_plain(build_cmd, cwd=cwd, env=index_env)
+    build_payload = json.loads(build_result.stdout)
+    if "embeddings" in build_payload:
+        raise SystemExit(f"index build JSON after {context} unexpectedly ran provider execution with plain --build")
+
+    status_cmd = command_factory("index", "--status", "--json")
+    status_result = run_plain(status_cmd, cwd=cwd, env=index_env)
+    assert_index_status_json(
+        status_result.stdout,
+        index_dir=str(index_dir),
+        context=f"{context} status",
+        cmd=status_cmd,
+        expect_embeddings=False,
+    )
+
+
+def assert_search_embeddings_no_provider_fallback_smoke(
+    command_factory,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+    config_file: Path,
+) -> None:
+    """`search --ranked --embeddings` with no provider configured (flag or config)
+    degrades to the lexical backend with a notice and exit code 0."""
+    fallback_env = env.copy()
+    # Same isolation rationale as assert_embeddings_off_by_default_smoke: point at a
+    # config path guaranteed not to exist rather than trusting the ambient environment.
+    fallback_env["DESIGN_AI_CONFIG_FILE"] = str(config_file)
+
+    search_cmd = command_factory(
+        "search",
+        EXPECTED_CORPUS_SEARCH_QUERY,
+        "--dir",
+        "knowledge",
+        "--limit",
+        str(EXPECTED_RANKED_SEARCH_LIMIT),
+        "--ranked",
+        "--embeddings",
+        "--json",
+    )
+    result = run_plain(search_cmd, cwd=cwd, env=fallback_env)
+    assert_ranked_search_json(
+        result.stdout,
+        context=f"{context} payload",
+        cmd=search_cmd,
+        expected_backend="lexical",
+    )
+    payload = json.loads(result.stdout)
+    if "embedding provider" not in payload.get("notice", "") and "no embedding provider configured" not in payload.get("notice", ""):
+        raise SystemExit(f"search ranked JSON after {context} fallback notice does not mention the missing provider")
+
+
 def wait_for_registry_package(
     package_spec: str,
     *,
@@ -6099,6 +6270,36 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec learning relevance",
+        )
+        assert_index_roundtrip_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-index",
+            npx_root / "registry-index-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec index roundtrip",
+        )
+        assert_ranked_search_determinism_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-ranked-search-index",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec ranked search determinism",
+        )
+        assert_embeddings_off_by_default_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-embeddings-off-index",
+            npx_root / "registry-embeddings-off-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec embeddings off by default",
+        )
+        assert_search_embeddings_no_provider_fallback_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec search embeddings no provider fallback",
+            config_file=npx_root / "registry-no-config-here" / "config.json",
         )
         assert_update_dry_run_smoke(
             npm_exec_cmd(package_spec, "update", "--dry-run"),
@@ -8500,6 +8701,111 @@ def run_self_test() -> None:
                 cmd=learn_audit_human_cmd,
             ),
             expected="learn audit human output missing 'Suggested cleanup:'",
+            scope="registry smoke",
+        )
+
+        index_dir = str(tmp_root / "registry-index-self-test")
+        index_build_cmd = ["design-ai", "index", "--build", "--json"]
+        assert_index_build_json(
+            passing_index_build_json(index_dir),
+            index_dir=index_dir,
+            context="registry smoke self-test",
+            cmd=index_build_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_index_build_json(
+                "{",
+                index_dir=index_dir,
+                context="registry smoke self-test",
+                cmd=index_build_cmd,
+            ),
+            expected="failed to parse index build JSON",
+            scope="registry smoke",
+        )
+
+        index_status_cmd = ["design-ai", "index", "--status", "--json"]
+        assert_index_status_json(
+            passing_index_status_json(index_dir),
+            index_dir=index_dir,
+            context="registry smoke self-test",
+            cmd=index_status_cmd,
+        )
+        assert_index_status_json(
+            passing_index_status_json(index_dir, with_embeddings=True),
+            index_dir=index_dir,
+            context="registry smoke self-test embeddings",
+            cmd=index_status_cmd,
+            expect_embeddings=True,
+        )
+        expect_self_test_failure(
+            lambda: assert_index_status_json(
+                passing_index_status_json(index_dir, with_embeddings=True),
+                index_dir=index_dir,
+                context="registry smoke self-test embeddings unexpected",
+                cmd=index_status_cmd,
+                expect_embeddings=False,
+            ),
+            expected="embeddings is not null when embeddings were not built",
+            scope="registry smoke",
+        )
+
+        index_verify_cmd = ["design-ai", "index", "--verify", "--json"]
+        assert_index_verify_json(
+            passing_index_verify_json(index_dir),
+            index_dir=index_dir,
+            context="registry smoke self-test",
+            cmd=index_verify_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_index_verify_json(
+                json.dumps({**json.loads(passing_index_verify_json(index_dir)), "ok": False}),
+                index_dir=index_dir,
+                context="registry smoke self-test",
+                cmd=index_verify_cmd,
+            ),
+            expected="ok is not true",
+            scope="registry smoke",
+        )
+
+        ranked_search_cmd = ["design-ai", "search", EXPECTED_CORPUS_SEARCH_QUERY, "--ranked", "--json"]
+        ranked_search_json = passing_ranked_search_json()
+        assert_ranked_search_json(
+            ranked_search_json,
+            context="registry smoke self-test",
+            cmd=ranked_search_cmd,
+        )
+        assert_ranked_search_determinism(
+            ranked_search_json,
+            ranked_search_json,
+            context="registry smoke self-test",
+            cmd=ranked_search_cmd,
+        )
+        expect_self_test_failure(
+            lambda: assert_ranked_search_determinism(
+                ranked_search_json,
+                passing_ranked_search_json(backend="lexical"),
+                context="registry smoke self-test",
+                cmd=ranked_search_cmd,
+            ),
+            expected="differs between identical runs",
+            scope="registry smoke",
+        )
+
+        ranked_search_fallback_json = passing_ranked_search_json(backend="lexical")
+        assert_ranked_search_json(
+            ranked_search_fallback_json,
+            context="registry smoke self-test fallback",
+            cmd=ranked_search_cmd,
+            expected_backend="lexical",
+        )
+        expect_self_test_failure(
+            lambda: assert_ranked_search_json(
+                passing_ranked_search_json(backend="embeddings"),
+                context="registry smoke self-test fallback mismatch",
+                cmd=ranked_search_cmd,
+                expected_backend="lexical",
+            ),
+            expected="backend differs from expected backend",
             scope="registry smoke",
         )
 
