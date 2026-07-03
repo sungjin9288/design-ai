@@ -28,7 +28,7 @@ function printHelp() {
   console.log("  --stdin           Read the task brief, or route eval JSON with --eval, from standard input");
   console.log("  --list            List route ids without scoring a brief");
   console.log("  --limit N         Maximum route recommendations to return, 1-10. Default: 3");
-  console.log("  --explain         Include route scoring and reference coverage details");
+  console.log("  --explain         Include route scoring, reference coverage, and related knowledge");
   console.log("  --eval-template   Generate a runnable route eval checkpoint JSON template");
   console.log("  --eval            Run deterministic route-selection checkpoint cases");
   console.log("  --strict          With --eval, exit non-zero on warning or failure");
@@ -77,6 +77,17 @@ function printRoute(route, index, explain = false) {
   }
   for (const knowledge of route.knowledge) {
     console.log(`   read:    ${formatPath(knowledge)}`);
+  }
+
+  if (explain) {
+    const related = route.relatedKnowledge || [];
+    if (related.length === 0) {
+      console.log("   related: (none)");
+    } else {
+      for (const item of related) {
+        console.log(`   related: ${item.id} ${dim(`(score ${item.score.toFixed(2)})`)}`);
+      }
+    }
   }
 }
 
@@ -211,6 +222,7 @@ export async function runRoute(args) {
     brief,
     sourceRoot: DESIGN_AI_HOME,
     limit: parsed.limit,
+    explain: parsed.explain,
   });
 
   const payload = {

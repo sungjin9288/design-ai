@@ -7,6 +7,7 @@ import {
 import path from "node:path";
 
 import { parseBriefSourceFlag } from "./brief.mjs";
+import { rankedSearchCorpus } from "./search-ranked.mjs";
 import { suggestNearest, unknownOptionMessage } from "./suggest.mjs";
 
 function exists(p) {
@@ -35,6 +36,17 @@ const ROUTE_OPTIONS = [
 ];
 const ROUTE_EVAL_VERSION = 1;
 const ROUTE_EVAL_DEFAULT_LIMIT = 3;
+// Advisory "Related knowledge" recall (docs/AI-LEARNING-PHASE2.md, "Phase A
+// implementation review" Q3): under `--explain` only, surface the top corpus
+// knowledge/ files recalled by the shipped deterministic lexical scorer that the
+// route's curated `knowledge` list does NOT already point to. Purely additive —
+// it never changes route selection, ids, scores, or the curated list. Restricted
+// to knowledge/ so it surfaces design knowledge, not docs/QUICKSTART. The recall
+// pulls RELATED_KNOWLEDGE_RECALL_LIMIT candidates then keeps the top
+// RELATED_KNOWLEDGE_KEEP after excluding the curated set.
+const RELATED_KNOWLEDGE_DIRS = ["knowledge"];
+const RELATED_KNOWLEDGE_RECALL_LIMIT = 10;
+const RELATED_KNOWLEDGE_KEEP = 3;
 const CONFIDENCE_ORDER = {
   low: 1,
   medium: 2,
@@ -456,6 +468,32 @@ function routeExplanation({ hits, command, skills, agents, knowledge, forced = f
   };
 }
 
+// Advisory related-knowledge recall for a single route. REUSES rankedSearchCorpus
+// (the shipped deterministic lexical scorer — score desc, id asc) scoped to
+// knowledge/, excludes the route's curated knowledge relPaths, and keeps the top
+// RELATED_KNOWLEDGE_KEEP remaining. Returns [] on empty brief or no hits.
+function relatedKnowledgeFor({ brief, sourceRoot, curatedRelPaths }) {
+  const query = String(brief || "").trim();
+  if (!query) return [];
+
+  const curated = new Set(curatedRelPaths);
+  const { hits } = rankedSearchCorpus({
+    query,
+    dirs: RELATED_KNOWLEDGE_DIRS,
+    limit: RELATED_KNOWLEDGE_RECALL_LIMIT,
+    designAiPath: sourceRoot,
+  });
+
+  return hits
+    .filter((hit) => !curated.has(hit.relPath))
+    .slice(0, RELATED_KNOWLEDGE_KEEP)
+    .map((hit) => ({
+      id: hit.relPath,
+      score: hit.score,
+      matchedTokens: hit.matchedTokens,
+    }));
+}
+
 function routeToResult(route, sourceRoot, hits, options = {}) {
   const command = route.command
     ? { path: route.command, exists: exists(path.join(sourceRoot, route.command)) }
@@ -466,6 +504,17 @@ function routeToResult(route, sourceRoot, hits, options = {}) {
   const forced = Boolean(options.forced);
   const fallback = Boolean(options.fallback);
   const catalog = Boolean(options.catalog);
+
+  // Advisory related-knowledge is attached ONLY when explain is requested, so the
+  // default `route` JSON stays byte-unchanged. `knowledge` already merges
+  // COMMON_KNOWLEDGE + route.knowledge, so its relPaths are the dedupe set.
+  const relatedKnowledge = options.explain
+    ? relatedKnowledgeFor({
+      brief: options.brief || "",
+      sourceRoot,
+      curatedRelPaths: knowledge.map((entry) => entry.path),
+    })
+    : null;
 
   return {
     id: route.id,
@@ -479,6 +528,7 @@ function routeToResult(route, sourceRoot, hits, options = {}) {
     knowledge,
     keywords: route.keywords,
     explanation: routeExplanation({ hits, command, skills, agents, knowledge, forced, fallback, catalog }),
+    ...(relatedKnowledge ? { relatedKnowledge } : {}),
     ...(forced ? { forced: true } : {}),
     ...(fallback ? { fallback: true } : {}),
   };
@@ -501,17 +551,21 @@ export function routeById({ routeId, sourceRoot }) {
   };
 }
 
-function fallbackResult(sourceRoot) {
+function fallbackResult(sourceRoot, options = {}) {
   const route = ROUTES.find((item) => item.id === "design-from-brief");
   return {
-    ...routeToResult(route, sourceRoot, [], { fallback: true }),
+    ...routeToResult(route, sourceRoot, [], { fallback: true, ...options }),
     confidence: "low",
   };
 }
 
-export function routeBrief({ brief, sourceRoot, limit = 3 }) {
+export function routeBrief({ brief, sourceRoot, limit = 3, explain = false }) {
   const normalized = brief.trim();
   if (!normalized) return [];
+
+  // Only compute advisory related-knowledge under --explain; keep the default
+  // routing (keyword scoring, ordering, selection) completely unchanged.
+  const resultOptions = explain ? { explain: true, brief: normalized } : {};
 
   const scored = ROUTES
     .map((route) => ({ route, hits: keywordHits(normalized, route.keywords) }))
@@ -521,10 +575,10 @@ export function routeBrief({ brief, sourceRoot, limit = 3 }) {
       return a.route.label.localeCompare(b.route.label);
     })
     .slice(0, limit)
-    .map((item) => routeToResult(item.route, sourceRoot, item.hits));
+    .map((item) => routeToResult(item.route, sourceRoot, item.hits, resultOptions));
 
   if (scored.length > 0) return scored;
-  return [fallbackResult(sourceRoot)];
+  return [fallbackResult(sourceRoot, resultOptions)];
 }
 
 function isoTimestamp(now = new Date()) {

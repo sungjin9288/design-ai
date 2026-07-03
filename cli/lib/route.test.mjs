@@ -65,6 +65,100 @@ function makeFixture() {
   return root;
 }
 
+// Fixture with textual knowledge content so the lexical recall used by
+// --explain related-knowledge produces deterministic hits. One curated
+// component-spec knowledge file ("keyboard-and-focus") is loaded with the
+// query terms so we can assert it is DEDUPED out of relatedKnowledge.
+function makeRecallFixture() {
+  const root = makeFixture();
+  const contentByFile = {
+    // Curated for component-spec (COMMON_KNOWLEDGE + route.knowledge) — must be deduped.
+    "knowledge/a11y/keyboard-and-focus.md": "# Keyboard and focus\nbutton component keyboard focus accessibility spec",
+    "knowledge/components/INDEX.md": "# Components\ncomponent button spec api",
+    // NOT curated — eligible related-knowledge hits.
+    "knowledge/patterns/component-testing.md": "# Component testing\nbutton component spec accessibility keyboard tests",
+    "knowledge/patterns/form-controls.md": "# Form controls\nbutton input component spec accessibility api",
+    "knowledge/motion/button-motion.md": "# Button motion\nbutton component spec interaction",
+    "knowledge/patterns/copywriting.md": "# Copywriting\ncomponent button spec label microcopy",
+  };
+  for (const [file, text] of Object.entries(contentByFile)) {
+    mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    writeFileSync(path.join(root, file), text);
+  }
+  return root;
+}
+
+const RECALL_BRIEF = "Spec a Button component API with keyboard accessibility";
+
+test("routeBrief attaches advisory relatedKnowledge only with explain=true", () => {
+  const root = makeRecallFixture();
+  try {
+    const withExplain = routeBrief({ brief: RECALL_BRIEF, sourceRoot: root, explain: true });
+    const top = withExplain[0];
+
+    assert.equal(top.id, "component-spec");
+    assert.ok(Array.isArray(top.relatedKnowledge));
+    assert.ok(top.relatedKnowledge.length > 0 && top.relatedKnowledge.length <= 3);
+
+    // Every related item lives under knowledge/ and carries id/score/matchedTokens.
+    for (const item of top.relatedKnowledge) {
+      assert.ok(item.id.startsWith("knowledge/"));
+      assert.equal(typeof item.score, "number");
+      assert.ok(Array.isArray(item.matchedTokens));
+    }
+
+    // Curated knowledge (incl. COMMON PRINCIPLES.md) is excluded from relatedKnowledge.
+    const curated = top.knowledge.map((entry) => entry.path);
+    for (const item of top.relatedKnowledge) {
+      assert.ok(!curated.includes(item.id), `${item.id} should be deduped against curated set`);
+    }
+    assert.ok(!top.relatedKnowledge.some((item) => item.id === "knowledge/a11y/keyboard-and-focus.md"));
+
+    // Deterministic: score desc, then id asc.
+    const scores = top.relatedKnowledge.map((item) => item.score);
+    for (let i = 1; i < scores.length; i += 1) assert.ok(scores[i] <= scores[i - 1]);
+
+    // Default (no explain) has no relatedKnowledge key at all.
+    const noExplain = routeBrief({ brief: RECALL_BRIEF, sourceRoot: root });
+    assert.equal(Object.hasOwn(noExplain[0], "relatedKnowledge"), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("routeBrief relatedKnowledge is empty when recall finds nothing", () => {
+  const root = makeRecallFixture();
+  try {
+    // A brief that still keyword-routes (via "modal", a component-spec keyword) but
+    // whose terms are absent from every knowledge file's text, so recall yields no
+    // hits and relatedKnowledge is empty.
+    const routes = routeBrief({ brief: "modal zzqqxx zzqqyy", sourceRoot: root, explain: true });
+    assert.equal(routes[0].id, "component-spec");
+    assert.deepEqual(routes[0].relatedKnowledge, []);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("routeBrief explain enrichment leaves routing ids and scores unchanged", () => {
+  const root = makeRecallFixture();
+  try {
+    const plain = routeBrief({ brief: RECALL_BRIEF, sourceRoot: root });
+    const explained = routeBrief({ brief: RECALL_BRIEF, sourceRoot: root, explain: true });
+
+    assert.equal(plain.length, explained.length);
+    for (let i = 0; i < plain.length; i += 1) {
+      assert.equal(plain[i].id, explained[i].id);
+      assert.equal(plain[i].score, explained[i].score);
+      assert.equal(plain[i].confidence, explained[i].confidence);
+      assert.deepEqual(plain[i].matchedKeywords, explained[i].matchedKeywords);
+      assert.deepEqual(plain[i].knowledge, explained[i].knowledge);
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("parseRouteArgs supports brief, limit, and json", () => {
   assert.deepEqual(parseRouteArgs(["audit", "signup", "--limit", "2", "--json"]), {
     briefParts: ["audit", "signup"],

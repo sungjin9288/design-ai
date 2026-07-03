@@ -2246,6 +2246,7 @@ def passing_route_explain_human_output() -> str:
         f"   agent:   ✓ {EXPECTED_ROUTE_AGENT}",
         "   read:    ✓ knowledge/PRINCIPLES.md",
         f"   read:    ✓ {EXPECTED_ROUTE_KNOWLEDGE}",
+        "   related: knowledge/patterns/design-system-qa.md (score 10.13)",
         "",
     ])
 
@@ -3714,6 +3715,8 @@ def assert_route_explain_human_output(raw: str, *, context: str, cmd: list[str])
             f"agent:   ✓ {EXPECTED_ROUTE_AGENT}",
             "read:    ✓ knowledge/PRINCIPLES.md",
             f"read:    ✓ {EXPECTED_ROUTE_KNOWLEDGE}",
+            # Advisory related-knowledge recall is surfaced only under --explain.
+            "related: knowledge/",
         ),
         context=context,
         label="route explain human output",
