@@ -4785,7 +4785,7 @@ def assert_learning_query_human(raw: str, *, context: str, cmd: list[str]) -> No
         "Limit: 2",
         "Explain: selection score, matched tokens, and reason",
         "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
-        "matched keyboard, accessibility",
+        "matched accessibility, keyboard",
         "reason brief-match",
     ):
         require_registry_smoke(
@@ -8378,7 +8378,7 @@ def run_self_test() -> None:
                 "",
                 "1. [accessibility] Prioritize keyboard accessibility details for Button component API specs",
                 "   learn-relevant · 2026-05-22T00:00:01.000Z",
-                "   score 4 · matched keyboard, accessibility · reason brief-match",
+                "   score 2.114533 · matched accessibility, keyboard · reason brief-match",
             ]),
             context="registry smoke self-test",
             cmd=learn_query_human_cmd,
@@ -8392,7 +8392,7 @@ def run_self_test() -> None:
                     "Limit: 2",
                     "Explain: selection score, matched tokens, and reason",
                     "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
-                    "matched keyboard, accessibility",
+                    "matched accessibility, keyboard",
                 ]),
                 context="registry smoke self-test",
                 cmd=learn_query_human_cmd,
