@@ -1,5 +1,19 @@
 # Roadmap
 
+## Phase 754 — AI learning depth: local retrieval memory (planning)
+
+Opens the deeper AI-learning phase chosen in Product Readiness ("Recommended next decision", option 2): deterministic local retrieval memory over the shipped knowledge corpus and the local learning profile, with an optional local-only embedding backend. Scope, data boundaries, and privacy constraints are defined in [AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md). Fine-tuning, training on user artifacts, external embedding APIs, background learning without explicit CLI commands, and telemetry stay out of scope; the README stance ("Not a model. Not a fine-tune.") is unchanged.
+
+### Plan
+- [ ] Phase A: zero-dependency lexical retrieval index (tokenized BM25-style scoring) over `knowledge/`, `examples/`, `skills/`, `docs/`, `agents/`, `commands/`, and `learning.json`, built only by an explicit `design-ai index --build`.
+- [ ] Phase A: opt-in `design-ai search --ranked` ranked corpus search with deterministic, fully ordered output.
+- [ ] Phase A: shared lexical scorer behind `prompt --with-learning` / `pack --with-learning` selection, gated by `learn --eval --strict` checkpoints before and after.
+- [ ] Phase A: `design-ai index --status/--verify` staleness and digest reporting, plus `workspace` readiness integration.
+- [ ] Phase A: verification gates — `npm test` unit coverage, `npm run audit` 8/8, `npm run release:metadata`, and `release:check` packed-tarball smoke for index build/verify round-trip and ranked-search determinism.
+- [ ] Phase B (optional, after Phase A review): opt-in local embedding rerank via a user-supplied local provider executable, never a default, never external HTTP, with graceful degradation to Phase A.
+- [ ] Phase B: deterministic stub-provider test coverage and packed-tarball smoke proving off-by-default and missing-provider fallback behavior.
+- [ ] Answer the open questions in [AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md) (ranked-search default, index location, route boundary, Korean tokenization, Phase B configuration home) before scheduling Phase B.
+
 ## Phase 753 — MCP Protocol Hardening Release (v4.56.0) ✓ ready
 
 The next public package release groups the post-v4.55 MCP protocol hardening work and the published MCP client evidence refresh into one versioned handoff.
