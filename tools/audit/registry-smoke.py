@@ -4423,6 +4423,56 @@ def assert_pack_stdin_smoke(
     )
 
 
+def assert_recall_context(payload: dict[str, object], *, context: str, cmd: list[str]) -> None:
+    recall = payload.get("recall")
+    require_registry_smoke(
+        isinstance(recall, dict),
+        context=context,
+        cmd=cmd,
+        message="recall should be present when --with-recall is used",
+    )
+    require_registry_smoke(
+        recall.get("mode") == "lexical",
+        context=context,
+        cmd=cmd,
+        message="recall should use the deterministic lexical scorer",
+    )
+    selected_count = recall.get("selectedCount")
+    require_registry_smoke(
+        isinstance(selected_count, int) and selected_count >= 1,
+        context=context,
+        cmd=cmd,
+        message="recall should select at least one corpus file for the Button brief",
+    )
+    selected = recall.get("selected")
+    require_registry_smoke(
+        isinstance(selected, list) and len(selected) == selected_count and len(selected) >= 1,
+        context=context,
+        cmd=cmd,
+        message="recall selected list should match the reported selected count",
+    )
+    top = selected[0]
+    require_registry_smoke(
+        isinstance(top, dict) and isinstance(top.get("id"), str) and top.get("id"),
+        context=context,
+        cmd=cmd,
+        message="recall selection should cite the corpus relPath as its id",
+    )
+    require_registry_smoke(
+        type(top.get("score")) in (int, float) and top.get("score") > 0,
+        context=context,
+        cmd=cmd,
+        message="recall selection should include a positive relevance score",
+    )
+    markdown = recall.get("markdown")
+    require_registry_smoke(
+        isinstance(markdown, str) and "## Recalled design knowledge" in markdown and top.get("id") in markdown,
+        context=context,
+        cmd=cmd,
+        message="recall markdown should carry the Recalled design knowledge section and cite the top file",
+    )
+
+
 def assert_learning_relevance_context(payload: dict[str, object], *, context: str, cmd: list[str]) -> None:
     learning_context = payload.get("learningContext")
     require_registry_smoke(
@@ -4999,6 +5049,49 @@ def assert_learning_relevance_smoke(
     plan = pack_payload.get("plan")
     require_registry_smoke(isinstance(plan, dict), context=f"{context} pack", cmd=pack_cmd, message="pack plan missing")
     assert_learning_relevance_context(plan, context=f"{context} pack plan", cmd=pack_cmd)
+
+    recall_prompt_cmd = command_factory(
+        "prompt",
+        EXPECTED_ROUTE_BRIEF,
+        "--route",
+        EXPECTED_ROUTE_ID,
+        "--with-recall",
+        "--recall-limit",
+        "3",
+        "--json",
+    )
+    recall_prompt_result = run_plain(recall_prompt_cmd, cwd=cwd, env=relevance_env)
+    try:
+        recall_prompt_payload = json.loads(recall_prompt_result.stdout)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse prompt recall JSON") from error
+    assert_recall_context(recall_prompt_payload, context=f"{context} prompt recall", cmd=recall_prompt_cmd)
+
+    recall_pack_cmd = command_factory(
+        "pack",
+        EXPECTED_ROUTE_BRIEF,
+        "--route",
+        EXPECTED_ROUTE_ID,
+        "--with-recall",
+        "--recall-limit",
+        "3",
+        "--max-bytes",
+        str(EXPECTED_PACK_MAX_BYTES),
+        "--json",
+    )
+    recall_pack_result = run_plain(recall_pack_cmd, cwd=cwd, env=relevance_env)
+    try:
+        recall_pack_payload = json.loads(recall_pack_result.stdout)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse pack recall JSON") from error
+    recall_plan = recall_pack_payload.get("plan")
+    require_registry_smoke(
+        isinstance(recall_plan, dict),
+        context=f"{context} pack recall",
+        cmd=recall_pack_cmd,
+        message="pack recall plan missing",
+    )
+    assert_recall_context(recall_plan, context=f"{context} pack recall plan", cmd=recall_pack_cmd)
 
     eval_template_path = profile_path.with_name(f"{profile_path.stem}-eval-template.json")
     eval_template_path.write_text("stale eval template output\n", encoding="utf-8")
@@ -8495,6 +8588,38 @@ def run_self_test() -> None:
                 cmd=learning_relevance_cmd,
             ),
             expected="brief relevance should pick the Button accessibility entry",
+            scope="registry smoke",
+        )
+
+        recall_payload = {
+            "recall": {
+                "query": EXPECTED_ROUTE_BRIEF,
+                "mode": "lexical",
+                "candidateCount": 42,
+                "selectedCount": 1,
+                "selected": [
+                    {
+                        "id": "knowledge/components/INDEX.md",
+                        "score": 9.5,
+                        "matchedTokens": ["button", "component"],
+                    },
+                ],
+                "markdown": (
+                    "## Recalled design knowledge\n\n"
+                    "- knowledge/components/INDEX.md\n"
+                    "  - Component index"
+                ),
+            },
+        }
+        recall_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-recall", "--json"]
+        assert_recall_context(recall_payload, context="registry smoke self-test", cmd=recall_cmd)
+        expect_self_test_failure(
+            lambda: assert_recall_context(
+                {**recall_payload, "recall": {**recall_payload["recall"], "selectedCount": 0, "selected": []}},
+                context="registry smoke self-test",
+                cmd=recall_cmd,
+            ),
+            expected="recall should select at least one corpus file",
             scope="registry smoke",
         )
 

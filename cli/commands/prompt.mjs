@@ -14,12 +14,12 @@ import {
 import { writeOutputFile } from "../lib/output.mjs";
 
 function printHelp() {
-  console.log("Usage:  design-ai prompt <brief> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--json] [--out file] [--force]");
-  console.log("        design-ai prompt --from-file brief.md [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--json] [--out file] [--force]");
+  console.log("Usage:  design-ai prompt <brief> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--json] [--out file] [--force]");
+  console.log("        design-ai prompt --from-file brief.md [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--json] [--out file] [--force]");
   console.log("        design-ai prompt --eval-template [--json] [--out file] [--force]");
   console.log("        design-ai prompt --eval --from-file prompt-eval.json [--strict] [--json] [--out file] [--force]");
   console.log("        cat prompt-eval.json | design-ai prompt --eval --stdin [--strict] [--json]");
-  console.log("        cat brief.md | design-ai prompt --stdin [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--json]\n");
+  console.log("        cat brief.md | design-ai prompt --stdin [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--json]\n");
   console.log("Builds a ready-to-use prompt from route recommendations and required design-ai files.");
   console.log("Prompt eval is read-only and checks generated prompt-plan contracts.\n");
   console.log("Options:");
@@ -29,6 +29,8 @@ function printHelp() {
   console.log("  --with-learning   Include brief-relevant local learning preferences and record local usage metadata");
   console.log("  --learning-category kind  Include only one learning category; requires --with-learning");
   console.log("  --learning-limit N        Limit included learning entries, 1-100; requires --with-learning");
+  console.log("  --with-recall     Include brief-relevant corpus knowledge files recalled from the shipped design corpus");
+  console.log("  --recall-limit N          Limit recalled corpus knowledge files, 1-20; requires --with-recall");
   console.log("  --eval-template   Generate a runnable prompt eval checkpoint JSON template");
   console.log("  --eval            Run deterministic prompt-plan checkpoint cases");
   console.log("  --strict          With --eval, exit non-zero on warning or failure");
@@ -161,6 +163,8 @@ export async function runPrompt(args) {
     withLearning: parsed.withLearning,
     learningCategory: parsed.learningCategory,
     learningLimit: parsed.learningLimit,
+    withRecall: parsed.withRecall,
+    recallLimit: parsed.recallLimit,
   });
   const learningUsage = parsed.withLearning
     ? recordLearningUsage({

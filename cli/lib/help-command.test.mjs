@@ -48,8 +48,8 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /index \[--build\|--status\|--verify\] \[--json\] \[--embeddings \[--provider "cmd args"\]\]/);
   assert.match(output, /show <file\[:line\]> \[--lines N:M\] \[--context N\] \[--json\]/);
   assert.match(output, /route <brief\|--from-file file\|--stdin\|--list\|--eval-template\|--eval> \[--limit N\]/);
-  assert.match(output, /prompt <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]/);
-  assert.match(output, /pack <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]/);
+  assert.match(output, /prompt <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--with-recall\] \[--recall-limit N\] \[--out file\]/);
+  assert.match(output, /pack <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--with-recall\] \[--recall-limit N\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\] \[--learn\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
   assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals \[--strict\]\|--agent-backlog \[--strict\]\|--propose-skills \[--min-evidence N\] \[--review-file path\] \[--review-check\|--apply-plan\] \[--strict\]\|--eval-template\|--eval \[--strict\]\|--forget id\|--clear\] \[--json\|--report\|--patch\|--review-template\] \[--out file\]/);
@@ -58,11 +58,11 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /mcp\s+Start the stdio MCP server for Claude Code, Codex, and other MCP clients/);
   assert.match(
     output,
-    /prompt <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]\n\s+Generate a ready-to-use agent prompt and prompt-plan eval checkpoints/,
+    /prompt <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--with-recall\] \[--recall-limit N\] \[--out file\]\n\s+Generate a ready-to-use agent prompt and prompt-plan eval checkpoints/,
   );
   assert.match(
     output,
-    /pack <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\]\n\s+Generate prompt plus bounded context and prompt-pack eval checkpoints/,
+    /pack <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--with-recall\] \[--recall-limit N\] \[--max-bytes N\]\n\s+Generate prompt plus bounded context and prompt-pack eval checkpoints/,
   );
   assert.match(
     output,
@@ -98,11 +98,11 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "prompt").usage,
-    "design-ai prompt <brief|--from-file file|--stdin|--eval-template|--eval> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--out file]",
+    "design-ai prompt <brief|--from-file file|--stdin|--eval-template|--eval> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--out file]",
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "pack").usage,
-    "design-ai pack <brief|--from-file file|--stdin|--eval-template|--eval> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--max-bytes N]",
+    "design-ai pack <brief|--from-file file|--stdin|--eval-template|--eval> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--max-bytes N]",
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "learn").usage,
@@ -222,22 +222,26 @@ test("runHelp delegates command topics to command-specific help", async () => {
   assert.doesNotMatch(routeOutput, /Environment overrides:/);
 
   const promptOutput = await captureStdout(() => runHelp(["prompt"]));
-  assert.match(promptOutput, /design-ai prompt <brief> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(promptOutput, /design-ai prompt <brief> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--with-recall\] \[--recall-limit N\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(promptOutput, /design-ai prompt --eval-template \[--json\] \[--out file\] \[--force\]/);
   assert.match(promptOutput, /design-ai prompt --eval --from-file prompt-eval\.json \[--strict\] \[--json\] \[--out file\] \[--force\]/);
-  assert.match(promptOutput, /cat brief\.md \| design-ai prompt --stdin \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--json\]/);
+  assert.match(promptOutput, /cat brief\.md \| design-ai prompt --stdin \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--with-recall\] \[--recall-limit N\] \[--json\]/);
   assert.match(promptOutput, /--learning-category kind\s+Include only one learning category; requires --with-learning/);
   assert.match(promptOutput, /--learning-limit N\s+Limit included learning entries, 1-100; requires --with-learning/);
+  assert.match(promptOutput, /--with-recall\s+Include brief-relevant corpus knowledge files recalled from the shipped design corpus/);
+  assert.match(promptOutput, /--recall-limit N\s+Limit recalled corpus knowledge files, 1-20; requires --with-recall/);
   assert.match(promptOutput, /--eval-template\s+Generate a runnable prompt eval checkpoint JSON template/);
   assert.match(promptOutput, /--eval\s+Run deterministic prompt-plan checkpoint cases/);
 
   const packOutput = await captureStdout(() => runHelp(["pack"]));
-  assert.match(packOutput, /design-ai pack <brief> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\] \[--json\] \[--out file\] \[--force\]/);
+  assert.match(packOutput, /design-ai pack <brief> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--with-recall\] \[--recall-limit N\] \[--max-bytes N\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(packOutput, /design-ai pack --eval-template \[--json\] \[--out file\] \[--force\]/);
   assert.match(packOutput, /design-ai pack --eval --from-file pack-eval\.json \[--strict\] \[--json\] \[--out file\] \[--force\]/);
-  assert.match(packOutput, /cat brief\.md \| design-ai pack --stdin \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--max-bytes N\] \[--json\]/);
+  assert.match(packOutput, /cat brief\.md \| design-ai pack --stdin \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--with-recall\] \[--recall-limit N\] \[--max-bytes N\] \[--json\]/);
   assert.match(packOutput, /--learning-category kind\s+Include only one learning category; requires --with-learning/);
   assert.match(packOutput, /--learning-limit N\s+Limit included learning entries, 1-100; requires --with-learning/);
+  assert.match(packOutput, /--with-recall\s+Include brief-relevant corpus knowledge files recalled from the shipped design corpus/);
+  assert.match(packOutput, /--recall-limit N\s+Limit recalled corpus knowledge files, 1-20; requires --with-recall/);
   assert.match(packOutput, /--eval-template\s+Generate a runnable pack eval checkpoint JSON template/);
   assert.match(packOutput, /--eval\s+Run deterministic prompt-pack checkpoint cases/);
 

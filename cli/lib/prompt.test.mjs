@@ -75,6 +75,8 @@ test("parsePromptArgs supports brief and json", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    withRecall: false,
+    recallLimit: 0,
     evalTemplate: false,
     eval: false,
     strict: false,
@@ -96,6 +98,8 @@ test("parsePromptArgs supports file, stdin, and forced route sources", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    withRecall: false,
+    recallLimit: 0,
     evalTemplate: false,
     eval: false,
     strict: false,
@@ -115,6 +119,8 @@ test("parsePromptArgs supports file, stdin, and forced route sources", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    withRecall: false,
+    recallLimit: 0,
     evalTemplate: false,
     eval: false,
     strict: false,
@@ -155,6 +161,8 @@ test("parsePromptArgs supports prompt eval template and eval checkpoints", () =>
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    withRecall: false,
+    recallLimit: 0,
     evalTemplate: true,
     eval: false,
     strict: false,
@@ -174,6 +182,8 @@ test("parsePromptArgs supports prompt eval template and eval checkpoints", () =>
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    withRecall: false,
+    recallLimit: 0,
     evalTemplate: false,
     eval: true,
     strict: true,
@@ -457,4 +467,57 @@ test("promptEvalReport reports route, file, checklist, and payload failures", ()
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("buildPromptPlan injects corpus recall with --with-recall", () => {
+  const root = makeFixture();
+  try {
+    // The base fixture writes empty markdown; give a couple of corpus files real
+    // lexical content so recall has something to rank for the Button brief.
+    writeFileSync(
+      path.join(root, "knowledge/components/INDEX.md"),
+      "# Component index\n\nButton component anatomy, variants, and keyboard accessibility.",
+      "utf8",
+    );
+    writeFileSync(
+      path.join(root, "knowledge/a11y/keyboard-and-focus.md"),
+      "# Keyboard and focus\n\nButton keyboard focus order and accessibility semantics.",
+      "utf8",
+    );
+
+    const plan = buildPromptPlan({
+      brief: "spec a Button component API",
+      sourceRoot: root,
+      prefix: "design-",
+      withRecall: true,
+      recallLimit: 3,
+    });
+
+    assert.ok(plan.recall, "recall context should be present with --with-recall");
+    assert.equal(plan.recall.mode, "lexical");
+    assert.ok(plan.recall.candidateCount > 0);
+    assert.ok(plan.recall.selectedCount >= 1);
+    assert.ok(plan.recall.selectedCount <= 3);
+    assert.ok(plan.recall.selected[0].score > 0);
+    assert.match(plan.prompt, /## Recalled design knowledge/);
+    assert.ok(plan.prompt.includes(plan.recall.selected[0].id));
+
+    const plain = buildPromptPlan({
+      brief: "spec a Button component API",
+      sourceRoot: root,
+      prefix: "design-",
+    });
+    assert.equal(plain.recall, undefined, "recall key is conditional on --with-recall");
+    assert.ok(!plain.prompt.includes("## Recalled design knowledge"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("parsePromptArgs rejects --recall-limit without --with-recall", () => {
+  assert.throws(() => parsePromptArgs(["spec", "--recall-limit", "5"]), /--recall-limit requires --with-recall/);
+  assert.throws(() => parsePromptArgs(["spec", "--with-recall", "--recall-limit", "0"]), /--recall-limit expects an integer from 1 to 20/);
+  const parsed = parsePromptArgs(["spec", "Button", "--with-recall", "--recall-limit", "3"]);
+  assert.equal(parsed.withRecall, true);
+  assert.equal(parsed.recallLimit, 3);
 });

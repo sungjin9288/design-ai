@@ -6,6 +6,7 @@ import { existsSync } from "node:fs";
 import { parseBriefSourceFlag } from "./brief.mjs";
 import { listExamples } from "./examples.mjs";
 import { buildLearningContext, normalizeCategory, parseLearningLimit } from "./learn.mjs";
+import { buildRecallContext, DEFAULT_RECALL_LIMIT, parseRecallLimit } from "./recall.mjs";
 import { SYMLINK_PREFIX } from "./paths.mjs";
 import { parseOutputFlags } from "./output.mjs";
 import { readRouteManifestVersion, routeBrief, routeById } from "./route.mjs";
@@ -26,6 +27,8 @@ const PROMPT_OPTIONS = [
   "--with-learning",
   "--learning-category",
   "--learning-limit",
+  "--with-recall",
+  "--recall-limit",
 ];
 const PROMPT_EVAL_VERSION = 1;
 const PROMPT_EVAL_DEFAULT_LIMIT = 12;
@@ -42,6 +45,8 @@ export function parsePromptArgs(args) {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    withRecall: false,
+    recallLimit: 0,
     evalTemplate: false,
     eval: false,
     strict: false,
@@ -57,6 +62,17 @@ export function parsePromptArgs(args) {
       out.json = true;
     } else if (arg === "--with-learning") {
       out.withLearning = true;
+    } else if (arg === "--with-recall") {
+      out.withRecall = true;
+    } else if (arg === "--recall-limit") {
+      const limit = args[i + 1];
+      if (!limit || limit.startsWith("--")) throw new Error("--recall-limit expects an integer from 1 to 20");
+      try {
+        out.recallLimit = parseRecallLimit(limit);
+      } catch {
+        throw new Error("--recall-limit expects an integer from 1 to 20");
+      }
+      i += 1;
     } else if (arg === "--eval-template") {
       out.evalTemplate = true;
     } else if (arg === "--eval") {
@@ -96,20 +112,23 @@ export function parsePromptArgs(args) {
   if ((out.learningCategory || out.learningLimit) && !out.withLearning) {
     throw new Error("--learning-category and --learning-limit require --with-learning");
   }
+  if (out.recallLimit && !out.withRecall) {
+    throw new Error("--recall-limit requires --with-recall");
+  }
   if (out.eval && out.evalTemplate) {
     throw new Error("Choose either --eval-template or --eval, not both");
   }
   if (out.strict && !out.eval) {
     throw new Error("--strict can only be used with --eval");
   }
-  if (out.evalTemplate && (out.briefParts.length > 0 || out.fromFile || out.stdin || out.routeId || out.withLearning)) {
-    throw new Error("--eval-template cannot be combined with a brief, --from-file, --stdin, --route, or --with-learning");
+  if (out.evalTemplate && (out.briefParts.length > 0 || out.fromFile || out.stdin || out.routeId || out.withLearning || out.withRecall)) {
+    throw new Error("--eval-template cannot be combined with a brief, --from-file, --stdin, --route, --with-learning, or --with-recall");
   }
   if (out.eval && (!out.fromFile && !out.stdin)) {
     throw new Error("--eval requires --from-file or --stdin");
   }
-  if (out.eval && (out.briefParts.length > 0 || out.routeId || out.withLearning)) {
-    throw new Error("--eval cannot be combined with an inline brief, --route, or --with-learning");
+  if (out.eval && (out.briefParts.length > 0 || out.routeId || out.withLearning || out.withRecall)) {
+    throw new Error("--eval cannot be combined with an inline brief, --route, --with-learning, or --with-recall");
   }
 
   return {
@@ -209,6 +228,8 @@ export function buildPromptPlan({
   learningFilePath = "",
   learningCategory = "",
   learningLimit = 0,
+  withRecall = false,
+  recallLimit = 0,
 }) {
   const route = routeId
     ? routeById({ routeId, sourceRoot })
@@ -243,6 +264,13 @@ export function buildPromptPlan({
       query: brief,
     })
     : null;
+  const recallContext = withRecall
+    ? buildRecallContext({
+      brief,
+      recallLimit: recallLimit || DEFAULT_RECALL_LIMIT,
+      designAiPath: sourceRoot,
+    })
+    : null;
 
   return {
     brief,
@@ -254,6 +282,7 @@ export function buildPromptPlan({
     checklist,
     qualityCommand,
     ...(learningContext ? { learningContext } : {}),
+    ...(recallContext ? { recall: recallContext } : {}),
     prompt: renderPrompt({
       brief,
       route,
@@ -263,6 +292,7 @@ export function buildPromptPlan({
       checklist,
       qualityCommand,
       learningContext,
+      recallContext,
     }),
   };
 }
@@ -526,6 +556,7 @@ export function renderPrompt({
   checklist = checklistForRoute(route),
   qualityCommand = qualityCommandForRoute(route.id),
   learningContext = null,
+  recallContext = null,
 }) {
   const lines = [];
   lines.push("# design-ai task prompt");
@@ -568,6 +599,13 @@ export function renderPrompt({
     lines.push("Learned design context:");
     lines.push("");
     lines.push(learningContext.markdown);
+    lines.push("");
+  }
+
+  if (recallContext) {
+    lines.push("Recalled corpus knowledge:");
+    lines.push("");
+    lines.push(recallContext.markdown);
     lines.push("");
   }
 

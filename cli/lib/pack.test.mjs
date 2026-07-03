@@ -77,6 +77,8 @@ test("parsePackArgs supports brief, max bytes, and json", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    withRecall: false,
+    recallLimit: 0,
     evalTemplate: false,
     eval: false,
     strict: false,
@@ -99,6 +101,8 @@ test("parsePackArgs supports file, stdin, and forced route sources", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    withRecall: false,
+    recallLimit: 0,
     evalTemplate: false,
     eval: false,
     strict: false,
@@ -119,6 +123,8 @@ test("parsePackArgs supports file, stdin, and forced route sources", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    withRecall: false,
+    recallLimit: 0,
     evalTemplate: false,
     eval: false,
     strict: false,
@@ -161,6 +167,8 @@ test("parsePackArgs supports pack eval template and eval checkpoints", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    withRecall: false,
+    recallLimit: 0,
     evalTemplate: true,
     eval: false,
     strict: false,
@@ -181,6 +189,8 @@ test("parsePackArgs supports pack eval template and eval checkpoints", () => {
     withLearning: false,
     learningCategory: "",
     learningLimit: 0,
+    withRecall: false,
+    recallLimit: 0,
     evalTemplate: false,
     eval: true,
     strict: true,
@@ -522,4 +532,42 @@ test("packEvalReport reports route, planned-file, included-file, and payload fai
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("buildPromptPack injects corpus recall with --with-recall", () => {
+  const root = makeFixture();
+  try {
+    const pack = buildPromptPack({
+      brief: "spec a Button component API with keyboard accessibility",
+      sourceRoot: root,
+      prefix: "design-",
+      withRecall: true,
+      recallLimit: 3,
+    });
+
+    assert.ok(pack.plan.recall, "recall context should be present on the pack plan");
+    assert.equal(pack.plan.recall.mode, "lexical");
+    assert.ok(pack.plan.recall.selectedCount >= 1);
+    assert.ok(pack.plan.recall.selectedCount <= 3);
+    assert.match(pack.markdown, /## Recalled design knowledge/);
+    assert.ok(pack.markdown.includes(pack.plan.recall.selected[0].id));
+
+    const plain = buildPromptPack({
+      brief: "spec a Button component API with keyboard accessibility",
+      sourceRoot: root,
+      prefix: "design-",
+    });
+    assert.equal(plain.plan.recall, undefined, "recall key is conditional on --with-recall");
+    assert.ok(!plain.markdown.includes("## Recalled design knowledge"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("parsePackArgs rejects --recall-limit without --with-recall", () => {
+  assert.throws(() => parsePackArgs(["spec", "--recall-limit", "5"]), /--recall-limit requires --with-recall/);
+  assert.throws(() => parsePackArgs(["spec", "--with-recall", "--recall-limit", "21"]), /--recall-limit expects an integer from 1 to 20/);
+  const parsed = parsePackArgs(["spec", "Button", "--with-recall", "--recall-limit", "3"]);
+  assert.equal(parsed.withRecall, true);
+  assert.equal(parsed.recallLimit, 3);
 });

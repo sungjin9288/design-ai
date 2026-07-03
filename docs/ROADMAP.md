@@ -8,6 +8,7 @@ Groups the Phase 754 A+B retrieval work, the MCP ranked-search parameter, the `r
 - Shipped deterministic local retrieval (`design-ai index`, `search --ranked`, shared BM25 learning selection), Hangul-aware tokenization, and the version-2 source-keyed index sidecar.
 - Shipped the opt-in, local-only embedding rerank backend (`search --ranked --embeddings`, `~/.design-ai/config.json`) with graceful lexical degradation and no network path.
 - Added the MCP `design_ai_search` opt-in `ranked` parameter, moved `refs/` links behind `docs/reference/` pages, and hardened `Deploy doc site` with a single automatic retry.
+- Added `prompt --with-recall` / `pack --with-recall`: brief-relevant corpus knowledge recalled into prompts/packs via the shared lexical scorer (opt-in; default output unchanged) — the first CLI-deepening increment from [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md).
 - Extended packed-tarball and public-registry smoke to cover the index build/status/verify round-trip, ranked-search determinism, and embeddings off-by-default fallback.
 
 ### Verified
