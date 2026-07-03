@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 755 — Local Retrieval Memory Release (v4.57.0) ✓ ready
+
+Groups the Phase 754 A+B retrieval work, the MCP ranked-search parameter, the `refs/` reference-page migration, and the docs-deploy retry hardening into one public package release. Scope and data boundaries are defined in [AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md); defaults are unchanged, so the release is additive and backward-compatible.
+
+### Changed
+- Shipped deterministic local retrieval (`design-ai index`, `search --ranked`, shared BM25 learning selection), Hangul-aware tokenization, and the version-2 source-keyed index sidecar.
+- Shipped the opt-in, local-only embedding rerank backend (`search --ranked --embeddings`, `~/.design-ai/config.json`) with graceful lexical degradation and no network path.
+- Added the MCP `design_ai_search` opt-in `ranked` parameter, moved `refs/` links behind `docs/reference/` pages, and hardened `Deploy doc site` with a single automatic retry.
+- Extended packed-tarball and public-registry smoke to cover the index build/status/verify round-trip, ranked-search determinism, and embeddings off-by-default fallback.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check` (unit tests, strict audits, whitespace, package contents, release metadata, release self-tests, packed-tarball smoke).
+- `npm run release:metadata`.
+- `git diff --check`.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent Phase 754 commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.56.0 → 4.57.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- Users get deterministic ranked corpus/learning retrieval (Korean included) and an optional local embedding rerank, with zero new dependencies and no behavior change unless they opt in.
+- Maintainers can publish a retrieval-capable release whose new CLI, MCP, and workspace surfaces are smoke-covered on both the packed tarball and the public registry.
+
+### What's still ahead
+- Push the v4.57.0 release commit and tag, then verify npm publish (provenance), GitHub Release, public `npm run registry:smoke`, and docs deployment workflows.
+- Refresh the Homebrew formula SHA-256 after the v4.57.0 tag tarball is available, then update [external-status.md](external-status.md) and the README distribution status from published `4.56.0` to `4.57.0`.
+
 ## Phase 754 — AI learning depth: local retrieval memory (planning)
 
 Opens the deeper AI-learning phase chosen in Product Readiness ("Recommended next decision", option 2): deterministic local retrieval memory over the shipped knowledge corpus and the local learning profile, with an optional local-only embedding backend. Scope, data boundaries, and privacy constraints are defined in [AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md). Fine-tuning, training on user artifacts, external embedding APIs, background learning without explicit CLI commands, and telemetry stay out of scope; the README stance ("Not a model. Not a fine-tune.") is unchanged.
@@ -12,7 +41,7 @@ Opens the deeper AI-learning phase chosen in Product Readiness ("Recommended nex
 - [x] Phase A: verification gates — `npm test` unit coverage, `npm run audit` 8/8, `npm run release:metadata`, and `release:check` packed-tarball smoke for index build/verify round-trip and ranked-search determinism.
 - [x] Phase B (optional, after Phase A review): opt-in local embedding rerank via a user-supplied local provider executable (`~/.design-ai/config.json` and/or `--provider`), never a default, never external HTTP, with graceful degradation to Phase A on any absence/failure/staleness.
 - [x] Phase B: deterministic stub-provider test coverage (`cli/lib/embedding-provider.test.mjs`, `cli/lib/embedding-index.test.mjs`, `cli/lib/embedding-rerank.test.mjs`, `cli/lib/search-ranked.test.mjs`) and `package:smoke` coverage proving off-by-default, missing-provider fallback, and a real stub-provider round-trip.
-- [ ] Answer the open questions in [AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md) (ranked-search default, index location, route boundary, Korean tokenization, Phase B configuration home) before scheduling Phase B.
+- [x] Answer the open questions in [AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md) (ranked-search default, index location, route boundary, Korean tokenization, Phase B configuration home) before scheduling Phase B. _Answered in the Phase A implementation review; Hangul tokenization (FU-1) and index source-identity keying (FU-2) landed before Phase B._
 
 ## Phase 753 — MCP Protocol Hardening Release (v4.56.0) ✓ ready
 

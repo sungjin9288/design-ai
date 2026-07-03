@@ -2,6 +2,40 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.57.0 — Local Retrieval Memory: Ranked Search and Optional Embeddings (2026-07)
+
+Ships the Phase 754 AI-learning retrieval work: a deterministic, zero-dependency local retrieval layer over the knowledge corpus and the local learning profile, plus an opt-in local embedding rerank backend. Defaults are unchanged — `search`, `route`, `prompt`, and `pack` behave exactly as before unless a new flag is passed — so this release is additive and backward-compatible. It also moves `refs/` source links behind generated reference pages and hardens the docs deploy against intermittent GitHub Pages failures.
+
+### Added
+- `design-ai index --build/--status/--verify`: an explicit-only local retrieval index (`~/.design-ai/index/`, `DESIGN_AI_INDEX_DIR` override) over `knowledge/`, `examples/`, `skills/`, `docs/`, `agents/`, `commands/`, and `learning.json`. The index files are derived, rebuildable cache artifacts that are never committed, packaged, or sent anywhere.
+- `design-ai search --ranked`: deterministic BM25-style ranked corpus search with fully ordered output. The default substring `search` is unchanged.
+- A shared lexical scorer behind `prompt --with-learning` / `pack --with-learning`, so learning-entry selection and ranked search rank with one auditable algorithm; `learn --eval` checkpoints now record a `ranker` field.
+- Hangul-aware tokenization: Korean surface forms emit character bigrams alongside the whole token so stem and particle-attached queries converge (`버튼` now matches documents containing only `버튼을`).
+- `design-ai search --ranked --embeddings` and `index --build --embeddings [--provider …]`: an opt-in, local-only embedding rerank backend configured through `~/.design-ai/config.json`. It never runs by default, makes no network calls, ships no model, and degrades visibly to the lexical path on any absence, staleness, or provider failure (exit 0).
+- MCP `design_ai_search` gains the same opt-in `ranked` parameter as the CLI, with no new tools and no implicit index builds.
+- `design-ai workspace` reports retrieval-index readiness (unused / fresh / stale) alongside its existing learning-usage and eval-checkpoint freshness.
+
+### Changed
+- `refs/` source links in the corpus now resolve to generated reference pages under `docs/reference/` instead of the gitignored upstream mirror; the MkDocs refs-only warning baseline is now 0.
+- The retrieval index sidecar format is version 2, recording the resolved checkout path and learning-file identity so a different checkout that shares the per-machine index directory is treated as stale rather than silently trusted.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `npm run release:metadata`.
+- `npm run audit:strict`.
+- `git diff --check`.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent Phase 754 commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.56.0 → 4.57.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- Users get sharper, deterministic corpus and learning-context retrieval — including for Korean queries — with zero new dependencies and no behavior change unless they opt in with `--ranked`.
+- Teams that want semantic rerank can wire a local embedding provider without design-ai ever making a network call or shipping a model.
+- Maintainers can publish a retrieval-capable release whose new surfaces are covered by both packed-tarball and public-registry smoke.
+
 ## v4.56.0 — MCP Protocol Hardening and Published Client Evidence (2026-07)
 
 Hardened the local stdio MCP server that Claude Code, Codex, and other MCP clients use to call design-ai. This release turns malformed JSON-RPC envelopes, request ids, notifications, initialize params, and tool arguments into deterministic protocol errors before CLI execution, then refreshes evidence that the published npm MCP entrypoint and local Claude/Codex registrations work.

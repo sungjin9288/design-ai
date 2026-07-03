@@ -1,6 +1,6 @@
 {
   "name": "design-ai",
-  "version": "4.56.0",
+  "version": "4.57.0",
   "description": "Senior product designer for any AI coding agent. 20 skills, 17 commands, 4 review agents covering UI/UX, website improvement, design systems, motion, illustration, print, video, game UI, conversational, and spatial design. Korean market depth.",
   "author": {
     "name": "Sungjin Park",
@@ -90,7 +90,7 @@
     {
       "name": "document-author",
       "path": "skills/document-author/SKILL.md",
-      "description": "Write technical / product documentation. Diátaxis-aware. Korean-aware."
+      "description": "Write technical / product documentation. Di\u00e1taxis-aware. Korean-aware."
     },
     {
       "name": "slide-deck-author",
@@ -120,12 +120,12 @@
     {
       "name": "game-ui-designer",
       "path": "skills/game-ui-designer/SKILL.md",
-      "description": "Spec game UI — HUD, menus, inventory, store. Korean conventions (확률 표시, 본인인증, PC bang)."
+      "description": "Spec game UI \u2014 HUD, menus, inventory, store. Korean conventions (\ud655\ub960 \ud45c\uc2dc, \ubcf8\uc778\uc778\uc99d, PC bang)."
     },
     {
       "name": "conversational-ui-designer",
       "path": "skills/conversational-ui-designer/SKILL.md",
-      "description": "Spec a conversational UI — voice, chatbot, AI chat. Korean conventions (해요체 / 합쇼체)."
+      "description": "Spec a conversational UI \u2014 voice, chatbot, AI chat. Korean conventions (\ud574\uc694\uccb4 / \ud569\uc1fc\uccb4)."
     },
     {
       "name": "spatial-designer",
@@ -134,29 +134,113 @@
     }
   ],
   "commands": [
-    { "name": "design-from-brief", "path": "commands/design-from-brief.md", "description": "Generate a complete design system from a one-paragraph product brief." },
-    { "name": "iterate", "path": "commands/iterate.md", "description": "Apply a critique to an existing artifact, produce a revision + changelog." },
-    { "name": "document-from-brief", "path": "commands/document-from-brief.md", "description": "Generate documentation from a brief." },
-    { "name": "slide-deck", "path": "commands/slide-deck.md", "description": "Generate a slide deck outline from a brief." },
-    { "name": "design-review", "path": "commands/design-review.md", "description": "Run UX audit + a11y review + design critique in parallel and combine." },
-    { "name": "website-improvement", "path": "commands/website-improvement.md", "description": "Plan a website improvement project with profile, audits, MCP readiness, prompts, and handoff." },
-    { "name": "palette-from-brand", "path": "commands/palette-from-brand.md", "description": "Generate a full palette from a brand input." },
-    { "name": "component-spec", "path": "commands/component-spec.md", "description": "Spec a single component using the component-spec-writer skill." },
-    { "name": "extract-tokens", "path": "commands/extract-tokens.md", "description": "Run the token extractor pipeline." },
-    { "name": "motion-design", "path": "commands/motion-design.md", "description": "Spec motion for a screen / component / page." },
-    { "name": "illustration", "path": "commands/illustration.md", "description": "Design or spec an illustration system or piece." },
-    { "name": "print", "path": "commands/print.md", "description": "Spec a print piece." },
-    { "name": "video", "path": "commands/video.md", "description": "Spec video for marketing, social, or in-product." },
-    { "name": "game-ui", "path": "commands/game-ui.md", "description": "Spec game UI." },
-    { "name": "conversational", "path": "commands/conversational.md", "description": "Spec a chatbot / voice / AI chat / live agent." },
-    { "name": "spatial", "path": "commands/spatial.md", "description": "Spec a VR / AR / MR / WebXR experience." },
-    { "name": "stability-review", "path": "commands/stability-review.md", "description": "Run the quarterly stability review report. Surfaces promotion candidates + stale files." }
+    {
+      "name": "design-from-brief",
+      "path": "commands/design-from-brief.md",
+      "description": "Generate a complete design system from a one-paragraph product brief."
+    },
+    {
+      "name": "iterate",
+      "path": "commands/iterate.md",
+      "description": "Apply a critique to an existing artifact, produce a revision + changelog."
+    },
+    {
+      "name": "document-from-brief",
+      "path": "commands/document-from-brief.md",
+      "description": "Generate documentation from a brief."
+    },
+    {
+      "name": "slide-deck",
+      "path": "commands/slide-deck.md",
+      "description": "Generate a slide deck outline from a brief."
+    },
+    {
+      "name": "design-review",
+      "path": "commands/design-review.md",
+      "description": "Run UX audit + a11y review + design critique in parallel and combine."
+    },
+    {
+      "name": "website-improvement",
+      "path": "commands/website-improvement.md",
+      "description": "Plan a website improvement project with profile, audits, MCP readiness, prompts, and handoff."
+    },
+    {
+      "name": "palette-from-brand",
+      "path": "commands/palette-from-brand.md",
+      "description": "Generate a full palette from a brand input."
+    },
+    {
+      "name": "component-spec",
+      "path": "commands/component-spec.md",
+      "description": "Spec a single component using the component-spec-writer skill."
+    },
+    {
+      "name": "extract-tokens",
+      "path": "commands/extract-tokens.md",
+      "description": "Run the token extractor pipeline."
+    },
+    {
+      "name": "motion-design",
+      "path": "commands/motion-design.md",
+      "description": "Spec motion for a screen / component / page."
+    },
+    {
+      "name": "illustration",
+      "path": "commands/illustration.md",
+      "description": "Design or spec an illustration system or piece."
+    },
+    {
+      "name": "print",
+      "path": "commands/print.md",
+      "description": "Spec a print piece."
+    },
+    {
+      "name": "video",
+      "path": "commands/video.md",
+      "description": "Spec video for marketing, social, or in-product."
+    },
+    {
+      "name": "game-ui",
+      "path": "commands/game-ui.md",
+      "description": "Spec game UI."
+    },
+    {
+      "name": "conversational",
+      "path": "commands/conversational.md",
+      "description": "Spec a chatbot / voice / AI chat / live agent."
+    },
+    {
+      "name": "spatial",
+      "path": "commands/spatial.md",
+      "description": "Spec a VR / AR / MR / WebXR experience."
+    },
+    {
+      "name": "stability-review",
+      "path": "commands/stability-review.md",
+      "description": "Run the quarterly stability review report. Surfaces promotion candidates + stale files."
+    }
   ],
   "agents": [
-    { "name": "design-critic", "path": "agents/design-critic.md", "description": "Senior-designer critique with focus on hierarchy, craft, decisions." },
-    { "name": "a11y-reviewer", "path": "agents/a11y-reviewer.md", "description": "WCAG 2.1/2.2 AA accessibility review." },
-    { "name": "component-architect", "path": "agents/component-architect.md", "description": "Component anatomy + API design review." },
-    { "name": "token-extractor", "path": "agents/token-extractor.md", "description": "Extract design tokens from raw source files." }
+    {
+      "name": "design-critic",
+      "path": "agents/design-critic.md",
+      "description": "Senior-designer critique with focus on hierarchy, craft, decisions."
+    },
+    {
+      "name": "a11y-reviewer",
+      "path": "agents/a11y-reviewer.md",
+      "description": "WCAG 2.1/2.2 AA accessibility review."
+    },
+    {
+      "name": "component-architect",
+      "path": "agents/component-architect.md",
+      "description": "Component anatomy + API design review."
+    },
+    {
+      "name": "token-extractor",
+      "path": "agents/token-extractor.md",
+      "description": "Extract design tokens from raw source files."
+    }
   ],
   "supports": {
     "claude-code": ">=1.0.0"
