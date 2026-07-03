@@ -128,8 +128,8 @@ Stateless.
 
 ## References
 
-- Ant: [`Grid`](../refs/ant-design/components/grid) (Row + Col, 24-col)
-- MUI: [`Grid`](../refs/mui/packages/mui-material/src/Grid) (12-col)
+- Ant: [`Grid`](../docs/reference/ant-design.md#grid) (Row + Col, 24-col)
+- MUI: [`Grid`](../docs/reference/mui.md#grid) (12-col)
 - CSS Grid Level 1 / 2
 
 ## Cross-reference

@@ -203,8 +203,8 @@ Subtle bg (`--color-primary-subtle-bg`), primary icon. Less emphasis but still e
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/float-button/`](../refs/ant-design/components/float-button/) — `FloatButton`, `FloatButton.Group` (speed dial), `FloatButton.BackTop`. Most flexible.
-- MUI: [`refs/mui/packages/mui-material/src/Fab/`](../refs/mui/packages/mui-material/src/Fab/) — `Fab` with `variant="circular" | "extended"`, color, size. Material-aligned.
+- Ant Design: [`refs/ant-design/components/float-button/`](../docs/reference/ant-design.md#float-button) — `FloatButton`, `FloatButton.Group` (speed dial), `FloatButton.BackTop`. Most flexible.
+- MUI: [`refs/mui/packages/mui-material/src/Fab/`](../docs/reference/mui.md#fab) — `Fab` with `variant="circular" | "extended"`, color, size. Material-aligned.
 - shadcn-ui: no built-in. Compose with `Button` + Tailwind `fixed bottom-4 right-4 rounded-full`.
 
 ## Cross-reference

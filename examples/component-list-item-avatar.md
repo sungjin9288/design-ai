@@ -63,7 +63,7 @@
 
 ## References
 
-- MUI: [`ListItemAvatar`](../refs/mui/packages/mui-material/src/ListItemAvatar/)
+- MUI: [`ListItemAvatar`](../docs/reference/mui.md#list-item-avatar)
 
 ## Cross-reference
 

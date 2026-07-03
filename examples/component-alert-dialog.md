@@ -200,7 +200,7 @@ function DeleteProjectButton({ project }: Props) {
 
 ## References
 
-- shadcn-ui: [`alert-dialog`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/alert-dialog.tsx) (Radix)
+- shadcn-ui: [`alert-dialog`](../docs/reference/shadcn-ui.md#alert-dialog) (Radix)
 - WAI-ARIA: [`alertdialog`](https://www.w3.org/WAI/ARIA/apg/patterns/alertdialog/)
 
 ## Cross-reference

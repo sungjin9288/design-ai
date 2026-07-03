@@ -247,7 +247,7 @@ function EditorHeader() {
 
 ## References
 
-- shadcn-ui: [`menubar`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/menubar.tsx) (Radix)
+- shadcn-ui: [`menubar`](../docs/reference/shadcn-ui.md#menubar) (Radix)
 - Patterns: macOS native menubar, VS Code, Figma desktop apps
 - WAI-ARIA: [Menubar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/)
 

@@ -224,7 +224,7 @@ function RevenueChart({ data }: Props) {
 
 ## References
 
-- shadcn-ui: [`chart`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/chart.tsx) (Recharts wrapper)
+- shadcn-ui: [`chart`](../docs/reference/shadcn-ui.md#chart) (Recharts wrapper)
 - Recharts: <https://recharts.org/>
 - Edward Tufte's *The Visual Display of Quantitative Information* — chart design fundamentals
 

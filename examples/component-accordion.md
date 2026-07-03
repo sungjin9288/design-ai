@@ -218,9 +218,9 @@ Disable height transition. Toggle is instant (no 200ms).
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/collapse/`](../refs/ant-design/components/collapse/) — `Collapse` + `Collapse.Panel`. `accordion` prop forces single. Has nice `expandIcon` customization.
-- MUI: [`refs/mui/packages/mui-material/src/Accordion/`](../refs/mui/packages/mui-material/src/Accordion/) — `Accordion`, `AccordionSummary`, `AccordionDetails`, `AccordionActions`. Solid composition.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/accordion.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/accordion.tsx) — Radix Accordion primitive. Cleanest a11y. **Default for new projects.**
+- Ant Design: [`refs/ant-design/components/collapse/`](../docs/reference/ant-design.md#collapse) — `Collapse` + `Collapse.Panel`. `accordion` prop forces single. Has nice `expandIcon` customization.
+- MUI: [`refs/mui/packages/mui-material/src/Accordion/`](../docs/reference/mui.md#accordion) — `Accordion`, `AccordionSummary`, `AccordionDetails`, `AccordionActions`. Solid composition.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/accordion.tsx`](../docs/reference/shadcn-ui.md#accordion) — Radix Accordion primitive. Cleanest a11y. **Default for new projects.**
 
 ## Cross-reference
 

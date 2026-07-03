@@ -138,7 +138,7 @@ function App() {
 
 ## References
 
-- MUI: [`Backdrop`](../refs/mui/packages/mui-material/src/Backdrop)
+- MUI: [`Backdrop`](../docs/reference/mui.md#backdrop)
 - Used internally by: Modal, Drawer, Sheet, AlertDialog
 
 ## Cross-reference

@@ -73,7 +73,7 @@ Inherits from parent button: hover, focus, selected, disabled all cascade. Selec
 
 ## References
 
-- MUI: [`ListItemIcon`](../refs/mui/packages/mui-material/src/ListItemIcon/)
+- MUI: [`ListItemIcon`](../docs/reference/mui.md#list-item-icon)
 
 ## Cross-reference
 

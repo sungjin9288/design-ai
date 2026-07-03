@@ -198,9 +198,9 @@ For range slider with overlapping thumbs: each thumb maintains independent focus
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/slider/`](../refs/ant-design/components/slider/) — `Slider` with `range`, `marks`, `step`, `included` (whether range fill shows). Solid impl.
-- MUI: [`refs/mui/packages/mui-material/src/Slider/`](../refs/mui/packages/mui-material/src/Slider/) — `Slider` with rich `marks`, `valueLabelDisplay`, `track="normal" | "false" | "inverted"`. Most comprehensive.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/slider.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/slider.tsx) — Radix Slider primitive. Simplest API.
+- Ant Design: [`refs/ant-design/components/slider/`](../docs/reference/ant-design.md#slider) — `Slider` with `range`, `marks`, `step`, `included` (whether range fill shows). Solid impl.
+- MUI: [`refs/mui/packages/mui-material/src/Slider/`](../docs/reference/mui.md#slider) — `Slider` with rich `marks`, `valueLabelDisplay`, `track="normal" | "false" | "inverted"`. Most comprehensive.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/slider.tsx`](../docs/reference/shadcn-ui.md#slider) — Radix Slider primitive. Simplest API.
 
 ## Cross-reference
 

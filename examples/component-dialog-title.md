@@ -93,7 +93,7 @@ The close button is typically rendered separately (often inside the title row vi
 
 ## References
 
-- MUI: [`DialogTitle.d.ts`](../refs/mui/packages/mui-material/src/DialogTitle/DialogTitle.d.ts)
+- MUI: [`DialogTitle.d.ts`](../docs/reference/mui.md#dialog-title)
 
 ## Cross-reference
 

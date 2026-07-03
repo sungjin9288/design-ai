@@ -107,8 +107,8 @@ function EditorToolbar() {
 
 ## References
 
-- MUI: [`ButtonGroup`](../refs/mui/packages/mui-material/src/ButtonGroup)
-- shadcn-ui: [`button-group`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/button-group.tsx)
+- MUI: [`ButtonGroup`](../docs/reference/mui.md#button-group)
+- shadcn-ui: [`button-group`](../docs/reference/shadcn-ui.md#button-group)
 
 ## Cross-reference
 

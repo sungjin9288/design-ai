@@ -89,7 +89,7 @@
 
 ## References
 
-- MUI: [`FormLabel`](../refs/mui/packages/mui-material/src/FormLabel/)
+- MUI: [`FormLabel`](../docs/reference/mui.md#form-label)
 
 ## Cross-reference
 

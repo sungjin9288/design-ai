@@ -95,7 +95,7 @@ For a long-content dialog: `Dialog` with `scroll="paper"` (default) and `divider
 
 ## References
 
-- MUI: [`DialogContent.d.ts`](../refs/mui/packages/mui-material/src/DialogContent/DialogContent.d.ts)
+- MUI: [`DialogContent.d.ts`](../docs/reference/mui.md#dialog-content)
 
 ## Cross-reference
 

@@ -19,6 +19,9 @@ python3 tools/extractors/component_index.py
 echo "==> Extracting shadcn registry"
 python3 tools/extractors/shadcn_registry.py
 
+echo "==> Generating upstream reference pages"
+python3 tools/extractors/reference_pages.py
+
 echo "==> Mirroring awesome-design-md"
 python3 tools/extractors/awesome_design_mirror.py
 

@@ -186,7 +186,7 @@ function PaymentQRScreen({ session }) {
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/qr-code/`](../refs/ant-design/components/qr-code/) — `QRCode` with all options.
+- Ant Design: [`refs/ant-design/components/qr-code/`](../docs/reference/ant-design.md#qr-code) — `QRCode` with all options.
 - MUI: no built-in. Use libraries like `qrcode.react` or `react-qr-code`.
 - shadcn-ui: no built-in. Use libraries.
 

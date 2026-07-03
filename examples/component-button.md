@@ -196,9 +196,9 @@ If any of these don't exist in your token system, **stop and add them before imp
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/button/Button.tsx`](../refs/ant-design/components/button/Button.tsx) — most exhaustive prop coverage; uses `type` (legacy) and `variant` (modern) in parallel, with `color` as a separate axis.
-- MUI: [`refs/mui/packages/mui-material/src/Button/Button.d.ts`](../refs/mui/packages/mui-material/src/Button/Button.d.ts) — `variant` (`text`/`outlined`/`contained`), `color` (semantic), `loadingPosition`. The most thoroughly documented.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/button.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/button.tsx) — Tailwind `cva` pattern, `asChild` via Radix Slot, simplest API surface. Inspired the `iconStart`/`iconEnd` and `asChild` choices in this spec.
+- Ant Design: [`refs/ant-design/components/button/Button.tsx`](../docs/reference/ant-design.md#button) — most exhaustive prop coverage; uses `type` (legacy) and `variant` (modern) in parallel, with `color` as a separate axis.
+- MUI: [`refs/mui/packages/mui-material/src/Button/Button.d.ts`](../docs/reference/mui.md#button) — `variant` (`text`/`outlined`/`contained`), `color` (semantic), `loadingPosition`. The most thoroughly documented.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/button.tsx`](../docs/reference/shadcn-ui.md#button) — Tailwind `cva` pattern, `asChild` via Radix Slot, simplest API surface. Inspired the `iconStart`/`iconEnd` and `asChild` choices in this spec.
 
 API choices made:
 - **`variant` names**: `solid`/`outline`/`ghost`/`link` over MUI's `text`/`outlined`/`contained` (clearer for non-Material teams) and over Ant's `default`/`dashed`/`text`/`link` (`default` is uninformative).

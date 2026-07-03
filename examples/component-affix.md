@@ -180,7 +180,7 @@ For sticky **alerts / banners**: respect `prefers-reduced-motion` and don't anim
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/affix/`](../refs/ant-design/components/affix/) — `Affix`. Wraps native sticky with React-friendly callbacks.
+- Ant Design: [`refs/ant-design/components/affix/`](../docs/reference/ant-design.md#affix) — `Affix`. Wraps native sticky with React-friendly callbacks.
 - MUI / shadcn-ui: no dedicated component. Use CSS `position: sticky`.
 
 ## Cross-reference

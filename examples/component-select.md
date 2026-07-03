@@ -239,11 +239,11 @@ This is one of the more complex a11y components. Use a battle-tested primitive (
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/select/`](../refs/ant-design/components/select/) — `Select`, supports `mode="multiple"`, `mode="tags"` (creatable). Has `Cascader` for hierarchical select.
+- Ant Design: [`refs/ant-design/components/select/`](../docs/reference/ant-design.md#select) — `Select`, supports `mode="multiple"`, `mode="tags"` (creatable). Has `Cascader` for hierarchical select.
 - MUI: `<Select>` (basic, like native) and `<Autocomplete>` (combobox). Autocomplete is the canonical reference for the searchable variant.
 - shadcn-ui:
-  - [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/select.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/select.tsx) — Radix Select. No search.
-  - [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/command.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/command.tsx) — cmdk-based searchable. Combine with Popover for combobox pattern.
+  - [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/select.tsx`](../docs/reference/shadcn-ui.md#select) — Radix Select. No search.
+  - [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/command.tsx`](../docs/reference/shadcn-ui.md#command) — cmdk-based searchable. Combine with Popover for combobox pattern.
 
 API choices made:
 - **`Select` and `MultiSelect` as separate top-level exports** for type safety on `value` (single value vs array). Internally same primitive with `multiple={true|false}`.

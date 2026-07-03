@@ -200,12 +200,12 @@ const [open, setOpen] = useState(false);
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/modal/`](../refs/ant-design/components/modal/) — exhaustive: `Modal`, `Modal.confirm`, `Modal.info`, `Modal.success`, `Modal.error`, `Modal.warning`. Imperative API via `Modal.confirm({...})` is convenient but harder to test. The static methods are an Ant idiom worth knowing about.
-- MUI: [`refs/mui/packages/mui-material/src/Dialog/Dialog.tsx`](../refs/mui/packages/mui-material/src/Dialog/) — composition-first: `<Dialog>`, `<DialogTitle>`, `<DialogContent>`, `<DialogActions>`. Cleanest base API.
+- Ant Design: [`refs/ant-design/components/modal/`](../docs/reference/ant-design.md#modal) — exhaustive: `Modal`, `Modal.confirm`, `Modal.info`, `Modal.success`, `Modal.error`, `Modal.warning`. Imperative API via `Modal.confirm({...})` is convenient but harder to test. The static methods are an Ant idiom worth knowing about.
+- MUI: [`refs/mui/packages/mui-material/src/Dialog/Dialog.tsx`](../docs/reference/mui.md#dialog) — composition-first: `<Dialog>`, `<DialogTitle>`, `<DialogContent>`, `<DialogActions>`. Cleanest base API.
 - shadcn-ui:
-  - [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/dialog.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/dialog.tsx) — Radix Dialog primitive, all a11y handled upstream.
-  - [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/alert-dialog.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/alert-dialog.tsx) — separate primitive for confirms; difference is `role="alertdialog"` and modal cannot be dismissed via Escape/backdrop unless code-driven.
-  - [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sheet.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sheet.tsx) — edge-anchored variant.
+  - [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/dialog.tsx`](../docs/reference/shadcn-ui.md#dialog) — Radix Dialog primitive, all a11y handled upstream.
+  - [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/alert-dialog.tsx`](../docs/reference/shadcn-ui.md#alert-dialog) — separate primitive for confirms; difference is `role="alertdialog"` and modal cannot be dismissed via Escape/backdrop unless code-driven.
+  - [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sheet.tsx`](../docs/reference/shadcn-ui.md#sheet) — edge-anchored variant.
 
 API choices made:
 - **Three variants in one spec** (`dialog`/`alert-dialog`/`sheet`) — same focus-management contract, same a11y pattern, same composition. Fewer concepts to learn than three separate components with overlapping concerns.

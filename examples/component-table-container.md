@@ -67,7 +67,7 @@
 
 ## References
 
-- MUI: [`TableContainer`](../refs/mui/packages/mui-material/src/TableContainer/)
+- MUI: [`TableContainer`](../docs/reference/mui.md#table-container)
 
 ## Cross-reference
 

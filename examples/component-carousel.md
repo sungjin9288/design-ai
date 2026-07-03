@@ -250,9 +250,9 @@ Swipe is a touch convention. For accessibility, ensure arrows are visible OR a c
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/carousel/`](../refs/ant-design/components/carousel/) — `Carousel`. Wraps `react-slick`. Has `autoplay`, `dots`, `effect`. Solid baseline.
+- Ant Design: [`refs/ant-design/components/carousel/`](../docs/reference/ant-design.md#carousel) — `Carousel`. Wraps `react-slick`. Has `autoplay`, `dots`, `effect`. Solid baseline.
 - MUI: no dedicated component. Use `react-slick` or `swiper`.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/carousel.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/carousel.tsx) — wraps **Embla** carousel. Modern, framework-agnostic, excellent accessibility. **Default for new projects.**
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/carousel.tsx`](../docs/reference/shadcn-ui.md#carousel) — wraps **Embla** carousel. Modern, framework-agnostic, excellent accessibility. **Default for new projects.**
 
 API choices made:
 - **`autoplay: false` default**: matches a11y best practice. Most carousels don't need it.

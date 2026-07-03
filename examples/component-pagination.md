@@ -210,9 +210,9 @@ Implementation: read from `useSearchParams` in React Router / Next.js. Update qu
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/pagination/`](../refs/ant-design/components/pagination/) — most exhaustive: `simple`, `total`, `showSizeChanger`, `showJumper`, `itemRender`, `disabled`, `responsive`. Common in admin tables.
-- MUI: [`refs/mui/packages/mui-material/src/Pagination/`](../refs/mui/packages/mui-material/src/Pagination/) — `Pagination` + `PaginationItem`. Cleaner API, fewer features.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/pagination.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/pagination.tsx) — primitive only (`Pagination`, `PaginationContent`, `PaginationItem`, `PaginationLink`, `PaginationPrevious`, `PaginationNext`, `PaginationEllipsis`). Compose for behavior. **No built-in pagination logic** — pair with TanStack Table or your own state.
+- Ant Design: [`refs/ant-design/components/pagination/`](../docs/reference/ant-design.md#pagination) — most exhaustive: `simple`, `total`, `showSizeChanger`, `showJumper`, `itemRender`, `disabled`, `responsive`. Common in admin tables.
+- MUI: [`refs/mui/packages/mui-material/src/Pagination/`](../docs/reference/mui.md#pagination) — `Pagination` + `PaginationItem`. Cleaner API, fewer features.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/pagination.tsx`](../docs/reference/shadcn-ui.md#pagination) — primitive only (`Pagination`, `PaginationContent`, `PaginationItem`, `PaginationLink`, `PaginationPrevious`, `PaginationNext`, `PaginationEllipsis`). Compose for behavior. **No built-in pagination logic** — pair with TanStack Table or your own state.
 
 API choices made:
 - **`siblingCount` and `boundaryCount` exposed**: lets the consumer tune the numbered display algorithm without overriding rendering.

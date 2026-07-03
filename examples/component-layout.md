@@ -205,7 +205,7 @@ function AppLayout({ children }: Props) {
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/layout/`](../refs/ant-design/components/layout/) — `Layout`, `Layout.Header`, `Layout.Sider`, `Layout.Content`, `Layout.Footer`. Most exhaustive.
+- Ant Design: [`refs/ant-design/components/layout/`](../docs/reference/ant-design.md#layout) — `Layout`, `Layout.Header`, `Layout.Sider`, `Layout.Content`, `Layout.Footer`. Most exhaustive.
 - MUI: no dedicated Layout — compose with `<Box>` + `<Drawer>` + `<AppBar>`.
 - shadcn-ui: no built-in. Use `resizable` + custom layout.
 

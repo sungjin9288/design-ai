@@ -92,7 +92,7 @@ See [`knowledge/icons/curated-sets.md`](../knowledge/icons/curated-sets.md).
 
 ## References
 
-- MUI: [`SvgIcon`](../refs/mui/packages/mui-material/src/SvgIcon)
+- MUI: [`SvgIcon`](../docs/reference/mui.md#svg-icon)
 - Phosphor Icons: 1200+ icons, 5 weights
 - Lucide: stroke-only minimalist set
 

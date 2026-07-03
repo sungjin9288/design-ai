@@ -200,7 +200,7 @@ function MentionLink({ user }: { user: User }) {
 
 ## References
 
-- shadcn-ui: [`hover-card`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/hover-card.tsx) (Radix)
+- shadcn-ui: [`hover-card`](../docs/reference/shadcn-ui.md#hover-card) (Radix)
 - Patterns: Twitter / X profile previews on @mention hover
 - Patterns: GitHub PR review preview on commit hash hover
 

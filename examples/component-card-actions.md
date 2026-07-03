@@ -91,7 +91,7 @@ Left-aligned by default. The convention differs from `DialogActions` (right-alig
 
 ## References
 
-- MUI: [`CardActions.d.ts`](../refs/mui/packages/mui-material/src/CardActions/CardActions.d.ts)
+- MUI: [`CardActions.d.ts`](../docs/reference/mui.md#card-actions)
 
 ## Cross-reference
 

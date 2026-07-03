@@ -77,7 +77,7 @@
 
 ## References
 
-- MUI: [`Fade`](../refs/mui/packages/mui-material/src/Fade/)
+- MUI: [`Fade`](../docs/reference/mui.md#fade)
 
 ## Cross-reference
 

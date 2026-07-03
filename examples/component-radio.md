@@ -155,9 +155,9 @@ function PaymentMethodPicker({ value, onChange }: Props) {
 
 ## References
 
-- Ant: [`Radio`](../refs/ant-design/components/radio)
-- MUI: [`Radio`](../refs/mui/packages/mui-material/src/Radio)
-- shadcn-ui: [`radio-group`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/radio-group.tsx)
+- Ant: [`Radio`](../docs/reference/ant-design.md#radio)
+- MUI: [`Radio`](../docs/reference/mui.md#radio)
+- shadcn-ui: [`radio-group`](../docs/reference/shadcn-ui.md#radio-group)
 - WAI-ARIA: [Radio Group pattern](https://www.w3.org/WAI/ARIA/apg/patterns/radio/)
 
 ## Cross-reference

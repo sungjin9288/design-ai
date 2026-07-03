@@ -239,7 +239,7 @@ For chat/conversation headers: title shows the contact's name + online status:
 ## References
 
 - Ant Design: no dedicated AppBar — use `Layout.Header` + custom composition.
-- MUI: [`refs/mui/packages/mui-material/src/AppBar/`](../refs/mui/packages/mui-material/src/AppBar/) — `AppBar` with `position`, `color`, `elevation`. Material-aligned.
+- MUI: [`refs/mui/packages/mui-material/src/AppBar/`](../docs/reference/mui.md#app-bar) — `AppBar` with `position`, `color`, `elevation`. Material-aligned.
 - shadcn-ui: no built-in. Compose with custom header structure.
 
 ## Cross-reference

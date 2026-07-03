@@ -83,7 +83,7 @@
 
 ## References
 
-- MUI: [`SnackbarContent`](../refs/mui/packages/mui-material/src/SnackbarContent/)
+- MUI: [`SnackbarContent`](../docs/reference/mui.md#snackbar-content)
 
 ## Cross-reference
 

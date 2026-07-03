@@ -255,7 +255,7 @@ function CountryPicker({ value, onChange }: Props) {
 
 ## References
 
-- shadcn-ui: [`combobox`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/combobox.tsx)
+- shadcn-ui: [`combobox`](../docs/reference/shadcn-ui.md#combobox)
 - WAI-ARIA: [Combobox pattern](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/)
 - cmdk library
 

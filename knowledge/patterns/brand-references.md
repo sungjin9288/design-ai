@@ -2,7 +2,7 @@
 title: Brand reference index
 source: refs/awesome-design-md/design-md/
 upstream: https://github.com/VoltAgent/awesome-design-md
-extracted_at: 2026-05-19
+extracted_at: 2026-07-03
 applies_to: [art-direction, brand-research]
 version: 1.0.0
 last_updated: 2026-05
@@ -16,77 +16,77 @@ Curated design notes on 71 brands. When designing for a comparable category, ope
 | Brand | Files |
 | --- | --- |
 
-| **[airbnb](../../refs/awesome-design-md/design-md/airbnb/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/airbnb/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/airbnb/README.md) |
-| **[airtable](../../refs/awesome-design-md/design-md/airtable/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/airtable/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/airtable/README.md) |
-| **[apple](../../refs/awesome-design-md/design-md/apple/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/apple/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/apple/README.md) |
-| **[binance](../../refs/awesome-design-md/design-md/binance/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/binance/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/binance/README.md) |
-| **[bmw](../../refs/awesome-design-md/design-md/bmw/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/bmw/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/bmw/README.md) |
-| **[bmw-m](../../refs/awesome-design-md/design-md/bmw-m/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/bmw-m/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/bmw-m/README.md) |
-| **[bugatti](../../refs/awesome-design-md/design-md/bugatti/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/bugatti/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/bugatti/README.md) |
-| **[cal](../../refs/awesome-design-md/design-md/cal/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/cal/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/cal/README.md) |
-| **[claude](../../refs/awesome-design-md/design-md/claude/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/claude/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/claude/README.md) |
-| **[clay](../../refs/awesome-design-md/design-md/clay/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/clay/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/clay/README.md) |
-| **[clickhouse](../../refs/awesome-design-md/design-md/clickhouse/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/clickhouse/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/clickhouse/README.md) |
-| **[cohere](../../refs/awesome-design-md/design-md/cohere/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/cohere/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/cohere/README.md) |
-| **[coinbase](../../refs/awesome-design-md/design-md/coinbase/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/coinbase/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/coinbase/README.md) |
-| **[composio](../../refs/awesome-design-md/design-md/composio/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/composio/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/composio/README.md) |
-| **[cursor](../../refs/awesome-design-md/design-md/cursor/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/cursor/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/cursor/README.md) |
-| **[elevenlabs](../../refs/awesome-design-md/design-md/elevenlabs/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/elevenlabs/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/elevenlabs/README.md) |
-| **[expo](../../refs/awesome-design-md/design-md/expo/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/expo/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/expo/README.md) |
-| **[ferrari](../../refs/awesome-design-md/design-md/ferrari/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/ferrari/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/ferrari/README.md) |
-| **[figma](../../refs/awesome-design-md/design-md/figma/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/figma/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/figma/README.md) |
-| **[framer](../../refs/awesome-design-md/design-md/framer/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/framer/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/framer/README.md) |
-| **[hashicorp](../../refs/awesome-design-md/design-md/hashicorp/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/hashicorp/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/hashicorp/README.md) |
-| **[ibm](../../refs/awesome-design-md/design-md/ibm/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/ibm/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/ibm/README.md) |
-| **[intercom](../../refs/awesome-design-md/design-md/intercom/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/intercom/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/intercom/README.md) |
-| **[kraken](../../refs/awesome-design-md/design-md/kraken/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/kraken/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/kraken/README.md) |
-| **[lamborghini](../../refs/awesome-design-md/design-md/lamborghini/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/lamborghini/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/lamborghini/README.md) |
-| **[linear.app](../../refs/awesome-design-md/design-md/linear.app/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/linear.app/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/linear.app/README.md) |
-| **[lovable](../../refs/awesome-design-md/design-md/lovable/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/lovable/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/lovable/README.md) |
-| **[mastercard](../../refs/awesome-design-md/design-md/mastercard/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/mastercard/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/mastercard/README.md) |
-| **[meta](../../refs/awesome-design-md/design-md/meta/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/meta/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/meta/README.md) |
-| **[minimax](../../refs/awesome-design-md/design-md/minimax/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/minimax/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/minimax/README.md) |
-| **[mintlify](../../refs/awesome-design-md/design-md/mintlify/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/mintlify/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/mintlify/README.md) |
-| **[miro](../../refs/awesome-design-md/design-md/miro/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/miro/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/miro/README.md) |
-| **[mistral.ai](../../refs/awesome-design-md/design-md/mistral.ai/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/mistral.ai/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/mistral.ai/README.md) |
-| **[mongodb](../../refs/awesome-design-md/design-md/mongodb/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/mongodb/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/mongodb/README.md) |
-| **[nike](../../refs/awesome-design-md/design-md/nike/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/nike/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/nike/README.md) |
-| **[notion](../../refs/awesome-design-md/design-md/notion/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/notion/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/notion/README.md) |
-| **[nvidia](../../refs/awesome-design-md/design-md/nvidia/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/nvidia/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/nvidia/README.md) |
-| **[ollama](../../refs/awesome-design-md/design-md/ollama/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/ollama/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/ollama/README.md) |
-| **[opencode.ai](../../refs/awesome-design-md/design-md/opencode.ai/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/opencode.ai/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/opencode.ai/README.md) |
-| **[pinterest](../../refs/awesome-design-md/design-md/pinterest/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/pinterest/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/pinterest/README.md) |
-| **[playstation](../../refs/awesome-design-md/design-md/playstation/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/playstation/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/playstation/README.md) |
-| **[posthog](../../refs/awesome-design-md/design-md/posthog/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/posthog/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/posthog/README.md) |
-| **[raycast](../../refs/awesome-design-md/design-md/raycast/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/raycast/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/raycast/README.md) |
-| **[renault](../../refs/awesome-design-md/design-md/renault/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/renault/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/renault/README.md) |
-| **[replicate](../../refs/awesome-design-md/design-md/replicate/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/replicate/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/replicate/README.md) |
-| **[resend](../../refs/awesome-design-md/design-md/resend/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/resend/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/resend/README.md) |
-| **[revolut](../../refs/awesome-design-md/design-md/revolut/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/revolut/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/revolut/README.md) |
-| **[runwayml](../../refs/awesome-design-md/design-md/runwayml/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/runwayml/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/runwayml/README.md) |
-| **[sanity](../../refs/awesome-design-md/design-md/sanity/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/sanity/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/sanity/README.md) |
-| **[sentry](../../refs/awesome-design-md/design-md/sentry/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/sentry/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/sentry/README.md) |
-| **[shopify](../../refs/awesome-design-md/design-md/shopify/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/shopify/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/shopify/README.md) |
-| **[slack](../../refs/awesome-design-md/design-md/slack/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/slack/DESIGN.md) |
-| **[spacex](../../refs/awesome-design-md/design-md/spacex/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/spacex/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/spacex/README.md) |
-| **[spotify](../../refs/awesome-design-md/design-md/spotify/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/spotify/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/spotify/README.md) |
-| **[starbucks](../../refs/awesome-design-md/design-md/starbucks/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/starbucks/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/starbucks/README.md) |
-| **[stripe](../../refs/awesome-design-md/design-md/stripe/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/stripe/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/stripe/README.md) |
-| **[supabase](../../refs/awesome-design-md/design-md/supabase/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/supabase/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/supabase/README.md) |
-| **[superhuman](../../refs/awesome-design-md/design-md/superhuman/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/superhuman/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/superhuman/README.md) |
-| **[tesla](../../refs/awesome-design-md/design-md/tesla/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/tesla/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/tesla/README.md) |
-| **[theverge](../../refs/awesome-design-md/design-md/theverge/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/theverge/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/theverge/README.md) |
-| **[together.ai](../../refs/awesome-design-md/design-md/together.ai/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/together.ai/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/together.ai/README.md) |
-| **[uber](../../refs/awesome-design-md/design-md/uber/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/uber/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/uber/README.md) |
-| **[vercel](../../refs/awesome-design-md/design-md/vercel/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/vercel/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/vercel/README.md) |
-| **[vodafone](../../refs/awesome-design-md/design-md/vodafone/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/vodafone/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/vodafone/README.md) |
-| **[voltagent](../../refs/awesome-design-md/design-md/voltagent/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/voltagent/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/voltagent/README.md) |
-| **[warp](../../refs/awesome-design-md/design-md/warp/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/warp/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/warp/README.md) |
-| **[webflow](../../refs/awesome-design-md/design-md/webflow/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/webflow/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/webflow/README.md) |
-| **[wired](../../refs/awesome-design-md/design-md/wired/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/wired/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/wired/README.md) |
-| **[wise](../../refs/awesome-design-md/design-md/wise/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/wise/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/wise/README.md) |
-| **[x.ai](../../refs/awesome-design-md/design-md/x.ai/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/x.ai/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/x.ai/README.md) |
-| **[zapier](../../refs/awesome-design-md/design-md/zapier/)** | [`DESIGN.md`](../../refs/awesome-design-md/design-md/zapier/DESIGN.md), [`README.md`](../../refs/awesome-design-md/design-md/zapier/README.md) |
+| **[airbnb](../../docs/reference/awesome-design-md.md#airbnb)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#airbnb), [`README.md`](../../docs/reference/awesome-design-md.md#airbnb) |
+| **[airtable](../../docs/reference/awesome-design-md.md#airtable)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#airtable), [`README.md`](../../docs/reference/awesome-design-md.md#airtable) |
+| **[apple](../../docs/reference/awesome-design-md.md#apple)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#apple), [`README.md`](../../docs/reference/awesome-design-md.md#apple) |
+| **[binance](../../docs/reference/awesome-design-md.md#binance)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#binance), [`README.md`](../../docs/reference/awesome-design-md.md#binance) |
+| **[bmw](../../docs/reference/awesome-design-md.md#bmw)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#bmw), [`README.md`](../../docs/reference/awesome-design-md.md#bmw) |
+| **[bmw-m](../../docs/reference/awesome-design-md.md#bmw-m)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#bmw-m), [`README.md`](../../docs/reference/awesome-design-md.md#bmw-m) |
+| **[bugatti](../../docs/reference/awesome-design-md.md#bugatti)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#bugatti), [`README.md`](../../docs/reference/awesome-design-md.md#bugatti) |
+| **[cal](../../docs/reference/awesome-design-md.md#cal)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#cal), [`README.md`](../../docs/reference/awesome-design-md.md#cal) |
+| **[claude](../../docs/reference/awesome-design-md.md#claude)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#claude), [`README.md`](../../docs/reference/awesome-design-md.md#claude) |
+| **[clay](../../docs/reference/awesome-design-md.md#clay)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#clay), [`README.md`](../../docs/reference/awesome-design-md.md#clay) |
+| **[clickhouse](../../docs/reference/awesome-design-md.md#clickhouse)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#clickhouse), [`README.md`](../../docs/reference/awesome-design-md.md#clickhouse) |
+| **[cohere](../../docs/reference/awesome-design-md.md#cohere)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#cohere), [`README.md`](../../docs/reference/awesome-design-md.md#cohere) |
+| **[coinbase](../../docs/reference/awesome-design-md.md#coinbase)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#coinbase), [`README.md`](../../docs/reference/awesome-design-md.md#coinbase) |
+| **[composio](../../docs/reference/awesome-design-md.md#composio)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#composio), [`README.md`](../../docs/reference/awesome-design-md.md#composio) |
+| **[cursor](../../docs/reference/awesome-design-md.md#cursor)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#cursor), [`README.md`](../../docs/reference/awesome-design-md.md#cursor) |
+| **[elevenlabs](../../docs/reference/awesome-design-md.md#elevenlabs)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#elevenlabs), [`README.md`](../../docs/reference/awesome-design-md.md#elevenlabs) |
+| **[expo](../../docs/reference/awesome-design-md.md#expo)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#expo), [`README.md`](../../docs/reference/awesome-design-md.md#expo) |
+| **[ferrari](../../docs/reference/awesome-design-md.md#ferrari)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#ferrari), [`README.md`](../../docs/reference/awesome-design-md.md#ferrari) |
+| **[figma](../../docs/reference/awesome-design-md.md#figma)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#figma), [`README.md`](../../docs/reference/awesome-design-md.md#figma) |
+| **[framer](../../docs/reference/awesome-design-md.md#framer)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#framer), [`README.md`](../../docs/reference/awesome-design-md.md#framer) |
+| **[hashicorp](../../docs/reference/awesome-design-md.md#hashicorp)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#hashicorp), [`README.md`](../../docs/reference/awesome-design-md.md#hashicorp) |
+| **[ibm](../../docs/reference/awesome-design-md.md#ibm)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#ibm), [`README.md`](../../docs/reference/awesome-design-md.md#ibm) |
+| **[intercom](../../docs/reference/awesome-design-md.md#intercom)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#intercom), [`README.md`](../../docs/reference/awesome-design-md.md#intercom) |
+| **[kraken](../../docs/reference/awesome-design-md.md#kraken)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#kraken), [`README.md`](../../docs/reference/awesome-design-md.md#kraken) |
+| **[lamborghini](../../docs/reference/awesome-design-md.md#lamborghini)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#lamborghini), [`README.md`](../../docs/reference/awesome-design-md.md#lamborghini) |
+| **[linear.app](../../docs/reference/awesome-design-md.md#linearapp)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#linearapp), [`README.md`](../../docs/reference/awesome-design-md.md#linearapp) |
+| **[lovable](../../docs/reference/awesome-design-md.md#lovable)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#lovable), [`README.md`](../../docs/reference/awesome-design-md.md#lovable) |
+| **[mastercard](../../docs/reference/awesome-design-md.md#mastercard)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#mastercard), [`README.md`](../../docs/reference/awesome-design-md.md#mastercard) |
+| **[meta](../../docs/reference/awesome-design-md.md#meta)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#meta), [`README.md`](../../docs/reference/awesome-design-md.md#meta) |
+| **[minimax](../../docs/reference/awesome-design-md.md#minimax)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#minimax), [`README.md`](../../docs/reference/awesome-design-md.md#minimax) |
+| **[mintlify](../../docs/reference/awesome-design-md.md#mintlify)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#mintlify), [`README.md`](../../docs/reference/awesome-design-md.md#mintlify) |
+| **[miro](../../docs/reference/awesome-design-md.md#miro)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#miro), [`README.md`](../../docs/reference/awesome-design-md.md#miro) |
+| **[mistral.ai](../../docs/reference/awesome-design-md.md#mistralai)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#mistralai), [`README.md`](../../docs/reference/awesome-design-md.md#mistralai) |
+| **[mongodb](../../docs/reference/awesome-design-md.md#mongodb)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#mongodb), [`README.md`](../../docs/reference/awesome-design-md.md#mongodb) |
+| **[nike](../../docs/reference/awesome-design-md.md#nike)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#nike), [`README.md`](../../docs/reference/awesome-design-md.md#nike) |
+| **[notion](../../docs/reference/awesome-design-md.md#notion)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#notion), [`README.md`](../../docs/reference/awesome-design-md.md#notion) |
+| **[nvidia](../../docs/reference/awesome-design-md.md#nvidia)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#nvidia), [`README.md`](../../docs/reference/awesome-design-md.md#nvidia) |
+| **[ollama](../../docs/reference/awesome-design-md.md#ollama)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#ollama), [`README.md`](../../docs/reference/awesome-design-md.md#ollama) |
+| **[opencode.ai](../../docs/reference/awesome-design-md.md#opencodeai)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#opencodeai), [`README.md`](../../docs/reference/awesome-design-md.md#opencodeai) |
+| **[pinterest](../../docs/reference/awesome-design-md.md#pinterest)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#pinterest), [`README.md`](../../docs/reference/awesome-design-md.md#pinterest) |
+| **[playstation](../../docs/reference/awesome-design-md.md#playstation)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#playstation), [`README.md`](../../docs/reference/awesome-design-md.md#playstation) |
+| **[posthog](../../docs/reference/awesome-design-md.md#posthog)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#posthog), [`README.md`](../../docs/reference/awesome-design-md.md#posthog) |
+| **[raycast](../../docs/reference/awesome-design-md.md#raycast)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#raycast), [`README.md`](../../docs/reference/awesome-design-md.md#raycast) |
+| **[renault](../../docs/reference/awesome-design-md.md#renault)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#renault), [`README.md`](../../docs/reference/awesome-design-md.md#renault) |
+| **[replicate](../../docs/reference/awesome-design-md.md#replicate)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#replicate), [`README.md`](../../docs/reference/awesome-design-md.md#replicate) |
+| **[resend](../../docs/reference/awesome-design-md.md#resend)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#resend), [`README.md`](../../docs/reference/awesome-design-md.md#resend) |
+| **[revolut](../../docs/reference/awesome-design-md.md#revolut)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#revolut), [`README.md`](../../docs/reference/awesome-design-md.md#revolut) |
+| **[runwayml](../../docs/reference/awesome-design-md.md#runwayml)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#runwayml), [`README.md`](../../docs/reference/awesome-design-md.md#runwayml) |
+| **[sanity](../../docs/reference/awesome-design-md.md#sanity)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#sanity), [`README.md`](../../docs/reference/awesome-design-md.md#sanity) |
+| **[sentry](../../docs/reference/awesome-design-md.md#sentry)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#sentry), [`README.md`](../../docs/reference/awesome-design-md.md#sentry) |
+| **[shopify](../../docs/reference/awesome-design-md.md#shopify)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#shopify), [`README.md`](../../docs/reference/awesome-design-md.md#shopify) |
+| **[slack](../../docs/reference/awesome-design-md.md#slack)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#slack) |
+| **[spacex](../../docs/reference/awesome-design-md.md#spacex)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#spacex), [`README.md`](../../docs/reference/awesome-design-md.md#spacex) |
+| **[spotify](../../docs/reference/awesome-design-md.md#spotify)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#spotify), [`README.md`](../../docs/reference/awesome-design-md.md#spotify) |
+| **[starbucks](../../docs/reference/awesome-design-md.md#starbucks)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#starbucks), [`README.md`](../../docs/reference/awesome-design-md.md#starbucks) |
+| **[stripe](../../docs/reference/awesome-design-md.md#stripe)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#stripe), [`README.md`](../../docs/reference/awesome-design-md.md#stripe) |
+| **[supabase](../../docs/reference/awesome-design-md.md#supabase)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#supabase), [`README.md`](../../docs/reference/awesome-design-md.md#supabase) |
+| **[superhuman](../../docs/reference/awesome-design-md.md#superhuman)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#superhuman), [`README.md`](../../docs/reference/awesome-design-md.md#superhuman) |
+| **[tesla](../../docs/reference/awesome-design-md.md#tesla)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#tesla), [`README.md`](../../docs/reference/awesome-design-md.md#tesla) |
+| **[theverge](../../docs/reference/awesome-design-md.md#theverge)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#theverge), [`README.md`](../../docs/reference/awesome-design-md.md#theverge) |
+| **[together.ai](../../docs/reference/awesome-design-md.md#togetherai)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#togetherai), [`README.md`](../../docs/reference/awesome-design-md.md#togetherai) |
+| **[uber](../../docs/reference/awesome-design-md.md#uber)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#uber), [`README.md`](../../docs/reference/awesome-design-md.md#uber) |
+| **[vercel](../../docs/reference/awesome-design-md.md#vercel)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#vercel), [`README.md`](../../docs/reference/awesome-design-md.md#vercel) |
+| **[vodafone](../../docs/reference/awesome-design-md.md#vodafone)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#vodafone), [`README.md`](../../docs/reference/awesome-design-md.md#vodafone) |
+| **[voltagent](../../docs/reference/awesome-design-md.md#voltagent)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#voltagent), [`README.md`](../../docs/reference/awesome-design-md.md#voltagent) |
+| **[warp](../../docs/reference/awesome-design-md.md#warp)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#warp), [`README.md`](../../docs/reference/awesome-design-md.md#warp) |
+| **[webflow](../../docs/reference/awesome-design-md.md#webflow)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#webflow), [`README.md`](../../docs/reference/awesome-design-md.md#webflow) |
+| **[wired](../../docs/reference/awesome-design-md.md#wired)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#wired), [`README.md`](../../docs/reference/awesome-design-md.md#wired) |
+| **[wise](../../docs/reference/awesome-design-md.md#wise)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#wise), [`README.md`](../../docs/reference/awesome-design-md.md#wise) |
+| **[x.ai](../../docs/reference/awesome-design-md.md#xai)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#xai), [`README.md`](../../docs/reference/awesome-design-md.md#xai) |
+| **[zapier](../../docs/reference/awesome-design-md.md#zapier)** | [`DESIGN.md`](../../docs/reference/awesome-design-md.md#zapier), [`README.md`](../../docs/reference/awesome-design-md.md#zapier) |
 
 ## How to use
 

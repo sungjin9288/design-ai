@@ -155,7 +155,7 @@ function NewMessageNotification({ message }: Props) {
 
 ## References
 
-- Ant: [`Notification`](../refs/ant-design/components/notification)
+- Ant: [`Notification`](../docs/reference/ant-design.md#notification)
 - Native browser Notification API (different — uses OS-level notifications)
 - iOS / Android notification card patterns
 

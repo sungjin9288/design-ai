@@ -193,7 +193,7 @@ For longer waits, Korean: "잠시만 기다려 주세요...".
 
 ## References
 
-- MUI: [`CircularProgress`](../refs/mui/packages/mui-material/src/CircularProgress) (indeterminate variant)
+- MUI: [`CircularProgress`](../docs/reference/mui.md#circular-progress) (indeterminate variant)
 - Patterns: standard SVG spinner
 
 ## Cross-reference

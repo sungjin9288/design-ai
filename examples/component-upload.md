@@ -278,7 +278,7 @@ Profile photo replacement. Click opens picker; uploaded file replaces avatar.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/upload/`](../refs/ant-design/components/upload/) — `Upload` with `Upload.Dragger` (drop zone), file list, multiple modes. Most exhaustive.
+- Ant Design: [`refs/ant-design/components/upload/`](../docs/reference/ant-design.md#upload) — `Upload` with `Upload.Dragger` (drop zone), file list, multiple modes. Most exhaustive.
 - MUI: no dedicated component. Compose `<input type="file">` with custom button.
 - shadcn-ui: no built-in. Compose with file input + drop-zone library (e.g., `react-dropzone`).
 

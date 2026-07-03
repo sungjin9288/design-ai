@@ -91,7 +91,7 @@ Inherited from parent `Step`:
 
 ## References
 
-- MUI: [`StepLabel`](../refs/mui/packages/mui-material/src/StepLabel/)
+- MUI: [`StepLabel`](../docs/reference/mui.md#step-label)
 
 ## Cross-reference
 

@@ -283,7 +283,7 @@ function MarketingHeader() {
 
 ## References
 
-- shadcn-ui: [`navigation-menu`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/navigation-menu.tsx) (Radix)
+- shadcn-ui: [`navigation-menu`](../docs/reference/shadcn-ui.md#navigation-menu) (Radix)
 - Patterns: Stripe, Linear, Vercel marketing nav
 
 ## Cross-reference

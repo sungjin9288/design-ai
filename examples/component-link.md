@@ -211,7 +211,7 @@ The `as` prop swaps the underlying element from `<a>` to a router-aware Link. Th
 ## References
 
 - HTML5 `<a>` element
-- MUI: [`Link`](../refs/mui/packages/mui-material/src/Link)
+- MUI: [`Link`](../docs/reference/mui.md#link)
 - Ant Design: link styling within `Typography`
 - WCAG 2.1: SC 1.4.1 (Use of Color), SC 2.4.4 (Link Purpose)
 

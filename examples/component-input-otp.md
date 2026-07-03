@@ -259,9 +259,9 @@ function VerifyPhoneScreen({ phone }: Props) {
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/input/`](../refs/ant-design/components/input/) — `Input.OTP`. Length, formatting, paste handling.
+- Ant Design: [`refs/ant-design/components/input/`](../docs/reference/ant-design.md#input) — `Input.OTP`. Length, formatting, paste handling.
 - MUI: no built-in. Compose individual `<TextField>` cells.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/input-otp.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/input-otp.tsx) — wraps `input-otp` library. **Default for new projects.**
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/input-otp.tsx`](../docs/reference/shadcn-ui.md#input-otp) — wraps `input-otp` library. **Default for new projects.**
 
 ## Cross-reference
 

@@ -114,7 +114,7 @@ window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
 
 ## References
 
-- Ant: [`BackTop`](../refs/ant-design/components/back-top)
+- Ant: [`BackTop`](../docs/reference/ant-design.md#back-top)
 - Native: `window.scrollTo({ behavior: "smooth" })`
 
 ## Cross-reference

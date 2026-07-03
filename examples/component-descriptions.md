@@ -231,7 +231,7 @@ function ProfileScreen() {
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/descriptions/`](../refs/ant-design/components/descriptions/) — most exhaustive (column, span, layout, bordered, sections).
+- Ant Design: [`refs/ant-design/components/descriptions/`](../docs/reference/ant-design.md#descriptions) — most exhaustive (column, span, layout, bordered, sections).
 - MUI / shadcn-ui: no built-in. Compose with `<dl>` + Tailwind.
 
 ## Cross-reference

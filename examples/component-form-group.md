@@ -77,7 +77,7 @@ Layout primitive — no interactive state of its own.
 
 ## References
 
-- MUI: [`FormGroup`](../refs/mui/packages/mui-material/src/FormGroup/)
+- MUI: [`FormGroup`](../docs/reference/mui.md#form-group)
 
 ## Cross-reference
 

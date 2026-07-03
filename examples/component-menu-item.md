@@ -92,7 +92,7 @@
 
 ## References
 
-- MUI: [`MenuItem.d.ts`](../refs/mui/packages/mui-material/src/MenuItem/MenuItem.d.ts)
+- MUI: [`MenuItem.d.ts`](../docs/reference/mui.md#menu-item)
 
 ## Cross-reference
 

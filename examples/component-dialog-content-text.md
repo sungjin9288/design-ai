@@ -67,7 +67,7 @@ Extends `Typography` — all typography props work.
 
 ## References
 
-- MUI: [`DialogContentText`](../refs/mui/packages/mui-material/src/DialogContentText/)
+- MUI: [`DialogContentText`](../docs/reference/mui.md#dialog-content-text)
 
 ## Cross-reference
 

@@ -100,7 +100,7 @@ For destructive primary actions (e.g., 삭제), use `color="error"` on the prima
 
 ## References
 
-- MUI: [`DialogActions.d.ts`](../refs/mui/packages/mui-material/src/DialogActions/DialogActions.d.ts)
+- MUI: [`DialogActions.d.ts`](../docs/reference/mui.md#dialog-actions)
 
 ## Cross-reference
 

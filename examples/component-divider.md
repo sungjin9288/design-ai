@@ -172,9 +172,9 @@ Most dividers in product UIs should be `aria-hidden`. The structure is conveyed 
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/divider/`](../refs/ant-design/components/divider/) — `Divider` with `type="horizontal" | "vertical"`, `dashed`, optional inline text. Mature.
-- MUI: [`refs/mui/packages/mui-material/src/Divider/`](../refs/mui/packages/mui-material/src/Divider/) — `Divider` with `orientation`, `variant="fullWidth" | "inset" | "middle"`, `textAlign`. Most variants.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/separator.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/separator.tsx) — Radix Separator. Minimal primitive. `decorative` prop drives `aria-hidden` vs `role="separator"`.
+- Ant Design: [`refs/ant-design/components/divider/`](../docs/reference/ant-design.md#divider) — `Divider` with `type="horizontal" | "vertical"`, `dashed`, optional inline text. Mature.
+- MUI: [`refs/mui/packages/mui-material/src/Divider/`](../docs/reference/mui.md#divider) — `Divider` with `orientation`, `variant="fullWidth" | "inset" | "middle"`, `textAlign`. Most variants.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/separator.tsx`](../docs/reference/shadcn-ui.md#separator) — Radix Separator. Minimal primitive. `decorative` prop drives `aria-hidden` vs `role="separator"`.
 
 ## Cross-reference
 

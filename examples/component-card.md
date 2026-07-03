@@ -216,9 +216,9 @@ For image-led cards: `padding="none"`, manually pad the text sections. The cover
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/card/`](../refs/ant-design/components/card/) — `Card`, `Card.Meta`, `Card.Grid`. Strong support for tabbed cards (`tabList` prop) and grid cards. Most exhaustive.
-- MUI: [`refs/mui/packages/mui-material/src/Card/`](../refs/mui/packages/mui-material/src/Card/) — composition: `Card`, `CardHeader`, `CardMedia`, `CardContent`, `CardActions`, `CardActionArea` (the wrapper that makes a card clickable). MUI's `CardActionArea` is the clearest implementation of the interactive-card pattern.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/card.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/card.tsx) — composition with `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`, `CardAction`. Cleanest minimal version.
+- Ant Design: [`refs/ant-design/components/card/`](../docs/reference/ant-design.md#card) — `Card`, `Card.Meta`, `Card.Grid`. Strong support for tabbed cards (`tabList` prop) and grid cards. Most exhaustive.
+- MUI: [`refs/mui/packages/mui-material/src/Card/`](../docs/reference/mui.md#card) — composition: `Card`, `CardHeader`, `CardMedia`, `CardContent`, `CardActions`, `CardActionArea` (the wrapper that makes a card clickable). MUI's `CardActionArea` is the clearest implementation of the interactive-card pattern.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/card.tsx`](../docs/reference/shadcn-ui.md#card) — composition with `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`, `CardAction`. Cleanest minimal version.
 
 API choices made:
 - **Composition over prop overload**: matches all three references' direction. Single `<Card title=... description=... actions=...>` API was rejected — slot-based scales.

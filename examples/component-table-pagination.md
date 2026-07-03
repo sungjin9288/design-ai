@@ -128,7 +128,7 @@ function EmployeesTable() {
 
 ## References
 
-- MUI: [`TablePagination`](../refs/mui/packages/mui-material/src/TablePagination/)
+- MUI: [`TablePagination`](../docs/reference/mui.md#table-pagination)
 
 ## Cross-reference
 

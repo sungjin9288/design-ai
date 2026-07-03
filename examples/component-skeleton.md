@@ -168,9 +168,9 @@ The skeleton still renders (showing layout); just no animation.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/skeleton/`](../refs/ant-design/components/skeleton/) — most exhaustive: `Skeleton.Avatar`, `Skeleton.Button`, `Skeleton.Image`, `Skeleton.Input`, `Skeleton.Node`. Pre-composed shapes for common components.
-- MUI: [`refs/mui/packages/mui-material/src/Skeleton/`](../refs/mui/packages/mui-material/src/Skeleton/) — primitive only. Composition is up to the consumer.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/skeleton.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/skeleton.tsx) — minimal Tailwind-based primitive.
+- Ant Design: [`refs/ant-design/components/skeleton/`](../docs/reference/ant-design.md#skeleton) — most exhaustive: `Skeleton.Avatar`, `Skeleton.Button`, `Skeleton.Image`, `Skeleton.Input`, `Skeleton.Node`. Pre-composed shapes for common components.
+- MUI: [`refs/mui/packages/mui-material/src/Skeleton/`](../docs/reference/mui.md#skeleton) — primitive only. Composition is up to the consumer.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/skeleton.tsx`](../docs/reference/shadcn-ui.md#skeleton) — minimal Tailwind-based primitive.
 
 ## Cross-reference
 

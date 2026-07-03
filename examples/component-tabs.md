@@ -168,9 +168,9 @@ Critical contract — get this exactly right:
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/tabs/`](../refs/ant-design/components/tabs/) — `Tabs`, `Tabs.TabPane`, supports `card`/`line`/`editable-card` variants. Most variants out of the box.
-- MUI: [`refs/mui/packages/mui-material/src/Tabs/`](../refs/mui/packages/mui-material/src/Tabs/) — `Tabs` + `Tab` + `TabPanel` (separately). MUI has good `scrollable` props.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tabs.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tabs.tsx) — Radix Tabs primitive. Cleanest a11y. **Default for new projects.**
+- Ant Design: [`refs/ant-design/components/tabs/`](../docs/reference/ant-design.md#tabs) — `Tabs`, `Tabs.TabPane`, supports `card`/`line`/`editable-card` variants. Most variants out of the box.
+- MUI: [`refs/mui/packages/mui-material/src/Tabs/`](../docs/reference/mui.md#tabs) — `Tabs` + `Tab` + `TabPanel` (separately). MUI has good `scrollable` props.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tabs.tsx`](../docs/reference/shadcn-ui.md#tabs) — Radix Tabs primitive. Cleanest a11y. **Default for new projects.**
 
 API choices made:
 - **Composition with `Tabs.Trigger` / `Tabs.Content`** matching value strings — Radix pattern, lowest surface area.

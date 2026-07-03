@@ -226,9 +226,9 @@ Don't put interactive content in a tooltip. Tooltips disappear on mouse-out.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/popover/`](../refs/ant-design/components/popover/) — `Popover` with rich placement, `trigger="hover" | "click" | "focus"`. Hover trigger is generally avoided in modern UIs.
-- MUI: [`refs/mui/packages/mui-material/src/Popper/`](../refs/mui/packages/mui-material/src/Popper/) — low-level positioning primitive. `Popover` adds backdrop + focus management.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/popover.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/popover.tsx) — Radix Popover primitive. **Default for new projects.**
+- Ant Design: [`refs/ant-design/components/popover/`](../docs/reference/ant-design.md#popover) — `Popover` with rich placement, `trigger="hover" | "click" | "focus"`. Hover trigger is generally avoided in modern UIs.
+- MUI: [`refs/mui/packages/mui-material/src/Popper/`](../docs/reference/mui.md#popper) — low-level positioning primitive. `Popover` adds backdrop + focus management.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/popover.tsx`](../docs/reference/shadcn-ui.md#popover) — Radix Popover primitive. **Default for new projects.**
 
 ## Cross-reference
 

@@ -192,8 +192,8 @@ For display mode (readOnly):
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/rate/`](../refs/ant-design/components/rate/) — `Rate` with `count`, `allowHalf`, `tooltips`, custom `character`. Most flexible.
-- MUI: [`refs/mui/packages/mui-material/src/Rating/`](../refs/mui/packages/mui-material/src/Rating/) — `Rating` with `precision`, `IconContainerComponent`, `getLabelText` for a11y. Solid impl.
+- Ant Design: [`refs/ant-design/components/rate/`](../docs/reference/ant-design.md#rate) — `Rate` with `count`, `allowHalf`, `tooltips`, custom `character`. Most flexible.
+- MUI: [`refs/mui/packages/mui-material/src/Rating/`](../docs/reference/mui.md#rating) — `Rating` with `precision`, `IconContainerComponent`, `getLabelText` for a11y. Solid impl.
 - shadcn-ui: no built-in. Compose from icons + state.
 
 ## Cross-reference

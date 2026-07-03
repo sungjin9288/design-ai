@@ -119,7 +119,7 @@ Layout primitive — no interactive states.
 
 ## References
 
-- MUI: [`Stack`](../refs/mui/packages/mui-material/src/Stack/)
+- MUI: [`Stack`](../docs/reference/mui.md#stack)
 
 ## Cross-reference
 

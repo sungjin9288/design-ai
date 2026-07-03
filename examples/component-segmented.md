@@ -167,9 +167,9 @@ For Korean apps: short labels (1–4 syllables) work best.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/segmented/`](../refs/ant-design/components/segmented/) — `Segmented` with options, sizes, block mode, custom rendering. Modern Ant addition.
-- MUI: [`refs/mui/packages/mui-material/src/ToggleButtonGroup/`](../refs/mui/packages/mui-material/src/ToggleButtonGroup/) — supports both single and multiple. Set `exclusive={true}` for segmented behavior.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/) — `toggle-group.tsx`. Radix Toggle Group primitive.
+- Ant Design: [`refs/ant-design/components/segmented/`](../docs/reference/ant-design.md#segmented) — `Segmented` with options, sizes, block mode, custom rendering. Modern Ant addition.
+- MUI: [`refs/mui/packages/mui-material/src/ToggleButtonGroup/`](../docs/reference/mui.md#toggle-button-group) — supports both single and multiple. Set `exclusive={true}` for segmented behavior.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/`](../docs/reference/shadcn-ui.md) — `toggle-group.tsx`. Radix Toggle Group primitive.
 
 ## Cross-reference
 

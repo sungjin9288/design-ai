@@ -265,7 +265,7 @@ function FilterSheet({ filters, onChange, onApply }: Props) {
 
 ## References
 
-- shadcn-ui: [`sheet`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sheet.tsx) (Radix Dialog primitive)
+- shadcn-ui: [`sheet`](../docs/reference/shadcn-ui.md#sheet) (Radix Dialog primitive)
 - Material 3: bottom sheet pattern
 - iOS: UISheetPresentationController detents
 

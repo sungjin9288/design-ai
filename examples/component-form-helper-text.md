@@ -86,7 +86,7 @@
 
 ## References
 
-- MUI: [`FormHelperText`](../refs/mui/packages/mui-material/src/FormHelperText/)
+- MUI: [`FormHelperText`](../docs/reference/mui.md#form-helper-text)
 
 ## Cross-reference
 

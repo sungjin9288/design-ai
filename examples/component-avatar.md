@@ -181,9 +181,9 @@ Pick colors with text readable in white.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/avatar/`](../refs/ant-design/components/avatar/) — `Avatar`, `Avatar.Group`. `shape="circle" | "square"`. Multi-size + scaling for groups.
-- MUI: [`refs/mui/packages/mui-material/src/Avatar/`](../refs/mui/packages/mui-material/src/Avatar/) — `Avatar` + `AvatarGroup`. Falls back to first letter of `children` text.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/avatar.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/avatar.tsx) — Radix Avatar primitive. Composition: `Avatar`, `AvatarImage`, `AvatarFallback`.
+- Ant Design: [`refs/ant-design/components/avatar/`](../docs/reference/ant-design.md#avatar) — `Avatar`, `Avatar.Group`. `shape="circle" | "square"`. Multi-size + scaling for groups.
+- MUI: [`refs/mui/packages/mui-material/src/Avatar/`](../docs/reference/mui.md#avatar) — `Avatar` + `AvatarGroup`. Falls back to first letter of `children` text.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/avatar.tsx`](../docs/reference/shadcn-ui.md#avatar) — Radix Avatar primitive. Composition: `Avatar`, `AvatarImage`, `AvatarFallback`.
 
 ## Cross-reference
 

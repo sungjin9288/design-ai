@@ -168,7 +168,7 @@ Same as DropdownMenu — Korean text legible, Pretendard / NanumSquare body. 합
 
 ## References
 
-- shadcn-ui: [`context-menu`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/context-menu.tsx) (Radix)
+- shadcn-ui: [`context-menu`](../docs/reference/shadcn-ui.md#context-menu) (Radix)
 - WAI-ARIA: same Menu pattern as DropdownMenu
 - Native: HTML5 `oncontextmenu` event
 

@@ -115,7 +115,7 @@ Modern CSS makes Space largely unnecessary — `display: flex; gap: var(--space-
 
 ## References
 
-- Ant: [`Space`](../refs/ant-design/components/space)
+- Ant: [`Space`](../docs/reference/ant-design.md#space)
 - CSS Flex / Grid `gap` property
 
 ## Cross-reference

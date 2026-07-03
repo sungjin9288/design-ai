@@ -161,8 +161,8 @@ function DeleteConfirmDialog({ open, onClose, onConfirm, isPending }) {
 
 ## References
 
-- Ant Design: [`Modal`](../refs/ant-design/components/modal/) — class API, mask
-- MUI: [`Dialog`](../refs/mui/packages/mui-material/src/Dialog/) — flagship reference
+- Ant Design: [`Modal`](../docs/reference/ant-design.md#modal) — class API, mask
+- MUI: [`Dialog`](../docs/reference/mui.md#dialog) — flagship reference
 
 ## Cross-reference
 

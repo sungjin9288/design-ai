@@ -144,10 +144,10 @@ function CheckoutConnector(props: StepConnectorProps) {
 
 ## References
 
-- MUI direct source: [`refs/mui/packages/mui-material/src/StepConnector/StepConnector.d.ts`](../refs/mui/packages/mui-material/src/StepConnector/StepConnector.d.ts)
-- MUI implementation: [`refs/mui/packages/mui-material/src/StepConnector/StepConnector.js`](../refs/mui/packages/mui-material/src/StepConnector/StepConnector.js)
-- MUI stepper docs/examples: [`refs/mui/docs/data/material/components/steppers/`](../refs/mui/docs/data/material/components/steppers/)
-- Ant Design parent pattern: [`refs/ant-design/components/steps/`](../refs/ant-design/components/steps/)
+- MUI direct source: [`refs/mui/packages/mui-material/src/StepConnector/StepConnector.d.ts`](../docs/reference/mui.md#step-connector)
+- MUI implementation: [`refs/mui/packages/mui-material/src/StepConnector/StepConnector.js`](../docs/reference/mui.md#step-connector)
+- MUI stepper docs/examples: [`refs/mui/docs/data/material/components/steppers/`](../docs/reference/mui.md)
+- Ant Design parent pattern: [`refs/ant-design/components/steps/`](../docs/reference/ant-design.md#steps)
 - Accessibility baseline: [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md)
 
 ## Cross-reference

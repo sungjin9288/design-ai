@@ -207,9 +207,9 @@ function UserMenu({ user, onSignOut }: Props) {
 
 ## References
 
-- Ant: [`Dropdown`](../refs/ant-design/components/dropdown)
-- MUI: [`Menu`](../refs/mui/packages/mui-material/src/Menu)
-- shadcn-ui: [`dropdown-menu`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/dropdown-menu.tsx) (Radix-based)
+- Ant: [`Dropdown`](../docs/reference/ant-design.md#dropdown)
+- MUI: [`Menu`](../docs/reference/mui.md#menu)
+- shadcn-ui: [`dropdown-menu`](../docs/reference/shadcn-ui.md#dropdown-menu) (Radix-based)
 - WAI-ARIA: [Menu pattern](https://www.w3.org/WAI/ARIA/apg/patterns/menu/)
 
 ## Cross-reference

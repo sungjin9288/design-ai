@@ -89,7 +89,7 @@ Layout/keyboard primitive — no own visual states. Children own theirs.
 
 ## References
 
-- MUI: [`MenuList`](../refs/mui/packages/mui-material/src/MenuList/)
+- MUI: [`MenuList`](../docs/reference/mui.md#menu-list)
 
 ## Cross-reference
 

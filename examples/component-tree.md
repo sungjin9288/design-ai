@@ -281,7 +281,7 @@ Announce on movement:
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/tree/`](../refs/ant-design/components/tree/) — `Tree` with `Tree.DirectoryTree` for file-style. Most exhaustive (drag-drop, async, search, virtual). Heavy.
+- Ant Design: [`refs/ant-design/components/tree/`](../docs/reference/ant-design.md#tree) — `Tree` with `Tree.DirectoryTree` for file-style. Most exhaustive (drag-drop, async, search, virtual). Heavy.
 - MUI: `@mui/x-tree-view` (separate package) — `RichTreeView` (declarative), `SimpleTreeView` (composition). Excellent a11y.
 - shadcn-ui: no built-in. Compose from primitives + headless library (react-arborist or @aria-tree).
 

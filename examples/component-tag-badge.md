@@ -291,9 +291,9 @@ Use `offset` to fine-tune (badges often need -4px / -4px to overlap nicely).
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/tag/`](../refs/ant-design/components/tag/) (Tag) + [`refs/ant-design/components/badge/`](../refs/ant-design/components/badge/) (Badge). Both well-developed; Tag has `Tag.CheckableTag` for filter-style.
+- Ant Design: [`refs/ant-design/components/tag/`](../docs/reference/ant-design.md#tag) (Tag) + [`refs/ant-design/components/badge/`](../docs/reference/ant-design.md#badge) (Badge). Both well-developed; Tag has `Tag.CheckableTag` for filter-style.
 - MUI: `Chip` (closest to Tag) + `Badge`. MUI Chip has `clickable`, `deletable`, `avatar` slot — most flexible.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/badge.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/badge.tsx) — minimal Tag-equivalent. shadcn doesn't have a separate Tag/Badge distinction; user composes.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/badge.tsx`](../docs/reference/shadcn-ui.md#badge) — minimal Tag-equivalent. shadcn doesn't have a separate Tag/Badge distinction; user composes.
 
 API choices made:
 - **Tag and Badge as separate components**: matches Ant + MUI; clearer than a single "Pill" with a `mode` flag.

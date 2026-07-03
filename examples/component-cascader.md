@@ -125,7 +125,7 @@ For Korean address: combine with Daum Postcode (more user-friendly for actual ad
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/cascader/`](../refs/ant-design/components/cascader/) — `Cascader` with full feature set. Most exhaustive.
+- Ant Design: [`refs/ant-design/components/cascader/`](../docs/reference/ant-design.md#cascader) — `Cascader` with full feature set. Most exhaustive.
 - MUI / shadcn-ui: no built-in. Compose from Select-like primitives.
 
 ## Cross-reference

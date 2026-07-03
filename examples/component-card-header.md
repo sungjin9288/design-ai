@@ -112,7 +112,7 @@ function PostCard({ post, onMore, onLike }) {
 
 ## References
 
-- MUI: [`CardHeader`](../refs/mui/packages/mui-material/src/CardHeader/)
+- MUI: [`CardHeader`](../docs/reference/mui.md#card-header)
 
 ## Cross-reference
 

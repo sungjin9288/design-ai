@@ -165,11 +165,11 @@ Inherits button-like props from MUI `ButtonBase` in MUI implementations.
 
 ## References
 
-- MUI direct source: [`refs/mui/packages/mui-material/src/AccordionSummary/AccordionSummary.d.ts`](../refs/mui/packages/mui-material/src/AccordionSummary/AccordionSummary.d.ts)
-- MUI implementation: [`refs/mui/packages/mui-material/src/AccordionSummary/AccordionSummary.js`](../refs/mui/packages/mui-material/src/AccordionSummary/AccordionSummary.js)
-- Parent MUI composition: [`refs/mui/packages/mui-material/src/Accordion/`](../refs/mui/packages/mui-material/src/Accordion/)
-- Ant Design parent pattern: [`refs/ant-design/components/collapse/`](../refs/ant-design/components/collapse/)
-- shadcn-ui parent pattern: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/accordion.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/accordion.tsx)
+- MUI direct source: [`refs/mui/packages/mui-material/src/AccordionSummary/AccordionSummary.d.ts`](../docs/reference/mui.md#accordion-summary)
+- MUI implementation: [`refs/mui/packages/mui-material/src/AccordionSummary/AccordionSummary.js`](../docs/reference/mui.md#accordion-summary)
+- Parent MUI composition: [`refs/mui/packages/mui-material/src/Accordion/`](../docs/reference/mui.md#accordion)
+- Ant Design parent pattern: [`refs/ant-design/components/collapse/`](../docs/reference/ant-design.md#collapse)
+- shadcn-ui parent pattern: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/accordion.tsx`](../docs/reference/shadcn-ui.md#accordion)
 - Accessibility baseline: [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md)
 - Motion baseline: [`knowledge/motion/principles.md`](../knowledge/motion/principles.md)
 

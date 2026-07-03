@@ -88,7 +88,7 @@
 
 ## References
 
-- MUI: [`ListItemText`](../refs/mui/packages/mui-material/src/ListItemText/)
+- MUI: [`ListItemText`](../docs/reference/mui.md#list-item-text)
 
 ## Cross-reference
 

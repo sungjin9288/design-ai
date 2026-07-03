@@ -206,10 +206,10 @@ upload().then(
 ## References
 
 - Ant Design:
-  - [`refs/ant-design/components/message/`](../refs/ant-design/components/message/) — single-line transient messages (closest to "toast").
-  - [`refs/ant-design/components/notification/`](../refs/ant-design/components/notification/) — multi-line, with title and description (closest to this spec's full toast). Ant separates these by line count — most other systems combine.
-- MUI: [`refs/mui/packages/mui-material/src/Snackbar/Snackbar.tsx`](../refs/mui/packages/mui-material/src/Snackbar/) — composition-style React component. The least ergonomic of the three for the imperative pattern; pair with `useSnackbar` hook from notistack or build a custom queue.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sonner.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sonner.tsx) — wraps `sonner` library. Sonner is the modern de-facto standard; its API (this spec mirrors it) is the cleanest of the three.
+  - [`refs/ant-design/components/message/`](../docs/reference/ant-design.md#message) — single-line transient messages (closest to "toast").
+  - [`refs/ant-design/components/notification/`](../docs/reference/ant-design.md#notification) — multi-line, with title and description (closest to this spec's full toast). Ant separates these by line count — most other systems combine.
+- MUI: [`refs/mui/packages/mui-material/src/Snackbar/Snackbar.tsx`](../docs/reference/mui.md#snackbar) — composition-style React component. The least ergonomic of the three for the imperative pattern; pair with `useSnackbar` hook from notistack or build a custom queue.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sonner.tsx`](../docs/reference/shadcn-ui.md#sonner) — wraps `sonner` library. Sonner is the modern de-facto standard; its API (this spec mirrors it) is the cleanest of the three.
 
 API choices made:
 - **Imperative API as primary** (`toast.success(...)`) — matches user mental model. Composition (`<Toast>` JSX) is rejected — toasts come from any code path, not from render.

@@ -156,7 +156,7 @@ async function handleSave() {
 
 ## References
 
-- shadcn-ui: [`sonner`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sonner.tsx)
+- shadcn-ui: [`sonner`](../docs/reference/shadcn-ui.md#sonner)
 - Sonner library by emilkowalski
 
 ## Cross-reference

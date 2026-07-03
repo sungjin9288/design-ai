@@ -111,7 +111,7 @@ function VerticalOnboarding() {
 
 ## References
 
-- MUI: [`StepContent`](../refs/mui/packages/mui-material/src/StepContent/)
+- MUI: [`StepContent`](../docs/reference/mui.md#step-content)
 
 ## Cross-reference
 

@@ -135,7 +135,7 @@ function ItemRow({ item }: Props) {
 
 ## References
 
-- Ant: [`Popconfirm`](../refs/ant-design/components/popconfirm)
+- Ant: [`Popconfirm`](../docs/reference/ant-design.md#popconfirm)
 
 ## Cross-reference
 

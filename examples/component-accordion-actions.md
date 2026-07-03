@@ -140,11 +140,11 @@ If the row has a divider, use `--color-border-default`; do not introduce a new h
 
 ## References
 
-- MUI direct source: [`refs/mui/packages/mui-material/src/AccordionActions/AccordionActions.d.ts`](../refs/mui/packages/mui-material/src/AccordionActions/AccordionActions.d.ts)
-- MUI implementation: [`refs/mui/packages/mui-material/src/AccordionActions/AccordionActions.js`](../refs/mui/packages/mui-material/src/AccordionActions/AccordionActions.js)
-- Parent MUI composition: [`refs/mui/packages/mui-material/src/Accordion/`](../refs/mui/packages/mui-material/src/Accordion/)
-- Ant Design parent pattern: [`refs/ant-design/components/collapse/`](../refs/ant-design/components/collapse/)
-- shadcn-ui parent pattern: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/accordion.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/accordion.tsx)
+- MUI direct source: [`refs/mui/packages/mui-material/src/AccordionActions/AccordionActions.d.ts`](../docs/reference/mui.md#accordion-actions)
+- MUI implementation: [`refs/mui/packages/mui-material/src/AccordionActions/AccordionActions.js`](../docs/reference/mui.md#accordion-actions)
+- Parent MUI composition: [`refs/mui/packages/mui-material/src/Accordion/`](../docs/reference/mui.md#accordion)
+- Ant Design parent pattern: [`refs/ant-design/components/collapse/`](../docs/reference/ant-design.md#collapse)
+- shadcn-ui parent pattern: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/accordion.tsx`](../docs/reference/shadcn-ui.md#accordion)
 - Accessibility baseline: [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md)
 
 ## Cross-reference

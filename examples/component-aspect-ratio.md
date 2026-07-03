@@ -146,7 +146,7 @@ function ProductCard({ product }: Props) {
 
 ## References
 
-- shadcn-ui: [`aspect-ratio`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/aspect-ratio.tsx) (Radix)
+- shadcn-ui: [`aspect-ratio`](../docs/reference/shadcn-ui.md#aspect-ratio) (Radix)
 - CSS: `aspect-ratio` property (Baseline 2021)
 
 ## Cross-reference

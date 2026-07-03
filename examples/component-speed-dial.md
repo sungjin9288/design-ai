@@ -167,7 +167,7 @@ function MobileApp() {
 
 ## References
 
-- MUI: [`SpeedDial`](../refs/mui/packages/mui-material/src/SpeedDial)
+- MUI: [`SpeedDial`](../docs/reference/mui.md#speed-dial)
 - Material Design: SpeedDial pattern
 - Patterns: Twitter / Instagram compose FAB
 

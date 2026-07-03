@@ -200,8 +200,8 @@ export function FeaturedModule({ title, description, action }: FeaturedModulePro
 
 ## References
 
-- Ant Design: [`BorderBeam.tsx`](../refs/ant-design/components/border-beam/BorderBeam.tsx), [`BorderBeamEffect.tsx`](../refs/ant-design/components/border-beam/BorderBeamEffect.tsx), [`border-beam/index.en-US.md`](../refs/ant-design/components/border-beam/index.en-US.md), [`border-beam/style/index.ts`](../refs/ant-design/components/border-beam/style/index.ts)
-- MUI: [`Paper.d.ts`](../refs/mui/packages/mui-material/src/Paper/Paper.d.ts), [`Card.d.ts`](../refs/mui/packages/mui-material/src/Card/Card.d.ts)
-- shadcn-ui: [`card.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/card.tsx)
+- Ant Design: [`BorderBeam.tsx`](../docs/reference/ant-design.md#border-beam), [`BorderBeamEffect.tsx`](../docs/reference/ant-design.md#border-beam), [`border-beam/index.en-US.md`](../docs/reference/ant-design.md#border-beam), [`border-beam/style/index.ts`](../docs/reference/ant-design.md#border-beam)
+- MUI: [`Paper.d.ts`](../docs/reference/mui.md#paper), [`Card.d.ts`](../docs/reference/mui.md#card)
+- shadcn-ui: [`card.tsx`](../docs/reference/shadcn-ui.md#card)
 - Knowledge: [`a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md), [`motion/principles.md`](../knowledge/motion/principles.md), [`components/INDEX.md`](../knowledge/components/INDEX.md)
 - Cross-reference: [`component-card.md`](component-card.md), [`component-paper.md`](component-paper.md), [`component-button-base.md`](component-button-base.md)

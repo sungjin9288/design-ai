@@ -111,7 +111,7 @@ function AccountTabs() {
 
 ## References
 
-- MUI: [`Tab`](../refs/mui/packages/mui-material/src/Tab/) + [`Tabs`](../refs/mui/packages/mui-material/src/Tabs/)
+- MUI: [`Tab`](../docs/reference/mui.md#tab) + [`Tabs`](../docs/reference/mui.md#tabs)
 
 ## Cross-reference
 

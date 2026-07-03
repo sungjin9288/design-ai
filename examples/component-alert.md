@@ -176,9 +176,9 @@ Alerts don't have hover/active themselves — only their nested actions do.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/alert/`](../refs/ant-design/components/alert/) — `Alert`, `Alert.ErrorBoundary`. Supports `closable`, `banner` variant, `showIcon`, `action`. Has a "banner" mode for full-width top banners.
-- MUI: [`refs/mui/packages/mui-material/src/Alert/`](../refs/mui/packages/mui-material/src/Alert/) — `Alert` + `AlertTitle`. Variants: `standard` (subtle), `filled` (solid), `outlined`. Closest to this spec.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/alert.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/alert.tsx) — primitive (`Alert`, `AlertTitle`, `AlertDescription`). Composition; intent via className variant.
+- Ant Design: [`refs/ant-design/components/alert/`](../docs/reference/ant-design.md#alert) — `Alert`, `Alert.ErrorBoundary`. Supports `closable`, `banner` variant, `showIcon`, `action`. Has a "banner" mode for full-width top banners.
+- MUI: [`refs/mui/packages/mui-material/src/Alert/`](../docs/reference/mui.md#alert) — `Alert` + `AlertTitle`. Variants: `standard` (subtle), `filled` (solid), `outlined`. Closest to this spec.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/alert.tsx`](../docs/reference/shadcn-ui.md#alert) — primitive (`Alert`, `AlertTitle`, `AlertDescription`). Composition; intent via className variant.
 
 API choices made:
 - **`actions` array prop** rather than children-only: 80% of alerts with actions need exactly 1–2 buttons; the prop is faster than composing.

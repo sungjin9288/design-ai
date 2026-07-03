@@ -157,11 +157,11 @@ If these avatar tokens do not exist, map them to the existing size, spacing, bor
 
 ## References
 
-- MUI direct source: [`refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.d.ts`](../refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.d.ts)
-- MUI implementation: [`refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.js`](../refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.js)
-- Ant Design parent pattern: [`refs/ant-design/components/avatar/`](../refs/ant-design/components/avatar/)
-- shadcn-ui avatar source: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/avatar.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/avatar.tsx)
-- shadcn-ui group examples: [`refs/shadcn-ui/apps/v4/examples/base/avatar-group.tsx`](../refs/shadcn-ui/apps/v4/examples/base/avatar-group.tsx)
+- MUI direct source: [`refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.d.ts`](../docs/reference/mui.md#avatar-group)
+- MUI implementation: [`refs/mui/packages/mui-material/src/AvatarGroup/AvatarGroup.js`](../docs/reference/mui.md#avatar-group)
+- Ant Design parent pattern: [`refs/ant-design/components/avatar/`](../docs/reference/ant-design.md#avatar)
+- shadcn-ui avatar source: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/avatar.tsx`](../docs/reference/shadcn-ui.md#avatar)
+- shadcn-ui group examples: [`refs/shadcn-ui/apps/v4/examples/base/avatar-group.tsx`](../docs/reference/shadcn-ui.md)
 - Accessibility baseline: [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md)
 
 ## Cross-reference

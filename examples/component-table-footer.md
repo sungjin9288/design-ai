@@ -64,7 +64,7 @@
 
 ## References
 
-- MUI: [`TableFooter`](../refs/mui/packages/mui-material/src/TableFooter/)
+- MUI: [`TableFooter`](../docs/reference/mui.md#table-footer)
 
 ## Cross-reference
 

@@ -162,8 +162,8 @@ When motion disabled: spinner is static. Provide a text label or different non-a
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/spin/`](../refs/ant-design/components/spin/) — `Spin`. Standard spinner with `tip`, `delay`, `wrapperClassName`.
-- MUI: [`CircularProgress`](../refs/mui/packages/mui-material/src/CircularProgress/) (Material's equivalent). Same role.
+- Ant Design: [`refs/ant-design/components/spin/`](../docs/reference/ant-design.md#spin) — `Spin`. Standard spinner with `tip`, `delay`, `wrapperClassName`.
+- MUI: [`CircularProgress`](../docs/reference/mui.md#circular-progress) (Material's equivalent). Same role.
 - shadcn-ui: no built-in. Use Lucide's `Loader2` icon with CSS spin.
 
 ## Cross-reference

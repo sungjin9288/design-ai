@@ -108,7 +108,7 @@ Label is presentational; states inherit from the linked input.
 ## References
 
 - HTML5 `<label>` element
-- shadcn-ui: [`label`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/label.tsx) (Radix)
+- shadcn-ui: [`label`](../docs/reference/shadcn-ui.md#label) (Radix)
 - MUI: `FormLabel`
 
 ## Cross-reference

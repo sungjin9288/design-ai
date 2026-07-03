@@ -202,8 +202,8 @@ For **Ant Design / MUI projects**: Typography is canonical; use it.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/typography/`](../refs/ant-design/components/typography/) — `Typography`, `Typography.Title`, `Typography.Text`, `Typography.Paragraph`. Most exhaustive: copyable, ellipsis with tooltip, editable.
-- MUI: [`refs/mui/packages/mui-material/src/Typography/`](../refs/mui/packages/mui-material/src/Typography/) — `Typography` with variants matching Material 3 (display, headline, title, body, label).
+- Ant Design: [`refs/ant-design/components/typography/`](../docs/reference/ant-design.md#typography) — `Typography`, `Typography.Title`, `Typography.Text`, `Typography.Paragraph`. Most exhaustive: copyable, ellipsis with tooltip, editable.
+- MUI: [`refs/mui/packages/mui-material/src/Typography/`](../docs/reference/mui.md#typography) — `Typography` with variants matching Material 3 (display, headline, title, body, label).
 - shadcn-ui: no Typography component. Apply utility classes directly.
 
 ## Cross-reference

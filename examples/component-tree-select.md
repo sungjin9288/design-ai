@@ -191,7 +191,7 @@ function DepartmentSelect() {
 
 ## References
 
-- Ant: [`TreeSelect`](../refs/ant-design/components/tree-select)
+- Ant: [`TreeSelect`](../docs/reference/ant-design.md#tree-select)
 - WAI-ARIA: [Tree pattern](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/)
 
 ## Cross-reference

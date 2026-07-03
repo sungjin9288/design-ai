@@ -102,7 +102,7 @@ The visual gap between input and helper text is part of the FormControl's owned 
 
 ## References
 
-- MUI: [`FormControl.d.ts`](../refs/mui/packages/mui-material/src/FormControl/FormControl.d.ts)
+- MUI: [`FormControl.d.ts`](../docs/reference/mui.md#form-control)
 
 ## Cross-reference
 

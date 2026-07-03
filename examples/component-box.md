@@ -101,7 +101,7 @@ Use Box when none of the above fit. If you find yourself using Box with `display
 
 ## References
 
-- MUI: [`Box`](../refs/mui/packages/mui-material/src/Box) — system-prop pioneer
+- MUI: [`Box`](../docs/reference/mui.md#box) — system-prop pioneer
 - Chakra UI Box (very similar API)
 - shadcn-ui: doesn't ship Box; uses Tailwind classes directly
 

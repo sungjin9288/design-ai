@@ -200,9 +200,9 @@ function CodeEditor() {
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/splitter/`](../refs/ant-design/components/splitter/) — `Splitter` + `Splitter.Panel`. Modern Ant addition.
+- Ant Design: [`refs/ant-design/components/splitter/`](../docs/reference/ant-design.md#splitter) — `Splitter` + `Splitter.Panel`. Modern Ant addition.
 - MUI: no built-in. Use `react-resizable-panels` or `allotment`.
-- shadcn-ui: [`resizable.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/resizable.tsx) — wraps `react-resizable-panels`. Cleanest impl.
+- shadcn-ui: [`resizable.tsx`](../docs/reference/shadcn-ui.md#resizable) — wraps `react-resizable-panels`. Cleanest impl.
 
 ## Cross-reference
 

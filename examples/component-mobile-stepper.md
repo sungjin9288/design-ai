@@ -145,7 +145,7 @@ function OnboardingFlow() {
 
 ## References
 
-- MUI: [`MobileStepper`](../refs/mui/packages/mui-material/src/MobileStepper/)
+- MUI: [`MobileStepper`](../docs/reference/mui.md#mobile-stepper)
 
 ## Cross-reference
 

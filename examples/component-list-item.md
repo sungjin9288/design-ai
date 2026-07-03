@@ -106,7 +106,7 @@ Slots: leading icon/avatar (optional), text block (`ListItemText`), trailing sec
 
 ## References
 
-- MUI: [`ListItem.d.ts`](../refs/mui/packages/mui-material/src/ListItem/ListItem.d.ts)
+- MUI: [`ListItem.d.ts`](../docs/reference/mui.md#list-item)
 
 ## Cross-reference
 

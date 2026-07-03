@@ -198,7 +198,7 @@ For language announcement:
 
 ## References
 
-- Ant Design: [`Typography.Text code`](../refs/ant-design/components/typography/) — inline. Block code: just use HTML `<pre>` with optional CSS.
+- Ant Design: [`Typography.Text code`](../docs/reference/ant-design.md#typography) — inline. Block code: just use HTML `<pre>` with optional CSS.
 - MUI: no dedicated Code component. Use `<code>` or `<Typography component="pre">`.
 - shadcn-ui: no built-in. Compose with `react-syntax-highlighter` + Tailwind.
 

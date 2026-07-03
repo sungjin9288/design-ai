@@ -120,7 +120,7 @@ function TextStyleToolbar({ formats, onChange }) {
 
 ## References
 
-- MUI: [`ToggleButton`](../refs/mui/packages/mui-material/src/ToggleButton/) + [`ToggleButtonGroup`](../refs/mui/packages/mui-material/src/ToggleButtonGroup/)
+- MUI: [`ToggleButton`](../docs/reference/mui.md#toggle-button) + [`ToggleButtonGroup`](../docs/reference/mui.md#toggle-button-group)
 
 ## Cross-reference
 

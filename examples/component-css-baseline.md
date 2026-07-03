@@ -142,7 +142,7 @@ body {
 
 ## References
 
-- MUI: [`CssBaseline.d.ts`](../refs/mui/packages/mui-material/src/CssBaseline/CssBaseline.d.ts), [`CssBaseline.js`](../refs/mui/packages/mui-material/src/CssBaseline/CssBaseline.js), [`ThemeProvider.tsx`](../refs/mui/packages/mui-material/src/styles/ThemeProvider.tsx)
-- Ant Design: [`config-provider/index.en-US.md`](../refs/ant-design/components/config-provider/index.en-US.md), [`theme/index.tsx`](../refs/ant-design/components/theme/index.tsx)
-- shadcn-ui: [`theme-provider.tsx`](../refs/shadcn-ui/apps/v4/components/theme-provider.tsx), [`globals.css`](../refs/shadcn-ui/apps/v4/app/globals.css)
+- MUI: [`CssBaseline.d.ts`](../docs/reference/mui.md#css-baseline), [`CssBaseline.js`](../docs/reference/mui.md#css-baseline), [`ThemeProvider.tsx`](../docs/reference/mui.md#styles)
+- Ant Design: [`config-provider/index.en-US.md`](../docs/reference/ant-design.md#config-provider), [`theme/index.tsx`](../docs/reference/ant-design.md#theme)
+- shadcn-ui: [`theme-provider.tsx`](../docs/reference/shadcn-ui.md), [`globals.css`](../docs/reference/shadcn-ui.md)
 - Knowledge: [`a11y/contrast.md`](../knowledge/a11y/contrast.md), [`i18n/korean-typography.md`](../knowledge/i18n/korean-typography.md), [`design-tokens/tailwind-v4.md`](../knowledge/design-tokens/tailwind-v4.md)

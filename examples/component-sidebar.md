@@ -246,7 +246,7 @@ function AppShell({ children }: Props) {
 
 ## References
 
-- shadcn-ui: [`sidebar`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sidebar.tsx) — flagship primitive
+- shadcn-ui: [`sidebar`](../docs/reference/shadcn-ui.md#sidebar) — flagship primitive
 - Patterns: VS Code, Linear, Notion sidebars
 
 ## Cross-reference

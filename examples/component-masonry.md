@@ -180,7 +180,7 @@ function PhotoGallery({ photos }: Props) {
 
 ## References
 
-- MUI: [`Masonry`](../refs/mui/packages/mui-material/src/Masonry)
+- MUI: [`Masonry`](../docs/reference/mui.md)
 - CSS Multicolumn Layout (MDN)
 - Pinterest engineering blog on Masonry layout
 

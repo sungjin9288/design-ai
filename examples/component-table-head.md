@@ -69,7 +69,7 @@
 
 ## References
 
-- MUI: [`TableHead`](../refs/mui/packages/mui-material/src/TableHead/)
+- MUI: [`TableHead`](../docs/reference/mui.md#table-head)
 
 ## Cross-reference
 

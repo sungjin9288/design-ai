@@ -122,7 +122,7 @@ function SearchField({ value, onChange, onClear }) {
 
 ## References
 
-- MUI: [`InputBase`](../refs/mui/packages/mui-material/src/InputBase/)
+- MUI: [`InputBase`](../docs/reference/mui.md#input-base)
 
 ## Cross-reference
 

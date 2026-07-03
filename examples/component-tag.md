@@ -94,7 +94,7 @@
 
 ## References
 
-- Ant: [`Tag`](../refs/ant-design/components/tag)
+- Ant: [`Tag`](../docs/reference/ant-design.md#tag)
 
 ## Cross-reference
 

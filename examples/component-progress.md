@@ -184,9 +184,9 @@ Circular: full rotation, 1000ms loop, linear easing. The arc itself can also pul
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/progress/`](../refs/ant-design/components/progress/) — `Progress` with `type="line" | "circle" | "dashboard"` (3/4 ring), `steps` (segmented), `success` (overlay).
+- Ant Design: [`refs/ant-design/components/progress/`](../docs/reference/ant-design.md#progress) — `Progress` with `type="line" | "circle" | "dashboard"` (3/4 ring), `steps` (segmented), `success` (overlay).
 - MUI: separate `LinearProgress` and `CircularProgress` components. `variant="determinate" | "indeterminate" | "buffer" | "query"`. Buffer mode for media playback.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/progress.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/progress.tsx) — Radix primitive. Linear only. Circular requires a different primitive.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/progress.tsx`](../docs/reference/shadcn-ui.md#progress) — Radix primitive. Linear only. Circular requires a different primitive.
 
 ## Cross-reference
 

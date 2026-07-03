@@ -70,7 +70,7 @@ Inherits from parent SpeedDial's tokens.
 
 ## References
 
-- MUI: [`SpeedDialAction`](../refs/mui/packages/mui-material/src/SpeedDialAction)
+- MUI: [`SpeedDialAction`](../docs/reference/mui.md#speed-dial-action)
 
 ## Cross-reference
 

@@ -76,8 +76,8 @@ This is handled by the parent `Steps` component, not Step itself.
 
 ## References
 
-- MUI: [`Step`](../refs/mui/packages/mui-material/src/Step)
-- Ant: [`Steps`](../refs/ant-design/components/steps) (parent)
+- MUI: [`Step`](../docs/reference/mui.md#step)
+- Ant: [`Steps`](../docs/reference/ant-design.md#steps) (parent)
 
 ## Cross-reference
 

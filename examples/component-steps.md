@@ -247,8 +247,8 @@ For `n > 5` steps on mobile, **always switch to compact or text-only**.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/steps/`](../refs/ant-design/components/steps/) — `Steps`, `Steps.Item`. Status, direction, size, progress dot variant. Most exhaustive.
-- MUI: [`refs/mui/packages/mui-material/src/Stepper/`](../refs/mui/packages/mui-material/src/Stepper/) — `Stepper`, `Step`, `StepLabel`, `StepContent`. Vertical with collapsible content per step is unique.
+- Ant Design: [`refs/ant-design/components/steps/`](../docs/reference/ant-design.md#steps) — `Steps`, `Steps.Item`. Status, direction, size, progress dot variant. Most exhaustive.
+- MUI: [`refs/mui/packages/mui-material/src/Stepper/`](../docs/reference/mui.md#stepper) — `Stepper`, `Step`, `StepLabel`, `StepContent`. Vertical with collapsible content per step is unique.
 - shadcn-ui: no built-in — compose from primitives. The `progress` and custom layout get you 80% there.
 
 API choices made:

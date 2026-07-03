@@ -189,7 +189,7 @@ function EditorToolbar() {
 
 ## References
 
-- MUI: [`Paper`](../refs/mui/packages/mui-material/src/Paper)
+- MUI: [`Paper`](../docs/reference/mui.md#paper)
 - Material Design: [Elevation](https://m3.material.io/styles/elevation/overview)
 
 ## Cross-reference

@@ -69,7 +69,7 @@
 
 ## References
 
-- MUI: [`CardMedia`](../refs/mui/packages/mui-material/src/CardMedia/)
+- MUI: [`CardMedia`](../docs/reference/mui.md#card-media)
 
 ## Cross-reference
 

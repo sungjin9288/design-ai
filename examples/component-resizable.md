@@ -153,7 +153,7 @@ function IDEShell() {
 
 ## References
 
-- shadcn-ui: [`resizable`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/resizable.tsx) — wraps `react-resizable-panels`
+- shadcn-ui: [`resizable`](../docs/reference/shadcn-ui.md#resizable) — wraps `react-resizable-panels`
 - VS Code, Linear, Cursor — IDE layout pattern
 
 ## Cross-reference

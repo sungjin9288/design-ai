@@ -27,7 +27,10 @@ PYTHON_COMPILE_DIRS = ("tools/extractors", "tools/audit", "tools/migrations", "t
 LINE_BUDGET_DIRS = ("knowledge", "examples", "docs")
 DOCS_WORKFLOW = ROOT / ".github" / "workflows" / "docs.yml"
 DOCS_WORKFLOW_POLICY_COMMAND = "python3 -B tools/audit/local-ci.py --docs-only"
-MKDOCS_REFS_WARNING_BASELINE = 632
+# Reference-link policy (docs/PRODUCT-READINESS.md): corpus pages link to the
+# generated docs/reference/ pages instead of the gitignored refs/ mirror, so
+# no refs-only MkDocs warnings are expected anymore (was 632 before v4.56.x).
+MKDOCS_REFS_WARNING_BASELINE = 0
 GITHUB_WORKFLOW_FILES = (
     ROOT / ".github" / "workflows" / "audit.yml",
     ROOT / ".github" / "workflows" / "docs.yml",
@@ -398,6 +401,18 @@ def run_self_test() -> int:
             "quiet command capture should return stdout without echoing on success",
         )
         assert_mkdocs_warning_policy(refs_only_output, refs_warning_baseline=2)
+
+        try:
+            assert_mkdocs_warning_policy(refs_only_output)
+        except SystemExit as error:
+            assert_condition(
+                "baseline" in str(error),
+                "default zero baseline should reject refs-only warnings",
+            )
+        else:
+            raise SystemExit(
+                "self-test failed: refs warnings should exceed the default zero baseline"
+            )
 
         refs_baseline_regression_output = refs_only_output + "\n" + (
             "WARNING - Doc file 'examples/extra.md' contains a link '../refs/extra/source.md', "

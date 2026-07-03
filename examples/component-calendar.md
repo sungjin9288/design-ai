@@ -262,9 +262,9 @@ function MonthlyScheduleScreen() {
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/calendar/`](../refs/ant-design/components/calendar/) — `Calendar` with `mode="month" | "year"`, `dateCellRender`, `monthCellRender`. Most exhaustive.
+- Ant Design: [`refs/ant-design/components/calendar/`](../docs/reference/ant-design.md#calendar) — `Calendar` with `mode="month" | "year"`, `dateCellRender`, `monthCellRender`. Most exhaustive.
 - MUI: `@mui/x-date-pickers` `DateCalendar` — focused on date selection within a calendar grid; not full-month event-display.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/calendar.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/calendar.tsx) — wraps `react-day-picker`. Use as date selector or full calendar via `mode="default"` + `numberOfMonths`.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/calendar.tsx`](../docs/reference/shadcn-ui.md#calendar) — wraps `react-day-picker`. Use as date selector or full calendar via `mode="default"` + `numberOfMonths`.
 
 For event-heavy calendar apps (Google Calendar style), consider:
 - `react-big-calendar` — month/week/day views with events

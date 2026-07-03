@@ -105,7 +105,7 @@ function ChatInput() {
 
 ## References
 
-- MUI: [`TextareaAutosize`](../refs/mui/packages/mui-material/src/TextareaAutosize)
+- MUI: [`TextareaAutosize`](../docs/reference/mui.md#textarea-autosize)
 - CSS `field-sizing` property (Working Draft)
 
 ## Cross-reference

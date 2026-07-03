@@ -100,7 +100,7 @@ Don't roll your own — color math is hard and there are subtle edge cases.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/color-picker/`](../refs/ant-design/components/color-picker/) — comprehensive. Has presets, alpha, multiple format inputs.
+- Ant Design: [`refs/ant-design/components/color-picker/`](../docs/reference/ant-design.md#color-picker) — comprehensive. Has presets, alpha, multiple format inputs.
 - MUI: no built-in. Use `react-colorful` or similar.
 - shadcn-ui: no built-in. Compose with `Popover` + `react-colorful`.
 

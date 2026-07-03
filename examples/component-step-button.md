@@ -144,10 +144,10 @@ Inherits button-like props from MUI `ButtonBase`. In MUI, `disabled` is controll
 
 ## References
 
-- MUI direct source: [`refs/mui/packages/mui-material/src/StepButton/StepButton.d.ts`](../refs/mui/packages/mui-material/src/StepButton/StepButton.d.ts)
-- MUI implementation: [`refs/mui/packages/mui-material/src/StepButton/StepButton.js`](../refs/mui/packages/mui-material/src/StepButton/StepButton.js)
-- MUI stepper docs/examples: [`refs/mui/docs/data/material/components/steppers/`](../refs/mui/docs/data/material/components/steppers/)
-- Ant Design parent pattern: [`refs/ant-design/components/steps/`](../refs/ant-design/components/steps/)
+- MUI direct source: [`refs/mui/packages/mui-material/src/StepButton/StepButton.d.ts`](../docs/reference/mui.md#step-button)
+- MUI implementation: [`refs/mui/packages/mui-material/src/StepButton/StepButton.js`](../docs/reference/mui.md#step-button)
+- MUI stepper docs/examples: [`refs/mui/docs/data/material/components/steppers/`](../docs/reference/mui.md)
+- Ant Design parent pattern: [`refs/ant-design/components/steps/`](../docs/reference/ant-design.md#steps)
 - Accessibility baseline: [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md)
 
 ## Cross-reference

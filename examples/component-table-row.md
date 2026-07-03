@@ -103,7 +103,7 @@
 
 ## References
 
-- MUI: [`TableRow`](../refs/mui/packages/mui-material/src/TableRow/)
+- MUI: [`TableRow`](../docs/reference/mui.md#table-row)
 
 ## Cross-reference
 

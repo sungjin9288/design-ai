@@ -118,7 +118,7 @@ function DateHoverPreview({ date }: Props) {
 
 ## References
 
-- MUI: [`Popper`](../refs/mui/packages/mui-material/src/Popper)
+- MUI: [`Popper`](../docs/reference/mui.md#popper)
 - Popper.js (deprecated; use @floating-ui)
 - @floating-ui/react — modern replacement
 

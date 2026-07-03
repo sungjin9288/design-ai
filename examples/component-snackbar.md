@@ -111,7 +111,7 @@ async function deleteItem(id: string) {
 
 ## References
 
-- MUI: [`Snackbar`](../refs/mui/packages/mui-material/src/Snackbar)
+- MUI: [`Snackbar`](../docs/reference/mui.md#snackbar)
 - Material 3: Snackbar pattern
 
 ## Cross-reference

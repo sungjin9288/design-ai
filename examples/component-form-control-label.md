@@ -122,7 +122,7 @@ function ConsentCheckboxes() {
 
 ## References
 
-- MUI: [`FormControlLabel`](../refs/mui/packages/mui-material/src/FormControlLabel/)
+- MUI: [`FormControlLabel`](../docs/reference/mui.md#form-control-label)
 
 ## Cross-reference
 

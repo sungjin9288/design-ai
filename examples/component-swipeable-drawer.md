@@ -139,7 +139,7 @@ function MobileApp() {
 
 ## References
 
-- MUI: [`SwipeableDrawer`](../refs/mui/packages/mui-material/src/SwipeableDrawer)
+- MUI: [`SwipeableDrawer`](../docs/reference/mui.md#swipeable-drawer)
 - iOS native drawer pattern; Material 3 standard drawer
 
 ## Cross-reference

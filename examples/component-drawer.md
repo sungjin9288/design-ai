@@ -246,9 +246,9 @@ const [menuOpen, setMenuOpen] = useState(false);
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/drawer/`](../refs/ant-design/components/drawer/) — `Drawer`. Supports `placement`, `size`, `mask`, `closable`. Mature.
-- MUI: [`refs/mui/packages/mui-material/src/Drawer/`](../refs/mui/packages/mui-material/src/Drawer/) — `Drawer` with `variant="permanent" | "persistent" | "temporary"`. Best persistent-mode handling.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sheet.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sheet.tsx) — Radix Dialog primitive used as a side panel. Modal-only by default; persistent requires composition.
+- Ant Design: [`refs/ant-design/components/drawer/`](../docs/reference/ant-design.md#drawer) — `Drawer`. Supports `placement`, `size`, `mask`, `closable`. Mature.
+- MUI: [`refs/mui/packages/mui-material/src/Drawer/`](../docs/reference/mui.md#drawer) — `Drawer` with `variant="permanent" | "persistent" | "temporary"`. Best persistent-mode handling.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/sheet.tsx`](../docs/reference/shadcn-ui.md#sheet) — Radix Dialog primitive used as a side panel. Modal-only by default; persistent requires composition.
 
 ## Cross-reference
 

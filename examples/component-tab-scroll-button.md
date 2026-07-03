@@ -166,11 +166,11 @@ function ScrollableTabsHeader({ tabs, value, onValueChange }: Props) {
 
 ## References
 
-- MUI direct source: [`refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.d.ts`](../refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.d.ts)
-- MUI implementation: [`refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.js`](../refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.js)
-- MUI tabs source: [`refs/mui/packages/mui-material/src/Tabs/`](../refs/mui/packages/mui-material/src/Tabs/)
-- Ant Design parent pattern: [`refs/ant-design/components/tabs/`](../refs/ant-design/components/tabs/)
-- shadcn-ui parent pattern: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tabs.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tabs.tsx)
+- MUI direct source: [`refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.d.ts`](../docs/reference/mui.md#tab-scroll-button)
+- MUI implementation: [`refs/mui/packages/mui-material/src/TabScrollButton/TabScrollButton.js`](../docs/reference/mui.md#tab-scroll-button)
+- MUI tabs source: [`refs/mui/packages/mui-material/src/Tabs/`](../docs/reference/mui.md#tabs)
+- Ant Design parent pattern: [`refs/ant-design/components/tabs/`](../docs/reference/ant-design.md#tabs)
+- shadcn-ui parent pattern: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tabs.tsx`](../docs/reference/shadcn-ui.md#tabs)
 - Accessibility baseline: [`knowledge/a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md)
 
 ## Cross-reference

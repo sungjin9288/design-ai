@@ -212,9 +212,9 @@ The current item is **never** a link. It's where the user is.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/breadcrumb/`](../refs/ant-design/components/breadcrumb/) — `Breadcrumb` + `Breadcrumb.Item` + `Breadcrumb.Separator`. `itemRender` for custom rendering.
-- MUI: [`refs/mui/packages/mui-material/src/Breadcrumbs/`](../refs/mui/packages/mui-material/src/Breadcrumbs/) — `Breadcrumbs` (note plural) with `separator`, `maxItems`, `itemsBeforeCollapse`, `itemsAfterCollapse`. Built-in collapse logic.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/breadcrumb.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/breadcrumb.tsx) — primitive: `Breadcrumb`, `BreadcrumbList`, `BreadcrumbItem`, `BreadcrumbLink`, `BreadcrumbPage`, `BreadcrumbSeparator`, `BreadcrumbEllipsis`. Most flexible.
+- Ant Design: [`refs/ant-design/components/breadcrumb/`](../docs/reference/ant-design.md#breadcrumb) — `Breadcrumb` + `Breadcrumb.Item` + `Breadcrumb.Separator`. `itemRender` for custom rendering.
+- MUI: [`refs/mui/packages/mui-material/src/Breadcrumbs/`](../docs/reference/mui.md#breadcrumbs) — `Breadcrumbs` (note plural) with `separator`, `maxItems`, `itemsBeforeCollapse`, `itemsAfterCollapse`. Built-in collapse logic.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/breadcrumb.tsx`](../docs/reference/shadcn-ui.md#breadcrumb) — primitive: `Breadcrumb`, `BreadcrumbList`, `BreadcrumbItem`, `BreadcrumbLink`, `BreadcrumbPage`, `BreadcrumbSeparator`, `BreadcrumbEllipsis`. Most flexible.
 
 ## Cross-reference
 

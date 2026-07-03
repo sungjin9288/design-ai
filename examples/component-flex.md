@@ -105,7 +105,7 @@ Stateless.
 
 ## References
 
-- Ant: [`Flex`](../refs/ant-design/components/flex)
+- Ant: [`Flex`](../docs/reference/ant-design.md#flex)
 - MUI: `Stack` (sibling primitive)
 - Chakra UI: `HStack`, `VStack`, `Flex`
 

@@ -162,8 +162,8 @@ Match the surrounding component's voice level.
 
 ## References
 
-- Ant: [`Empty`](../refs/ant-design/components/empty)
-- shadcn-ui: [`empty`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/empty.tsx)
+- Ant: [`Empty`](../docs/reference/ant-design.md#empty)
+- shadcn-ui: [`empty`](../docs/reference/shadcn-ui.md#empty)
 
 ## Cross-reference
 

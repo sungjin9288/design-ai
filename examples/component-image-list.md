@@ -98,7 +98,7 @@ Stateless. Tiles can be interactive (click → open / navigate); each tile follo
 
 ## References
 
-- MUI: [`ImageList`](../refs/mui/packages/mui-material/src/ImageList)
+- MUI: [`ImageList`](../docs/reference/mui.md#image-list)
 
 ## Cross-reference
 

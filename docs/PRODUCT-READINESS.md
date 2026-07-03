@@ -55,7 +55,7 @@ Only launch-readiness items remain in the active roadmap:
 
 - Real-CI verification: complete — main-branch pushes run green on GitHub Actions (audit + docs deploy), and npm publish run `28569283984` succeeded with provenance (verified 2026-07-03).
 - External launch: publishing is complete (npm `@design-ai/cli@4.56.0`, GitHub Release `v4.56.0`, Homebrew tap, VS Code Marketplace `sungjin.design-ai-vscode` v0.4.1, GitHub Pages docs); the public announcement itself remains a maintainer decision.
-- Reference-link policy: decide whether `refs/` source links remain visible or move behind generated reference pages.
+- Reference-link policy: decided — `refs/` source links moved behind generated reference pages. `tools/extractors/reference_pages.py` emits `docs/reference/{ant-design,mui,shadcn-ui,awesome-design-md}.md`, and corpus pages (`knowledge/components/INDEX.md`, `knowledge/patterns/brand-references.md`, `examples/*.md`) link to those pages instead of the gitignored `refs/` mirror. Plain-text `refs/` provenance mentions (frontmatter `source:`/`sources:`, link text) stay as-is, and the MkDocs refs-only warning baseline in `tools/audit/local-ci.py` is now 0.
 
 ## Recommended next decision
 

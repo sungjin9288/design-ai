@@ -188,7 +188,7 @@ function DocsPage({ headings }: Props) {
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/anchor/`](../refs/ant-design/components/anchor/) — `Anchor`, `Anchor.Link`. Solid implementation.
+- Ant Design: [`refs/ant-design/components/anchor/`](../docs/reference/ant-design.md#anchor) — `Anchor`, `Anchor.Link`. Solid implementation.
 - MUI / shadcn-ui: no built-in. Compose with `IntersectionObserver` + custom CSS.
 
 ## Cross-reference

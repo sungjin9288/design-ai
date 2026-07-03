@@ -94,7 +94,7 @@ Stateless. Children carry their own states.
 
 ## References
 
-- MUI: [`Toolbar`](../refs/mui/packages/mui-material/src/Toolbar)
+- MUI: [`Toolbar`](../docs/reference/mui.md#toolbar)
 - WAI-ARIA: [Toolbar pattern](https://www.w3.org/WAI/ARIA/apg/patterns/toolbar/)
 
 ## Cross-reference

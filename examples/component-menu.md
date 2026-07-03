@@ -128,7 +128,7 @@ Like `vertical` but SubMenus expand inline (push items below). Vs vertical's pop
 
 ## References
 
-- Ant: [`Menu`](../refs/ant-design/components/menu)
+- Ant: [`Menu`](../docs/reference/ant-design.md#menu)
 - WAI-ARIA: Menu pattern (different from menubar)
 
 ## Cross-reference

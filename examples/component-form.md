@@ -272,9 +272,9 @@ Required affordances:
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/form/`](../refs/ant-design/components/form/) — exhaustive `Form`, `Form.Item`, `Form.List`, `Form.Provider`. Most complete API. Built-in validation rules. Ant's `Form.useForm` is the imperative escape hatch.
+- Ant Design: [`refs/ant-design/components/form/`](../docs/reference/ant-design.md#form) — exhaustive `Form`, `Form.Item`, `Form.List`, `Form.Provider`. Most complete API. Built-in validation rules. Ant's `Form.useForm` is the imperative escape hatch.
 - MUI: composition with `<form>` + `react-hook-form` + `<TextField>`. No dedicated Form component — MUI explicitly defers form orchestration to RHF.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/) — `form.tsx` wraps RHF `FormProvider` + `Controller` + auto-wires `aria-*`. Cleanest minimal version. Mandates Zod + RHF.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/`](../docs/reference/shadcn-ui.md) — `form.tsx` wraps RHF `FormProvider` + `Controller` + auto-wires `aria-*`. Cleanest minimal version. Mandates Zod + RHF.
 
 API choices made:
 - **Composition (`Form.Field`/`Form.Label`/`Form.Control`)** over Ant's `Form.Item` prop-blob — slot-based scales to custom field types better.

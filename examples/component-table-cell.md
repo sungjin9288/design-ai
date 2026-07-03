@@ -108,7 +108,7 @@
 
 ## References
 
-- MUI: [`TableCell`](../refs/mui/packages/mui-material/src/TableCell/)
+- MUI: [`TableCell`](../docs/reference/mui.md#table-cell)
 
 ## Cross-reference
 

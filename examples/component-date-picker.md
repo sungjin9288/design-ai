@@ -232,9 +232,9 @@ Announce on date selection: "May 7, 2026 selected" (or KR "2026년 5월 7일 선
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/date-picker/`](../refs/ant-design/components/date-picker/) — most variants (`DatePicker`, `RangePicker`, `MonthPicker`, `YearPicker`, `WeekPicker`, `QuarterPicker`). Heavy but covers everything.
+- Ant Design: [`refs/ant-design/components/date-picker/`](../docs/reference/ant-design.md#date-picker) — most variants (`DatePicker`, `RangePicker`, `MonthPicker`, `YearPicker`, `WeekPicker`, `QuarterPicker`). Heavy but covers everything.
 - MUI: `@mui/x-date-pickers` (separate package) — `DatePicker`, `DateTimePicker`, `DateRangePicker`. Excellent locale support; pairs with date-fns / dayjs / luxon adapters.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/calendar.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/calendar.tsx) — wraps `react-day-picker`. Compose with `Popover` for the picker pattern.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/calendar.tsx`](../docs/reference/shadcn-ui.md#calendar) — wraps `react-day-picker`. Compose with `Popover` for the picker pattern.
 
 API choices made:
 - **`mode` axis** (single / range / dateTime / quickRange) over Ant's separate components — fewer top-level imports.

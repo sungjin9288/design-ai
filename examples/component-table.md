@@ -186,9 +186,9 @@ Pick #1 for product UIs, #2 for power-user data tools.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/table/`](../refs/ant-design/components/table/) — most exhaustive: tree data, expandable rows, virtual scroll, drag-drop column reorder, fixed headers/columns. Heavy but production-grade.
+- Ant Design: [`refs/ant-design/components/table/`](../docs/reference/ant-design.md#table) — most exhaustive: tree data, expandable rows, virtual scroll, drag-drop column reorder, fixed headers/columns. Heavy but production-grade.
 - MUI: `<Table>` (basic) and `<DataGrid>` (heavy, paid for some features). DataGrid has best DX for filtering/sorting but is a large dep.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/table.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/table.tsx) — primitives only (`<Table>`, `<TableHeader>`, etc.). Pair with TanStack Table for behavior. **Recommended modern pattern.**
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/table.tsx`](../docs/reference/shadcn-ui.md#table) — primitives only (`<Table>`, `<TableHeader>`, etc.). Pair with TanStack Table for behavior. **Recommended modern pattern.**
 
 API choices made:
 - **TanStack Table as the engine** — headless, framework-agnostic, free, mature. Don't reinvent.

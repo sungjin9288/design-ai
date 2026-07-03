@@ -232,7 +232,7 @@ function SettingsList() {
 
 ## References
 
-- shadcn-ui: [`item`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/item.tsx)
+- shadcn-ui: [`item`](../docs/reference/shadcn-ui.md#item)
 - iOS UITableViewCell; Material 3 List item
 
 ## Cross-reference

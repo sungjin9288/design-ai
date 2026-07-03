@@ -265,7 +265,7 @@ For libraries: `react-sparklines`, `recharts` mini variant, or hand-roll an SVG.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/statistic/`](../refs/ant-design/components/statistic/) — `Statistic` + `Statistic.Countdown` (auto-counting). Solid baseline.
+- Ant Design: [`refs/ant-design/components/statistic/`](../docs/reference/ant-design.md#statistic) — `Statistic` + `Statistic.Countdown` (auto-counting). Solid baseline.
 - MUI: no dedicated component — compose `<Card><CardContent><Typography variant="overline">label</Typography>...`.
 - shadcn-ui: no built-in. Compose from `Card` + Tailwind.
 

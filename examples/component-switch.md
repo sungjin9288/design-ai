@@ -89,9 +89,9 @@ Touch target ≥ 44pt regardless via padding.
 
 ## References
 
-- Ant: [`Switch`](../refs/ant-design/components/switch)
-- MUI: [`Switch`](../refs/mui/packages/mui-material/src/Switch)
-- shadcn-ui: [`switch`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/switch.tsx)
+- Ant: [`Switch`](../docs/reference/ant-design.md#switch)
+- MUI: [`Switch`](../docs/reference/mui.md#switch)
+- shadcn-ui: [`switch`](../docs/reference/shadcn-ui.md#switch)
 
 ## Cross-reference
 

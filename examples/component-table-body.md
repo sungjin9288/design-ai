@@ -72,7 +72,7 @@ Renders `<tbody>` — semantic role for table body comes for free. No additional
 
 ## References
 
-- MUI: [`TableBody`](../refs/mui/packages/mui-material/src/TableBody/)
+- MUI: [`TableBody`](../docs/reference/mui.md#table-body)
 
 ## Cross-reference
 

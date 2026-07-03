@@ -168,7 +168,7 @@ For Korean print contexts (receipt-style dotted dividers): `border-style: dotted
 ## References
 
 - HTML5 `<hr>` element
-- shadcn-ui: [`separator`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/separator.tsx) (Radix)
+- shadcn-ui: [`separator`](../docs/reference/shadcn-ui.md#separator) (Radix)
 - Ant Design `Divider` is the equivalent name there
 
 ## Cross-reference

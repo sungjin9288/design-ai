@@ -132,7 +132,7 @@ function ToolbarActions() {
 
 ## References
 
-- MUI: [`IconButton`](../refs/mui/packages/mui-material/src/IconButton)
+- MUI: [`IconButton`](../docs/reference/mui.md#icon-button)
 - Material 3: Icon button variants
 
 ## Cross-reference

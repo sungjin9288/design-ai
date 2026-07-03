@@ -137,9 +137,9 @@ const indeterminate = someChecked;
 
 ## References
 
-- Ant: [`Checkbox`](../refs/ant-design/components/checkbox)
-- MUI: [`Checkbox`](../refs/mui/packages/mui-material/src/Checkbox)
-- shadcn-ui: [`checkbox`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/checkbox.tsx)
+- Ant: [`Checkbox`](../docs/reference/ant-design.md#checkbox)
+- MUI: [`Checkbox`](../docs/reference/mui.md#checkbox)
+- shadcn-ui: [`checkbox`](../docs/reference/shadcn-ui.md#checkbox)
 
 ## Cross-reference
 

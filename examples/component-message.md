@@ -152,7 +152,7 @@ async function handleCopy() {
 
 ## References
 
-- Ant: [`Message`](../refs/ant-design/components/message)
+- Ant: [`Message`](../docs/reference/ant-design.md#message)
 - Patterns: same family as iOS HUD, Material Snackbar (variant)
 
 ## Cross-reference

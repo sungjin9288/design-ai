@@ -253,7 +253,7 @@ function SignupForm() {
 
 ## References
 
-- shadcn-ui: [`field`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/field.tsx)
+- shadcn-ui: [`field`](../docs/reference/shadcn-ui.md#field)
 - WAI-ARIA Authoring Practices: form labeling
 - Native HTML: `<fieldset>`, `<legend>`, `<label>`
 

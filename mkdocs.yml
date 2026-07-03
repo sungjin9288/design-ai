@@ -315,4 +315,9 @@ nav:
       - Contributing: docs/CONTRIBUTING.md
       - Roadmap: docs/ROADMAP.md
       - Dogfood findings: docs/DOGFOOD-FINDINGS.md
+      - Source references:
+          - Ant Design: docs/reference/ant-design.md
+          - MUI: docs/reference/mui.md
+          - shadcn/ui: docs/reference/shadcn-ui.md
+          - awesome-design-md: docs/reference/awesome-design-md.md
       - Changelog: CHANGELOG.md

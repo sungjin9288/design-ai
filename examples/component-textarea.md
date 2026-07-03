@@ -163,7 +163,7 @@ Critical for Hangul input — composition events span multiple keystrokes.
 ## References
 
 - HTML5 `<textarea>`
-- shadcn-ui: [`textarea`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/textarea.tsx)
+- shadcn-ui: [`textarea`](../docs/reference/shadcn-ui.md#textarea)
 - MUI: TextareaAutosize
 
 ## Cross-reference

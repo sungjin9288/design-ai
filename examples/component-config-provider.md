@@ -183,8 +183,8 @@ export function ProductRoot() {
 
 ## References
 
-- Ant Design: [`config-provider/index.en-US.md`](../refs/ant-design/components/config-provider/index.en-US.md), [`config-provider/index.tsx`](../refs/ant-design/components/config-provider/index.tsx), [`config-provider/context.ts`](../refs/ant-design/components/config-provider/context.ts), [`app/index.en-US.md`](../refs/ant-design/components/app/index.en-US.md)
-- MUI: [`ThemeProvider.tsx`](../refs/mui/packages/mui-material/src/styles/ThemeProvider.tsx), [`CssBaseline.js`](../refs/mui/packages/mui-material/src/CssBaseline/CssBaseline.js)
-- shadcn-ui: [`theme-provider.tsx`](../refs/shadcn-ui/apps/v4/components/theme-provider.tsx), [`globals.css`](../refs/shadcn-ui/apps/v4/app/globals.css)
+- Ant Design: [`config-provider/index.en-US.md`](../docs/reference/ant-design.md#config-provider), [`config-provider/index.tsx`](../docs/reference/ant-design.md#config-provider), [`config-provider/context.ts`](../docs/reference/ant-design.md#config-provider), [`app/index.en-US.md`](../docs/reference/ant-design.md#app)
+- MUI: [`ThemeProvider.tsx`](../docs/reference/mui.md#styles), [`CssBaseline.js`](../docs/reference/mui.md#css-baseline)
+- shadcn-ui: [`theme-provider.tsx`](../docs/reference/shadcn-ui.md), [`globals.css`](../docs/reference/shadcn-ui.md)
 - Knowledge: [`design-tokens/ant-design.md`](../knowledge/design-tokens/ant-design.md), [`a11y/contrast.md`](../knowledge/a11y/contrast.md), [`i18n/korean-product-conventions.md`](../knowledge/i18n/korean-product-conventions.md)
 - Cross-reference: [`component-css-baseline.md`](component-css-baseline.md), [`component-empty-state.md`](component-empty-state.md), [`component-form.md`](component-form.md)

@@ -13,10 +13,17 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
+from reference_pages import anchor_slug
+
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "refs/awesome-design-md/design-md"
 OUT = ROOT / "knowledge/patterns/brand-references.md"
 UPSTREAM = "https://github.com/VoltAgent/awesome-design-md"
+
+# Reference-link policy (docs/PRODUCT-READINESS.md): link to the generated
+# upstream reference page instead of the gitignored refs/ mirror. Relative
+# path from knowledge/patterns/ to docs/reference/awesome-design-md.md.
+REFERENCE_PAGE = "../../docs/reference/awesome-design-md.md"
 
 
 def main() -> None:
@@ -51,8 +58,8 @@ Curated design notes on {len(brands)} brands. When designing for a comparable ca
 """]
 
     for brand, files in brands:
-        link = f"../../refs/awesome-design-md/design-md/{brand}/"
-        files_str = ", ".join(f"[`{f}`]({link}{f})" for f in files) if files else "—"
+        link = f"{REFERENCE_PAGE}#{anchor_slug(brand)}"
+        files_str = ", ".join(f"[`{f}`]({link})" for f in files) if files else "—"
         out.append(f"| **[{brand}]({link})** | {files_str} |")
 
     out.append("\n## How to use\n")

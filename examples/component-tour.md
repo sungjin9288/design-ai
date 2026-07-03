@@ -165,7 +165,7 @@ If selector doesn't match (e.g., conditional UI not rendered), skip the step or 
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/tour/`](../refs/ant-design/components/tour/) — `Tour` with steps, target refs, custom rendering. Modern Ant addition.
+- Ant Design: [`refs/ant-design/components/tour/`](../docs/reference/ant-design.md#tour) — `Tour` with steps, target refs, custom rendering. Modern Ant addition.
 - MUI: no built-in. Use libraries like `react-joyride` or `intro.js`.
 - shadcn-ui: no built-in. Compose with Popover + custom backdrop.
 

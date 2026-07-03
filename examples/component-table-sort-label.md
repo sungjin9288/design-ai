@@ -101,7 +101,7 @@ function SortableHeader({ orderBy, order, onSort }) {
 
 ## References
 
-- MUI: [`TableSortLabel`](../refs/mui/packages/mui-material/src/TableSortLabel/)
+- MUI: [`TableSortLabel`](../docs/reference/mui.md#table-sort-label)
 
 ## Cross-reference
 

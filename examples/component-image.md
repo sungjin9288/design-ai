@@ -265,7 +265,7 @@ Always set an aspect ratio — this prevents the browser-jumping layout shift wh
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/image/`](../refs/ant-design/components/image/) — `Image` + `Image.PreviewGroup` for lightbox. Has `placeholder`, `fallback`, `preview` config. Solid impl.
+- Ant Design: [`refs/ant-design/components/image/`](../docs/reference/ant-design.md#image) — `Image` + `Image.PreviewGroup` for lightbox. Has `placeholder`, `fallback`, `preview` config. Solid impl.
 - MUI: no dedicated component. Compose with native `<img>`.
 - shadcn-ui: no built-in. Compose `<img>` + Tailwind. For lightbox: `react-photo-view` or `yet-another-react-lightbox`.
 

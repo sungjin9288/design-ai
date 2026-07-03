@@ -105,7 +105,7 @@ Same a11y contract as `OutlinedInput`:
 
 ## References
 
-- MUI: [`FilledInput`](../refs/mui/packages/mui-material/src/FilledInput/)
+- MUI: [`FilledInput`](../docs/reference/mui.md#filled-input)
 
 ## Cross-reference
 

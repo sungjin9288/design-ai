@@ -252,7 +252,7 @@ Horizontal compact. Icon left, text right. For inside small cards/sidebars where
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/result/`](../refs/ant-design/components/result/) (Result) + [`refs/ant-design/components/empty/`](../refs/ant-design/components/empty/) (Empty). Both well-developed.
+- Ant Design: [`refs/ant-design/components/result/`](../docs/reference/ant-design.md#result) (Result) + [`refs/ant-design/components/empty/`](../docs/reference/ant-design.md#empty) (Empty). Both well-developed.
 - MUI: no dedicated components. Compose with Card + Typography.
 - shadcn-ui: no built-in. Compose from primitives.
 

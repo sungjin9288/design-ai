@@ -77,7 +77,7 @@ shadcn-based projects don't include this as a separate primitive — Popover / S
 
 ## References
 
-- MUI: [`ClickAwayListener`](../refs/mui/packages/mui-material/src/ClickAwayListener)
+- MUI: [`ClickAwayListener`](../docs/reference/mui.md#click-away-listener)
 - Hook alternatives in many libs (use-click-away, react-use, etc.)
 
 ## Cross-reference

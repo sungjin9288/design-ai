@@ -183,8 +183,8 @@ export function ToolbarButton({
 
 ## References
 
-- MUI: [`ButtonBase.d.ts`](../refs/mui/packages/mui-material/src/ButtonBase/ButtonBase.d.ts), [`ButtonBase.js`](../refs/mui/packages/mui-material/src/ButtonBase/ButtonBase.js), [`useButtonBase.ts`](../refs/mui/packages/mui-material/src/ButtonBase/useButtonBase.ts)
-- Ant Design: [`Button.tsx`](../refs/ant-design/components/button/Button.tsx), [`button/index.en-US.md`](../refs/ant-design/components/button/index.en-US.md)
-- shadcn-ui: [`button.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/button.tsx)
+- MUI: [`ButtonBase.d.ts`](../docs/reference/mui.md#button-base), [`ButtonBase.js`](../docs/reference/mui.md#button-base), [`useButtonBase.ts`](../docs/reference/mui.md#button-base)
+- Ant Design: [`Button.tsx`](../docs/reference/ant-design.md#button), [`button/index.en-US.md`](../docs/reference/ant-design.md#button)
+- shadcn-ui: [`button.tsx`](../docs/reference/shadcn-ui.md#button)
 - Knowledge: [`a11y/keyboard-and-focus.md`](../knowledge/a11y/keyboard-and-focus.md), [`layout/spacing-and-grid.md`](../knowledge/layout/spacing-and-grid.md)
 - Cross-reference: [`component-button.md`](component-button.md), [`component-icon-button.md`](component-icon-button.md), [`component-toggle.md`](component-toggle.md)

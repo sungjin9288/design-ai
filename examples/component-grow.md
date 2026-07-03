@@ -68,7 +68,7 @@
 
 ## References
 
-- MUI: [`Grow`](../refs/mui/packages/mui-material/src/Grow/)
+- MUI: [`Grow`](../docs/reference/mui.md#grow)
 
 ## Cross-reference
 

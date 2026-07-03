@@ -286,7 +286,7 @@ function GlobalCommandPalette() {
 
 ## References
 
-- shadcn-ui: [`command`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/command.tsx) (cmdk-based)
+- shadcn-ui: [`command`](../docs/reference/shadcn-ui.md#command) (cmdk-based)
 - cmdk library by pacocoursey
 - Patterns: VS Code Command Palette, Linear, GitHub global search, Slack `Cmd+K`
 - WAI-ARIA: combobox + listbox pattern

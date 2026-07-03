@@ -69,7 +69,7 @@ Extends `Typography` — typography props work.
 
 ## References
 
-- MUI: [`AlertTitle`](../refs/mui/packages/mui-material/src/AlertTitle/)
+- MUI: [`AlertTitle`](../docs/reference/mui.md#alert-title)
 
 ## Cross-reference
 

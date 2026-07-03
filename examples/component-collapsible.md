@@ -209,7 +209,7 @@ function ProductDetails({ product }: Props) {
 
 ## References
 
-- shadcn-ui: [`collapsible`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/collapsible.tsx) (Radix)
+- shadcn-ui: [`collapsible`](../docs/reference/shadcn-ui.md#collapsible) (Radix)
 - WAI-ARIA: [Disclosure pattern](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/)
 
 ## Cross-reference

@@ -62,7 +62,7 @@
 
 ## References
 
-- MUI: [`ListSubheader`](../refs/mui/packages/mui-material/src/ListSubheader/)
+- MUI: [`ListSubheader`](../docs/reference/mui.md#list-subheader)
 
 ## Cross-reference
 

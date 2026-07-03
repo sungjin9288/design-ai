@@ -177,7 +177,7 @@ When chip inserted: announce via live region: "김민지 mentioned" or similar.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/mentions/`](../refs/ant-design/components/mentions/) — `Mentions`. Multi-trigger support, async data.
+- Ant Design: [`refs/ant-design/components/mentions/`](../docs/reference/ant-design.md#mentions) — `Mentions`. Multi-trigger support, async data.
 - MUI: no built-in. Use `react-mentions` or build on Slate.
 - shadcn-ui: no built-in. Compose with `command` (cmdk) + textarea + custom popover positioning.
 

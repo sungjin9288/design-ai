@@ -78,7 +78,7 @@ Direction variants flip the translate axis.
 
 ## References
 
-- MUI: [`Slide`](../refs/mui/packages/mui-material/src/Slide)
+- MUI: [`Slide`](../docs/reference/mui.md#slide)
 - Material Design motion
 
 ## Cross-reference

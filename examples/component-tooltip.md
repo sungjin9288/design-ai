@@ -168,9 +168,9 @@ The native `title` attribute does NOT meet a11y requirements:
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/tooltip/`](../refs/ant-design/components/tooltip/) — `Tooltip` with rich placement options (12 directions). `mouseEnterDelay` / `mouseLeaveDelay` props.
-- MUI: [`refs/mui/packages/mui-material/src/Tooltip/`](../refs/mui/packages/mui-material/src/Tooltip/) — `Tooltip` with `placement`, `enterDelay`, `leaveDelay`, `arrow`. Solid implementation.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tooltip.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tooltip.tsx) — Radix Tooltip primitive. **Default — best a11y of the three.**
+- Ant Design: [`refs/ant-design/components/tooltip/`](../docs/reference/ant-design.md#tooltip) — `Tooltip` with rich placement options (12 directions). `mouseEnterDelay` / `mouseLeaveDelay` props.
+- MUI: [`refs/mui/packages/mui-material/src/Tooltip/`](../docs/reference/mui.md#tooltip) — `Tooltip` with `placement`, `enterDelay`, `leaveDelay`, `arrow`. Solid implementation.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/tooltip.tsx`](../docs/reference/shadcn-ui.md#tooltip) — Radix Tooltip primitive. **Default — best a11y of the three.**
 
 ## Cross-reference
 

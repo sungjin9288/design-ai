@@ -208,7 +208,7 @@ Watermark with the **viewer's name + date** discourages internal screenshot-leak
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/watermark/`](../refs/ant-design/components/watermark/) — `Watermark`. Modern Ant addition with comprehensive options.
+- Ant Design: [`refs/ant-design/components/watermark/`](../docs/reference/ant-design.md#watermark) — `Watermark`. Modern Ant addition with comprehensive options.
 - MUI / shadcn-ui: no built-in. Compose with CSS or canvas.
 
 ## Cross-reference

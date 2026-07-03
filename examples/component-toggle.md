@@ -210,7 +210,7 @@ Pretendard for label / Korean text in `aria-label`.
 
 ## References
 
-- shadcn-ui: [`toggle`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/toggle.tsx), [`toggle-group`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/toggle-group.tsx) (Radix)
+- shadcn-ui: [`toggle`](../docs/reference/shadcn-ui.md#toggle), [`toggle-group`](../docs/reference/shadcn-ui.md#toggle-group) (Radix)
 - WAI-ARIA: [Toggle button](https://www.w3.org/WAI/ARIA/apg/patterns/button/) + [Radio group](https://www.w3.org/WAI/ARIA/apg/patterns/radio/)
 
 ## Cross-reference

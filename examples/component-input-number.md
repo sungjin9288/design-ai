@@ -131,7 +131,7 @@
 
 ## References
 
-- Ant Design: [`InputNumber`](../refs/ant-design/components/input-number/)
+- Ant Design: [`InputNumber`](../docs/reference/ant-design.md#input-number)
 
 ## Cross-reference
 

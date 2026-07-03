@@ -189,7 +189,7 @@ function Sidebar() {
 
 ## References
 
-- shadcn-ui: [`scroll-area`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/scroll-area.tsx) (Radix)
+- shadcn-ui: [`scroll-area`](../docs/reference/shadcn-ui.md#scroll-area) (Radix)
 - CSS `scrollbar-color`, `scrollbar-width` properties (browser-specific styling alternative)
 
 ## Cross-reference

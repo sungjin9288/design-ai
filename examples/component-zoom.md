@@ -83,7 +83,7 @@ When NOT to use:
 
 ## References
 
-- MUI: [`Zoom`](../refs/mui/packages/mui-material/src/Zoom)
+- MUI: [`Zoom`](../docs/reference/mui.md#zoom)
 - Material Design: motion easing
 
 ## Cross-reference

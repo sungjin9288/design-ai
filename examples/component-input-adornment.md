@@ -92,7 +92,7 @@ function PriceInput({ value, onChange }) {
 
 ## References
 
-- MUI: [`InputAdornment`](../refs/mui/packages/mui-material/src/InputAdornment/)
+- MUI: [`InputAdornment`](../docs/reference/mui.md#input-adornment)
 
 ## Cross-reference
 

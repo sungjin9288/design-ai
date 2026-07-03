@@ -173,15 +173,30 @@ def scan_shadcn() -> dict[str, dict]:
 
 # ----- rendering -----
 
+# Reference-link policy (docs/PRODUCT-READINESS.md): link to the generated
+# upstream reference pages instead of the gitignored refs/ mirror. Relative
+# path from knowledge/components/ to docs/reference/.
+REFERENCE_DIR = "../../docs/reference"
+
+
+def reference_link(library_page: str, entry: dict) -> str:
+    """Markdown link for one library cell, targeting the reference page anchor.
+
+    Anchors on docs/reference/<page>.md are the kebab-case native names
+    emitted by tools/extractors/reference_pages.py.
+    """
+    return f"[`{entry['name']}`]({REFERENCE_DIR}/{library_page}.md#{to_kebab(entry['name'])})"
+
+
 def render(merged: dict[str, dict]) -> str:
     today = date.today().isoformat()
     rows = ["| Component | Ant Design | MUI | shadcn-ui |",
             "| --- | --- | --- | --- |"]
     for canon in sorted(merged):
         entry = merged[canon]
-        ant = f"[`{entry['ant']['name']}`]({entry['ant']['path']})" if "ant" in entry else "—"
-        mui = f"[`{entry['mui']['name']}`]({entry['mui']['path']})" if "mui" in entry else "—"
-        sh = f"[`{entry['shadcn']['name']}`]({entry['shadcn']['path']})" if "shadcn" in entry else "—"
+        ant = reference_link("ant-design", entry["ant"]) if "ant" in entry else "—"
+        mui = reference_link("mui", entry["mui"]) if "mui" in entry else "—"
+        sh = reference_link("shadcn-ui", entry["shadcn"]) if "shadcn" in entry else "—"
         rows.append(f"| **{canon}** | {ant} | {mui} | {sh} |")
     table = "\n".join(rows)
 
@@ -218,7 +233,7 @@ Cross-reference of components across Ant Design, MUI, and shadcn-ui. Use this wh
 ## How to use
 
 1. Pick a canonical component name from the leftmost column.
-2. Open the linked source file for the library closest to your stack.
+2. Follow the link to the library's reference page entry; it points at the upstream source (the local `refs/` mirror keeps the same path).
 3. For API patterns: prefer Ant Design's exhaustive prop coverage as a checklist.
 4. For accessibility: prefer shadcn-ui (Radix-based, a11y is upstream).
 5. For visual polish: prefer MUI (Material 3 alignment, motion built-in).

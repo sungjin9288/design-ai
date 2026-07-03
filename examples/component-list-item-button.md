@@ -128,7 +128,7 @@ function SettingsNav({ section }: { section: string }) {
 
 ## References
 
-- MUI: [`ListItemButton`](../refs/mui/packages/mui-material/src/ListItemButton/)
+- MUI: [`ListItemButton`](../docs/reference/mui.md#list-item-button)
 
 ## Cross-reference
 

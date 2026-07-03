@@ -133,7 +133,7 @@ function PasswordField({ value, onChange, error }) {
 
 ## References
 
-- MUI: [`OutlinedInput`](../refs/mui/packages/mui-material/src/OutlinedInput/) + [`InputBase`](../refs/mui/packages/mui-material/src/InputBase/)
+- MUI: [`OutlinedInput`](../docs/reference/mui.md#outlined-input) + [`InputBase`](../docs/reference/mui.md#input-base)
 
 ## Cross-reference
 

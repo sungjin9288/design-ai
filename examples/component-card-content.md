@@ -79,7 +79,7 @@
 
 ## References
 
-- MUI: [`CardContent.d.ts`](../refs/mui/packages/mui-material/src/CardContent/CardContent.d.ts)
+- MUI: [`CardContent.d.ts`](../docs/reference/mui.md#card-content)
 
 ## Cross-reference
 

@@ -170,9 +170,9 @@ function ProductCard({ name, isNew, isOnSale }: Props) {
 
 ## References
 
-- Ant: [`Badge`](../refs/ant-design/components/badge)
-- MUI: [`Badge`](../refs/mui/packages/mui-material/src/Badge)
-- shadcn-ui: [`badge`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/badge.tsx)
+- Ant: [`Badge`](../docs/reference/ant-design.md#badge)
+- MUI: [`Badge`](../docs/reference/mui.md#badge)
+- shadcn-ui: [`badge`](../docs/reference/shadcn-ui.md#badge)
 
 ## Cross-reference
 

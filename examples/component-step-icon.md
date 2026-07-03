@@ -106,7 +106,7 @@ function CartStepper({ activeStep }) {
 
 ## References
 
-- MUI: [`StepIcon`](../refs/mui/packages/mui-material/src/StepIcon/)
+- MUI: [`StepIcon`](../docs/reference/mui.md#step-icon)
 
 ## Cross-reference
 

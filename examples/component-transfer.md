@@ -146,7 +146,7 @@ Or a simpler "tap to toggle" pattern:
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/transfer/`](../refs/ant-design/components/transfer/) — `Transfer`. Most exhaustive; supports tree-like (`Transfer.TableTransfer`).
+- Ant Design: [`refs/ant-design/components/transfer/`](../docs/reference/ant-design.md#transfer) — `Transfer`. Most exhaustive; supports tree-like (`Transfer.TableTransfer`).
 - MUI / shadcn-ui: no built-in.
 
 ## Cross-reference

@@ -195,7 +195,7 @@ function AppointmentBooking() {
 
 ## References
 
-- Ant: [`TimePicker`](../refs/ant-design/components/time-picker)
+- Ant: [`TimePicker`](../docs/reference/ant-design.md#time-picker)
 - MUI: `TimePicker` (in @mui/x-date-pickers)
 - HTML5: `<input type="time">` (limited but accessible default)
 

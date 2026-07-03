@@ -160,7 +160,7 @@ Status terms:
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/timeline/`](../refs/ant-design/components/timeline/) — `Timeline` with modes, custom icons, color overrides.
+- Ant Design: [`refs/ant-design/components/timeline/`](../docs/reference/ant-design.md#timeline) — `Timeline` with modes, custom icons, color overrides.
 - MUI: `@mui/lab` `Timeline` (separate package) — alternate mode well-supported.
 - shadcn-ui: no built-in. Compose from primitives.
 

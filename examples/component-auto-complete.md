@@ -188,8 +188,8 @@ When user selects an option: existing tag. When user types and commits: new tag.
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/auto-complete/`](../refs/ant-design/components/auto-complete/) — `AutoComplete`. Built on top of Select with free-text mode.
-- MUI: [`refs/mui/packages/mui-material/src/Autocomplete/`](../refs/mui/packages/mui-material/src/Autocomplete/) — `Autocomplete` with `freeSolo` prop. Most comprehensive.
+- Ant Design: [`refs/ant-design/components/auto-complete/`](../docs/reference/ant-design.md#auto-complete) — `AutoComplete`. Built on top of Select with free-text mode.
+- MUI: [`refs/mui/packages/mui-material/src/Autocomplete/`](../docs/reference/mui.md#autocomplete) — `Autocomplete` with `freeSolo` prop. Most comprehensive.
 - shadcn-ui: compose `command` (cmdk) + Popover for autocomplete-like behavior.
 
 ## Cross-reference

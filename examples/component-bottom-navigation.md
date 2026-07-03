@@ -213,7 +213,7 @@ function MobileAppShell() {
 
 ## References
 
-- MUI: [`BottomNavigation`](../refs/mui/packages/mui-material/src/BottomNavigation)
+- MUI: [`BottomNavigation`](../docs/reference/mui.md#bottom-navigation)
 - iOS: UITabBar; Apple HIG → "Tab Bars"
 - Material 3: NavigationBar component
 - Patterns: Toss, KakaoBank, Instagram, Twitter

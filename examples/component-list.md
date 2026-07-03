@@ -186,8 +186,8 @@ function NotificationList() {
 
 ## References
 
-- Ant: [`List`](../refs/ant-design/components/list)
-- MUI: [`List`](../refs/mui/packages/mui-material/src/List) + [`ListItem`](../refs/mui/packages/mui-material/src/ListItem)
+- Ant: [`List`](../docs/reference/ant-design.md#list)
+- MUI: [`List`](../docs/reference/mui.md#list) + [`ListItem`](../docs/reference/mui.md#list-item)
 - HTML5 `<ul>` / `<ol>` / `<li>`
 
 ## Cross-reference

@@ -196,9 +196,9 @@ Field (the row)
 
 ## References
 
-- Ant Design: [`refs/ant-design/components/input/`](../refs/ant-design/components/input/) — `Input`, `Input.Search`, `Input.Password`, `Input.TextArea`, `Input.Group`, `Input.OTP`. Most exhaustive split-by-purpose API.
-- MUI: [`refs/mui/packages/mui-material/src/Input/Input.tsx`](../refs/mui/packages/mui-material/src/Input/) and [`TextField/TextField.tsx`](../refs/mui/packages/mui-material/src/TextField/) — separates `Input` (raw) from `TextField` (Input + label + helper). MUI's split is cleaner conceptually.
-- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/input.tsx`](../refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/input.tsx) — minimal styling layer over native `<input>`. Pairs with separate `label.tsx`. Composition over configuration.
+- Ant Design: [`refs/ant-design/components/input/`](../docs/reference/ant-design.md#input) — `Input`, `Input.Search`, `Input.Password`, `Input.TextArea`, `Input.Group`, `Input.OTP`. Most exhaustive split-by-purpose API.
+- MUI: [`refs/mui/packages/mui-material/src/Input/Input.tsx`](../docs/reference/mui.md#input) and [`TextField/TextField.tsx`](../docs/reference/mui.md#text-field) — separates `Input` (raw) from `TextField` (Input + label + helper). MUI's split is cleaner conceptually.
+- shadcn-ui: [`refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/input.tsx`](../docs/reference/shadcn-ui.md#input) — minimal styling layer over native `<input>`. Pairs with separate `label.tsx`. Composition over configuration.
 
 API choices made:
 - **`label`/`helpText`/`errorText` as props** rather than separate components: 80% of inputs need all three; props keep usage compact. Composition (`<Field><Label/>...`) for the 20% that need finer control.
