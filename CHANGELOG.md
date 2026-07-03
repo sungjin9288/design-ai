@@ -2,6 +2,38 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.58.0 — Retrieval Across Surfaces and Corpus Depth (2026-07)
+
+Completes the retrieval integration started in v4.57.0 by bringing it to the last untouched surface (`route --explain`), refines recall quality so injected knowledge is real design guidance rather than index files, and closes the remaining dogfood-named corpus gaps. All additions are additive and backward-compatible; default output is unchanged unless a flag is passed.
+
+### Added
+- `route --explain` now includes an advisory "Related knowledge" section — brief-relevant corpus knowledge recalled by the shared lexical scorer, excluding what the route already curates. This is advisory only: route ids, scores, and curated knowledge are unchanged, and default `route` output is byte-unchanged. `design_ai_route`'s existing `explain` parameter carries it to MCP automatically. Retrieval now spans every surface: `search --ranked`, `prompt`/`pack --with-recall`, `learn --recall`, and `route --explain`.
+- `knowledge/patterns/async-control.md` — the async action in-flight lifecycle: pending states, double-submit prevention, duration-matched loading affordances, optimistic updates with rollback, debounce/throttle, cancellation and out-of-order handling, concurrency policy, timeouts, and the accessibility floor.
+- `knowledge/i18n/korean-density-conventions.md` — Korean B2B/enterprise density: the density ladder, table-first layouts, label-left multi-column forms, dense navigation, typography at density, and where density must yield to accessibility.
+
+### Changed
+- Recall injection surfaces (`prompt`/`pack --with-recall`, `learn --recall`, `route --explain`) now exclude generated index/meta files (`COVERAGE.md`, `INDEX.md`, `docs/reference/*`) so injected context is real design knowledge; raw `search --ranked` still returns those files when explicitly searched.
+- Knowledge corpus is now 94 files (from 92).
+
+### Fixed
+- `tools/audit/registry-smoke.py`'s learn-relevance assertion expected a stale token order (`keyboard, accessibility`) after the v4.57 shared-scorer change sorted matched tokens; aligned it with `package-smoke.py` and the real CLI output so the live post-publish registry smoke matches the published package.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `npm run release:metadata`.
+- `git diff --check`.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.57.0 → 4.58.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- Agents routing a brief now see additional relevant knowledge beyond the route's curated set, and every retrieval surface injects real design guidance rather than index tables.
+- The Korean-market corpus gains async-control and B2B density coverage that dogfood runs specifically named as missing.
+- Publishing v4.58.0 realigns `main` with the published package so the live registry smoke verifies cleanly again.
+
 ## v4.57.0 — Local Retrieval Memory: Ranked Search and Optional Embeddings (2026-07)
 
 Ships the Phase 754 AI-learning retrieval work: a deterministic, zero-dependency local retrieval layer over the knowledge corpus and the local learning profile, plus an opt-in local embedding rerank backend. Defaults are unchanged — `search`, `route`, `prompt`, and `pack` behave exactly as before unless a new flag is passed — so this release is additive and backward-compatible. It also moves `refs/` source links behind generated reference pages and hardens the docs deploy against intermittent GitHub Pages failures.

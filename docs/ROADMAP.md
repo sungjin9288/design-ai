@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 756 — Retrieval Across Surfaces and Corpus Depth Release (v4.58.0) ✓ ready
+
+Groups the post-v4.57.0 retrieval completion and corpus work into one release: `route --explain` related-knowledge enrichment (retrieval now spans every surface), recall exclusion of generated index/meta files, the async-control and Korean B2B density knowledge files, and the registry-smoke assertion fix that realigns the live post-publish smoke with the shared scorer. Defaults are unchanged; the release is additive and backward-compatible.
+
+### Changed
+- `route --explain` gains an advisory related-knowledge section (routing unchanged), completing retrieval across `search`/`prompt`/`pack`/`learn`/`route`; carried to MCP via the existing `design_ai_route` `explain` parameter.
+- Recall injection excludes generated index/meta files so injected context is real design knowledge; raw `search --ranked` is unchanged.
+- Added `knowledge/patterns/async-control.md` and `knowledge/i18n/korean-density-conventions.md` (corpus now 94 files), closing the remaining dogfood-named gaps.
+- Fixed the stale `registry-smoke.py` learn-relevance token-order assertion so the live post-publish registry smoke matches the published package.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check` (unit tests, strict audits, whitespace, package contents, release metadata, release self-tests, packed-tarball smoke).
+- `npm run release:metadata`.
+- `git diff --check`.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.57.0 → 4.58.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- Retrieval is uniform across every design-ai surface and injects real design knowledge, not index tables; the Korean corpus gains async-control and B2B density depth.
+- Publishing v4.58.0 realigns `main` with the published package so the live registry smoke verifies cleanly.
+
+### What's still ahead
+- Push the v4.58.0 tag, then verify npm publish (provenance), GitHub Release, public `npm run registry:smoke` (now skew-free), and docs deployment.
+- Refresh the Homebrew formula SHA-256 and the [external-status.md](external-status.md) / README distribution status from published `4.57.0` to `4.58.0` after the tag tarball exists.
+
 ## Phase 755 — Local Retrieval Memory Release (v4.57.0) ✓ ready
 
 Groups the Phase 754 A+B retrieval work, the MCP ranked-search parameter, the `refs/` reference-page migration, and the docs-deploy retry hardening into one public package release. Scope and data boundaries are defined in [AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md); defaults are unchanged, so the release is additive and backward-compatible.
