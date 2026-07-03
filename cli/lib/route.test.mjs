@@ -75,6 +75,9 @@ function makeRecallFixture() {
     // Curated for component-spec (COMMON_KNOWLEDGE + route.knowledge) — must be deduped.
     "knowledge/a11y/keyboard-and-focus.md": "# Keyboard and focus\nbutton component keyboard focus accessibility spec",
     "knowledge/components/INDEX.md": "# Components\ncomponent button spec api",
+    // Generated coverage table — NOT curated for component-spec, ranks high on the
+    // query terms, but must be excluded from recall as a generated index doc.
+    "knowledge/COVERAGE.md": "# Coverage\nbutton component spec accessibility coverage table",
     // NOT curated — eligible related-knowledge hits.
     "knowledge/patterns/component-testing.md": "# Component testing\nbutton component spec accessibility keyboard tests",
     "knowledge/patterns/form-controls.md": "# Form controls\nbutton input component spec accessibility api",
@@ -121,6 +124,24 @@ test("routeBrief attaches advisory relatedKnowledge only with explain=true", () 
     // Default (no explain) has no relatedKnowledge key at all.
     const noExplain = routeBrief({ brief: RECALL_BRIEF, sourceRoot: root });
     assert.equal(Object.hasOwn(noExplain[0], "relatedKnowledge"), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("routeBrief relatedKnowledge excludes generated index/meta docs", () => {
+  const root = makeRecallFixture();
+  try {
+    const routes = routeBrief({ brief: RECALL_BRIEF, sourceRoot: root, explain: true });
+    const top = routes[0];
+    assert.equal(top.id, "component-spec");
+    const ids = top.relatedKnowledge.map((item) => item.id);
+    // Generated coverage table is filtered out of the recall/injection surface even
+    // though it is not part of the curated set and ranks on the query terms.
+    assert.ok(!ids.includes("knowledge/COVERAGE.md"));
+    assert.ok(!ids.includes("knowledge/components/INDEX.md"));
+    // Real (non-index) knowledge still surfaces.
+    assert.ok(ids.some((id) => id.startsWith("knowledge/patterns/")));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

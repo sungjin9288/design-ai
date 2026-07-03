@@ -140,6 +140,65 @@ test("buildRecallContext recalls Korean docs for a Korean brief via Hangul bigra
   assert.match(context.markdown, /한국어 회원가입 폼/);
 });
 
+// Corpus fixture that ALSO contains generated index/meta docs (COVERAGE.md,
+// components/INDEX.md, docs/reference/*) which rank high on the query terms — used
+// to assert the recall/injection layer excludes them.
+function makeIndexCorpusFixture() {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-recall-index-"));
+  const files = {
+    "knowledge/COVERAGE.md": "# Coverage\nwidget coverage table matrix component",
+    "knowledge/components/INDEX.md": "# Components index\nwidget component index matrix",
+    "docs/reference/mui.md": "# MUI reference\nwidget component matrix reference",
+    "knowledge/widget-real.md": "# Widget knowledge\nwidget component matrix real design knowledge",
+    "knowledge/widget-more.md": "# More widget knowledge\nwidget component matrix more knowledge",
+  };
+  for (const [rel, text] of Object.entries(files)) {
+    mkdirSync(path.dirname(path.join(root, rel)), { recursive: true });
+    writeFileSync(path.join(root, rel), text);
+  }
+  return root;
+}
+
+test("buildRecallContext excludes generated index/meta docs from recall", () => {
+  const root = makeIndexCorpusFixture();
+  const context = buildRecallContext({
+    brief: "widget component matrix",
+    recallLimit: 5,
+    designAiPath: root,
+  });
+
+  const ids = context.selected.map((item) => item.id);
+  assert.ok(!ids.includes("knowledge/COVERAGE.md"));
+  assert.ok(!ids.includes("knowledge/components/INDEX.md"));
+  assert.ok(!ids.some((id) => id.startsWith("docs/reference/")));
+  // Real knowledge still recalled.
+  assert.ok(ids.includes("knowledge/widget-real.md"));
+  assert.ok(ids.includes("knowledge/widget-more.md"));
+  // Determinism preserved: score desc, then id asc.
+  for (let i = 1; i < context.selected.length; i += 1) {
+    const prev = context.selected[i - 1];
+    const curr = context.selected[i];
+    assert.ok(prev.score > curr.score || (prev.score === curr.score && prev.id < curr.id));
+  }
+});
+
+test("buildLearnRecall corpus side excludes generated index/meta docs", () => {
+  const designAiPath = makeIndexCorpusFixture();
+  const learningFilePath = makeLearningFixture();
+  const recall = buildLearnRecall({
+    query: "widget component matrix",
+    designAiPath,
+    learningFilePath,
+    limit: 5,
+  });
+
+  const ids = recall.corpus.selected.map((item) => item.id);
+  assert.ok(!ids.includes("knowledge/COVERAGE.md"));
+  assert.ok(!ids.includes("knowledge/components/INDEX.md"));
+  assert.ok(!ids.some((id) => id.startsWith("docs/reference/")));
+  assert.ok(ids.includes("knowledge/widget-real.md"));
+});
+
 // A learning profile fixture with distinct lexical signals per entry.
 function makeLearningFixture() {
   const root = mkdtempSync(path.join(tmpdir(), "design-ai-learn-recall-"));

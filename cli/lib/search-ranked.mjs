@@ -24,6 +24,22 @@ import { DEFAULT_SEARCH_DIRS } from "./search.mjs";
 
 const RANKED_PREVIEW_LEN = 120;
 
+// Predicate for GENERATED index/meta docs that must be kept out of the RECALL /
+// context-injection layer (pack/prompt --with-recall, learn --recall corpus side,
+// route --explain related knowledge). These files rank on keyword density but are
+// meta/index tables, not design knowledge worth injecting into an agent's context.
+// Rule: true when the basename is `COVERAGE.md` or `INDEX.md` (generated coverage
+// table / component index), OR the forward-slash-normalized path starts with
+// `docs/reference/` (generated upstream-reference pages). Raw `search --ranked`
+// does NOT apply this — a user explicitly searching may legitimately want an index.
+export function isGeneratedIndexDoc(relPath) {
+  const normalized = String(relPath || "").replace(/\\/g, "/");
+  const basename = normalized.slice(normalized.lastIndexOf("/") + 1);
+  return basename === "COVERAGE.md"
+    || basename === "INDEX.md"
+    || normalized.startsWith("docs/reference/");
+}
+
 // N = max(limit*5, 25): the number of top lexical candidates handed to the embedding
 // reranker. Documented constant (docs/AI-LEARNING-PHASE2.md, Phase B CLI wiring).
 export function embeddingCandidateCount(limit) {
@@ -66,12 +82,28 @@ export function rankedSearchCorpus({
   dirs = DEFAULT_SEARCH_DIRS,
   limit = 20,
   indexDir = defaultIndexDir(),
+  // Opt-in RECALL filter: when true, drop generated index/meta docs
+  // (isGeneratedIndexDoc) BEFORE applying `limit`, so the limit fills with real
+  // knowledge instead of index files. Default false keeps raw `search --ranked`
+  // byte-unchanged. Filtering before the limit preserves determinism (score desc,
+  // id asc) — the rank pass already orders fully, we only remove excluded ids.
+  excludeGeneratedIndex = false,
 } = {}) {
   const documents = collectCorpusDocuments({ designAiPath, dirs });
   const stats = buildLexicalStats(documents.map(({ id, text }) => ({ id, text })));
   const textById = new Map(documents.map((doc) => [doc.id, doc.text]));
 
-  const hits = rankLexical(query, stats, { limit }).map((hit) => ({
+  // When excluding, rank the FULL candidate pool first (limit = documents.length)
+  // so that filtering out index docs cannot let a real-knowledge hit fall off the
+  // pre-limit cutoff; then re-apply `limit`. Ordering is unchanged (score desc, id asc).
+  const ranked = rankLexical(query, stats, {
+    limit: excludeGeneratedIndex ? documents.length : limit,
+  });
+  const filtered = excludeGeneratedIndex
+    ? ranked.filter((hit) => !isGeneratedIndexDoc(hit.id)).slice(0, limit)
+    : ranked;
+
+  const hits = filtered.map((hit) => ({
     relPath: hit.id,
     file: path.join(designAiPath, hit.id),
     score: hit.score,

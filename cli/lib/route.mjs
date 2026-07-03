@@ -482,6 +482,9 @@ function relatedKnowledgeFor({ brief, sourceRoot, curatedRelPaths }) {
     dirs: RELATED_KNOWLEDGE_DIRS,
     limit: RELATED_KNOWLEDGE_RECALL_LIMIT,
     designAiPath: sourceRoot,
+    // Recall/injection surface: keep generated index/meta docs (COVERAGE.md,
+    // INDEX.md, docs/reference/*) out of the advisory related-knowledge list.
+    excludeGeneratedIndex: true,
   });
 
   return hits

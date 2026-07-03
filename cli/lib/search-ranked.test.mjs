@@ -9,7 +9,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { buildEmbeddingIndex, writeEmbeddingIndex } from "./embedding-index.mjs";
-import { embeddingCandidateCount, embeddingRerankSearch, rankedPreview, rankedSearchCorpus } from "./search-ranked.mjs";
+import { embeddingCandidateCount, embeddingRerankSearch, isGeneratedIndexDoc, rankedPreview, rankedSearchCorpus } from "./search-ranked.mjs";
 import { DEFAULT_SEARCH_DIRS } from "./search.mjs";
 
 function withTempDir(fn) {
@@ -56,6 +56,95 @@ test("embeddingCandidateCount is max(limit*5, 25)", () => {
   assert.equal(embeddingCandidateCount(1), 25);
   assert.equal(embeddingCandidateCount(10), 50);
 });
+
+test("isGeneratedIndexDoc flags COVERAGE.md, INDEX.md, and docs/reference/* only", () => {
+  // Generated coverage/index tables anywhere in the tree.
+  assert.equal(isGeneratedIndexDoc("knowledge/COVERAGE.md"), true);
+  assert.equal(isGeneratedIndexDoc("knowledge/components/INDEX.md"), true);
+  // Generated upstream-reference pages under docs/reference/.
+  assert.equal(isGeneratedIndexDoc("docs/reference/ant-design.md"), true);
+  assert.equal(isGeneratedIndexDoc("docs/reference/mui.md"), true);
+  // Backslash paths are normalized before matching.
+  assert.equal(isGeneratedIndexDoc("docs\\reference\\shadcn-ui.md"), true);
+  // Real design knowledge is never flagged.
+  assert.equal(isGeneratedIndexDoc("knowledge/patterns/money-and-amount.md"), false);
+  assert.equal(isGeneratedIndexDoc("knowledge/components/shadcn-registry.md"), false);
+  // A docs/ page NOT under docs/reference/ is not flagged.
+  assert.equal(isGeneratedIndexDoc("docs/MCP-INTEGRATION.md"), false);
+  // "INDEX.md" only matches as a basename, not as a substring.
+  assert.equal(isGeneratedIndexDoc("knowledge/INDEXER.md"), false);
+  assert.equal(isGeneratedIndexDoc(""), false);
+});
+
+// The recall/injection layer opts in to excludeGeneratedIndex; raw `search --ranked`
+// (default false) must keep returning index docs. Filtering happens BEFORE the limit
+// so it fills with real knowledge, and determinism (score desc, id asc) is preserved.
+function writeIndexCorpus(root) {
+  mkdirSync(path.join(root, "knowledge", "components"), { recursive: true });
+  mkdirSync(path.join(root, "docs", "reference"), { recursive: true });
+  writeFileSync(path.join(root, "knowledge", "COVERAGE.md"), "# Coverage\ncoverage table matrix widget", "utf8");
+  writeFileSync(path.join(root, "knowledge", "components", "INDEX.md"), "# Components\nwidget component index matrix", "utf8");
+  writeFileSync(path.join(root, "docs", "reference", "mui.md"), "# MUI\nwidget matrix reference", "utf8");
+  writeFileSync(path.join(root, "knowledge", "widget.md"), "# Widget\nwidget matrix real knowledge", "utf8");
+  writeFileSync(path.join(root, "knowledge", "widget-two.md"), "# Widget two\nwidget matrix more knowledge", "utf8");
+}
+
+test("rankedSearchCorpus default (excludeGeneratedIndex=false) still returns index docs", () => withTempDir((root) => {
+  writeIndexCorpus(root);
+  const { hits } = rankedSearchCorpus({
+    query: "widget matrix",
+    designAiPath: root,
+    dirs: ["knowledge", "docs"],
+    indexDir: path.join(root, "index"),
+  });
+  const ids = hits.map((hit) => hit.relPath);
+  assert.ok(ids.includes("knowledge/COVERAGE.md"), "raw search must keep COVERAGE.md");
+  assert.ok(ids.includes("knowledge/components/INDEX.md"), "raw search must keep INDEX.md");
+  assert.ok(ids.includes("docs/reference/mui.md"), "raw search must keep docs/reference pages");
+}));
+
+test("rankedSearchCorpus excludeGeneratedIndex drops index docs before the limit", () => withTempDir((root) => {
+  writeIndexCorpus(root);
+  const { hits } = rankedSearchCorpus({
+    query: "widget matrix",
+    designAiPath: root,
+    dirs: ["knowledge", "docs"],
+    indexDir: path.join(root, "index"),
+    excludeGeneratedIndex: true,
+  });
+  const ids = hits.map((hit) => hit.relPath);
+  assert.ok(!ids.some((id) => id === "knowledge/COVERAGE.md"));
+  assert.ok(!ids.some((id) => id === "knowledge/components/INDEX.md"));
+  assert.ok(!ids.some((id) => id.startsWith("docs/reference/")));
+  // Real knowledge still surfaces.
+  assert.ok(ids.includes("knowledge/widget.md"));
+  assert.ok(ids.includes("knowledge/widget-two.md"));
+  // Determinism preserved: score desc, then id asc.
+  for (let i = 1; i < hits.length; i += 1) {
+    const prev = hits[i - 1];
+    const curr = hits[i];
+    assert.ok(prev.score > curr.score || (prev.score === curr.score && prev.relPath < curr.relPath));
+  }
+}));
+
+test("rankedSearchCorpus excludeGeneratedIndex fills the limit with real knowledge, not index files", () => withTempDir((root) => {
+  writeIndexCorpus(root);
+  // limit 2 with COVERAGE.md/INDEX.md/mui.md ranking high on 'matrix': excluding them
+  // must let the two real widget knowledge files fill the two slots.
+  const { hits } = rankedSearchCorpus({
+    query: "widget matrix",
+    designAiPath: root,
+    dirs: ["knowledge", "docs"],
+    indexDir: path.join(root, "index"),
+    limit: 2,
+    excludeGeneratedIndex: true,
+  });
+  assert.equal(hits.length, 2);
+  assert.deepEqual(
+    hits.map((hit) => hit.relPath).sort(),
+    ["knowledge/widget-two.md", "knowledge/widget.md"],
+  );
+}));
 
 test("rankedSearchCorpus reports a not-built notice when no corpus index exists", () => withTempDir((root) => {
   writeFixtureCorpus(root);
