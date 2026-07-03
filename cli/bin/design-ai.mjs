@@ -8,6 +8,7 @@
 //   status               Show what's installed
 //   list [domain]        List skills / commands / knowledge (optionally filtered)
 //   search               Search the local design-ai markdown corpus
+//   index                Build, inspect, and verify the local retrieval index
 //   show                 Print a corpus file or line range
 //   route                Recommend and explain commands, skills, and knowledge for a brief
 //   routes               List available route ids

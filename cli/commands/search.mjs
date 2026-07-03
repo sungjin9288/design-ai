@@ -2,15 +2,17 @@
 
 import { DESIGN_AI_HOME } from "../lib/paths.mjs";
 import { dim, header, info, warn } from "../lib/log.mjs";
+import { rankedSearchCorpus } from "../lib/search-ranked.mjs";
 import { formatSearchJson, parseSearchArgs, searchCorpus } from "../lib/search.mjs";
 
 function printHelp() {
-  console.log("Usage:  design-ai search <query> [--limit N] [--dir kind] [--json]\n");
+  console.log("Usage:  design-ai search <query> [--limit N] [--dir kind] [--ranked] [--json]\n");
   console.log("Searches markdown files across knowledge, examples, skills, docs, agents, and commands.\n");
   console.log("Options:");
   console.log("  --limit N   Maximum hits to return, 1-500. Default: 20");
   console.log("  --dir kind  Restrict to one corpus directory. Repeatable.");
   console.log("              kind: knowledge, examples, skills, docs, agents, commands");
+  console.log("  --ranked    Rank results with the deterministic lexical (BM25-style) scorer");
   console.log("  --json      Emit machine-readable results");
 }
 
@@ -31,6 +33,33 @@ export async function runSearch(args) {
   if (!parsed.query) {
     printHelp();
     process.exitCode = 1;
+    return;
+  }
+
+  if (parsed.ranked) {
+    const ranked = rankedSearchCorpus({
+      query: parsed.query,
+      designAiPath: DESIGN_AI_HOME,
+      dirs: parsed.dirs,
+      limit: parsed.limit,
+    });
+    if (parsed.json) {
+      console.log(formatSearchJson({ query: parsed.query, ranked: true, notice: ranked.notice, hits: ranked.hits }));
+      return;
+    }
+    header("design-ai search", `${parsed.query} (ranked)`);
+    info(`Source: ${DESIGN_AI_HOME}`);
+    info(`Hits: ${ranked.hits.length}`);
+    if (ranked.notice) info(ranked.notice);
+    console.log();
+    if (ranked.hits.length === 0) {
+      warn("No matches found.");
+      return;
+    }
+    for (const hit of ranked.hits) {
+      console.log(`${hit.relPath}  (score ${hit.score}, matched: ${hit.matchedTokens.join(", ")})`);
+      console.log(`  ${dim(hit.preview)}`);
+    }
     return;
   }
 

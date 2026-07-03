@@ -149,8 +149,10 @@ test("parseSearchArgs supports query, limit, dirs, and json", () => {
     dirs: ["knowledge"],
     limit: 3,
     json: true,
+    ranked: false,
     help: false,
   });
+  assert.equal(parseSearchArgs(["tokens", "--ranked"]).ranked, true);
 });
 
 test("parseSearchArgs rejects invalid options", () => {

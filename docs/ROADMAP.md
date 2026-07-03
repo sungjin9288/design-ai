@@ -5,8 +5,8 @@
 Opens the deeper AI-learning phase chosen in Product Readiness ("Recommended next decision", option 2): deterministic local retrieval memory over the shipped knowledge corpus and the local learning profile, with an optional local-only embedding backend. Scope, data boundaries, and privacy constraints are defined in [AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md). Fine-tuning, training on user artifacts, external embedding APIs, background learning without explicit CLI commands, and telemetry stay out of scope; the README stance ("Not a model. Not a fine-tune.") is unchanged.
 
 ### Plan
-- [ ] Phase A: zero-dependency lexical retrieval index (tokenized BM25-style scoring) over `knowledge/`, `examples/`, `skills/`, `docs/`, `agents/`, `commands/`, and `learning.json`, built only by an explicit `design-ai index --build`.
-- [ ] Phase A: opt-in `design-ai search --ranked` ranked corpus search with deterministic, fully ordered output.
+- [x] Phase A: zero-dependency lexical retrieval index (tokenized BM25-style scoring) over `knowledge/`, `examples/`, `skills/`, `docs/`, `agents/`, `commands/`, and `learning.json`, built only by an explicit `design-ai index --build`.
+- [x] Phase A: opt-in `design-ai search --ranked` ranked corpus search with deterministic, fully ordered output.
 - [ ] Phase A: shared lexical scorer behind `prompt --with-learning` / `pack --with-learning` selection, gated by `learn --eval --strict` checkpoints before and after.
 - [ ] Phase A: `design-ai index --status/--verify` staleness and digest reporting, plus `workspace` readiness integration.
 - [ ] Phase A: verification gates — `npm test` unit coverage, `npm run audit` 8/8, `npm run release:metadata`, and `release:check` packed-tarball smoke for index build/verify round-trip and ranked-search determinism.

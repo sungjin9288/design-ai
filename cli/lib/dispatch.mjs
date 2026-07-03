@@ -20,6 +20,7 @@ import { runPrompt } from "../commands/prompt.mjs";
 import { runPack } from "../commands/pack.mjs";
 import { runVersion } from "../commands/version.mjs";
 import { runHelp } from "../commands/help.mjs";
+import { runIndex } from "../commands/index.mjs";
 import { hasHelpFlag } from "./help-flags.mjs";
 import { suggestNearest } from "./suggest.mjs";
 
@@ -52,6 +53,7 @@ const commands = {
   mcp: runMcp,
   search: runSearch,
   find: runSearch,
+  index: runIndex,
   show: runShow,
   cat: runShow,
   route: runRoute,
@@ -75,6 +77,7 @@ export const CANONICAL_COMMANDS = [
   "status",
   "list",
   "search",
+  "index",
   "show",
   "route",
   "routes",

@@ -20,7 +20,7 @@ export const DEFAULT_SEARCH_DIRS = [
 
 const PREVIEW_LEN = 120;
 const PREVIEW_BEFORE = 50;
-const SEARCH_OPTIONS = ["-h", "--help", "--json", "--limit", "--dir"];
+const SEARCH_OPTIONS = ["-h", "--help", "--json", "--limit", "--dir", "--ranked"];
 
 function exists(p) {
   try {
@@ -115,6 +115,7 @@ export function parseSearchArgs(args) {
     dirs: [],
     limit: 20,
     json: false,
+    ranked: false,
     help: false,
   };
 
@@ -124,6 +125,8 @@ export function parseSearchArgs(args) {
       out.help = true;
     } else if (arg === "--json") {
       out.json = true;
+    } else if (arg === "--ranked") {
+      out.ranked = true;
     } else if (arg === "--limit") {
       const next = args[i + 1];
       const limit = Number(next);

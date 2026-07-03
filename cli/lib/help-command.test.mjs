@@ -44,7 +44,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /uninstall \[--json\]/);
   assert.match(output, /status \[--json\]/);
   assert.match(output, /list \[skills\|commands\|agents\] \[--json\]/);
-  assert.match(output, /search <query> \[--dir kind\] \[--limit N\] \[--json\]/);
+  assert.match(output, /search <query> \[--dir kind\] \[--limit N\] \[--ranked\] \[--json\]/);
   assert.match(output, /show <file\[:line\]> \[--lines N:M\] \[--context N\] \[--json\]/);
   assert.match(output, /route <brief\|--from-file file\|--stdin\|--list\|--eval-template\|--eval> \[--limit N\]/);
   assert.match(output, /prompt <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--out file\]/);

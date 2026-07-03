@@ -17,6 +17,7 @@ import { runMcp } from "./mcp.mjs";
 import { runPack } from "./pack.mjs";
 import { runPrompt } from "./prompt.mjs";
 import { runRoute } from "./route.mjs";
+import { runIndex } from "./index.mjs";
 import { runSearch } from "./search.mjs";
 import { runShow } from "./show.mjs";
 import { runSite } from "./site.mjs";
@@ -32,7 +33,8 @@ export const HELP_COMMANDS = [
   { topic: "uninstall", usage: "uninstall [--json]", description: "Remove symlinks (keeps source files)" },
   { topic: "status", usage: "status [--json]", description: "Show what's installed (use VERBOSE=1 for full list)" },
   { topic: "list", usage: "list [skills|commands|agents] [--json]", description: "List catalog from the plugin manifest" },
-  { topic: "search", usage: "search <query> [--dir kind] [--limit N] [--json]", description: "Search the local markdown corpus" },
+  { topic: "search", usage: "search <query> [--dir kind] [--limit N] [--ranked] [--json]", description: "Search the local markdown corpus" },
+  { topic: "index", usage: "index [--build|--status|--verify] [--json]", description: "Build, inspect, and verify the local retrieval index" },
   { topic: "show", usage: "show <file[:line]> [--lines N:M] [--context N] [--json]", description: "Print a corpus file or line range" },
   { topic: "route", usage: "route <brief|--from-file file|--stdin|--list|--eval-template|--eval> [--limit N]", description: "Recommend commands, skills, knowledge, and route eval checkpoints" },
   { topic: "routes", usage: "routes [--json]", description: "List available route ids" },
@@ -79,6 +81,7 @@ const HELP_RUNNERS = {
   status: () => runStatus(["--help"]),
   list: () => runList(["--help"]),
   search: () => runSearch(["--help"]),
+  index: () => runIndex(["--help"]),
   show: () => runShow(["--help"]),
   route: () => runRoute(["--help"]),
   routes: printRoutesHelp,
