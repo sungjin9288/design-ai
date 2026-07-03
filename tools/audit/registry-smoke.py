@@ -4637,7 +4637,7 @@ def assert_learning_relevance_context(payload: dict[str, object], *, context: st
         message="learning selection explanation should mark the relevant entry as a brief match",
     )
     require_registry_smoke(
-        isinstance(selected_entry.get("score"), int) and selected_entry.get("score") > 0,
+        type(selected_entry.get("score")) in (int, float) and selected_entry.get("score") > 0,
         context=context,
         cmd=cmd,
         message="learning selection explanation should include a positive relevance score",
@@ -4759,7 +4759,7 @@ def assert_learning_query_json(
     require_registry_smoke(
         selected[0].get("id") == "learn-relevant"
         and selected[0].get("reason") == "brief-match"
-        and isinstance(selected[0].get("score"), int)
+        and type(selected[0].get("score")) in (int, float)
         and selected[0].get("score") > 0,
         context=context,
         cmd=cmd,
