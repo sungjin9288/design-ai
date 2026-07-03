@@ -21653,18 +21653,18 @@ Coverage:
 - [x] Component spec coverage push: 11 → 19 worked specs (5% → 8.5%). New: Alert, Tooltip, Form-controls (Switch/Checkbox/Radio combined), Skeleton, Progress, Avatar, Breadcrumb, Accordion.
 - [ ] Optional embedding index if knowledge base exceeds 100K tokens. _(Deferred — base is currently ~13K lines / well under threshold.)_
 
-## Phase 4 — Multi-tool
+## Phase 4 — Multi-tool ✓ shipped
 
-- [ ] Codex CLI: real-world session against this repo, captured as a worked example.
-- [ ] Cursor `.cursorrules` overlay.
-- [ ] Aider configuration.
+- [x] Codex CLI: real-world session against this repo, captured as a worked example. _([docs/integrations/codex-walkthrough.md](integrations/codex-walkthrough.md))_
+- [x] Cursor `.cursorrules` overlay. _([docs/integrations/cursor-walkthrough.md](integrations/cursor-walkthrough.md))_
+- [x] Aider configuration. _([docs/integrations/aider-walkthrough.md](integrations/aider-walkthrough.md))_
 
-## Phase 5 — Maturity
+## Phase 5 — Maturity (public site / packaging shipped)
 
-- [ ] Versioned knowledge files (semver headers).
+- [x] Versioned knowledge files (semver headers). _(frontmatter `version` field on every knowledge file, enforced by the frontmatter audit)_
 - [ ] CHANGELOG that summarizes upstream-source updates affecting `refs/`.
-- [ ] Public site (knowledge/ as a browsable doc site).
-- [ ] Plugin packaging — install design-ai as a Claude Code plugin / VS Code extension.
+- [x] Public site (knowledge/ as a browsable doc site). _(GitHub Pages: https://sungjin9288.github.io/design-ai/)_
+- [x] Plugin packaging — install design-ai as a Claude Code plugin / VS Code extension. _(`.claude-plugin/plugin.json` + VS Code Marketplace `sungjin.design-ai-vscode` v0.4.1)_
 
 ## Out of scope
 

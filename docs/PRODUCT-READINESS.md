@@ -53,8 +53,8 @@ These are valid future product ideas, but they are different from the current ar
 
 Only launch-readiness items remain in the active roadmap:
 
-- Real-CI verification: push the branch and observe GitHub Actions green.
-- External launch: publish/announce after CI and registry smoke are proven.
+- Real-CI verification: complete — main-branch pushes run green on GitHub Actions (audit + docs deploy), and npm publish run `28569283984` succeeded with provenance (verified 2026-07-03).
+- External launch: publishing is complete (npm `@design-ai/cli@4.56.0`, GitHub Release `v4.56.0`, Homebrew tap, VS Code Marketplace `sungjin.design-ai-vscode` v0.4.1, GitHub Pages docs); the public announcement itself remains a maintainer decision.
 - Reference-link policy: decide whether `refs/` source links remain visible or move behind generated reference pages.
 
 ## Recommended next decision
