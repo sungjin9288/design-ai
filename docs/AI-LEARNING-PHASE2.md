@@ -159,10 +159,46 @@ Risks:
 
 Open questions:
 
-1. Should `search --ranked` become the default once eval evidence exists, or stay opt-in permanently to preserve byte-stable output for existing scripts?
-2. Does the corpus index live per-checkout (keyed by corpus digest) or per-machine? Per-checkout is safer for multiple clones; per-machine is simpler.
-3. Should `route` ever consume the index for routing decisions, or is advisory `--explain` enrichment the permanent boundary?
-4. Minimum useful BM25 constants and tokenizer treatment for Korean text — does the current Unicode tokenizer rank Korean briefs well enough, or does Phase A need explicit bigram handling for Hangul?
-5. Phase B configuration home: a new `~/.design-ai/config.json`, or flags-only to keep zero persistent configuration?
+1. Should `search --ranked` become the default once eval evidence exists, or stay opt-in permanently to preserve byte-stable output for existing scripts? — answered in the [Phase A implementation review](#phase-a-implementation-review-2026-07-03).
+2. Does the corpus index live per-checkout (keyed by corpus digest) or per-machine? Per-checkout is safer for multiple clones; per-machine is simpler. — answered in the [Phase A implementation review](#phase-a-implementation-review-2026-07-03).
+3. Should `route` ever consume the index for routing decisions, or is advisory `--explain` enrichment the permanent boundary? — answered in the [Phase A implementation review](#phase-a-implementation-review-2026-07-03).
+4. Minimum useful BM25 constants and tokenizer treatment for Korean text — does the current Unicode tokenizer rank Korean briefs well enough, or does Phase A need explicit bigram handling for Hangul? — answered in the [Phase A implementation review](#phase-a-implementation-review-2026-07-03).
+5. Phase B configuration home: a new `~/.design-ai/config.json`, or flags-only to keep zero persistent configuration? — answered in the [Phase A implementation review](#phase-a-implementation-review-2026-07-03).
 
 These questions should be answered during Phase A implementation review before Phase B is scheduled.
+
+## Phase A implementation review (2026-07-03)
+
+This review answers the five open questions against the shipped Phase A implementation (`cli/lib/lexical.mjs`, `cli/lib/retrieval-index.mjs`, `cli/lib/search-ranked.mjs`, `cli/lib/learn-select.mjs`) with all Phase 754 Phase A checklist items landed in [ROADMAP.md](ROADMAP.md).
+
+### Decisions
+
+1. **`search --ranked` stays opt-in; it does not become the default.** The default `search` emits byte-stable first-substring-match output that existing scripts and the packed-tarball determinism smoke depend on, and ranked output is a different contract (scores, ordering, previews). The right long-term move is not flipping the default but adding a ranked-mode eval checkpoint so ranked quality is measured; until such a checkpoint exists there is no evidence basis to switch, and even with it the safer path is a documented opt-in plus a possible future `--ranked` alias rather than silently changing default output. Decision: **opt-in permanently**, with promotion to default deferred behind a concrete trigger (a landed ranked-search eval checkpoint showing ranked ≥ substring on the QA set) — and even then only via an announced major-version default change, never a silent one.
+
+2. **Corpus index stays per-machine, but must be keyed by corpus digest within the shared directory.** Today `buildCorpusIndex` writes a single `corpus-index.json` under `~/.design-ai/index/`, so two checkouts with different corpora overwrite each other's index. This is currently harmless because `search --ranked` live-scans the corpus and uses the index file only for a staleness notice (`corpusIndexNotice`) — a wrong-checkout index produces a "stale" notice, never wrong results. It becomes load-bearing the moment Phase B reads vectors from the sidecar instead of live-scanning. Decision: **keep per-machine storage** (simpler, matches the `learning.json` boundary) but add a follow-up to namespace the index file by corpus digest (or record the `designAiPath` in the payload and treat a path/digest mismatch as "not my index") before Phase B consumes the index as a source of truth.
+
+3. **`route` keeps the advisory boundary; the index never drives routing decisions.** Verified in the shipped build: `route --explain` scores against its own deterministic keyword table (observed `matched: 접근성, 개선` with integer scores and `why:` keyword lists), fully independent of the BM25 index, and no "related knowledge" section is wired in yet. Route ids must stay keyword-table-driven and reproducible so routing is auditable and stable across machines regardless of index presence. Decision: **advisory `--explain` enrichment is the permanent boundary** — the index may later populate an advisory "related knowledge" block in `--explain` output only, and must never change which route ids are selected or their order.
+
+4. **The current Unicode tokenizer is NOT adequate for Korean briefs; Phase A needs Hangul handling, tracked as a follow-up rather than a Phase B blocker.** Empirical finding: the tokenizer treats each whitespace-delimited Hangul surface form as one atomic token with no stemming, so agglutinative (particle-attached) forms only match documents containing that exact form. Observed via `search "<q>" --ranked --json`:
+   - `버튼을` → 2 hits (matches only literal `버튼을`); bare stem `버튼` → **0 hits**, `버튼이` → **0 hits**. Corpus grep confirms `버튼` appears *only* as `버튼을`/`버튼은`, never bare — so the stem query silently misses every button doc.
+   - `접근성이` → **0 hits**, but bare `접근성` → 12 hits (corpus has `접근성` bare 17×).
+   - `결제하기` → 2 hits (exact form only); `저장하기` → 3 hits vs `저장` → 20 hits; `삭제` → 13 hits.
+   The match/miss outcome is pure coincidence of which surface form happens to occur in the corpus, not linguistic relevance — the same query concept scores 0 or high depending on an accidental particle. English is unaffected because its tokenizer already splits on the space between word and particle. This is a real Korean-brief retrieval gap given the product's Korean-market focus ([NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md)). Mitigation is a Phase A follow-up (Hangul-aware handling: character bigrams for CJK runs, or a small particle-stripping pass), gated by new Korean eval checkpoints so the tokenizer change is eval-visible. BM25 constants (`k1=1.2`, `b=0.75`) are standard and fine; the gap is tokenization, not scoring.
+
+5. **Phase B configuration home: introduce `~/.design-ai/config.json`, not flags-only.** A local embedding provider is a durable per-machine setting (a provider command path plus opt-in state) that a user should set once, not re-pass on every invocation; flags-only would force the provider path into every `search`/`index` call and into MCP tool wiring, which is fragile and undiscoverable. `config.json` also composes with the existing `~/.design-ai/` sidecar convention and stays local-only. Decision: **add `~/.design-ai/config.json`** (versioned, sorted keys, local-only, honoring `DESIGN_AI_INDEX_DIR`-style overrides), still requiring the per-invocation `--embeddings` opt-in from the design so config presence alone never silently enables reranking — config supplies the provider, the flag arms it.
+
+### Follow-up work items
+
+- **FU-1 (Q4, before Phase B):** Add Hangul-aware tokenization (CJK bigramming or particle stripping) in `cli/lib/lexical.mjs` behind Korean `learn --eval` checkpoints; regression-test that `버튼`, `버튼을`, `버튼이` converge on the same button docs.
+- **FU-2 (Q2, before Phase B index-as-source-of-truth):** Key the corpus index by corpus digest / record `designAiPath` in the payload so multiple checkouts do not overwrite each other once the index is read for content rather than staleness.
+- **FU-3 (Q1, gates default promotion):** Land a ranked-search eval checkpoint so any future `--ranked` default promotion is evidence-backed and announced.
+- **FU-4 (Q5, Phase B):** Specify and implement `~/.design-ai/config.json` as the Phase B provider config home with per-invocation `--embeddings` still required.
+
+### Phase B gate: cleared-with-conditions
+
+Phase B may be scheduled. Conditions that must be met before or during Phase B:
+
+- **FU-2 is a hard precondition** if Phase B reads the corpus/embedding sidecar as a source of truth rather than live-scanning: the per-machine single-file index must be digest/path-keyed first, or multiple checkouts will serve each other's vectors.
+- **FU-1 should land in Phase A** (or explicitly early in Phase B) so embedding rerank is not layered on top of a Korean lexical candidate set that already silently drops particle-attached queries — otherwise Phase B inherits and masks the tokenization gap.
+- **FU-4 (`config.json`)** is the accepted Phase B configuration home and must keep the per-invocation opt-in.
+- Non-goals and Data boundaries above are unchanged; Phase B remains local-only, opt-in, no external HTTP, graceful degradation to the Phase A lexical path.
