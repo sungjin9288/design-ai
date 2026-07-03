@@ -218,6 +218,76 @@ test("buildCliInvocation maps design_ai_search ranked to the --ranked CLI flag",
   );
 });
 
+test("buildCliInvocation maps design_ai_prompt withRecall and recallLimit to CLI flags", () => {
+  assert.deepEqual(
+    buildCliInvocation("design_ai_prompt", { brief: "Spec a Button", withRecall: true, recallLimit: 3 }),
+    { args: ["prompt", "Spec a Button", "--with-recall", "--recall-limit", "3"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_prompt", { brief: "Spec a Button", withRecall: true }),
+    { args: ["prompt", "Spec a Button", "--with-recall"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_prompt", { brief: "Spec a Button", withRecall: false }),
+    { args: ["prompt", "Spec a Button"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_prompt", { brief: "Spec a Button" }),
+    { args: ["prompt", "Spec a Button"], stdin: "" },
+  );
+});
+
+test("buildCliInvocation maps design_ai_pack withRecall and recallLimit to CLI flags", () => {
+  assert.deepEqual(
+    buildCliInvocation("design_ai_pack", { brief: "Spec a Button", withRecall: true, recallLimit: 7 }),
+    { args: ["pack", "Spec a Button", "--with-recall", "--recall-limit", "7"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_pack", { brief: "Spec a Button", withRecall: true }),
+    { args: ["pack", "Spec a Button", "--with-recall"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_pack", { brief: "Spec a Button", withRecall: false }),
+    { args: ["pack", "Spec a Button"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_pack", { brief: "Spec a Button" }),
+    { args: ["pack", "Spec a Button"], stdin: "" },
+  );
+});
+
+test("tools/call returns recall-augmented prompt output from injected runner when withRecall is true", async () => {
+  const calls = [];
+  const response = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "design_ai_prompt",
+      arguments: { brief: "Spec a Button", withRecall: true, recallLimit: 2 },
+    },
+  }, {
+    runCli: async (args, opts) => {
+      calls.push({ args, opts });
+      return { code: 0, stdout: "# Prompt\n\nRecall augmented.\n", stderr: "" };
+    },
+  });
+
+  assert.deepEqual(calls, [{
+    args: ["prompt", "Spec a Button", "--with-recall", "--recall-limit", "2"],
+    opts: { stdin: "" },
+  }]);
+  assert.equal(response.result.isError, false);
+  assert.equal(response.result.content[0].type, "text");
+  assert.equal(response.result.content[0].text, "# Prompt\n\nRecall augmented.");
+});
+
 test("tools/call returns CLI output from injected runner", async () => {
   const calls = [];
   const response = await handleMcpRequest({

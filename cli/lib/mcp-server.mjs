@@ -50,7 +50,7 @@ export const MCP_TOOLS = [
   {
     name: "design_ai_prompt",
     title: "Generate an agent prompt",
-    description: "Generate a ready-to-use design-ai agent prompt from a brief. Read-only unless withLearning is true, which records local usage metadata.",
+    description: "Generate a ready-to-use design-ai agent prompt from a brief. Read-only unless withLearning is true, which records local usage metadata. Supports opt-in recall augmentation via withRecall, which enriches the output with brief-relevant shipped corpus knowledge.",
     inputSchema: {
       type: "object",
       properties: {
@@ -59,6 +59,8 @@ export const MCP_TOOLS = [
         withLearning: optionalBoolean("Include local learning preferences and record local usage metadata."),
         learningCategory: optionalString("Optional learning category when withLearning is true."),
         learningLimit: optionalInteger({ description: "Maximum learning entries, 1-100.", minimum: 1, maximum: 100 }),
+        withRecall: optionalBoolean("Opt-in recall augmentation: enriches the output with brief-relevant shipped corpus knowledge ranked by the deterministic lexical scorer. Requires no index and makes no network call."),
+        recallLimit: optionalInteger({ description: "Maximum recall passages, 1-20.", minimum: 1, maximum: 20 }),
         json: optionalBoolean("Return machine-readable prompt plan JSON instead of Markdown."),
       },
       required: ["brief"],
@@ -68,7 +70,7 @@ export const MCP_TOOLS = [
   {
     name: "design_ai_pack",
     title: "Generate prompt plus bounded context",
-    description: "Generate a prompt pack with relevant design-ai context files. Read-only unless withLearning is true, which records local usage metadata.",
+    description: "Generate a prompt pack with relevant design-ai context files. Read-only unless withLearning is true, which records local usage metadata. Supports opt-in recall augmentation via withRecall, which enriches the output with brief-relevant shipped corpus knowledge.",
     inputSchema: {
       type: "object",
       properties: {
@@ -78,6 +80,8 @@ export const MCP_TOOLS = [
         withLearning: optionalBoolean("Include local learning preferences and record local usage metadata."),
         learningCategory: optionalString("Optional learning category when withLearning is true."),
         learningLimit: optionalInteger({ description: "Maximum learning entries, 1-100.", minimum: 1, maximum: 100 }),
+        withRecall: optionalBoolean("Opt-in recall augmentation: enriches the output with brief-relevant shipped corpus knowledge ranked by the deterministic lexical scorer. Requires no index and makes no network call."),
+        recallLimit: optionalInteger({ description: "Maximum recall passages, 1-20.", minimum: 1, maximum: 20 }),
         json: optionalBoolean("Return machine-readable pack JSON instead of Markdown."),
       },
       required: ["brief"],
@@ -282,6 +286,8 @@ export function buildCliInvocation(toolName, input = {}) {
     maybeBool(args, "--with-learning", input.withLearning);
     maybePush(args, "--learning-category", input.learningCategory);
     maybePush(args, "--learning-limit", input.learningLimit);
+    maybeBool(args, "--with-recall", input.withRecall);
+    maybePush(args, "--recall-limit", input.recallLimit);
     maybeBool(args, "--json", input.json);
     return { args, stdin };
   }
@@ -293,6 +299,8 @@ export function buildCliInvocation(toolName, input = {}) {
     maybeBool(args, "--with-learning", input.withLearning);
     maybePush(args, "--learning-category", input.learningCategory);
     maybePush(args, "--learning-limit", input.learningLimit);
+    maybeBool(args, "--with-recall", input.withRecall);
+    maybePush(args, "--recall-limit", input.recallLimit);
     maybeBool(args, "--json", input.json);
     return { args, stdin };
   }

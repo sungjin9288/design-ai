@@ -13,7 +13,7 @@ Ships the Phase 754 AI-learning retrieval work: a deterministic, zero-dependency
 - `prompt --with-recall` / `pack --with-recall`: retrieval-augment a prompt or pack with the most relevant shipped corpus knowledge files for the brief, ranked by the same deterministic lexical scorer (opt-in, `--recall-limit N` from 1 to 20, default 5). Default `prompt`/`pack` output is unchanged.
 - Hangul-aware tokenization: Korean surface forms emit character bigrams alongside the whole token so stem and particle-attached queries converge (`버튼` now matches documents containing only `버튼을`).
 - `design-ai search --ranked --embeddings` and `index --build --embeddings [--provider …]`: an opt-in, local-only embedding rerank backend configured through `~/.design-ai/config.json`. It never runs by default, makes no network calls, ships no model, and degrades visibly to the lexical path on any absence, staleness, or provider failure (exit 0).
-- MCP `design_ai_search` gains the same opt-in `ranked` parameter as the CLI, with no new tools and no implicit index builds.
+- MCP `design_ai_search` gains the same opt-in `ranked` parameter as the CLI, and `design_ai_prompt` / `design_ai_pack` gain the same opt-in `withRecall` / `recallLimit` parameters — no new tools and no implicit index builds.
 - `design-ai workspace` reports retrieval-index readiness (unused / fresh / stale) alongside its existing learning-usage and eval-checkpoint freshness.
 
 ### Changed
