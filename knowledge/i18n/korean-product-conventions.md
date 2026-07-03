@@ -58,6 +58,8 @@ This is not "cluttered design" — it matches reading pace and screen-time habit
 
 Reference: see how Coupang, Naver, KakaoTalk, Toss differ from Amazon, Google, WhatsApp, Robinhood.
 
+For enterprise / B2B density (denser again — ERP, HR, groupware, admin, financial back-office), see [`knowledge/i18n/korean-density-conventions.md`](korean-density-conventions.md).
+
 ## Color associations
 
 Different from Western color symbolism:

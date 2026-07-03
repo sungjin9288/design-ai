@@ -2,7 +2,7 @@
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/ko/)
-[![Knowledge files](https://img.shields.io/badge/knowledge-93-blue)](knowledge/PRINCIPLES.md)
+[![Knowledge files](https://img.shields.io/badge/knowledge-94-blue)](knowledge/PRINCIPLES.md)
 [![Examples](https://img.shields.io/badge/examples-221-blue)](examples/README.md)
 [![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
 
@@ -107,7 +107,7 @@ design-ai/
 │
 ├── refs/                    # Sparse-clone된 업스트림 소스 (gitignored)
 │
-├── knowledge/               # 93개 손으로 쓴 + 추출된 지식 파일
+├── knowledge/               # 94개 손으로 쓴 + 추출된 지식 파일
 │   ├── design-tokens/       # W3C DTCG, OKLCH, HCT
 │   ├── components/          # Ant + MUI + shadcn 합성
 │   ├── patterns/            # 인증, 가격, 랜딩 히어로, 브랜드, 이메일 등

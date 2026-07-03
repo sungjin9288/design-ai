@@ -12,7 +12,7 @@ site_name: design-ai
 site_description: >-
   A model-agnostic design knowledge base + skill system. Senior product designer
   for any AI coding agent (Claude Code, Codex CLI, Cursor, Aider). Korean market
-  depth. 93 knowledge files, 223 worked examples, 20 skills, 17 slash commands.
+  depth. 94 knowledge files, 223 worked examples, 20 skills, 17 slash commands.
 site_author: Sungjin Park
 site_url: https://sungjin9288.github.io/design-ai/
 
@@ -282,6 +282,7 @@ nav:
       - i18n (Korean):
           - Korean typography: knowledge/i18n/korean-typography.md
           - Korean product conventions: knowledge/i18n/korean-product-conventions.md
+          - Korean B2B density conventions: knowledge/i18n/korean-density-conventions.md
           - Korean payments: knowledge/i18n/korean-payments.md
           - Korean publishing: knowledge/i18n/korean-publishing.md
           - Korean document style: knowledge/i18n/korean-document-style.md

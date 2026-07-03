@@ -12,7 +12,7 @@ generated_at: 2026-07-03
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 93 | 78 hand-written + 15 generated |
+| Knowledge files | 94 | 79 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 20 | 20 with verification phase |
 | Worked examples | 221 | |
 | Extractors | 12 | |
@@ -30,7 +30,7 @@ generated_at: 2026-07-03
 | `conversational` | 5 | 5 | 0 |
 | `design-tokens` | 4 | 3 | 1 |
 | `game-ui` | 5 | 5 | 0 |
-| `i18n` | 6 | 6 | 0 |
+| `i18n` | 7 | 7 | 0 |
 | `icons` | 1 | 0 | 1 |
 | `illustration` | 5 | 5 | 0 |
 | `layout` | 1 | 1 | 0 |
@@ -49,7 +49,7 @@ generated_at: 2026-07-03
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 742 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 743 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 108 | hand-written | Design-AI principles |
 
 #### a11y
@@ -108,9 +108,10 @@ generated_at: 2026-07-03
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
 | [knowledge/i18n/korean-app-store-visual.md](../knowledge/i18n/korean-app-store-visual.md) | 223 | hand-written | Korean app store visual design |
+| [knowledge/i18n/korean-density-conventions.md](../knowledge/i18n/korean-density-conventions.md) | 108 | hand-written | Korean B2B density conventions |
 | [knowledge/i18n/korean-document-style.md](../knowledge/i18n/korean-document-style.md) | 301 | hand-written | Korean document style |
 | [knowledge/i18n/korean-payments.md](../knowledge/i18n/korean-payments.md) | 211 | hand-written | Korean payments |
-| [knowledge/i18n/korean-product-conventions.md](../knowledge/i18n/korean-product-conventions.md) | 96 | hand-written | Korean product UX conventions |
+| [knowledge/i18n/korean-product-conventions.md](../knowledge/i18n/korean-product-conventions.md) | 98 | hand-written | Korean product UX conventions |
 | [knowledge/i18n/korean-publishing.md](../knowledge/i18n/korean-publishing.md) | 139 | hand-written | Korean app store & publishing requirements |
 | [knowledge/i18n/korean-typography.md](../knowledge/i18n/korean-typography.md) | 123 | hand-written | Korean (Hangul) typography for product UI |
 
