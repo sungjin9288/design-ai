@@ -201,6 +201,23 @@ test("buildCliInvocation maps MCP tool args to existing CLI commands", () => {
   );
 });
 
+test("buildCliInvocation maps design_ai_search ranked to the --ranked CLI flag", () => {
+  assert.deepEqual(
+    buildCliInvocation("design_ai_search", { query: "Pretendard", ranked: true }),
+    { args: ["search", "Pretendard", "--json", "--ranked"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_search", { query: "Pretendard", ranked: false }),
+    { args: ["search", "Pretendard", "--json"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_search", { query: "Pretendard" }),
+    { args: ["search", "Pretendard", "--json"], stdin: "" },
+  );
+});
+
 test("tools/call returns CLI output from injected runner", async () => {
   const calls = [];
   const response = await handleMcpRequest({
@@ -225,6 +242,32 @@ test("tools/call returns CLI output from injected runner", async () => {
   assert.equal(response.result.isError, false);
   assert.equal(response.result.content[0].type, "text");
   assert.equal(response.result.content[0].text, "{\"hits\":[]}");
+});
+
+test("tools/call returns ranked CLI output from injected runner when ranked is true", async () => {
+  const calls = [];
+  const response = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "design_ai_search",
+      arguments: { query: "Pretendard", dir: "knowledge", limit: 1, ranked: true },
+    },
+  }, {
+    runCli: async (args, opts) => {
+      calls.push({ args, opts });
+      return { code: 0, stdout: "{\"query\":\"Pretendard\",\"ranked\":true,\"hits\":[]}\n", stderr: "" };
+    },
+  });
+
+  assert.deepEqual(calls, [{
+    args: ["search", "Pretendard", "--json", "--dir", "knowledge", "--limit", "1", "--ranked"],
+    opts: { stdin: "" },
+  }]);
+  assert.equal(response.result.isError, false);
+  assert.equal(response.result.content[0].type, "text");
+  assert.equal(response.result.content[0].text, "{\"query\":\"Pretendard\",\"ranked\":true,\"hits\":[]}");
 });
 
 test("tools/call reports CLI failures without failing JSON-RPC", async () => {

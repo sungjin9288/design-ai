@@ -87,13 +87,14 @@ export const MCP_TOOLS = [
   {
     name: "design_ai_search",
     title: "Search design-ai corpus",
-    description: "Search knowledge, examples, skills, docs, agents, or commands. Read-only.",
+    description: "Search knowledge, examples, skills, docs, agents, or commands. Read-only. Supports an opt-in ranked mode for deterministic BM25-style results.",
     inputSchema: {
       type: "object",
       properties: {
         query: { type: "string", minLength: 2, description: "Search query." },
         dir: optionalString("Optional corpus directory: knowledge, examples, skills, docs, agents, commands."),
         limit: optionalInteger({ description: "Maximum hits, 1-500.", minimum: 1, maximum: 500 }),
+        ranked: optionalBoolean("Opt-in deterministic BM25-style ranked results. Requires no index and never builds one; falls back to a live corpus scan when no index is present."),
       },
       required: ["query"],
       additionalProperties: false,
@@ -300,6 +301,7 @@ export function buildCliInvocation(toolName, input = {}) {
     args.push("search", assertString(input.query, "query"), "--json");
     maybePush(args, "--dir", input.dir);
     maybePush(args, "--limit", input.limit);
+    maybeBool(args, "--ranked", input.ranked);
     return { args, stdin };
   }
 
