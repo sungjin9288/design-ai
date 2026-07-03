@@ -12,7 +12,7 @@ generated_at: 2026-07-03
 
 | Layer | Count | Detail |
 | --- | --- | --- |
-| Knowledge files | 92 | 77 hand-written + 15 generated |
+| Knowledge files | 93 | 78 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 20 | 20 with verification phase |
 | Worked examples | 221 | |
 | Extractors | 12 | |
@@ -35,7 +35,7 @@ generated_at: 2026-07-03
 | `illustration` | 5 | 5 | 0 |
 | `layout` | 1 | 1 | 0 |
 | `motion` | 6 | 6 | 0 |
-| `patterns` | 30 | 24 | 6 |
+| `patterns` | 31 | 25 | 6 |
 | `platforms` | 1 | 1 | 0 |
 | `print` | 6 | 6 | 0 |
 | `spatial` | 5 | 5 | 0 |
@@ -49,7 +49,7 @@ generated_at: 2026-07-03
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 741 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 742 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 108 | hand-written | Design-AI principles |
 
 #### a11y
@@ -151,6 +151,7 @@ generated_at: 2026-07-03
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
+| [knowledge/patterns/async-control.md](../knowledge/patterns/async-control.md) | 233 | hand-written | Async control patterns |
 | [knowledge/patterns/auth-flow-design.md](../knowledge/patterns/auth-flow-design.md) | 316 | hand-written | Authentication flow design |
 | [knowledge/patterns/b2b-onboarding-flows.md](../knowledge/patterns/b2b-onboarding-flows.md) | 182 | hand-written | B2B onboarding flows |
 | [knowledge/patterns/brand-identity.md](../knowledge/patterns/brand-identity.md) | 238 | hand-written | Brand identity |
@@ -162,8 +163,8 @@ generated_at: 2026-07-03
 | [knowledge/patterns/document-typography.md](../knowledge/patterns/document-typography.md) | 248 | hand-written | Document typography |
 | [knowledge/patterns/email-design.md](../knowledge/patterns/email-design.md) | 338 | hand-written | Email design |
 | [knowledge/patterns/empty-states.md](../knowledge/patterns/empty-states.md) | 263 | hand-written | Empty states |
-| [knowledge/patterns/error-states.md](../knowledge/patterns/error-states.md) | 318 | hand-written | Error states |
-| [knowledge/patterns/form-design.md](../knowledge/patterns/form-design.md) | 237 | hand-written | Form design patterns |
+| [knowledge/patterns/error-states.md](../knowledge/patterns/error-states.md) | 319 | hand-written | Error states |
+| [knowledge/patterns/form-design.md](../knowledge/patterns/form-design.md) | 239 | hand-written | Form design patterns |
 | [knowledge/patterns/information-architecture.md](../knowledge/patterns/information-architecture.md) | 341 | hand-written | Information architecture |
 | [knowledge/patterns/landing-hero-design.md](../knowledge/patterns/landing-hero-design.md) | 283 | hand-written | Landing hero design |
 | [knowledge/patterns/landing-page-patterns.md](../knowledge/patterns/landing-page-patterns.md) | 681 | generated | Landing page patterns |

@@ -232,6 +232,8 @@ Required affordances:
 
 ## Cross-reference
 
+- [`knowledge/patterns/async-control.md`](async-control.md) — submit-in-flight, double-submit prevention, pending button states
+
 - [knowledge/patterns/ux-guidelines.md](ux-guidelines.md) — broader UX rules
 - [knowledge/i18n/korean-product-conventions.md](../i18n/korean-product-conventions.md) — Korean form expectations (phone, address, terms)
 - [knowledge/a11y/keyboard-and-focus.md](../a11y/keyboard-and-focus.md) — keyboard navigation contract

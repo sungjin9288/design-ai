@@ -312,6 +312,7 @@ function PageContent() {
 
 ## Cross-reference
 
+- [`knowledge/patterns/async-control.md`](async-control.md) — the in-flight state before the error: pending, retry-on-timeout, double-submit
 - [`knowledge/patterns/empty-states.md`](empty-states.md) — when there's no data, but it's not an error
 - [`knowledge/patterns/form-design.md`](form-design.md) — validation errors at the field level
 - [`knowledge/i18n/korean-payments.md`](../i18n/korean-payments.md) — payment-specific error messages

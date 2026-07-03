@@ -12,7 +12,7 @@ site_name: design-ai
 site_description: >-
   A model-agnostic design knowledge base + skill system. Senior product designer
   for any AI coding agent (Claude Code, Codex CLI, Cursor, Aider). Korean market
-  depth. 92 knowledge files, 223 worked examples, 20 skills, 17 slash commands.
+  depth. 93 knowledge files, 223 worked examples, 20 skills, 17 slash commands.
 site_author: Sungjin Park
 site_url: https://sungjin9288.github.io/design-ai/
 
@@ -205,6 +205,7 @@ nav:
           - Form design: knowledge/patterns/form-design.md
           - Empty states: knowledge/patterns/empty-states.md
           - Error states: knowledge/patterns/error-states.md
+          - Async control: knowledge/patterns/async-control.md
           - Onboarding: knowledge/patterns/onboarding.md
           - List and feed: knowledge/patterns/list-and-feed.md
           - Search UX: knowledge/patterns/search-ux.md
