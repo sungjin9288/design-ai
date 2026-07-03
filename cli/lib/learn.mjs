@@ -62,6 +62,10 @@ export {
 } from "./learn-select.mjs";
 
 export {
+  buildLearnRecall,
+} from "./recall.mjs";
+
+export {
   defaultLearningFile,
   defaultLearningRestoreBackupFile,
   defaultLearningUsageFile,

@@ -4,6 +4,38 @@ import path from "node:path";
 
 import { dim, header, info } from "../lib/log.mjs";
 
+export function printLearnRecall(payload) {
+  header("design-ai learn", "Recall (read-only)");
+  info(`Query: ${payload.query || "(none)"}`);
+  info(`Corpus: ${payload.corpus.selectedCount}/${payload.corpus.candidateCount} selected`);
+  info(`Learning: ${payload.learning.selectedCount}/${payload.learning.candidateCount} selected (${payload.learning.mode})`);
+  console.log();
+
+  console.log("Corpus:");
+  if (payload.corpus.selected.length === 0) {
+    console.log(`  ${dim("No corpus knowledge files matched this query.")}`);
+  } else {
+    for (const item of payload.corpus.selected) {
+      const tokens = item.matchedTokens.length > 0 ? item.matchedTokens.join(", ") : "none";
+      console.log(`- ${item.id} · ${item.score} · ${dim(tokens)}`);
+    }
+  }
+  console.log();
+
+  console.log("Learning:");
+  if (payload.learning.selected.length === 0) {
+    console.log(`  ${dim("No local learning entries matched this query.")}`);
+  } else {
+    for (const item of payload.learning.selected) {
+      const tokens = item.matchedTokens.length > 0 ? item.matchedTokens.join(", ") : "none";
+      console.log(`- ${item.id} [${item.category}] · ${item.score} · ${dim(tokens)} · ${item.text}`);
+    }
+  }
+  console.log();
+
+  console.log("Privacy: recall is read-only and does not mutate learning.json or any file.");
+}
+
 export function printSignals(payload) {
   header("design-ai learn", "Learning signal registry");
   info(`File: ${payload.file}`);

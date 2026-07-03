@@ -4,6 +4,7 @@ import { LEARNING_FEEDBACK_OUTCOMES } from "../lib/learn.mjs";
 
 export function printHelp() {
   console.log("Usage:  design-ai learn [--list] [--category kind] [--query text] [--explain] [--limit N] [--json] [--out file] [--force]");
+  console.log("        design-ai learn --recall query [--limit N] [--category kind] [--json]");
   console.log("        design-ai learn <mode> ...  Bare-word alias for a mode flag, e.g. `learn signals --json` = `learn --signals --json`");
   console.log("        design-ai learn --init [--yes|--dry-run] [--json] [--out file] [--force]");
   console.log("        design-ai learn --remember text [--category kind] [--json] [--out file] [--force]");
@@ -54,6 +55,7 @@ export function printHelp() {
   console.log("  --query text         Filter list/export output to entries whose category or text matches the query");
   console.log("  --explain            With --list, include selection score, matched tokens, and reason");
   console.log("  --limit N            Limit list/export output to the N most recent matching entries, 1-100");
+  console.log("  --recall query       Read-only combined recall: top corpus knowledge files plus local learning entries ranked for the query");
   console.log("  --list               List saved learning entries. Default when no action is given");
   console.log("  --export             Print the learned-context block used by --with-learning");
   console.log("  --backup             Print a full portable learning-profile backup; use --json for importable JSON");
@@ -105,6 +107,7 @@ export function printHelp() {
   console.log("  design-ai learn --feedback \"Keep audit findings short and evidence-led\" --outcome keep");
   console.log("  design-ai learn --feedback --from-file feedback.md --outcome improve");
   console.log("  cat feedback.md | design-ai learn --feedback --stdin --outcome avoid --category brand");
+  console.log("  design-ai learn --recall \"korean payment\" --limit 5");
   console.log("  design-ai learn --list --category korean --limit 5");
   console.log("  design-ai learn --list --query \"keyboard accessibility\" --explain --json");
   console.log("  design-ai learn --export --query \"pricing page\" --limit 3");

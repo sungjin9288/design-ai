@@ -14,6 +14,9 @@ import path from "node:path";
 
 import { rankedSearchCorpus, rankedPreview } from "./search-ranked.mjs";
 import { collectCorpusDocuments } from "./retrieval-index.mjs";
+import { loadLearningProfile } from "./learn-profile.mjs";
+import { selectLearningEntrySet } from "./learn-select.mjs";
+import { defaultLearningFile } from "./learn-shared.mjs";
 import { DESIGN_AI_HOME } from "./paths.mjs";
 import { DEFAULT_SEARCH_DIRS } from "./search.mjs";
 
@@ -126,5 +129,65 @@ export function buildRecallContext({
     selectedCount: selected.length,
     selected,
     markdown: renderRecallMarkdown(selected, textById),
+  };
+}
+
+// Read-side companion to `pack --with-recall`: a unified "what does design-ai
+// recall for this query" view. Combines (1) the top corpus knowledge files ranked
+// by rankedSearchCorpus with (2) the top local learning-profile entries ranked by
+// selectLearningEntrySet — BOTH using the same shipped deterministic lexical scorer.
+// Read-only: never writes the profile or any file. Empty query -> zero hits on both
+// sides. `limit` applies to BOTH lists; `category` scopes ONLY the learning list.
+export function buildLearnRecall({
+  query = "",
+  limit = DEFAULT_RECALL_LIMIT,
+  category = "",
+  designAiPath = DESIGN_AI_HOME,
+  learningFilePath = defaultLearningFile(),
+  dirs = DEFAULT_SEARCH_DIRS,
+} = {}) {
+  const normalizedQuery = String(query || "").trim();
+
+  const corpusCandidateCount = collectCorpusDocuments({ designAiPath, dirs }).length;
+  const corpusHits = normalizedQuery
+    ? rankedSearchCorpus({ query: normalizedQuery, designAiPath, dirs, limit }).hits
+    : [];
+  const corpusSelected = corpusHits.map((hit) => ({
+    id: hit.relPath,
+    score: hit.score,
+    matchedTokens: hit.matchedTokens,
+  }));
+
+  const profile = loadLearningProfile(learningFilePath);
+  const textById = new Map(profile.entries.map((entry) => [entry.id, entry.text || ""]));
+  const { selection } = selectLearningEntrySet(profile, {
+    query: normalizedQuery,
+    limit,
+    category,
+    includeFallback: false,
+  });
+  const learningSelected = normalizedQuery
+    ? selection.selected.map((item) => ({
+      id: item.id,
+      category: item.category,
+      score: item.score,
+      matchedTokens: item.matchedTokens,
+      text: textById.get(item.id) || "",
+    }))
+    : [];
+
+  return {
+    query: normalizedQuery,
+    corpus: {
+      candidateCount: corpusCandidateCount,
+      selectedCount: corpusSelected.length,
+      selected: corpusSelected,
+    },
+    learning: {
+      mode: selection.mode,
+      candidateCount: selection.candidateCount,
+      selectedCount: learningSelected.length,
+      selected: learningSelected,
+    },
   };
 }

@@ -24,6 +24,7 @@ const LEARN_OPTIONS = [
   "--force",
   "--query",
   "--explain",
+  "--recall",
   "--list",
   "--export",
   "--import",
@@ -142,6 +143,7 @@ export const LEARN_SUBCOMMANDS = Object.freeze([
   "init",
   "list",
   "propose-skills",
+  "recall",
   "redact",
   "remember",
   "restore",
@@ -205,6 +207,8 @@ export function parseLearnArgs(rawArgs) {
       setAction(out, "remember");
     } else if (arg === "--feedback") {
       setAction(out, "feedback");
+    } else if (arg === "--recall") {
+      setAction(out, "recall");
     } else if (arg === "--list") {
       setAction(out, "list");
     } else if (arg === "--export") {
@@ -343,7 +347,7 @@ export function parseLearnArgs(rawArgs) {
     out.action = out.noteParts.length > 0 ? "remember" : "list";
   }
 
-  if (!["remember", "feedback"].includes(out.action) && out.noteParts.length > 0) {
+  if (!["remember", "feedback", "recall"].includes(out.action) && out.noteParts.length > 0) {
     throw new Error(`Unexpected learn argument for --${out.action}: ${out.noteParts[0]}`);
   }
   if (out.outcomeSpecified && out.action !== "feedback") {

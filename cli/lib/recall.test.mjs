@@ -6,7 +6,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-import { buildRecallContext, parseRecallLimit } from "./recall.mjs";
+import { buildLearnRecall, buildRecallContext, parseRecallLimit } from "./recall.mjs";
 
 // A small deterministic corpus with distinct lexical signals per file so ranking is
 // predictable. Korean content is included to exercise the Hangul bigram tokenizer.
@@ -138,4 +138,157 @@ test("buildRecallContext recalls Korean docs for a Korean brief via Hangul bigra
   assert.ok(context.selectedCount >= 1);
   assert.equal(context.selected[0].id, "knowledge/korean-forms.md");
   assert.match(context.markdown, /한국어 회원가입 폼/);
+});
+
+// A learning profile fixture with distinct lexical signals per entry.
+function makeLearningFixture() {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-learn-recall-"));
+  const filePath = path.join(root, "learning.json");
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-01T00:00:00.000Z",
+    entries: [
+      {
+        id: "learn-korean-1",
+        category: "korean",
+        text: "Korean payment flows should use Toss-style dense receipts and honorific copy.",
+        source: "test",
+        createdAt: "2026-06-01T00:00:01.000Z",
+      },
+      {
+        id: "learn-a11y-1",
+        category: "accessibility",
+        text: "Buttons need visible focus and WCAG AA contrast for keyboard accessibility.",
+        source: "test",
+        createdAt: "2026-06-01T00:00:02.000Z",
+      },
+      {
+        id: "learn-brand-1",
+        category: "brand",
+        text: "Use the corporate teal palette for primary brand color.",
+        source: "test",
+        createdAt: "2026-06-01T00:00:03.000Z",
+      },
+    ],
+  }), "utf8");
+  return filePath;
+}
+
+test("buildLearnRecall combines ranked corpus and learning lists for a query", () => {
+  const designAiPath = makeCorpusFixture();
+  const learningFilePath = makeLearningFixture();
+  const recall = buildLearnRecall({
+    query: "Button keyboard accessibility",
+    designAiPath,
+    learningFilePath,
+    limit: 5,
+  });
+
+  assert.equal(recall.query, "Button keyboard accessibility");
+  // Corpus side ranks the Button knowledge file first.
+  assert.equal(recall.corpus.candidateCount, 4);
+  assert.ok(recall.corpus.selectedCount >= 1);
+  assert.equal(recall.corpus.selected[0].id, "knowledge/button-component.md");
+  assert.ok(recall.corpus.selected[0].score > 0);
+  assert.ok(recall.corpus.selected[0].matchedTokens.includes("button"));
+  // Learning side ranks the accessibility entry first.
+  assert.equal(recall.learning.mode, "brief-relevance");
+  assert.equal(recall.learning.candidateCount, 3);
+  assert.ok(recall.learning.selectedCount >= 1);
+  assert.equal(recall.learning.selected[0].id, "learn-a11y-1");
+  assert.equal(recall.learning.selected[0].category, "accessibility");
+  assert.ok(recall.learning.selected[0].score > 0);
+  assert.ok(recall.learning.selected[0].matchedTokens.includes("accessibility"));
+  assert.match(recall.learning.selected[0].text, /keyboard accessibility/);
+});
+
+test("buildLearnRecall is deterministic across runs", () => {
+  const designAiPath = makeCorpusFixture();
+  const learningFilePath = makeLearningFixture();
+  const first = buildLearnRecall({ query: "korean payment accessibility", designAiPath, learningFilePath });
+  const second = buildLearnRecall({ query: "korean payment accessibility", designAiPath, learningFilePath });
+  assert.deepEqual(first, second);
+});
+
+test("buildLearnRecall returns empty corpus and learning lists for an empty query", () => {
+  const designAiPath = makeCorpusFixture();
+  const learningFilePath = makeLearningFixture();
+  const recall = buildLearnRecall({ query: "   ", designAiPath, learningFilePath });
+
+  assert.equal(recall.query, "");
+  assert.equal(recall.corpus.selectedCount, 0);
+  assert.deepEqual(recall.corpus.selected, []);
+  assert.equal(recall.corpus.candidateCount, 4);
+  assert.equal(recall.learning.selectedCount, 0);
+  assert.deepEqual(recall.learning.selected, []);
+  assert.equal(recall.learning.candidateCount, 3);
+});
+
+test("buildLearnRecall category scopes only the learning list", () => {
+  const designAiPath = makeCorpusFixture();
+  const learningFilePath = makeLearningFixture();
+  const recall = buildLearnRecall({
+    query: "korean payment accessibility",
+    category: "accessibility",
+    designAiPath,
+    learningFilePath,
+  });
+
+  // Learning is scoped to accessibility only.
+  assert.equal(recall.learning.candidateCount, 1);
+  for (const item of recall.learning.selected) {
+    assert.equal(item.category, "accessibility");
+  }
+  // Corpus is unaffected by the category filter.
+  assert.equal(recall.corpus.candidateCount, 4);
+  assert.ok(recall.corpus.selectedCount >= 1);
+});
+
+test("buildLearnRecall honors limit on both corpus and learning lists", () => {
+  const designAiPath = makeCorpusFixture();
+  const learningFilePath = makeLearningFixture();
+  const recall = buildLearnRecall({
+    query: "korean payment accessibility color button overview",
+    limit: 1,
+    designAiPath,
+    learningFilePath,
+  });
+
+  assert.ok(recall.corpus.selectedCount <= 1);
+  assert.ok(recall.learning.selectedCount <= 1);
+});
+
+test("buildLearnRecall recalls Korean learning entries for a Korean query", () => {
+  const designAiPath = makeCorpusFixture();
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-learn-recall-ko-"));
+  const learningFilePath = path.join(root, "learning.json");
+  writeFileSync(learningFilePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-01T00:00:00.000Z",
+    entries: [
+      {
+        id: "learn-korean-hangul",
+        category: "korean",
+        text: "한국 핀테크 회원가입 폼은 조밀한 레이아웃과 존댓말 카피를 사용한다.",
+        source: "test",
+        createdAt: "2026-06-01T00:00:01.000Z",
+      },
+      {
+        id: "learn-en-only",
+        category: "brand",
+        text: "Use the corporate teal palette for primary brand color.",
+        source: "test",
+        createdAt: "2026-06-01T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const recall = buildLearnRecall({
+    query: "한국 회원가입 폼",
+    designAiPath,
+    learningFilePath,
+  });
+
+  assert.ok(recall.learning.selectedCount >= 1);
+  assert.equal(recall.learning.selected[0].id, "learn-korean-hangul");
 });

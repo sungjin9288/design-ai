@@ -74,11 +74,13 @@ import {
 } from "./learn-print-restore.mjs";
 import {
   printAgentBacklog,
+  printLearnRecall,
   printSignals,
   printSkillProposalApplyPlan,
   printSkillProposalReviewCheck,
   printSkillProposals,
 } from "./learn-print-signals.mjs";
+import { buildLearnRecall } from "../lib/recall.mjs";
 
 function readLearningInput(parsed) {
   return resolveBriefInput(parsed);
@@ -360,6 +362,24 @@ export async function runLearn(args) {
     } else {
       printRestoreBackups(payload);
     }
+    return;
+  }
+
+  if (parsed.action === "recall") {
+    if (!parsed.brief) {
+      throw new Error("learn --recall requires a query, e.g. `design-ai learn --recall \"korean payment\"`");
+    }
+    const payload = buildLearnRecall({
+      query: parsed.brief,
+      limit: parsed.limit || undefined,
+      category: parsed.categorySpecified ? parsed.category : "",
+      learningFilePath: parsed.filePath,
+    });
+    if (parsed.json) {
+      printOrWriteJson(parsed, payload);
+      return;
+    }
+    printLearnRecall(payload);
     return;
   }
 

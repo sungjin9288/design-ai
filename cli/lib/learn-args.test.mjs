@@ -8,6 +8,10 @@ import { normalizeCategory, normalizeFeedbackOutcome, parseLearnArgs } from "./l
 
 test("parseLearnArgs supports bare subcommand aliases for mode flags", () => {
   assert.deepEqual(parseLearnArgs(["signals", "--json"]), parseLearnArgs(["--signals", "--json"]));
+  assert.deepEqual(parseLearnArgs(["recall", "korean", "payment"]), parseLearnArgs(["--recall", "korean", "payment"]));
+  const recallAlias = parseLearnArgs(["recall", "korean", "payment"]);
+  assert.equal(recallAlias.action, "recall");
+  assert.equal(recallAlias.brief, "korean payment");
   assert.deepEqual(parseLearnArgs(["restore-backups", "--prune", "--keep", "3"]), parseLearnArgs(["--restore-backups", "--prune", "--keep", "3"]));
   assert.deepEqual(parseLearnArgs(["forget", "abc123"]), parseLearnArgs(["--forget", "abc123"]));
   assert.equal(parseLearnArgs(["propose-skills", "--strict"]).action, "propose-skills");

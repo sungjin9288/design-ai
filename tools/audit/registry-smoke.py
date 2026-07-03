@@ -2216,6 +2216,102 @@ def assert_learning_redact_smoke(
     )
 
 
+def assert_learning_recall_json(
+    raw: str,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse learn recall JSON") from error
+
+    require_registry_smoke(
+        isinstance(payload, dict) and payload.get("query") == "korean mobile",
+        context=context,
+        cmd=cmd,
+        message="learn recall JSON must echo the query",
+    )
+    corpus = payload.get("corpus")
+    require_registry_smoke(
+        isinstance(corpus, dict)
+        and isinstance(corpus.get("candidateCount"), int)
+        and corpus.get("candidateCount") > 0
+        and isinstance(corpus.get("selectedCount"), int)
+        and isinstance(corpus.get("selected"), list),
+        context=context,
+        cmd=cmd,
+        message="learn recall corpus block shape changed",
+    )
+    learning = payload.get("learning")
+    require_registry_smoke(
+        isinstance(learning, dict)
+        and learning.get("mode") == "brief-relevance"
+        and learning.get("candidateCount") == 3
+        and isinstance(learning.get("selected"), list),
+        context=context,
+        cmd=cmd,
+        message="learn recall learning block shape changed",
+    )
+    selected = learning.get("selected")
+    require_registry_smoke(
+        len(selected) >= 1
+        and isinstance(selected[0], dict)
+        and selected[0].get("id") == "registry-korean"
+        and selected[0].get("category") == "korean"
+        and isinstance(selected[0].get("matchedTokens"), list),
+        context=context,
+        cmd=cmd,
+        message="learn recall should rank the Korean learning entry for a Korean query",
+    )
+
+
+def assert_learning_recall_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    write_learning_stats_fixture(profile_path)
+
+    json_cmd = command_factory(
+        "learn",
+        "--recall",
+        "korean mobile",
+        "--file",
+        str(profile_path),
+        "--json",
+    )
+    json_result = run_plain(json_cmd, cwd=cwd, env=env)
+    assert_learning_recall_json(json_result.stdout, context=f"{context} JSON", cmd=json_cmd)
+
+    # Read-only: the profile file is unchanged after recall.
+    before = write_learning_stats_fixture_snapshot(profile_path)
+    human_cmd = command_factory("learn", "--recall", "korean mobile", "--file", str(profile_path))
+    human_result = run_plain(human_cmd, cwd=cwd, env=env)
+    require_registry_smoke(
+        "Recall (read-only)" in human_result.stdout
+        and "Privacy: recall is read-only" in human_result.stdout,
+        context=f"{context} human",
+        cmd=human_cmd,
+        message="learn recall human output missing read-only markers",
+    )
+    require_registry_smoke(
+        profile_path.read_text(encoding="utf-8") == before,
+        context=f"{context} read-only",
+        cmd=human_cmd,
+        message="learn recall must not mutate the learning profile",
+    )
+
+
+def write_learning_stats_fixture_snapshot(profile_path: Path) -> str:
+    return profile_path.read_text(encoding="utf-8")
+
+
 def assert_learning_stats_json(
     raw: str,
     *,
@@ -6349,6 +6445,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec learn stats",
+        )
+        assert_learning_recall_smoke(
+            lambda *args: npm_exec_cmd(package_spec, *args),
+            npx_root / "registry-recall-learning.json",
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec learn recall",
         )
         assert_learning_audit_cleanup_smoke(
             lambda *args: npm_exec_cmd(package_spec, *args),
