@@ -2,6 +2,33 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.59.0 — Agent SDK Phase A (2026-07)
+
+Adds a curated, semver-stable programmatic surface — `@design-ai/cli/sdk` — so an external Node.js program can call design-ai's deterministic design verbs as importable functions, without shelling out to the CLI or spawning the MCP server. The SDK is a thin adapter over the same `cli/lib` functions the CLI and MCP already call, so no design behavior changes. Phase A is read-only: no file writes, no network, no runtime dependencies. All additions are additive and backward-compatible.
+
+### Added
+- `@design-ai/cli/sdk` — eight read-only adapter verbs with their own stable signatures: `route(brief, opts)`, `prompt(brief, opts)`, `pack(brief, opts)`, `search(query, opts)`, `recall(query, opts)`, `check(artifact, opts)`, `routes()`, and `version()`. Each validates its inputs, resolves the package root the same way the CLI does, and returns the same JSON-serializable shape the CLI's `--json` mode emits. `check` operates on artifact content (not a path), so it reads and writes nothing.
+- `package.json` `exports` map exposing `./sdk` (and `./package.json`) as the only public import paths; `cli/lib/*` stays internal and unstable, refactorable behind the adapter seam.
+- `docs/SDK.md` — the public SDK reference (surface, return shapes, semver stability contract) — plus a "Node.js / Agent SDK" row in the README install tables and an Agent SDK mkdocs nav section.
+
+### Changed
+- `npm test` now also runs `cli/sdk/*.test.mjs` (61 new SDK tests, 540 total), including a contract test (`cli/sdk/index.test.mjs`) that pins the eight exported names and their return-shape keys — the semver anchor — and asserts Phase A writes no `learningUsage` sidecar.
+- `tools/audit/package-smoke.py` now imports `@design-ai/cli/sdk` from the installed tarball and exercises the eight verbs, asserting determinism and the read-only guarantee.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `npm run release:metadata`.
+- `git diff --check`.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.58.0 → 4.59.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- Agent runtimes, build scripts, and custom tools can consume design-ai's routing, prompt/pack generation, ranked search, recall, and artifact checks as plain functions — deterministic, in-process, zero-dependency — with a semver-stable contract independent of the internal `cli/lib` shapes.
+
 ## v4.58.0 — Retrieval Across Surfaces and Corpus Depth (2026-07)
 
 Completes the retrieval integration started in v4.57.0 by bringing it to the last untouched surface (`route --explain`), refines recall quality so injected knowledge is real design guidance rather than index files, and closes the remaining dogfood-named corpus gaps. All additions are additive and backward-compatible; default output is unchanged unless a flag is passed.

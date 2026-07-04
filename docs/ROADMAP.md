@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 758 — Agent SDK Phase A Release (v4.59.0) ✓ ready
+
+Ships the Agent SDK Phase A work (Phase 757) as an npm version: the curated, semver-stable `@design-ai/cli/sdk` surface — eight read-only adapter verbs (`route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) over the same `cli/lib` functions the CLI and MCP already call. No new capabilities, no runtime dependencies, no network, no telemetry; read-only, deterministic, backward-compatible.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check` (unit tests incl. 61 SDK tests, strict audits, whitespace, package contents, release metadata, release self-tests, packed-tarball smoke that imports `@design-ai/cli/sdk`).
+- `npm run release:metadata`.
+- `git diff --check`.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.58.0 → 4.59.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- design-ai's routing, prompt/pack generation, ranked search, recall, and artifact checks become plain importable functions for agent runtimes, build scripts, and custom tools — deterministic, in-process, zero-dependency — behind a semver-stable contract that insulates callers from internal `cli/lib` refactors.
+
+### What's still ahead
+- Optional `cli/sdk/index.d.ts` hand-written type declarations (zero-build), and Phase B explicit local-write adapters — both deferred until an adopter needs them.
+
 ## Phase 757 — Agent SDK (Phase A implemented, unreleased)
 
 Opens the Agent SDK phase — the fast-follow chosen in [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md), unblocked now that the recall interface has been stable across two releases (v4.57.0/v4.58.0). Scope, the stable surface, packaging, and the stability contract are defined in [AGENT-SDK.md](AGENT-SDK.md). No new capabilities, no runtime dependencies, no network, no telemetry; the SDK is a thin, semver-stable adapter over the same `cli/lib` functions the CLI and MCP already call.
