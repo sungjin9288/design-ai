@@ -763,15 +763,20 @@ def assert_version_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path 
     assert_version_json(result.stdout, context=context, cmd=cmd)
 
 
-# Phase A Agent SDK packed-tarball smoke (docs/AGENT-SDK.md, docs/SDK.md): imports
+# Agent SDK packed-tarball smoke (docs/AGENT-SDK.md, docs/SDK.md): imports
 # `@design-ai/cli/sdk` from the installed package (proving the package.json
 # "exports" map resolves) and exercises route/search(ranked)/recall, asserting
 # each call is deterministic (same input -> same JSON-serialized output) and
 # that Phase A's read-only contract holds (prompt/pack never include
-# learningUsage). This is a Node script, not a design-ai CLI invocation, so it
-# is run directly rather than through npm_exec_cmd/design-ai bin helpers.
+# learningUsage). Also exercises Phase B's `learn.remember` against a temp
+# DESIGN_AI_LEARNING_FILE and asserts it actually wrote the profile. This is a
+# Node script, not a design-ai CLI invocation, so it is run directly rather
+# than through npm_exec_cmd/design-ai bin helpers.
 SDK_SMOKE_SCRIPT = """
-import { check, pack, prompt, recall, route, routes, search, version } from "@design-ai/cli/sdk";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { check, learn, pack, prompt, recall, route, routes, search, version } from "@design-ai/cli/sdk";
 
 const brief = "Spec a Button component API with variants, props, and keyboard accessibility";
 
@@ -807,6 +812,23 @@ const ck = check(
   { routeId: "component-spec" },
 );
 if (typeof ck.status !== "string") throw new Error("check() bad shape");
+
+// Phase B: learn.remember must write only DESIGN_AI_LEARNING_FILE.
+const smokeDir = mkdtempSync(path.join(tmpdir(), "design-ai-sdk-learn-smoke-"));
+const learningFile = path.join(smokeDir, "learning.json");
+process.env.DESIGN_AI_LEARNING_FILE = learningFile;
+try {
+  const result = learn.remember("Package smoke: prefer 8px spacing grid.", { category: "preference" });
+  if (result.entry.source !== "sdk") throw new Error("learn.remember() entry.source must be 'sdk'");
+  if (!existsSync(learningFile)) throw new Error("learn.remember() did not write DESIGN_AI_LEARNING_FILE");
+  const onDisk = JSON.parse(readFileSync(learningFile, "utf8"));
+  if (!Array.isArray(onDisk.entries) || onDisk.entries.length !== 1) {
+    throw new Error("learn.remember() did not persist exactly one entry");
+  }
+} finally {
+  rmSync(smokeDir, { recursive: true, force: true });
+  delete process.env.DESIGN_AI_LEARNING_FILE;
+}
 
 console.log("design-ai sdk smoke passed");
 """.strip()

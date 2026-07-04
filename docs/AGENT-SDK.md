@@ -75,9 +75,9 @@ Verification gates:
 - `npm run release:check` additions: packed-tarball smoke that imports `@design-ai/cli/sdk` from the installed package and exercises `route`/`search`(ranked)/`recall`, plus a registry-smoke parity check after publish.
 - `npm run release:metadata` unchanged (README stance preserved).
 
-### Phase B — optional, explicit local writes
+### Phase B — explicit local writes (shipped)
 
-Only if demand appears: opt-in adapters that mirror the CLI's local-write commands (`learn.remember`, `learn.feedback`, `check` with capture), each requiring an explicit option and writing only the local learning profile, never the network. Deferred until an adopter needs it; Phase A is read-only.
+Implemented as a single `learn` namespace export grouping three opt-in adapters that mirror the CLI's local-write commands: `learn.remember`, `learn.feedback`, and `learn.captureFromCheck` (capture from a `check()` report). Each writes only the local learning profile (`DESIGN_AI_LEARNING_FILE` / `defaultLearningFile()`), never the network — no `filePath` or `now`/timestamp option; consumers target a profile via the env var, exactly like the CLI. The 8 Phase A verbs are unchanged and stay read-only; `check()` in particular gets no capture option — capture is reached only through the separate, explicitly-named `learn.captureFromCheck`, keeping the write boundary visible at the call site. See [`SDK.md`](SDK.md#phase-b--local-writes) for the full reference.
 
 ## Integration points
 

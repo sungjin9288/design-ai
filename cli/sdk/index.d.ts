@@ -350,3 +350,86 @@ export function check(artifact: string, opts?: CheckOptions): CheckReport;
 
 /** Report the CLI package version and the plugin/corpus version. */
 export function version(): VersionReport;
+
+// ── learn.* (Phase B — local writes) ─────────────────────────────────────
+//
+// The ONLY writing verbs in the SDK. Each writes exclusively to the local
+// learning profile (`DESIGN_AI_LEARNING_FILE` / defaultLearningFile()), never
+// the network. There is no `filePath` or `now`/timestamp option on any of
+// these — target a specific profile via the `DESIGN_AI_LEARNING_FILE` env
+// var, exactly like the CLI. See docs/SDK.md "Phase B — local writes".
+
+export interface LearnRememberOptions {
+  /** Learning-profile category. Default "preference". */
+  category?: string;
+}
+
+export interface LearnFeedbackOptions {
+  /** Feedback outcome; normalized by the underlying lib (e.g. "keep" | "avoid" | "improve"). Default "improve". */
+  outcome?: string;
+  /** Learning-profile category. Default "workflow". */
+  category?: string;
+}
+
+export interface LearnCaptureOptions {
+  /** Add route-specific check requirements for this route id before capturing. */
+  routeId?: string;
+}
+
+/** A single stored learning-profile entry, as written by learn.remember/feedback/captureFromCheck. */
+export interface LearningProfileEntry {
+  id: string;
+  category: string;
+  text: string;
+  source: string;
+  createdAt: string;
+}
+
+export interface LearningProfile {
+  version: number;
+  updatedAt: string;
+  entries: LearningProfileEntry[];
+}
+
+/** Return shape of learn.remember() and learn.feedback(). */
+export interface RememberResult {
+  file: string;
+  entry: LearningProfileEntry;
+  profile: LearningProfile;
+}
+
+/** An entry skipped by learn.captureFromCheck() because it duplicates an existing profile entry. */
+export interface CaptureSkippedEntry {
+  category: string;
+  text: string;
+  source: string;
+  reason: string;
+}
+
+/** Return shape of learn.captureFromCheck() — the `captureLearningEntries` result. */
+export interface CaptureResult {
+  file: string;
+  dryRun: boolean;
+  applied: boolean;
+  source: string;
+  candidateCount: number;
+  addedCount: number;
+  skippedCount: number;
+  count: number;
+  entries: LearningProfileEntry[];
+  skipped: CaptureSkippedEntry[];
+}
+
+/**
+ * Phase B: the explicit, opt-in LOCAL-WRITE namespace. `learn.remember`,
+ * `learn.feedback`, and `learn.captureFromCheck` are the only SDK verbs that
+ * write files — each writes only the local learning profile.
+ */
+export declare const learn: {
+  /** Record a local learning-profile preference. */
+  remember(text: string, opts?: LearnRememberOptions): RememberResult;
+  /** Record feedback (keep/avoid/improve) as a local learning-profile entry. */
+  feedback(text: string, opts?: LearnFeedbackOptions): RememberResult;
+  /** Check a Markdown artifact and capture its non-pass results as local learning-profile entries. */
+  captureFromCheck(artifact: string, opts?: LearnCaptureOptions): CaptureResult;
+};

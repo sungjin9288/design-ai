@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 760 — Agent SDK Phase B (local writes, implemented, unreleased)
+
+Adds the Phase B local-write surface described in [AGENT-SDK.md](AGENT-SDK.md#phase-b--explicit-local-writes-shipped): a single `learn` namespace export grouping three explicit, opt-in local-write verbs (`learn.remember`, `learn.feedback`, `learn.captureFromCheck`). This is the only place the SDK writes files; the 8 Phase A verbs are unchanged and stay read-only — `check()` in particular gets no capture option, so its read-only contract test still holds. Landed in `main` as `cli/sdk/learn-adapter.mjs`; code-complete and gated but not yet released as an npm version.
+
+### Delivered
+- [x] `learn.remember(text, opts?)` — records a local learning-profile preference. Adapter over `rememberLearning` from `cli/lib/learn-profile.mjs`; always writes `source: "sdk"`.
+- [x] `learn.feedback(text, opts?)` — records keep/avoid/improve feedback as a learning-profile entry. Adapter over `recordLearningFeedback`; the library normalizes `outcome` and folds it into the stored entry's `text` and `source`.
+- [x] `learn.captureFromCheck(artifact, opts?)` — checks a Markdown artifact, then captures its non-pass results as learning-profile entries. Adapter over `checkArtifactContent` + `buildCheckLearningCapture` from `cli/lib/check.mjs` — the SDK equivalent of the CLI's `check --learn --yes`. Duplicate captures are skipped (`reason: "duplicate-entry-text"`).
+- [x] All three write **only** the local learning profile (`DESIGN_AI_LEARNING_FILE` / `defaultLearningFile()`), never the network; no `filePath` or `now`/timestamp option on any of them — consumers target a profile via the env var, exactly like the CLI.
+- [x] `learn` is a frozen object (`Object.freeze`); `cli/sdk/index.mjs` re-exports it alongside the 8 unchanged Phase A verbs.
+- [x] Input validation reused from `cli/sdk/validate.mjs` (`requireNonEmptyString`, `requireOptions`, `optionalString`); `routeId` validated with the same `assertKnownRouteId` helper the read-only `check` adapter uses.
+- [x] `cli/sdk/learn-adapter.test.mjs` — per-verb coverage: persistence (re-reading the written profile), `remember`'s `source: "sdk"`, `feedback`'s outcome-to-text/source mapping, `captureFromCheck`'s added/skipped results and duplicate-capture skip, and bad-input rejection. 16 new tests.
+- [x] `cli/sdk/index.test.mjs` contract test updated: the 8 read-only function verbs are pinned unchanged; `learn` is pinned as a frozen object export with exactly `["captureFromCheck", "feedback", "remember"]`, plus return-shape keys for each verb (including the full `captureLearningEntries` result shape: `file, dryRun, applied, source, candidateCount, addedCount, skippedCount, count, entries, skipped`).
+- [x] `cli/sdk/types.test.mjs` unchanged and passing (it filters to `typeof === "function"`, so the `learn` object export is naturally excluded); a new assertion added confirming `index.d.ts` declares `export declare const learn:`.
+- [x] `cli/sdk/index.d.ts` — hand-written types for `LearnRememberOptions`, `LearnFeedbackOptions`, `LearnCaptureOptions`, `LearningProfileEntry`, `LearningProfile`, `RememberResult`, `CaptureSkippedEntry`, `CaptureResult`, and the `learn` const declaration. Verified to compile under `tsc --strict` against a transient consumer (zero-toolchain stance preserved — TypeScript is not added to `package.json`).
+- [x] `docs/SDK.md` — "Phase B — local writes" section replaces the "not yet shipped" placeholder: full reference for all three verbs, options, return shapes, the `DESIGN_AI_LEARNING_FILE` target, and the write-boundary rationale.
+- [x] `docs/AGENT-SDK.md` Phase B section updated from "only if demand" to shipped.
+- [x] `npm test` (563/563), `npm run audit` (8/8), `npm run release:metadata` all pass.
+
+### Remaining
+- [ ] Release decision: bundle Phase B into the next npm version alongside or after Phase 759's TypeScript declarations.
+- [ ] Optional follow-up: extend the packed-tarball SDK smoke (`tools/audit/package-smoke.py`) to exercise `learn.remember` against a temp `DESIGN_AI_LEARNING_FILE`.
+
 ## Phase 759 — Agent SDK TypeScript declarations (implemented, unreleased)
 
 Ships hand-written type declarations for the eight SDK verbs so TypeScript and editor tooling resolve `@design-ai/cli/sdk` with full types — no `@types` package, no build step (the `.d.ts` is maintained by hand to preserve the zero-toolchain stance). Landed in `main` as `cli/sdk/index.d.ts`; additive (types only), pending bundling into the next npm version.
@@ -32,7 +55,7 @@ Ships the Agent SDK Phase A work (Phase 757) as an npm version: the curated, sem
 - design-ai's routing, prompt/pack generation, ranked search, recall, and artifact checks become plain importable functions for agent runtimes, build scripts, and custom tools — deterministic, in-process, zero-dependency — behind a semver-stable contract that insulates callers from internal `cli/lib` refactors.
 
 ### What's still ahead
-- Phase B explicit local-write adapters (`learn.remember`/`feedback`, capture) — deferred until an adopter needs them.
+- Phase B explicit local-write adapters (`learn.remember`/`feedback`, capture) — implemented and landed in `main` (see Phase 760); pending release.
 - Hand-written `cli/sdk/index.d.ts` TypeScript declarations shipped after this release (see Phase 759).
 
 ## Phase 757 — Agent SDK (Phase A implemented, unreleased)

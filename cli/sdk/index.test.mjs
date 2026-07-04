@@ -1,13 +1,18 @@
-// SDK contract test: pins the 8 exported names and return-shape key sets.
-// This is the semver anchor described in docs/AGENT-SDK.md — if names or
-// top-level keys drift, this test must fail.
+// SDK contract test: pins the 8 read-only function verbs, plus the `learn`
+// namespace object (Phase B) and its 3 write verbs. This is the semver
+// anchor described in docs/AGENT-SDK.md — if names or top-level keys drift,
+// this test must fail.
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 import * as sdk from "./index.mjs";
+import { withLearningEnv } from "../lib/learn-test-support.mjs";
 
-const EXPECTED_EXPORT_NAMES = [
+const EXPECTED_FUNCTION_EXPORT_NAMES = [
   "check",
   "pack",
   "prompt",
@@ -18,13 +23,98 @@ const EXPECTED_EXPORT_NAMES = [
   "version",
 ].sort();
 
+const EXPECTED_LEARN_VERB_NAMES = ["captureFromCheck", "feedback", "remember"].sort();
+
 const BRIEF = "Spec a Button component API with variants, props, and keyboard accessibility";
 
-test("SDK exports exactly the 8 Phase A verbs", () => {
+test("SDK exports exactly the 8 Phase A read-only function verbs", () => {
   const exportedNames = Object.keys(sdk).sort();
-  assert.deepEqual(exportedNames, EXPECTED_EXPORT_NAMES);
-  for (const name of exportedNames) {
+  assert.deepEqual(exportedNames, [...EXPECTED_FUNCTION_EXPORT_NAMES, "learn"].sort());
+  for (const name of EXPECTED_FUNCTION_EXPORT_NAMES) {
     assert.equal(typeof sdk[name], "function", `${name} must be a function`);
+  }
+});
+
+test("SDK exports a frozen `learn` namespace with exactly the 3 Phase B write verbs", () => {
+  assert.equal(typeof sdk.learn, "object");
+  assert.ok(sdk.learn !== null);
+  assert.equal(Object.isFrozen(sdk.learn), true);
+  assert.deepEqual(Object.keys(sdk.learn).sort(), EXPECTED_LEARN_VERB_NAMES);
+  for (const name of EXPECTED_LEARN_VERB_NAMES) {
+    assert.equal(typeof sdk.learn[name], "function", `learn.${name} must be a function`);
+  }
+});
+
+test("learn.remember() return-shape keys are pinned", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "design-ai-sdk-learn-contract-"));
+  const learningFile = path.join(dir, "learning.json");
+  const usageFile = path.join(dir, "learning.usage.json");
+  try {
+    return withLearningEnv({ learningFile, usageFile }, () => {
+      const result = sdk.learn.remember("Prefer 8px spacing grid for cards.");
+      assert.deepEqual(Object.keys(result).sort(), ["entry", "file", "profile"].sort());
+      assert.deepEqual(Object.keys(result.entry).sort(), [
+        "category",
+        "createdAt",
+        "id",
+        "source",
+        "text",
+      ].sort());
+      assert.deepEqual(Object.keys(result.profile).sort(), ["entries", "updatedAt", "version"].sort());
+    });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("learn.feedback() return-shape keys are pinned", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "design-ai-sdk-learn-contract-"));
+  const learningFile = path.join(dir, "learning.json");
+  const usageFile = path.join(dir, "learning.usage.json");
+  try {
+    return withLearningEnv({ learningFile, usageFile }, () => {
+      const result = sdk.learn.feedback("Avoid dense tables on mobile.", { outcome: "avoid" });
+      assert.deepEqual(Object.keys(result).sort(), ["entry", "file", "profile"].sort());
+      assert.deepEqual(Object.keys(result.entry).sort(), [
+        "category",
+        "createdAt",
+        "id",
+        "source",
+        "text",
+      ].sort());
+    });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("learn.captureFromCheck() return-shape keys are pinned", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "design-ai-sdk-learn-contract-"));
+  const learningFile = path.join(dir, "learning.json");
+  const usageFile = path.join(dir, "learning.usage.json");
+  const artifact = [
+    "# Title",
+    "",
+    "Short artifact without accessibility or responsive notes.",
+  ].join("\n");
+  try {
+    return withLearningEnv({ learningFile, usageFile }, () => {
+      const result = sdk.learn.captureFromCheck(artifact);
+      assert.deepEqual(Object.keys(result).sort(), [
+        "addedCount",
+        "applied",
+        "candidateCount",
+        "count",
+        "dryRun",
+        "entries",
+        "file",
+        "skipped",
+        "skippedCount",
+        "source",
+      ].sort());
+    });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
   }
 });
 

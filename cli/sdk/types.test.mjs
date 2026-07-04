@@ -37,3 +37,7 @@ test("every runtime verb has at least one function declaration", () => {
     assert.ok(declared.has(name), `index.d.ts is missing a declaration for ${name}()`);
   }
 });
+
+test("index.d.ts declares the `learn` namespace const (Phase B)", () => {
+  assert.match(dts, /export declare const learn:/, "index.d.ts must declare `learn` as a const object");
+});
