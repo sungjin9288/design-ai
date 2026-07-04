@@ -1,0 +1,352 @@
+// Type declarations for the design-ai Agent SDK — Phase A (read-only).
+// Hand-written, zero-build: no TypeScript toolchain is required to produce or
+// ship these. They mirror the runtime shapes exercised by cli/sdk/index.test.mjs
+// (the semver anchor). The eight exported names and their return-shape top-level
+// keys are the stable, semver-covered surface; deeper nested shapes follow the
+// same JSON the CLI's `--json` mode emits.
+//
+// Import: `import { route, search } from "@design-ai/cli/sdk";`
+
+// ── Shared building blocks ────────────────────────────────────────────────
+
+/** A curated reference (skill/agent/knowledge/command) and whether it exists on disk. */
+export interface RouteReference {
+  path: string;
+  exists: boolean;
+}
+
+/** One reference-coverage tally (available vs total) within a route explanation. */
+export interface CoverageCount {
+  available: number;
+  total: number;
+}
+
+export interface ReferenceCoverage {
+  command: CoverageCount;
+  skills: CoverageCount;
+  agents: CoverageCount;
+  knowledge: CoverageCount;
+  total: CoverageCount;
+}
+
+export interface ScoreBreakdownEntry {
+  label: string;
+  value: number;
+}
+
+export interface RouteExplanation {
+  summary: string;
+  scoreBreakdown: ScoreBreakdownEntry[];
+  referenceCoverage: ReferenceCoverage;
+  missingReferences: string[];
+}
+
+/** Advisory brief-relevant knowledge recalled by the shared lexical scorer. */
+export interface RelatedKnowledge {
+  id: string;
+  score: number;
+  matchedTokens: string[];
+}
+
+export type RouteConfidence = "high" | "medium" | "low" | "catalog" | "forced";
+
+export interface RouteResult {
+  id: string;
+  label: string;
+  score: number;
+  confidence: RouteConfidence;
+  matchedKeywords: string[];
+  command: RouteReference | null;
+  skills: RouteReference[];
+  agents: RouteReference[];
+  knowledge: RouteReference[];
+  keywords: string[];
+  explanation: RouteExplanation;
+  /** Present only when `route(brief, { explain: true })` is requested. */
+  relatedKnowledge?: RelatedKnowledge[];
+  /** Present only when a route was forced via `routeId`. */
+  forced?: boolean;
+  /** Present only when the fallback route was used. */
+  fallback?: boolean;
+}
+
+export interface RouteCatalog {
+  version: string;
+  routes: RouteResult[];
+}
+
+// ── prompt / pack ─────────────────────────────────────────────────────────
+
+export interface ReferenceExample {
+  relPath: string;
+  title: string;
+  category: string;
+  score: number;
+  preview: string;
+}
+
+/** A single recalled learning-profile entry. */
+export interface LearningRecallEntry {
+  id: string;
+  category: string;
+  score: number;
+  matchedTokens: string[];
+  text: string;
+}
+
+/** A single recalled shipped-corpus knowledge entry. */
+export interface CorpusRecallEntry {
+  id: string;
+  score: number;
+  matchedTokens: string[];
+}
+
+/** Recall block embedded in a prompt plan when `withRecall: true`. */
+export interface PromptRecall {
+  query: string;
+  mode: string;
+  candidateCount: number;
+  selectedCount: number;
+  selected: CorpusRecallEntry[];
+  markdown: string;
+}
+
+/** A stored learning-profile entry, as surfaced in a prompt plan's learning context. */
+export interface LearningEntry {
+  id: string;
+  category: string;
+  text: string;
+  source: string;
+  createdAt: string;
+}
+
+export interface LearningSelection {
+  mode: string;
+  query: string;
+  candidateCount: number;
+  matchedCount: number;
+  queryTokenCount: number;
+  fallbackEnabled: boolean;
+  selectedCount: number;
+  fallbackCount: number;
+  selected: LearningRecallEntry[];
+}
+
+export interface LearningAuditSummary {
+  status: string;
+  failures: number;
+  warnings: number;
+}
+
+/** Learning context embedded in a prompt plan when `withLearning: true`. */
+export interface LearningContext {
+  file: string;
+  category: string;
+  limit: number;
+  query: string;
+  selection: LearningSelection;
+  entries: LearningEntry[];
+  empty: boolean;
+  auditSummary: LearningAuditSummary;
+  markdown: string;
+}
+
+export interface PromptPlan {
+  brief: string;
+  version: string;
+  route: RouteResult;
+  slashCommand: string;
+  referenceExamples: ReferenceExample[];
+  filesToRead: string[];
+  checklist: string[];
+  qualityCommand: string;
+  prompt: string;
+  /** Present only when `prompt(brief, { withLearning: true })` is requested. */
+  learningContext?: LearningContext;
+  /** Present only when `prompt(brief, { withRecall: true })` is requested. */
+  recall?: PromptRecall;
+}
+
+export interface PackSummary {
+  totalFiles: number;
+  includedFiles: number;
+  truncatedFiles: number;
+  missingFiles: number;
+  usedBytes: number;
+  maxBytes: number;
+  remainingBytes: number;
+  usedRatio: number;
+  status: string;
+}
+
+export interface PackFile {
+  path: string;
+  bytes: number;
+  includedBytes: number;
+  included: boolean;
+  truncated: boolean;
+  content: string;
+}
+
+export interface Pack {
+  brief: string;
+  version: string;
+  maxBytes: number;
+  usedBytes: number;
+  summary: PackSummary;
+  warnings: string[];
+  plan: PromptPlan;
+  files: PackFile[];
+  markdown: string;
+}
+
+// ── search ────────────────────────────────────────────────────────────────
+
+/** A plain line hit (default `search`). */
+export interface SearchHit {
+  file: string;
+  lineNumber: number;
+  relPath: string;
+  preview: string;
+}
+
+/** A ranked hit (`search(query, { ranked: true })`) with a BM25 score. */
+export interface RankedSearchHit {
+  relPath: string;
+  file: string;
+  score: number;
+  matchedTokens: string[];
+  preview: string;
+}
+
+// ── recall ────────────────────────────────────────────────────────────────
+
+export interface RecallCorpus {
+  candidateCount: number;
+  selectedCount: number;
+  selected: CorpusRecallEntry[];
+}
+
+export interface RecallLearning {
+  mode: string;
+  candidateCount: number;
+  selectedCount: number;
+  selected: LearningRecallEntry[];
+}
+
+export interface RecallResult {
+  corpus: RecallCorpus;
+  learning: RecallLearning;
+}
+
+// ── check ─────────────────────────────────────────────────────────────────
+
+export type CheckLevel = "pass" | "warn" | "fail";
+
+export interface CheckResult {
+  id: string;
+  title: string;
+  level: CheckLevel;
+  passed: boolean;
+  message: string;
+  /** Present only when the check has supporting evidence. */
+  evidence?: string;
+}
+
+export interface CheckReport {
+  filePath: string;
+  /** Present only when a `routeId` was supplied. */
+  routeId?: string;
+  status: CheckLevel;
+  passes: number;
+  warnings: number;
+  failures: number;
+  total: number;
+  /** Human-readable ratio, e.g. "6/8". */
+  score: string;
+  results: CheckResult[];
+}
+
+export interface VersionReport {
+  cli: string;
+  corpus: string;
+}
+
+// ── Option objects ────────────────────────────────────────────────────────
+
+export interface RouteOptions {
+  /** Max routes to return. Default 3, range 1–10. */
+  limit?: number;
+  /** Include the advisory explanation + related-knowledge section. Default false. */
+  explain?: boolean;
+}
+
+export interface PromptOptions {
+  /** Force a specific route id instead of scoring the brief. */
+  routeId?: string;
+  /** Include local learning-profile guidance (read-only; never recorded). Default false. */
+  withLearning?: boolean;
+  /** Restrict learning guidance to a category. */
+  learningCategory?: string;
+  /** Max learning entries. Range 1–100. */
+  learningLimit?: number;
+  /** Include a brief-relevant corpus recall block. Default false. */
+  withRecall?: boolean;
+  /** Max recall entries. Range 1–20. */
+  recallLimit?: number;
+}
+
+export interface PackOptions extends PromptOptions {
+  /** Byte budget for the bundled context files. Default 120000, range 1000–1000000. */
+  maxBytes?: number;
+}
+
+export interface SearchOptions {
+  /** Restrict to one corpus directory (must be a known search dir). */
+  dir?: string;
+  /** Max hits. Default 20, range 1–500. */
+  limit?: number;
+  /** Return ranked BM25 hits (score + matchedTokens) instead of plain line hits. */
+  ranked?: boolean;
+}
+
+export interface RecallOptions {
+  /** Max entries per side (corpus/learning). Range 1–20. */
+  limit?: number;
+  /** Restrict learning recall to a category. */
+  category?: string;
+}
+
+export interface CheckOptions {
+  /** Apply route-specific requirements for this route id. */
+  routeId?: string;
+  /** Validated for parity with the CLI; has no effect in-process (no exit code). */
+  strict?: boolean;
+}
+
+// ── The eight Phase A verbs ─────────────────────────────────────────────────
+
+/** Recommend the best route(s), commands, skills, and knowledge for a brief. */
+export function route(brief: string, opts?: RouteOptions): RouteResult[];
+
+/** List the full route catalog independent of any brief. */
+export function routes(): RouteCatalog;
+
+/** Build a ready-to-use agent prompt plan from a brief. */
+export function prompt(brief: string, opts?: PromptOptions): PromptPlan;
+
+/** Build a prompt plan plus a bounded context-file bundle from a brief. */
+export function pack(brief: string, opts?: PackOptions): Pack;
+
+/** Search the local corpus. Returns ranked hits when `ranked: true`, else plain line hits. */
+export function search(query: string, opts: SearchOptions & { ranked: true }): RankedSearchHit[];
+export function search(query: string, opts?: SearchOptions): SearchHit[];
+
+/** Recall brief-relevant corpus knowledge and local learning-profile entries. */
+export function recall(query: string, opts?: RecallOptions): RecallResult;
+
+/** Check a Markdown artifact's content for grounding, accessibility, and route requirements. */
+export function check(artifact: string, opts?: CheckOptions): CheckReport;
+
+/** Report the CLI package version and the plugin/corpus version. */
+export function version(): VersionReport;

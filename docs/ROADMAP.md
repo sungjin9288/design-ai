@@ -1,5 +1,18 @@
 # Roadmap
 
+## Phase 759 — Agent SDK TypeScript declarations (implemented, unreleased)
+
+Ships hand-written type declarations for the eight SDK verbs so TypeScript and editor tooling resolve `@design-ai/cli/sdk` with full types — no `@types` package, no build step (the `.d.ts` is maintained by hand to preserve the zero-toolchain stance). Landed in `main` as `cli/sdk/index.d.ts`; additive (types only), pending bundling into the next npm version.
+
+### Delivered
+- [x] `cli/sdk/index.d.ts` — precise signatures + return interfaces for all eight verbs (incl. `search` ranked/plain overloads, the `RouteConfidence` union, and optional `learningContext`/`recall`/`relatedKnowledge` fields), derived from the runtime shapes the contract test pins.
+- [x] `exports` `types` condition (`"./sdk": { "types": …, "default": … }`) so the subpath resolves declarations under `moduleResolution: node16`/`nodenext`/`bundler`.
+- [x] `cli/sdk/types.test.mjs` — zero-dependency guard asserting the `.d.ts` declares exactly the runtime-exported verbs (drift anchor). Declarations independently verified to compile under `tsc --strict` against a real consumer.
+- [x] `docs/SDK.md` TypeScript section.
+
+### Remaining
+- [ ] Release: bundle into the next npm version (with Phase B, or standalone).
+
 ## Phase 758 — Agent SDK Phase A Release (v4.59.0) ✓ ready
 
 Ships the Agent SDK Phase A work (Phase 757) as an npm version: the curated, semver-stable `@design-ai/cli/sdk` surface — eight read-only adapter verbs (`route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) over the same `cli/lib` functions the CLI and MCP already call. No new capabilities, no runtime dependencies, no network, no telemetry; read-only, deterministic, backward-compatible.
@@ -19,7 +32,8 @@ Ships the Agent SDK Phase A work (Phase 757) as an npm version: the curated, sem
 - design-ai's routing, prompt/pack generation, ranked search, recall, and artifact checks become plain importable functions for agent runtimes, build scripts, and custom tools — deterministic, in-process, zero-dependency — behind a semver-stable contract that insulates callers from internal `cli/lib` refactors.
 
 ### What's still ahead
-- Optional `cli/sdk/index.d.ts` hand-written type declarations (zero-build), and Phase B explicit local-write adapters — both deferred until an adopter needs them.
+- Phase B explicit local-write adapters (`learn.remember`/`feedback`, capture) — deferred until an adopter needs them.
+- Hand-written `cli/sdk/index.d.ts` TypeScript declarations shipped after this release (see Phase 759).
 
 ## Phase 757 — Agent SDK (Phase A implemented, unreleased)
 

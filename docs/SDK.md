@@ -20,6 +20,16 @@ import { route, prompt, pack, search, recall, check, routes, version } from "@de
 
 Only the `./sdk` subpath is exported — `import "@design-ai/cli"` (the bare package root) is intentionally not exported, so importing the SDK is always an explicit `@design-ai/cli/sdk` import. `cli/lib/*` is internal and unstable; do not import it directly.
 
+### TypeScript
+
+Hand-written type declarations ship with the package at `cli/sdk/index.d.ts` and are wired through the `exports` `types` condition, so TypeScript and editors resolve them automatically for `@design-ai/cli/sdk` — no `@types` install, and no build step on our side (the declarations are maintained by hand to preserve the zero-toolchain stance). Use `moduleResolution: node16`/`nodenext` (or `bundler`) so the subpath `types` condition is honored. All exported types (`RouteResult`, `PromptPlan`, `Pack`, `SearchHit`, `RankedSearchHit`, `RecallResult`, `CheckReport`, option interfaces, …) are importable:
+
+```ts
+import { route, type RouteResult, type SearchOptions } from "@design-ai/cli/sdk";
+```
+
+A `node --test` guard (`cli/sdk/types.test.mjs`) asserts the declaration file stays in exact sync with the runtime exports.
+
 ## Phase A: read-only
 
 Every verb below is a pure, read-only adapter:
@@ -57,7 +67,7 @@ prompt(brief: string, opts?: {
   learningLimit?: number,
   withRecall?: boolean,
   recallLimit?: number,
-}): PromptPlan | null
+}): PromptPlan
 ```
 
 - `routeId` — force a route id instead of scoring the brief.
