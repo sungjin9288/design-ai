@@ -1,5 +1,17 @@
 # Roadmap
 
+## Phase 757 — Agent SDK (planning)
+
+Opens the Agent SDK phase — the fast-follow chosen in [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md), unblocked now that the recall interface has been stable across two releases (v4.57.0/v4.58.0). Scope, the stable surface, packaging, and the stability contract are defined in [AGENT-SDK.md](AGENT-SDK.md). No new capabilities, no runtime dependencies, no network, no telemetry; the SDK is a thin, semver-stable adapter over the same `cli/lib` functions the CLI and MCP already call.
+
+### Plan
+- [ ] Phase A: read-only SDK core at `@design-ai/cli/sdk` — `route`, `prompt`, `pack`, `search` (incl. ranked), `recall`, `check`, `routes`, `version` as pure adapters with stable signatures; add the `exports` map; no file writes / no network.
+- [ ] Phase A: unit coverage per adapter (signature, defaults, return-shape keys, determinism, CLI `--json` parity) plus an SDK contract test pinning exported names and return-shape keys (the semver anchor).
+- [ ] Phase A: `release:check` packed-tarball smoke that imports `@design-ai/cli/sdk` from the installed package and exercises `route`/`search` ranked/`recall`, plus registry-smoke parity after publish.
+- [ ] Phase A: `docs/SDK.md` public reference (or promote AGENT-SDK.md from draft) and a README install-table "SDK" row.
+- [ ] Answer the open questions in [AGENT-SDK.md](AGENT-SDK.md) (bare-root export, TS types, usage-sidecar writes, `check` placement) during the Phase A implementation review.
+- [ ] Phase B (optional, after Phase A review): explicit local-write adapters (`learn.remember`/`feedback`, capture) — deferred until an adopter needs them.
+
 ## Phase 756 — Retrieval Across Surfaces and Corpus Depth Release (v4.58.0) ✓ ready
 
 Groups the post-v4.57.0 retrieval completion and corpus work into one release: `route --explain` related-knowledge enrichment (retrieval now spans every surface), recall exclusion of generated index/meta files, the async-control and Korean B2B density knowledge files, and the registry-smoke assertion fix that realigns the live post-publish smoke with the shared scorer. Defaults are unchanged; the release is additive and backward-compatible.
