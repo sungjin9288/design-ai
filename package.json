@@ -7,11 +7,15 @@
     "design-ai-mcp": "cli/bin/design-ai-mcp.mjs"
   },
   "type": "module",
+  "exports": {
+    "./sdk": "./cli/sdk/index.mjs",
+    "./package.json": "./package.json"
+  },
   "engines": {
     "node": ">=18"
   },
   "scripts": {
-    "test": "node --test cli/lib/*.test.mjs",
+    "test": "node --test cli/lib/*.test.mjs cli/sdk/*.test.mjs",
     "audit": "python3 -B tools/audit/run-all.py",
     "audit:strict": "python3 -B tools/audit/run-all.py --strict",
     "audit:runner:self-test": "python3 -B tools/audit/run-all.py --self-test",

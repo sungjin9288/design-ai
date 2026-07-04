@@ -88,6 +88,7 @@ CLI 명령어: `design-ai install [--json]`, `update [--dry-run] [--json]`, `uni
 | **Cursor** | 이 폴더를 열고 `AGENTS.md`를 `.cursorrules`로 심볼릭 링크하거나 복사해요. [워크스루](docs/integrations/cursor-walkthrough.md). |
 | **Aider** | `AGENTS.md`를 시스템 프롬프트로 전달해요. [워크스루](docs/integrations/aider-walkthrough.md). |
 | **Anthropic / OpenAI SDK** | 관련 스킬 `PLAYBOOK.md` 파일을 프롬프트에 포함시켜요. [워크스루](docs/integrations/sdk-walkthrough.md). |
+| **Node.js / Agent SDK** | `import { route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk"` — CLI 셸 실행이나 MCP 서버 없이 design-ai의 결정적 기능을 함수로 바로 호출해요. 읽기 전용(Phase A). [SDK 레퍼런스](docs/SDK.md). |
 | **일반 프롬프트** | 어떤 `skills/*/PLAYBOOK.md` 본문이든 붙여넣으세요 — 각각 자기 완결적이에요. |
 
 에이전트별 설치 방법은 [`docs/USING.md`](docs/USING.md)를, 구체적인 사용 예시는 위 워크스루 링크를 참고하세요.

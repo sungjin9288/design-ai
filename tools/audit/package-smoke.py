@@ -763,6 +763,63 @@ def assert_version_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path 
     assert_version_json(result.stdout, context=context, cmd=cmd)
 
 
+# Phase A Agent SDK packed-tarball smoke (docs/AGENT-SDK.md, docs/SDK.md): imports
+# `@design-ai/cli/sdk` from the installed package (proving the package.json
+# "exports" map resolves) and exercises route/search(ranked)/recall, asserting
+# each call is deterministic (same input -> same JSON-serialized output) and
+# that Phase A's read-only contract holds (prompt/pack never include
+# learningUsage). This is a Node script, not a design-ai CLI invocation, so it
+# is run directly rather than through npm_exec_cmd/design-ai bin helpers.
+SDK_SMOKE_SCRIPT = """
+import { check, pack, prompt, recall, route, routes, search, version } from "@design-ai/cli/sdk";
+
+const brief = "Spec a Button component API with variants, props, and keyboard accessibility";
+
+const r1 = route(brief, { limit: 1 });
+const r2 = route(brief, { limit: 1 });
+if (JSON.stringify(r1) !== JSON.stringify(r2)) throw new Error("route() not deterministic");
+if (r1[0].id !== "component-spec") throw new Error(`unexpected route id: ${r1[0].id}`);
+
+const s1 = search("accessibility", { ranked: true, limit: 3 });
+const s2 = search("accessibility", { ranked: true, limit: 3 });
+if (JSON.stringify(s1) !== JSON.stringify(s2)) throw new Error("search() not deterministic");
+if (s1.length === 0) throw new Error("search() returned no hits");
+
+const rec1 = recall("keyboard accessibility button", { limit: 2 });
+const rec2 = recall("keyboard accessibility button", { limit: 2 });
+if (JSON.stringify(rec1) !== JSON.stringify(rec2)) throw new Error("recall() not deterministic");
+if (!rec1.corpus || !rec1.learning) throw new Error("recall() missing corpus/learning");
+
+const v = version();
+if (typeof v.cli !== "string" || typeof v.corpus !== "string") throw new Error("version() bad shape");
+
+const rc = routes();
+if (!Array.isArray(rc.routes) || rc.routes.length === 0) throw new Error("routes() bad shape");
+
+const p = prompt(brief, { routeId: "component-spec" });
+if (Object.hasOwn(p, "learningUsage")) throw new Error("prompt() must not include learningUsage in Phase A");
+
+const pk = pack(brief, { routeId: "component-spec", maxBytes: 20000 });
+if (Object.hasOwn(pk, "learningUsage")) throw new Error("pack() must not include learningUsage in Phase A");
+
+const ck = check(
+  "# T\\n\\nAnatomy variants API contrast 4.5:1 keyboard focus screen reader aria- responsive mobile desktop.",
+  { routeId: "component-spec" },
+);
+if (typeof ck.status !== "string") throw new Error("check() bad shape");
+
+console.log("design-ai sdk smoke passed");
+""".strip()
+
+
+def assert_sdk_smoke(*, cwd: Path, env: dict[str, str], context: str) -> None:
+    result = run_plain(["node", "--input-type=module", "-e", SDK_SMOKE_SCRIPT], cwd=cwd, env=env)
+    if result.returncode != 0:
+        raise SystemExit(f"{context} failed (exit {result.returncode})")
+    if "design-ai sdk smoke passed" not in result.stdout:
+        raise SystemExit(f"{context}: expected success marker missing from output")
+
+
 def assert_workspace_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_workspace_json(result.stdout, context=context, cmd=cmd)
@@ -20238,6 +20295,11 @@ def smoke_tarball(tarball: Path) -> None:
             [str(bin_path), "version", "--json"],
             env=smoke_env,
             context="package smoke installed bin version JSON",
+        )
+        assert_sdk_smoke(
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed Agent SDK (@design-ai/cli/sdk)",
         )
         assert_design_ai_mcp_protocol_smoke(
             [str(mcp_bin_path)],
