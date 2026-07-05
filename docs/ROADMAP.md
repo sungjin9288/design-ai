@@ -1,5 +1,20 @@
 # Roadmap
 
+## Phase 762 — Ranked-search eval checkpoint (FU-3, implemented, unreleased)
+
+Closes the last open follow-up from the AI-learning Phase A review ([AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md), FU-3): `design-ai search` gains `--eval-template` / `--eval [--strict]` checkpoint modes mirroring the route/prompt/pack/learn eval pattern, run through the shipped ranked (BM25) search path. This is the standing evidence artifact for any future decision to promote `--ranked` to the default; with FU-1/FU-2/FU-4 already annotated done, all four Phase A follow-ups are now closed.
+
+### Delivered
+- [x] `cli/lib/search-eval.mjs` — `SEARCH_EVAL_VERSION = 1`, `buildSearchEvalTemplate()`, `searchEvalReport()` over `rankedSearchCorpus`; route-style payload normalization and error messages. Case schema: `id`, `query`, optional `dirs`/`limit`, assertions `expectRelPathIn` / `minHits` / `matchedTokenIncludes`.
+- [x] Default template includes the FU-1 Korean particle-form regression cases (`버튼`, `버튼을`, `접근성이`) plus three English cases — so the eval doubles as the retrieval-level Hangul-bigram regression. All six verified passing against the shipped corpus (`--strict` exit 0).
+- [x] CLI wiring in `cli/lib/search.mjs` / `cli/commands/search.mjs` (`--eval-template`, `--eval`, `--strict`, `--from-file`, `--stdin`, mutual-exclusivity validation), help topic usage line, and the shared `smoke_assertions.py` pins (4 spots — shared constants, so both package and registry smokes stay aligned).
+- [x] Tests: `search-eval.test.mjs` (template, pass/warn/fail reports, malformed payloads) and `search-command.test.mjs` (CLI-level, strict exit semantics). 578/578 total.
+- [x] `docs/AI-LEARNING-PHASE2.md` FU-3 and FU-4 done annotations.
+
+### Remaining
+- [ ] Release: bundle into the next npm version.
+- [ ] The `--ranked` default-promotion decision itself — a future, separate call that this checkpoint now makes evidence-backed.
+
 ## Phase 761 — Agent SDK types + Phase B Release (v4.60.0) ✓ ready
 
 Ships the Agent SDK TypeScript declarations (Phase 759) and the `learn.*` local-write namespace (Phase 760) together as one npm version. Both are additive and backward-compatible: the eight Phase A verbs stay read-only and unchanged, and TypeScript types resolve automatically for `@design-ai/cli/sdk` with no build step on either side.
