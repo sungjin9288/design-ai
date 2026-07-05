@@ -118,8 +118,17 @@ Cross-check any surface work against the release gate: `npm run audit` (8/8, lin
 
 ## Decision record
 
-- **Status:** proposed — awaiting maintainer sign-off
-- **Date:** 2026-07-03
+- **Status:** accepted and executed — both recommended surfaces shipped
+- **Date:** 2026-07-03 (proposed) / 2026-07-05 (executed)
 - **Deciders:** maintainer
 - **Supersedes:** none
 - **Related:** [`PRODUCT-READINESS.md`](PRODUCT-READINESS.md), [`external-status.md`](external-status.md), `AI-LEARNING-PHASE2.md`
+
+### Outcome (2026-07-05)
+
+The recommendation was executed in order and both surfaces are live:
+
+- **CLI deepening** shipped as v4.57.0 (local retrieval memory: `index`, `search --ranked`, `--with-recall`, `learn --recall`, opt-in embedding rerank) and v4.58.0 (`route --explain` related knowledge, recall quality, corpus depth). The dogfood friction this document identified — missing corpus and missing flags — is retired; retrieval spans every CLI/MCP surface.
+- **Agent SDK** followed exactly on the stated revisit trigger (recall interface stable across two releases): design doc [`AGENT-SDK.md`](AGENT-SDK.md), then v4.59.0 (Phase A — read-only `@design-ai/cli/sdk`, 8 verbs) and v4.60.0 (TypeScript declarations + the opt-in `learn.*` local-write namespace).
+
+The deferred surfaces (VS Code deepening, Web UI, Figma plugin) remain deferred with the same revisit triggers. The next-surface question is open again; re-evaluate against the criteria above when the next planning window opens, factoring in that the SDK now also serves programmatic adopters.
