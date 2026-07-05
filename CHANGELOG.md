@@ -2,6 +2,32 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.60.0 — Agent SDK types and local-write namespace (2026-07)
+
+Extends the Agent SDK (`@design-ai/cli/sdk`) two ways, both additive and backward-compatible. First, hand-written TypeScript declarations now ship with the package, so TypeScript and editors resolve `@design-ai/cli/sdk` with full types — no `@types` install and no build step. Second, an opt-in `learn.*` namespace adds the SDK's first local-write verbs, keeping the eight Phase A verbs read-only and unchanged.
+
+### Added
+- `cli/sdk/index.d.ts` — hand-written type declarations for all eight read-only verbs (precise signatures and return interfaces, including `search` ranked/plain overloads, the `RouteConfidence` union, and optional `learningContext`/`recall`/`relatedKnowledge` fields) plus the `learn` namespace. Wired through an `exports` `types` condition, so `moduleResolution: node16`/`nodenext`/`bundler` consumers get types automatically. A `node --test` guard (`cli/sdk/types.test.mjs`) keeps the declarations in exact sync with the runtime exports; the declarations are verified to compile under `tsc --strict`.
+- `learn` — a frozen namespace grouping the SDK's only writing verbs (Phase B): `learn.remember(text, { category })`, `learn.feedback(text, { outcome, category })`, and `learn.captureFromCheck(artifact, { routeId })`. Each writes only the local learning profile (`DESIGN_AI_LEARNING_FILE`), never the network, mirroring the CLI's `learn remember` / `learn feedback` / `check --learn` write paths. There is no `filePath` or timestamp option — consumers target a profile via the env var, exactly like the CLI.
+
+### Changed
+- The eight Phase A verbs (`route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) remain read-only and unchanged. `check` in particular stays read-only: capture lives in `learn.captureFromCheck`, never as a `check` option. The SDK contract test (`cli/sdk/index.test.mjs`) now pins both the eight read-only function verbs and the frozen `learn` namespace with its three verbs and their return-shape keys.
+- `tools/audit/package-smoke.py` now also exercises `learn.remember` from the installed tarball against a temp `DESIGN_AI_LEARNING_FILE`, asserting the write.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `npm run release:metadata`.
+- `git diff --check`.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.59.0 → 4.60.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- TypeScript consumers get first-class types for the whole SDK with zero toolchain cost on either side, and agents can now record design preferences, feedback, and check-derived learnings through a single explicit, opt-in write namespace — while every read-only verb keeps its no-write guarantee.
+
 ## v4.59.0 — Agent SDK Phase A (2026-07)
 
 Adds a curated, semver-stable programmatic surface — `@design-ai/cli/sdk` — so an external Node.js program can call design-ai's deterministic design verbs as importable functions, without shelling out to the CLI or spawning the MCP server. The SDK is a thin adapter over the same `cli/lib` functions the CLI and MCP already call, so no design behavior changes. Phase A is read-only: no file writes, no network, no runtime dependencies. All additions are additive and backward-compatible.

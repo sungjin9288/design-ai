@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 761 — Agent SDK types + Phase B Release (v4.60.0) ✓ ready
+
+Ships the Agent SDK TypeScript declarations (Phase 759) and the `learn.*` local-write namespace (Phase 760) together as one npm version. Both are additive and backward-compatible: the eight Phase A verbs stay read-only and unchanged, and TypeScript types resolve automatically for `@design-ai/cli/sdk` with no build step on either side.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check` (unit tests incl. SDK type-sync guard and `learn.*` write tests, strict audits, whitespace, package contents, release metadata, release self-tests, packed-tarball smoke that imports `@design-ai/cli/sdk` and exercises `learn.remember`).
+- `npm run release:metadata`.
+- `git diff --check`.
+- The declarations compile under `tsc --strict` against a real consumer (transient check; TypeScript is not a package dependency).
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.59.0 → 4.60.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- TypeScript/editor tooling resolves the full SDK surface (verbs, option interfaces, return types) with zero `@types` install and zero build step, and agents gain an explicit, opt-in `learn.*` write namespace for recording preferences, feedback, and check-derived learnings — while every read-only verb keeps its no-write guarantee.
+
+### What's still ahead
+- SDK surface is feature-complete for the planned phases; further verbs are demand-driven. Remaining roadmap work returns to other surfaces (see later phases).
+
 ## Phase 760 — Agent SDK Phase B (local writes, implemented, unreleased)
 
 Adds the Phase B local-write surface described in [AGENT-SDK.md](AGENT-SDK.md#phase-b--explicit-local-writes-shipped): a single `learn` namespace export grouping three explicit, opt-in local-write verbs (`learn.remember`, `learn.feedback`, `learn.captureFromCheck`). This is the only place the SDK writes files; the 8 Phase A verbs are unchanged and stay read-only — `check()` in particular gets no capture option, so its read-only contract test still holds. Landed in `main` as `cli/sdk/learn-adapter.mjs`; code-complete and gated but not yet released as an npm version.
