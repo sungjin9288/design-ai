@@ -7,6 +7,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 
+import { parseBriefSourceFlag } from "./brief.mjs";
 import { expectedValueMessage, unknownOptionMessage } from "./suggest.mjs";
 
 export const DEFAULT_SEARCH_DIRS = [
@@ -20,7 +21,21 @@ export const DEFAULT_SEARCH_DIRS = [
 
 const PREVIEW_LEN = 120;
 const PREVIEW_BEFORE = 50;
-const SEARCH_OPTIONS = ["-h", "--help", "--json", "--limit", "--dir", "--ranked", "--embeddings", "--provider"];
+const SEARCH_OPTIONS = [
+  "-h",
+  "--help",
+  "--json",
+  "--limit",
+  "--dir",
+  "--ranked",
+  "--embeddings",
+  "--provider",
+  "--eval-template",
+  "--eval",
+  "--strict",
+  "--from-file",
+  "--stdin",
+];
 
 function exists(p) {
   try {
@@ -118,11 +133,17 @@ export function parseSearchArgs(args) {
     ranked: false,
     embeddings: false,
     provider: "",
+    evalTemplate: false,
+    eval: false,
+    strict: false,
+    fromFile: "",
+    stdin: false,
     help: false,
   };
 
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
+    out.index = i;
     if (arg === "-h" || arg === "--help") {
       out.help = true;
     } else if (arg === "--json") {
@@ -131,9 +152,17 @@ export function parseSearchArgs(args) {
       out.ranked = true;
     } else if (arg === "--embeddings") {
       out.embeddings = true;
+    } else if (arg === "--eval-template") {
+      out.evalTemplate = true;
+    } else if (arg === "--eval") {
+      out.eval = true;
+    } else if (arg === "--strict") {
+      out.strict = true;
     } else if (arg === "--provider") {
       out.provider = args[i + 1] || "";
       i += 1;
+    } else if (parseBriefSourceFlag(args, out)) {
+      i = out.index;
     } else if (arg === "--limit") {
       const next = args[i + 1];
       const limit = Number(next);
@@ -156,8 +185,34 @@ export function parseSearchArgs(args) {
     }
   }
 
+  if (out.eval && out.evalTemplate) {
+    throw new Error("Choose either --eval-template or --eval, not both");
+  }
+  if (out.strict && !out.eval) {
+    throw new Error("--strict can only be used with --eval");
+  }
+  if (
+    out.evalTemplate
+    && (out.fromFile || out.stdin || out.queryParts.length > 0 || out.ranked || out.embeddings || out.provider || out.dirs.length > 0)
+  ) {
+    throw new Error("--eval-template cannot be combined with a query, --from-file, --stdin, --ranked, --embeddings, --provider, or --dir");
+  }
+  if (out.eval && (!out.fromFile && !out.stdin)) {
+    throw new Error("--eval requires --from-file or --stdin");
+  }
+  if ((out.fromFile || out.stdin) && !out.eval) {
+    throw new Error("--from-file and --stdin require --eval");
+  }
+  if (
+    out.eval
+    && (out.queryParts.length > 0 || out.ranked || out.embeddings || out.provider || out.dirs.length > 0)
+  ) {
+    throw new Error("--eval cannot be combined with an inline query, --ranked, --embeddings, --provider, or --dir");
+  }
+
   return {
     ...out,
+    index: undefined,
     query: out.queryParts.join(" ").trim(),
     dirs: out.dirs.length > 0 ? out.dirs : DEFAULT_SEARCH_DIRS,
   };

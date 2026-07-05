@@ -152,7 +152,13 @@ test("parseSearchArgs supports query, limit, dirs, and json", () => {
     ranked: false,
     embeddings: false,
     provider: "",
+    evalTemplate: false,
+    eval: false,
+    strict: false,
+    fromFile: "",
+    stdin: false,
     help: false,
+    index: undefined,
   });
   assert.equal(parseSearchArgs(["tokens", "--ranked"]).ranked, true);
 });
@@ -169,4 +175,57 @@ test("parseSearchArgs rejects invalid options", () => {
   assert.throws(() => parseSearchArgs(["x", "--dir", "knowlege"]), /Did you mean `knowledge`\?/);
   assert.throws(() => parseSearchArgs(["x", "--bad"]), /Unknown search option/);
   assert.throws(() => parseSearchArgs(["x", "--jsno"]), /Did you mean `--json`\?/);
+});
+
+test("parseSearchArgs supports search eval template and eval checkpoints", () => {
+  assert.deepEqual(parseSearchArgs(["--eval-template", "--json"]), {
+    queryParts: [],
+    query: "",
+    dirs: ["knowledge", "examples", "skills", "docs", "agents", "commands"],
+    limit: 20,
+    json: true,
+    ranked: false,
+    embeddings: false,
+    provider: "",
+    evalTemplate: true,
+    eval: false,
+    strict: false,
+    fromFile: "",
+    stdin: false,
+    help: false,
+    index: undefined,
+  });
+
+  assert.deepEqual(parseSearchArgs(["--eval", "--from-file", "search-eval.json", "--strict", "--json"]), {
+    queryParts: [],
+    query: "",
+    dirs: ["knowledge", "examples", "skills", "docs", "agents", "commands"],
+    limit: 20,
+    json: true,
+    ranked: false,
+    embeddings: false,
+    provider: "",
+    evalTemplate: false,
+    eval: true,
+    strict: true,
+    fromFile: "search-eval.json",
+    stdin: false,
+    help: false,
+    index: undefined,
+  });
+
+  assert.equal(parseSearchArgs(["--eval", "--stdin", "--limit", "5"]).limit, 5);
+});
+
+test("parseSearchArgs rejects invalid eval option combinations", () => {
+  assert.throws(() => parseSearchArgs(["--eval", "--eval-template"]), /Choose either --eval-template or --eval/);
+  assert.throws(() => parseSearchArgs(["--strict"]), /--strict can only be used with --eval/);
+  assert.throws(() => parseSearchArgs(["--eval"]), /--eval requires --from-file or --stdin/);
+  assert.throws(() => parseSearchArgs(["--eval-template", "query"]), /--eval-template cannot be combined/);
+  assert.throws(() => parseSearchArgs(["--eval-template", "--ranked"]), /--eval-template cannot be combined/);
+  assert.throws(() => parseSearchArgs(["--eval-template", "--dir", "knowledge"]), /--eval-template cannot be combined/);
+  assert.throws(() => parseSearchArgs(["--eval", "--from-file", "search-eval.json", "query"]), /--eval cannot be combined/);
+  assert.throws(() => parseSearchArgs(["--eval", "--from-file", "search-eval.json", "--ranked"]), /--eval cannot be combined/);
+  assert.throws(() => parseSearchArgs(["query", "--from-file", "search-eval.json"]), /--from-file and --stdin require --eval/);
+  assert.throws(() => parseSearchArgs(["query", "--stdin"]), /--from-file and --stdin require --eval/);
 });

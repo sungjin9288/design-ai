@@ -33,7 +33,7 @@ export const HELP_COMMANDS = [
   { topic: "uninstall", usage: "uninstall [--json]", description: "Remove symlinks (keeps source files)" },
   { topic: "status", usage: "status [--json]", description: "Show what's installed (use VERBOSE=1 for full list)" },
   { topic: "list", usage: "list [skills|commands|agents] [--json]", description: "List catalog from the plugin manifest" },
-  { topic: "search", usage: "search <query> [--dir kind] [--limit N] [--ranked] [--embeddings [--provider \"cmd args\"]] [--json]", description: "Search the local markdown corpus" },
+  { topic: "search", usage: "search <query|--eval-template|--eval> [--dir kind] [--limit N] [--ranked] [--embeddings [--provider \"cmd args\"]] [--strict] [--json]", description: "Search the local markdown corpus and ranked-search eval checkpoints" },
   { topic: "index", usage: "index [--build|--status|--verify] [--json] [--embeddings [--provider \"cmd args\"]]", description: "Build, inspect, and verify the local retrieval index" },
   { topic: "show", usage: "show <file[:line]> [--lines N:M] [--context N] [--json]", description: "Print a corpus file or line range" },
   { topic: "route", usage: "route <brief|--from-file file|--stdin|--list|--eval-template|--eval> [--limit N]", description: "Recommend commands, skills, knowledge, and route eval checkpoints" },
