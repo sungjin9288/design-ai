@@ -40,34 +40,22 @@ export function isGeneratedIndexDoc(relPath) {
     || normalized.startsWith("docs/reference/");
 }
 
-// Repo-meta docs (portfolio/case-study/interview material) that ship in the repo
-// but are deliberately excluded from the npm package via the `!docs/*.md` entries
-// in package.json `files`. Keep this Set in sync with that list — verify against
-// package.json `files` before adding/removing an entry. Not design knowledge;
-// found polluting recall-injection results in the Phase 764 dogfood pass
-// (docs/DOGFOOD-SDK-FINDINGS.md, F-2: docs/case-study.md ranked #1 for a design brief).
-const NON_KNOWLEDGE_META_DOCS = new Set([
-  "docs/case-study.md",
-  "docs/evidence-checklist.md",
-  "docs/evidence-gallery.md",
-  "docs/implementation-evidence.md",
-  "docs/interview-story.md",
-  "docs/project-card.md",
-  "docs/project-roadmap.md",
-  "docs/readme-improvement.md",
-  "docs/resume-bullets.md",
-]);
-
 // Predicate for the full RECALL-injection exclusion set (docs/DOGFOOD-SDK-FINDINGS.md,
-// F-2): generated index/meta docs (isGeneratedIndexDoc) OR the package-excluded
-// repo-meta docs (NON_KNOWLEDGE_META_DOCS) OR anything under docs/integrations/
-// (agent walkthroughs, not design knowledge). Same recall-injection-surfaces-only
-// boundary as isGeneratedIndexDoc: raw `search --ranked` never applies this.
+// F-2): generated index/meta docs (isGeneratedIndexDoc) OR anything under docs/.
+// Rationale: recall injects DESIGN KNOWLEDGE into an agent's context, and the
+// design corpus lives in knowledge/, examples/, skills/, agents/, commands/ —
+// docs/ is product documentation (guides, roadmap, dogfood/inspection records,
+// portfolio material, integration walkthroughs). Enumerating individual meta
+// files proved to be whack-a-mole: the Phase 764 dogfood first surfaced
+// docs/case-study.md ranked #1, and the follow-up probe surfaced
+// docs/DOGFOOD-SDK-FINDINGS.md itself at 3x the top knowledge score because it
+// quotes the brief's vocabulary. Same recall-injection-surfaces-only boundary
+// as isGeneratedIndexDoc: raw `search --ranked` never applies this — a user
+// explicitly searching docs/ still gets docs/ hits.
 export function isRecallExcludedDoc(relPath) {
   const normalized = String(relPath || "").replace(/\\/g, "/");
   return isGeneratedIndexDoc(normalized)
-    || NON_KNOWLEDGE_META_DOCS.has(normalized)
-    || normalized.startsWith("docs/integrations/");
+    || normalized.startsWith("docs/");
 }
 
 // N = max(limit*5, 25): the number of top lexical candidates handed to the embedding

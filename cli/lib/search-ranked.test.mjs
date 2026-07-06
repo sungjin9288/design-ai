@@ -77,8 +77,9 @@ test("isGeneratedIndexDoc flags COVERAGE.md, INDEX.md, and docs/reference/* only
 });
 
 // Truth table for the broader RECALL exclusion predicate (docs/DOGFOOD-SDK-FINDINGS.md,
-// F-2): generated-index cases stay true, each package-excluded meta doc is true,
-// anything under docs/integrations/ is true, and real knowledge/docs stay false.
+// F-2): generated-index cases stay true, and everything under docs/ is true —
+// recall injects design knowledge, and the design corpus lives in knowledge/,
+// examples/, skills/, agents/, commands/; docs/ is product documentation.
 test("isRecallExcludedDoc truth table", () => {
   // Still covers every isGeneratedIndexDoc case.
   assert.equal(isRecallExcludedDoc("knowledge/COVERAGE.md"), true);
@@ -86,28 +87,29 @@ test("isRecallExcludedDoc truth table", () => {
   assert.equal(isRecallExcludedDoc("docs/reference/ant-design.md"), true);
   assert.equal(isRecallExcludedDoc("docs\\reference\\shadcn-ui.md"), true);
 
-  // Package-excluded repo-meta docs (the `!docs/*.md` entries in package.json `files`).
+  // Everything under docs/ — repo-meta portfolio docs, dogfood/inspection
+  // records, integration walkthroughs, and product guides alike.
   assert.equal(isRecallExcludedDoc("docs/case-study.md"), true);
-  assert.equal(isRecallExcludedDoc("docs/evidence-checklist.md"), true);
-  assert.equal(isRecallExcludedDoc("docs/evidence-gallery.md"), true);
-  assert.equal(isRecallExcludedDoc("docs/implementation-evidence.md"), true);
-  assert.equal(isRecallExcludedDoc("docs/interview-story.md"), true);
   assert.equal(isRecallExcludedDoc("docs/project-card.md"), true);
-  assert.equal(isRecallExcludedDoc("docs/project-roadmap.md"), true);
-  assert.equal(isRecallExcludedDoc("docs/readme-improvement.md"), true);
-  assert.equal(isRecallExcludedDoc("docs/resume-bullets.md"), true);
-
-  // Agent walkthroughs under docs/integrations/.
+  assert.equal(isRecallExcludedDoc("docs/interview-story.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/DOGFOOD-SDK-FINDINGS.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/inspection-20260630.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/announcements/okky-post.ko.md"), true);
   assert.equal(isRecallExcludedDoc("docs/integrations/codex-walkthrough.ko.md"), true);
   assert.equal(isRecallExcludedDoc("docs/integrations/agent-sdk-walkthrough.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/USING.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/SDK.md"), true);
   // Backslash paths are normalized before matching.
   assert.equal(isRecallExcludedDoc("docs\\integrations\\anything.md"), true);
 
-  // Real design knowledge and live docs are never flagged.
+  // The design corpus is never flagged.
   assert.equal(isRecallExcludedDoc("knowledge/patterns/money-and-amount.md"), false);
+  assert.equal(isRecallExcludedDoc("knowledge/patterns/trust-safety-moderation.md"), false);
   assert.equal(isRecallExcludedDoc("examples/dashboard-composition.md"), false);
-  assert.equal(isRecallExcludedDoc("docs/USING.md"), false);
-  assert.equal(isRecallExcludedDoc("docs/SDK.md"), false);
+  assert.equal(isRecallExcludedDoc("skills/ux-audit/SKILL.md"), false);
+  assert.equal(isRecallExcludedDoc("commands/design-from-brief.md"), false);
+  // A "docs" filename outside the docs/ directory is not the docs/ prefix.
+  assert.equal(isRecallExcludedDoc("knowledge/docs-authoring.md"), false);
   assert.equal(isRecallExcludedDoc(""), false);
 });
 
