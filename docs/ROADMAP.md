@@ -1,5 +1,19 @@
 # Roadmap
 
+## Phase 766 — Dogfood round 2: dashboard class (implemented, unreleased)
+
+Second turn of the dogfood loop, run immediately after v4.62.0 to verify the first round's fixes and probe a new task class. Findings and evidence in [DOGFOOD-DASHBOARD-FINDINGS.md](DOGFOOD-DASHBOARD-FINDINGS.md).
+
+### Delivered
+- [x] v4.62 regression evidence on fresh briefs: `flow-design` receives flow briefs, recall selections are 100% design corpus (zero `docs/`), and `pack` trims to the character boundary (59,998/60,000).
+- [x] Three-brief probe → full run on the weakest (정산 대시보드, `score=0` total fallback): same route-mismatch check fingerprint as round 1, confirming route-table coverage as the recurring gap class.
+- [x] G-1 `dashboard-design` route (`command: null`): 대시보드/어드민/백오피스 keywords (compound where a bare term would hijack), curated data-screen knowledge (dashboard-composition, money-and-amount, korean-density-conventions, list-and-feed + foundations), check requirements (money formatting, table accessibility, density/responsive degradation), and `examples/dashboard-design-settlement.md` at example-qa 12/12 (routes now 21/21). Settlement brief: `[low] design-from-brief score=0` → `[medium] dashboard-design score=2`.
+- [x] G-2 `flow-design` Korean step vocabulary (위저드, 단계별 플로우, 스텝, 이어하기): onboarding-wizard brief `[low] 1` → `[medium] 3`; round-1 brief stays `[high]`.
+- [x] G-3 states-design compound keywords on `flow-design` (에러 상태, 빈 상태 화면, 상태 설계, 검색 결과 없음, …), verified in both directions: states brief now `flow-design [medium] 3` above `illustration [low] 1`, while a real illustration brief stays `illustration [high] 4`.
+
+### Remaining
+- [ ] Release: bundle into the next npm version.
+
 ## Phase 765 — Dogfood Loop Release (v4.62.0) ✓ ready
 
 Ships the whole Phase 764 dogfood cycle as one npm version: the `flow-design` route (F-1), the trust & safety corpus file and worked example (F-3), the principled recall exclusion of `docs/` (F-2/F-2b), the `pack` UTF-8 byte-budget fix the walkthrough guard caught, and the Agent SDK walkthrough itself (en/ko).
