@@ -2,6 +2,32 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.63.0 — Dogfood round 2: dashboard-design route and flow-design keyword depth (2026-07)
+
+The dogfood loop's second turn, run immediately after v4.62.0 on fresh briefs. It first verified the v4.62 fixes live (flow briefs route to `flow-design`, recall selections are 100% design corpus, `pack` trims to the character boundary), then probed three new task classes and shipped what the weakest one surfaced. Evidence trail in `docs/DOGFOOD-DASHBOARD-FINDINGS.md`. All additive and backward-compatible.
+
+### Added
+- **`dashboard-design` route** — the data-dense screen class (대시보드, 정산, 어드민, 백오피스, KPI / dashboard, admin panel, back-office, analytics) previously matched **zero** route keywords and fell through to design-system scaffolding. The new route curates the knowledge that already existed for this class (`dashboard-composition`, `money-and-amount`, `korean-density-conventions`, `list-and-feed` + layout/typography foundations) and adds data-screen check requirements: money/number formatting evidence, table accessibility (caption/scope/aria-sort), and density/responsive degradation. The settlement-dashboard brief moved from `[low] design-from-brief score=0` to `[medium] dashboard-design score=2`.
+- **`examples/dashboard-design-settlement.md`** (examples now 223) — the route's worked example, adapted from the dogfooded 정산 대시보드 artifact (원화 표기, tabular-nums 우측 정렬, 상태 배지 색+텍스트, 테이블 접근성, 밀도 강등 전략).
+
+### Changed
+- **`flow-design` keywords deepened, verified in both directions.** Korean step-flow vocabulary (위저드, 단계별 플로우, 스텝, 이어하기) lifts an onboarding-wizard brief from `[low] score=1` to `[medium] score=3`; compound states-design keywords (에러 상태, 빈 상태 화면, 상태 설계, 검색 결과 없음, empty state, error state) route a states-design brief to `flow-design [medium] 3` above `illustration [low] 1`, while a genuine illustration brief (빈 상태 일러스트/마스코트) still routes `illustration [high] 4`. The route eval checkpoint stays 6/6 and representative briefs route unchanged.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `npm run release:metadata`.
+- `git diff --check`.
+- Route eval 6/6; example-qa 21/21 routes; representative-brief routing unchanged.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.62.0 → 4.63.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- The single most common Korean B2B design task class — data-dense dashboard/admin screens — now routes to purpose-built curation and checks, and flow briefs match in the vocabulary Korean users actually write. The loop's second turn also doubles as live regression evidence for everything v4.62.0 shipped.
+
 ## v4.62.0 — Dogfood loop: flow-design route, trust & safety corpus, recall purity, SDK walkthrough (2026-07)
 
 A full dogfood cycle shipped as one release: a real design task (커뮤니티 앱 신고·차단 플로우) was driven end-to-end through the Agent SDK, and everything the run surfaced — a routing gap, recall pollution, a corpus gap, and a real byte-accounting bug — is fixed here, together with the walkthrough the run produced. See `docs/DOGFOOD-SDK-FINDINGS.md` for the evidence trail.

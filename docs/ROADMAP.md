@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 767 — Dogfood Round 2 Release (v4.63.0) ✓ ready
+
+Ships the dogfood loop's second turn (Phase 766) as an npm version: the `dashboard-design` route with data-screen check requirements and the settlement worked example, plus the `flow-design` Korean step-flow and states-design keyword depth verified in both directions. Additive and backward-compatible; route eval 6/6 and representative-brief routing unchanged.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check` (unit tests, strict audits, whitespace, package contents, release metadata, release self-tests, packed-tarball smoke).
+- `npm run release:metadata`.
+- `git diff --check`.
+- Route eval checkpoint 6/6; example-qa 21/21 routes; both-direction routing evidence for the states/illustration boundary.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.62.0 → 4.63.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- npm users get route coverage for the dashboard/admin/back-office class with purpose-built checks, and flow-design matches the Korean vocabulary users actually write — with the second dogfood turn doubling as live regression evidence for the v4.62.0 loop fixes.
+
+### What's still ahead
+- Dogfood round 3 on remaining unprobed classes, or the next planning window per [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md).
+
 ## Phase 766 — Dogfood round 2: dashboard class (implemented, unreleased)
 
 Second turn of the dogfood loop, run immediately after v4.62.0 to verify the first round's fixes and probe a new task class. Findings and evidence in [DOGFOOD-DASHBOARD-FINDINGS.md](DOGFOOD-DASHBOARD-FINDINGS.md).
