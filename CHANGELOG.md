@@ -2,6 +2,34 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.64.0 — Route coverage sweep: marketing-page route and 18-class routing (2026-07)
+
+Generalizes the two dogfood rounds' converged finding — route-table coverage is the recurring gap class — into one systematic batch. Eighteen common task classes were probed through `route()`; thirteen were low/misrouted/zero-match despite the knowledge corpus already covering nearly every one of them (a pricing-page brief scored 0 with `pricing-page-design.md` sitting in the corpus). All fixed in one pass; evidence tables in `docs/ROUTE-COVERAGE-SWEEP.md`. Additive and backward-compatible.
+
+### Added
+- **`marketing-page` route** — consolidates three previously zero/misrouted marketing-surface classes (landing page, pricing page, email template) with five dedicated knowledge files curated (`landing-hero-design`, `landing-page-patterns`, `pricing-page-design`, `email-design`, `brand-identity`) and check requirements for conversion/CTA evidence, visual hierarchy, and responsive/email-client behavior.
+- **`examples/marketing-page-saas-landing.md`** (examples now 224) — the route's worked example (developer-tool SaaS landing: 히어로, 기능 소개, 가격, 후기, CTA 배치, 한국형 신뢰 요소).
+
+### Changed
+- **`dashboard-design`** gains chart/data-viz and permissions vocabulary (차트, 데이터 시각화, 시계열, 범례, 권한, 역할 관리 + English forms) and three more curated knowledge files (`chart-types`, `chart-color-encoding`, `realtime-data`) — data-viz and RBAC-admin briefs move from score 0 to `[medium]`.
+- **`flow-design`** gains nine interaction classes' vocabulary (체크아웃, 알림 센터, 계정 관리, 프로필 수정, 회원 탈퇴, 업로드, 드래그 앤 드롭, 댓글, 멘션, 공유 권한, 코치마크, 투어, 필터, 정렬, 무한 스크롤, 내비게이션, 하단 탭, 다단계, 임시저장, 유효성 검증 + English forms). A multi-step form brief now intentionally routes to `flow-design` instead of `component-spec`.
+- Post-fix probe: **all 18 classes land on their target routes at medium+ confidence** where the brief vocabulary allows; the previously-correct classes are unchanged; no keyword hijacks (verified programmatically against every route's keyword set); route eval 6/6; both dogfood briefs keep their routes.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `npm run release:metadata`.
+- `git diff --check`.
+- Route eval 6/6; example-qa 22/22 routes; 18-class before/after probe recorded in `docs/ROUTE-COVERAGE-SWEEP.md`.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.63.0 → 4.64.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- The route table now covers the common product-design task space end to end: any of the 18 probed classes — from checkout flows to RBAC admin screens to pricing pages — reaches purpose-matched curation, checklists, and checks instead of falling through to design-system scaffolding.
+
 ## v4.63.0 — Dogfood round 2: dashboard-design route and flow-design keyword depth (2026-07)
 
 The dogfood loop's second turn, run immediately after v4.62.0 on fresh briefs. It first verified the v4.62 fixes live (flow briefs route to `flow-design`, recall selections are 100% design corpus, `pack` trims to the character boundary), then probed three new task classes and shipped what the weakest one surfaced. Evidence trail in `docs/DOGFOOD-DASHBOARD-FINDINGS.md`. All additive and backward-compatible.

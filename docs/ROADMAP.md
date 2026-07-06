@@ -1,5 +1,28 @@
 # Roadmap
 
+## Phase 769 — Route Coverage Sweep Release (v4.64.0) ✓ ready
+
+Ships the Phase 768 route-coverage sweep as an npm version: the `marketing-page` route with its worked example, the `dashboard-design` chart/permissions enrichment, and the `flow-design` nine-class keyword batch — 18/18 probed task classes now land on target routes at medium+ confidence. Additive and backward-compatible.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check` (unit tests, strict audits, whitespace, package contents, release metadata, release self-tests, packed-tarball smoke).
+- `npm run release:metadata`.
+- `git diff --check`.
+- Route eval 6/6; example-qa 22/22 routes; 18-class before/after probe in [ROUTE-COVERAGE-SWEEP.md](ROUTE-COVERAGE-SWEEP.md).
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.63.0 → 4.64.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- npm users get route coverage across the common product-design task space: marketing surfaces, data screens, and interaction flows all reach purpose-matched curation and checks instead of the design-system fallback.
+
+### What's still ahead
+- A future dogfood on browse/IA briefs to decide whether search/navigation deserve a dedicated route beyond flow-design keywords.
+- Next planning window per [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md).
+
 ## Phase 768 — Route coverage sweep (implemented, unreleased)
 
 Generalizes the two dogfood rounds' converged finding (route-table coverage is the recurring gap class) into one systematic batch: 18 common task classes probed through `route()`, 13 found low/misrouted/zero-match, all fixed at once. Full sweep tables and fix evidence in [ROUTE-COVERAGE-SWEEP.md](ROUTE-COVERAGE-SWEEP.md).
