@@ -9,8 +9,13 @@ Executes the composed slice accepted in [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-
 - [x] `docs/integrations/agent-sdk-walkthrough.md` + `.ko.md` — copy-pastable end-to-end consumer script with measured outputs (doc outputs verified against a live run of the embedded sample artifact), registered in the integration-completeness audit and mkdocs nav; README(+ko) SDK row links it; `docs/SDK.md` gains a walkthrough pointer.
 - [x] `cli/sdk/flow-example.test.mjs` — the walkthrough flow as a `node --test` regression guard (shape-based assertions; 583/583 total).
 
+### Backlog closed (2026-07-06)
+- [x] F-2 recall meta-doc exclusion (`isRecallExcludedDoc`, option renamed `excludeNonKnowledge`), then F-2b: the enumerated list proved whack-a-mole (the findings doc itself became the top recall hit at 3× the best knowledge score), resolved by the principled rule — recall injection excludes everything under `docs/`; the design corpus is `knowledge/`, `examples/`, `skills/`, `agents/`, `commands/`. Raw `search --ranked` unchanged.
+- [x] F-3 `knowledge/patterns/trust-safety-moderation.md` (corpus 95): report flow, status pipeline incl. 정보통신망법 제44조의2 임시조치, block semantics (non-notification), abuse prevention, accessibility floor. Post-landing probe: top `relatedKnowledge` hit for the dogfood brief.
+- [x] F-1 `flow-design` route (`command: null`, compound keywords to avoid hijacking, flow-specific check requirements, `examples/flow-design-report-block.md` at example-qa 12/12). Dogfood brief now routes `[high] flow-design score=4` (was `[low] design-from-brief score=1`); route eval 6/6 and representative briefs unchanged.
+- [x] Bonus: the walkthrough's regression guard (`cli/sdk/flow-example.test.mjs`) caught a real pre-existing `pack` bug — mid-UTF-8-character truncation could exceed `maxBytes` via U+FFFD replacement growth; fixed with a character-boundary trim (RED-verified: the guard fails on the unfixed code), plus a Korean-content budget-sweep invariant test.
+
 ### Remaining
-- [ ] Evidence-backed backlog from the dogfood, in priority order: F-2 recall meta-doc exclusion (small, mirrors the v4.58 exclusion mechanism) → F-3 `knowledge/patterns/trust-safety-moderation.md` → F-1 flow-design route (route table + check requirements + smoke surfaces).
 - [ ] Release: bundle into the next npm version.
 
 ## Phase 763 — Ranked-search Eval Checkpoint Release (v4.61.0) ✓ ready
