@@ -571,3 +571,57 @@ test("parsePackArgs rejects --recall-limit without --with-recall", () => {
   assert.equal(parsed.withRecall, true);
   assert.equal(parsed.recallLimit, 3);
 });
+
+// Regression for the takeUtf8 mid-character truncation bug: slicing a UTF-8
+// buffer mid-character let Buffer.toString("utf8") insert a 3-byte U+FFFD
+// replacement char that could be LARGER than the partial bytes it replaced,
+// so usedBytes could exceed maxBytes by 1-2 bytes. trimIncompleteUtf8Tail cuts
+// to the last complete character boundary first. Sweeping budgets over
+// multi-byte (Korean, 3 bytes/char) content walks the cut across every
+// intra-character offset, so any reintroduction of the bug fails here.
+test("buildPromptPack never exceeds maxBytes on multi-byte content truncation", () => {
+  const root = makeFixture();
+  try {
+    // Make EVERY packed context file Korean-heavy so per-file budget cuts land
+    // mid-character. Overshoot on a NON-final file is absorbed by the next
+    // file's budget (remaining = max(0, maxBytes - usedBytes)), so the total
+    // only exceeds maxBytes when the LAST file's cut dangles 1-2 bytes of a
+    // multi-byte character. This sweep asserts the budget invariant broadly;
+    // the RED-verified reproduction of the pre-fix bug is the real-corpus
+    // 60000-byte pack in cli/sdk/flow-example.test.mjs, which fails on the
+    // unfixed takeUtf8 with "pack() must never exceed maxBytes".
+    const korean = "결제 플로우 상태 안내와 접근성 고려사항 정리 — 버튼과 폼의 상호작용. ".repeat(80);
+    for (const rel of [
+      "AGENTS.md",
+      "commands/component-spec.md",
+      "skills/component-spec-writer/SKILL.md",
+      "skills/component-spec-writer/PLAYBOOK.md",
+      "knowledge/PRINCIPLES.md",
+      "examples/component-button.md",
+    ]) {
+      writeFileSync(path.join(root, rel), `# 한국어 컨텍스트\n${korean}`, "utf8");
+    }
+
+    for (let maxBytes = 1000; maxBytes <= 1100; maxBytes += 1) {
+      const pack = buildPromptPack({
+        brief: "spec a Button component API",
+        sourceRoot: root,
+        prefix: "design-",
+        maxBytes,
+      });
+      assert.ok(
+        pack.usedBytes <= maxBytes,
+        `usedBytes ${pack.usedBytes} exceeded maxBytes ${maxBytes}`,
+      );
+      for (const file of pack.files) {
+        assert.equal(
+          Buffer.byteLength(file.content, "utf8"),
+          file.includedBytes,
+          `${file.path} content byte-length must match includedBytes at maxBytes ${maxBytes}`,
+        );
+      }
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

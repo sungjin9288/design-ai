@@ -150,6 +150,33 @@ export function parsePackArgs(args) {
   };
 }
 
+// UTF-8 continuation bytes have the high bits `10xxxxxx` (0x80-0xBF). A slice
+// that stops mid-character ends with 1-3 leading bytes of a multi-byte
+// sequence and no continuation bytes yet — trimming those dangling leading
+// bytes keeps the slice on a clean character boundary.
+function trimIncompleteUtf8Tail(bytes) {
+  let end = bytes.length;
+  // A byte is a "leading" byte of a multi-byte sequence if its top two bits
+  // are `11` (0xC0-0xFF); continuation bytes are `10xxxxxx` (0x80-0xBF).
+  // Walk back over trailing continuation bytes, then drop the leading byte
+  // that started the (now truncated) sequence, unless that leading byte
+  // already had enough continuation bytes to be complete.
+  let back = 0;
+  while (end - back - 1 >= 0 && (bytes[end - back - 1] & 0xc0) === 0x80 && back < 3) {
+    back += 1;
+  }
+  const leadIndex = end - back - 1;
+  if (leadIndex >= 0) {
+    const lead = bytes[leadIndex];
+    const expectedLength = lead >= 0xf0 ? 4 : lead >= 0xe0 ? 3 : lead >= 0xc0 ? 2 : 1;
+    const availableLength = end - leadIndex;
+    if (expectedLength > availableLength) {
+      end = leadIndex;
+    }
+  }
+  return bytes.subarray(0, end);
+}
+
 function takeUtf8(content, maxBytes) {
   const buf = Buffer.from(content, "utf8");
   if (buf.byteLength <= maxBytes) {
@@ -160,7 +187,8 @@ function takeUtf8(content, maxBytes) {
     };
   }
 
-  const sliced = buf.subarray(0, Math.max(0, maxBytes)).toString("utf8");
+  const boundedBytes = trimIncompleteUtf8Tail(buf.subarray(0, Math.max(0, maxBytes)));
+  const sliced = boundedBytes.toString("utf8");
   return {
     content: sliced,
     bytes: Buffer.byteLength(sliced, "utf8"),

@@ -361,6 +361,35 @@ const ROUTE_REQUIREMENTS = {
       ],
     },
   ],
+  "flow-design": [
+    {
+      id: "flow-states-steps",
+      title: "Flow states and steps coverage",
+      required: [
+        { label: "steps or stages", patterns: [/\b(step|stage|sequence)\b/i, /단계|순서/] },
+        { label: "state", patterns: [/\b(state|status)\b/i, /상태/] },
+        { label: "transition between states", patterns: [/\b(transition|move[sd]? to|becomes?)\b/i, /전환|이동/] },
+      ],
+    },
+    {
+      id: "flow-edge-cases",
+      title: "Flow edge case and error path coverage",
+      required: [
+        { label: "error or failure path", patterns: [/\b(error|failure|fail(?:ed|s)?)\b/i, /에러|오류|실패/] },
+        { label: "cancel or abandon path", patterns: [/\b(cancel|abandon|back out|dismiss)\b/i, /취소|중단/] },
+        { label: "edge case", patterns: [/\bedge case\b/i, /예외|엣지 ?케이스/] },
+      ],
+    },
+    {
+      id: "flow-entry-exit",
+      title: "Flow entry, exit, and completion coverage",
+      required: [
+        { label: "entry point", patterns: [/\b(entry point|entry|trigger)\b/i, /진입점|진입/] },
+        { label: "completion or success", patterns: [/\b(complete|completion|success|done)\b/i, /완료|성공/] },
+        { label: "exit or abandonment", patterns: [/\b(exit|leave|drop[- ]?off|abandonment)\b/i, /이탈|나가기/] },
+      ],
+    },
+  ],
 };
 
 function routeRequirementResult(routeId, requirement, text) {

@@ -235,6 +235,12 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | [report-example.md](report-example.md) | `ux-audit` | UX audit report — TL;DR pyramid, severity-aggregated findings, citations, code diffs, "things that work well". |
 | [email-transactional-example.md](email-transactional-example.md) | `document-author` (email) | Korean fintech transactional email — preheader, receipt structure, bulletproof button, sender info per 정보통신망법. |
 
+### Feature flow specs
+
+| File | Skill | Demonstrates |
+| --- | --- | --- |
+| [flow-design-report-block.md](flow-design-report-block.md) | `ux-audit` / `design-critique` (`flow-design` route) | Report + block interaction flow. Entry points, step/state tables, edge/error paths, completion criteria, Korean 정보통신망법 제44조의2 임시조치 handling. |
+
 ### End-to-end deliverables
 
 | File | Skill | Demonstrates |

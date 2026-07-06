@@ -31,6 +31,7 @@ const ROUTE_EXAMPLE_QUERIES = {
   "figma-token-sync": "token palette",
   "design-pr-review": "dogfood findings review",
   "stability-review": "dogfood findings release",
+  "flow-design": "flow report block moderation onboarding",
 };
 
 const ROUTE_CATEGORY_BOOSTS = {
@@ -53,6 +54,7 @@ const CANONICAL_ROUTE_EXAMPLES = {
   "print": ["examples/print-business-card-spec.md", "examples/print-packaging-spec.md"],
   "game-ui": ["examples/component-game-menu.md"],
   "slide-deck": ["examples/slide-deck-example.md"],
+  "flow-design": ["examples/flow-design-report-block.md"],
 };
 
 export function parseExamplesArgs(args) {

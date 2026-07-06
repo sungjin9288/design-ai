@@ -284,6 +284,28 @@ export const ROUTES = [
     ],
     keywords: ["release", "stability", "stale", "quarterly", "launch", "릴리스", "안정화", "오래된", "출시"],
   },
+  {
+    id: "flow-design",
+    label: "Feature flow design",
+    command: null,
+    skills: ["skills/ux-audit/SKILL.md", "skills/design-critique/SKILL.md"],
+    agents: ["agents/a11y-reviewer.md"],
+    knowledge: [
+      "knowledge/patterns/ui-reasoning.md",
+      "knowledge/patterns/async-control.md",
+      "knowledge/patterns/trust-safety-moderation.md",
+      "knowledge/patterns/form-design.md",
+      "knowledge/patterns/error-states.md",
+      "knowledge/patterns/onboarding.md",
+    ],
+    keywords: [
+      "플로우", "신고", "차단", "온보딩", "회원가입", "결제 플로우", "설정 화면", "알림 설정",
+      "모더레이션", "처리 상태", "사용자 여정",
+      "flow design", "onboarding flow", "sign-up flow", "signup flow", "checkout flow",
+      "report flow", "block flow", "moderation flow", "user journey", "wizard", "stepper",
+      "settings screen", "notification settings",
+    ],
+  },
 ];
 
 export function routeIds() {
