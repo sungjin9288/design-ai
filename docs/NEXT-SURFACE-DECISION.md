@@ -132,3 +132,28 @@ The recommendation was executed in order and both surfaces are live:
 - **Agent SDK** followed exactly on the stated revisit trigger (recall interface stable across two releases): design doc [`AGENT-SDK.md`](AGENT-SDK.md), then v4.59.0 (Phase A — read-only `@design-ai/cli/sdk`, 8 verbs) and v4.60.0 (TypeScript declarations + the opt-in `learn.*` local-write namespace).
 
 The deferred surfaces (VS Code deepening, Web UI, Figma plugin) remain deferred with the same revisit triggers. The next-surface question is open again; re-evaluate against the criteria above when the next planning window opens, factoring in that the SDK now also serves programmatic adopters.
+
+## Re-evaluation (2026-07-06)
+
+Scored with the same seven criteria, in the post-execution landscape: CLI deepening and the Agent SDK are shipped (v4.57–v4.61), the AI-learning Phase A follow-ups and Phase B are all closed, and the ranked-default question is decided for 4.x (see [`AI-LEARNING-PHASE2.md`](AI-LEARNING-PHASE2.md)). The SDK's existence opens a new leverage axis — programmatic consumers — that did not exist at the original scoring.
+
+| Candidate | Leverage | Reach | Build cost | Maintenance | Distribution | Risk | Synergy | Total |
+|---|---|---|---|---|---|---|---|---|
+| Dogfood verification pass | 5 | 4 | 4 | 5 | 3 | 5 | 5 | **31** |
+| SDK adoption enablement | 4 | 4 | 5 | 4 | 4 | 5 | 4 | **30** |
+| Web UI expansion | 4 | 3 | 3 | 4 | 3 | 4 | 3 | 24 |
+| VS Code deepening | 4 | 3 | 3 | 3 | 4 | 3 | 3 | 23 |
+| Component spec extractor v2 | 3 | 3 | 3 | 4 | 3 | 4 | 2 | 22 |
+| Skill-proposal apply path | 3 | 3 | 3 | 3 | 4 | 2 | 4 | 22 |
+
+- **Dogfood verification pass** — use design-ai itself to produce a real design artifact end-to-end and capture the gaps. This is how the async-control and Korean-density corpus gaps were found; it generates the next backlog organically and exercises every shipped surface.
+- **SDK adoption enablement** — a real, runnable SDK consumer example plus an agent-integration recipe and docs. Converts the just-shipped SDK investment into adoption; zero new product code, zero platform risk.
+- VS Code / Web UI / Figma: unchanged constraints, unchanged revisit triggers, no new demand signal — still deferred.
+- Spec extractor: coverage is already 90.5%, so its value has shrunk from coverage-push to maintenance automation.
+- Skill-proposal apply path: still gated on a separate approval + archive/review design per the standing constraint.
+
+### Recommendation (2026-07-06)
+
+**Run the two leaders as one composed slice: a real SDK consumer example that drives a design task end-to-end (`route` → `pack` → `check` → `learn.captureFromCheck`), documented as the SDK walkthrough.** The example is simultaneously the SDK adoption artifact (D) and a dogfood pass (G): building it exercises the shipped surfaces against a genuine task, and any friction or corpus gaps it surfaces become the evidence-backed next backlog — the same loop that produced the v4.58 corpus additions.
+
+- **Status:** accepted — maintainer signed off 2026-07-06; the composed slice is the next work item
