@@ -689,6 +689,7 @@ EXPECTED_ROUTE_CATALOG_IDS = (
     "design-pr-review",
     "stability-review",
     "flow-design",
+    "dashboard-design",
 )
 EXPECTED_PROMPT_SLASH_COMMAND = "/design-component-spec"
 EXPECTED_PROMPT_QUALITY_COMMAND = "design-ai check output.md --route component-spec --strict"

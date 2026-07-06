@@ -390,6 +390,33 @@ const ROUTE_REQUIREMENTS = {
       ],
     },
   ],
+  "dashboard-design": [
+    {
+      id: "dashboard-money-format",
+      title: "Amount, unit, and number-format coverage",
+      required: [
+        { label: "amount or currency", patterns: [/\b(amount|currency|price)\b/i, /금액|원\b/] },
+        { label: "number formatting", patterns: [/\b(comma|tabular[- ]nums?|number format|right[- ]align(?:ed)?)\b/i, /콤마|천\s*단위|우측\s*정렬/] },
+      ],
+    },
+    {
+      id: "dashboard-table-a11y",
+      title: "Table accessibility coverage",
+      required: [
+        { label: "table structure", patterns: [/\btable\b/i, /테이블/] },
+        { label: "caption or header scope", patterns: [/\b(caption|scope=|column header)\b/i, /캡션|헤더/] },
+        { label: "sort state", patterns: [/\baria-sort\b/i] },
+      ],
+    },
+    {
+      id: "dashboard-density-responsive",
+      title: "Density and responsive degradation coverage",
+      required: [
+        { label: "density", patterns: [/\b(density|dense|compact)\b/i, /밀도|촘촘/] },
+        { label: "responsive degradation", patterns: [/\b(responsive|horizontal scroll|degrade[sd]?|demote[sd]?)\b/i, /강등|가로\s*스크롤/] },
+      ],
+    },
+  ],
 };
 
 function routeRequirementResult(routeId, requirement, text) {

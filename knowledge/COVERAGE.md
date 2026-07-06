@@ -14,7 +14,7 @@ generated_at: 2026-07-06
 | --- | --- | --- |
 | Knowledge files | 95 | 80 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 20 | 20 with verification phase |
-| Worked examples | 222 | |
+| Worked examples | 223 | |
 | Extractors | 12 | |
 | Canonical components | 200 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 181 | **90.5% spec coverage** (16 via parent/alias specs) |
@@ -49,7 +49,7 @@ generated_at: 2026-07-06
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 745 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 746 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 108 | hand-written | Design-AI principles |
 
 #### a11y
@@ -469,6 +469,7 @@ generated_at: 2026-07-06
 | [examples/component-voice-input.md](../examples/component-voice-input.md) | 408 | `VoiceInput` (custom — push-to-talk + transcript voice input) — spec |
 | [examples/component-watermark.md](../examples/component-watermark.md) | 217 | `Watermark` — spec |
 | [examples/component-zoom.md](../examples/component-zoom.md) | 92 | `Zoom` — spec |
+| [examples/dashboard-design-settlement.md](../examples/dashboard-design-settlement.md) | 87 | Worked example: seller settlement dashboard design |
 | [examples/doc-explanation-example.md](../examples/doc-explanation-example.md) | 196 | Worked example: explanation |
 | [examples/doc-how-to-example.md](../examples/doc-how-to-example.md) | 205 | Worked example: how-to |
 | [examples/doc-tutorial-example.md](../examples/doc-tutorial-example.md) | 162 | Worked example: tutorial |

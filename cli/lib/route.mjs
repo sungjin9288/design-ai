@@ -304,6 +304,38 @@ export const ROUTES = [
       "flow design", "onboarding flow", "sign-up flow", "signup flow", "checkout flow",
       "report flow", "block flow", "moderation flow", "user journey", "wizard", "stepper",
       "settings screen", "notification settings",
+      // G-2 (docs/DOGFOOD-DASHBOARD-FINDINGS.md): Korean wizard/step vocabulary that the
+      // v4.62 keyword set missed (English wizard/stepper made it in, Korean forms didn't).
+      "위저드", "단계별 플로우", "스텝", "이어하기",
+      // G-3 (docs/DOGFOOD-DASHBOARD-FINDINGS.md): compound state-design keywords so a
+      // states-design brief outscores illustration's bare `빈 상태` hit. Kept compound
+      // (not bare `상태`/`에러`/`빈`) to avoid hijacking other routes' bare terms.
+      "에러 상태", "빈 상태 화면", "상태 설계", "검색 결과 없음", "empty state", "error state",
+    ],
+  },
+  {
+    id: "dashboard-design",
+    label: "Dashboard / data screen design",
+    command: null,
+    skills: ["skills/design-critique/SKILL.md", "skills/handoff-spec/SKILL.md"],
+    agents: ["agents/a11y-reviewer.md"],
+    knowledge: [
+      "knowledge/patterns/dashboard-composition.md",
+      "knowledge/patterns/money-and-amount.md",
+      "knowledge/i18n/korean-density-conventions.md",
+      "knowledge/patterns/list-and-feed.md",
+      "knowledge/layout/spacing-and-grid.md",
+      "knowledge/typography/type-scale-fundamentals.md",
+    ],
+    keywords: [
+      // G-1 (docs/DOGFOOD-DASHBOARD-FINDINGS.md): dashboard/admin/back-office screen
+      // briefs previously matched zero route keywords and fell through to
+      // design-from-brief. Compound where a bare term would hijack another route
+      // (`테이블` bare belongs to component-spec; `데이터` bare is too generic for any
+      // single route, so it is only used here in the compound `데이터 테이블`).
+      "대시보드", "정산", "매출 화면", "지표", "어드민", "백오피스", "데이터 테이블",
+      "정산 내역", "KPI",
+      "dashboard", "admin panel", "back-office", "back office", "analytics screen", "data table",
     ],
   },
 ];

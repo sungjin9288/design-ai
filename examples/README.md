@@ -241,6 +241,12 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | --- | --- | --- |
 | [flow-design-report-block.md](flow-design-report-block.md) | `ux-audit` / `design-critique` (`flow-design` route) | Report + block interaction flow. Entry points, step/state tables, edge/error paths, completion criteria, Korean 정보통신망법 제44조의2 임시조치 handling. |
 
+### Dashboard / data screen specs
+
+| File | Skill | Demonstrates |
+| --- | --- | --- |
+| [dashboard-design-settlement.md](dashboard-design-settlement.md) | `design-critique` / `handoff-spec` (`dashboard-design` route) | Seller settlement dashboard. KPI strip + table-first layout, Korean amount/number formatting, table accessibility (caption, header scope, aria-sort), density + responsive degradation, export/alert edge cases. |
+
 ### End-to-end deliverables
 
 | File | Skill | Demonstrates |
