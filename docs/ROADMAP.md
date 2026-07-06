@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 765 — Dogfood Loop Release (v4.62.0) ✓ ready
+
+Ships the whole Phase 764 dogfood cycle as one npm version: the `flow-design` route (F-1), the trust & safety corpus file and worked example (F-3), the principled recall exclusion of `docs/` (F-2/F-2b), the `pack` UTF-8 byte-budget fix the walkthrough guard caught, and the Agent SDK walkthrough itself (en/ko).
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check` (unit tests incl. flow-example guard and pack budget-sweep invariant, strict audits, whitespace, package contents, release metadata, release self-tests, packed-tarball smoke).
+- `npm run release:metadata`.
+- `git diff --check`.
+- Route eval checkpoint 6/6 and representative-brief routing unchanged; search eval 6/6.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.61.0 → 4.62.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- npm users get the closed dogfood loop: flow briefs route to a purpose-built route with flow-appropriate checks, recall injection is design-knowledge-only, Korean community products get the trust & safety regulatory floor, `pack`'s byte budget is a hard guarantee, and the SDK has a verified end-to-end walkthrough.
+
+### What's still ahead
+- Next dogfood pass on a different task class (the loop is now cheap to rerun), or the next planning window per [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md).
+
 ## Phase 764 — SDK adoption + dogfood composed slice (implemented, unreleased)
 
 Executes the composed slice accepted in [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md) (re-evaluation of 2026-07-06): a real design task driven end-to-end through the Agent SDK, recorded as both the SDK adoption walkthrough and a dogfood pass.

@@ -2,6 +2,36 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.62.0 — Dogfood loop: flow-design route, trust & safety corpus, recall purity, SDK walkthrough (2026-07)
+
+A full dogfood cycle shipped as one release: a real design task (커뮤니티 앱 신고·차단 플로우) was driven end-to-end through the Agent SDK, and everything the run surfaced — a routing gap, recall pollution, a corpus gap, and a real byte-accounting bug — is fixed here, together with the walkthrough the run produced. See `docs/DOGFOOD-SDK-FINDINGS.md` for the evidence trail.
+
+### Added
+- **`flow-design` route** — interaction/feature-flow briefs (신고, 차단, 온보딩, 가입, 결제 플로우, 설정, 알림 / report, block, onboarding, signup, checkout flows) now route to a dedicated route with flow-appropriate curated skills/knowledge and route-specific check requirements (states/steps, edge/error paths, entry/completion). The dogfood brief moved from `[low] design-from-brief score=1` to `[high] flow-design score=4`; compound keywords were chosen so existing routes' briefs are unaffected (route eval checkpoint still 6/6).
+- **`knowledge/patterns/trust-safety-moderation.md`** (corpus now 95) — report flow and reason taxonomy, moderation status pipeline including the 정보통신망법 제44조의2 임시조치(30일)/이의제기 obligations, block semantics (bidirectional scope, non-notification principle), report-abuse prevention, and the accessibility floor.
+- **`examples/flow-design-report-block.md`** (examples now 222) — the route's top worked example, expanded from the dogfooded artifact.
+- **Agent SDK walkthrough** — `docs/integrations/agent-sdk-walkthrough.md` (+ Korean mirror): a copy-pastable Node consumer script driving `route` → `pack` → author → `check` → `learn.captureFromCheck` with temp-profile isolation, with outputs verified against a live run; linked from the README install table and `docs/SDK.md`, and guarded against drift by `cli/sdk/flow-example.test.mjs`.
+
+### Changed
+- **Recall injection now excludes everything under `docs/`** (`prompt`/`pack --with-recall`, `learn --recall`, `route --explain` related knowledge): recall injects design knowledge, and the design corpus is `knowledge/`, `examples/`, `skills/`, `agents/`, `commands/` — `docs/` is product documentation. The dogfood run showed repo-meta docs outranking real knowledge (docs/case-study.md at #1); enumerating meta files proved whack-a-mole, so the principled directory rule replaced it. Raw `search`/`search --ranked` is unchanged and still returns `docs/` hits.
+
+### Fixed
+- **`pack` could exceed `maxBytes` by 1-2 bytes** when a context file was truncated mid-UTF-8-character: the decoder's 3-byte U+FFFD replacement could outweigh the dangling bytes it replaced. `takeUtf8` now trims to the last complete character boundary before decoding. Caught by the new walkthrough regression guard (which fails on the unfixed code) and additionally covered by a Korean-content budget-sweep invariant test.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `npm run release:metadata`.
+- `git diff --check`.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.61.0 → 4.62.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- The dogfood loop is closed and shipped: flow briefs route correctly, recall injects only design knowledge, Korean community/social products get trust & safety guidance with the regulatory floor, `pack`'s byte budget is a hard guarantee, and SDK adopters get a verified end-to-end walkthrough.
+
 ## v4.61.0 — Ranked-search eval checkpoint (2026-07)
 
 Closes the last open follow-up from the AI-learning Phase A review (FU-3 in `docs/AI-LEARNING-PHASE2.md`): `design-ai search` gains eval-checkpoint modes mirroring the route/prompt/pack/learn pattern, run through the shipped ranked (BM25) search path. This is the standing evidence artifact for any future decision to promote `--ranked` to the default search mode. Additive and backward-compatible; default `search` behavior is unchanged.
