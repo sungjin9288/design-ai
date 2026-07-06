@@ -205,6 +205,17 @@ This review answers the five open questions against the shipped Phase A implemen
 - **FU-3 (Q1, gates default promotion):** Land a ranked-search eval checkpoint so any future `--ranked` default promotion is evidence-backed and announced. _Done (2026-07-05): `design-ai search --eval-template`/`--eval [--strict]` landed in `cli/lib/search-eval.mjs` and `cli/commands/search.mjs`, mirroring the route/prompt/pack/learn eval-checkpoint pattern; cases run through `rankedSearchCorpus` (the shipped ranked path), and the default template includes the three Korean particle-form regression cases from FU-1 (버튼/버튼을/접근성이) plus English cases, doubling as a retrieval-level Hangul-bigram regression check._
 - **FU-4 (Q5, Phase B):** Specify and implement `~/.design-ai/config.json` as the Phase B provider config home with per-invocation `--embeddings` still required. _Done (2026-07-03, Phase B): `cli/lib/local-config.mjs` reads `~/.design-ai/config.json` (or `DESIGN_AI_CONFIG_FILE`); the config only supplies the provider — every invocation still requires the explicit `--embeddings` flag to arm it._
 
+### Ranked-default decision closure (2026-07-06)
+
+With FU-3 landed and shipped (v4.61.0), the promotion question that Decision 1 deferred was formally revisited and **closed for the 4.x line: `search --ranked` remains opt-in across all three surfaces (CLI, MCP `design_ai_search`, SDK `search()`)**. The evidence and reasoning:
+
+- **The two modes answer different questions.** Default `search` is grep-like — line-precise hits (`lineNumber`) that feed the `show file:line` workflow. Ranked is retrieval-like — file-level relevance (`score`, `matchedTokens`). Neither is a strict upgrade of the other; flipping the default would remove the line-precise contract rather than improve it.
+- **The SDK semver contract now binds the default.** Since v4.59.0/v4.60.0, `search(query)`'s unranked return shape (including `lineNumber`) is pinned by the SDK contract test as a semver-stable surface. Changing any surface's default without the others desynchronizes CLI/MCP/SDK; changing all three is by definition a major-version event — exactly the "announced major-version default change, never a silent one" bar Decision 1 set.
+- **The practical benefit is already absorbed.** Every surface where relevance ranking matters (recall injection in `prompt`/`pack`, `learn --recall`, `route --explain` related knowledge) already uses the ranked scorer internally. The remaining delta from flipping the interactive default is small, and agent consumers opt in explicitly today.
+- **Quality stays evidence-backed either way.** The FU-3 checkpoint (`search --eval`, 6/6 passing incl. the Korean particle-form cases) runs in the release gates, so ranked quality is continuously measured without needing the default flip to justify the eval.
+
+If a future major version (5.0) reopens this, the prerequisites are already written: flip CLI + MCP + SDK defaults together, provide a line-hit escape hatch (e.g. `--lines`), re-pin the smoke assertions and SDK contract in the same change, and cite the then-current FU-3 eval results in the CHANGELOG announcement.
+
 ### Phase B gate: cleared-with-conditions
 
 Phase B may be scheduled. Conditions that must be met before or during Phase B:

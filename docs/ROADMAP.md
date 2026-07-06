@@ -19,7 +19,7 @@ Ships the FU-3 ranked-search eval checkpoint (Phase 762) as an npm version: `sea
 - The `--ranked` default-promotion decision becomes evidence-backed for npm users too: the published CLI carries the checkpoint tooling, so the eval can be re-run against any installed version — including Korean agglutinative-query regressions — before and after such a change.
 
 ### What's still ahead
-- The `--ranked` default-promotion decision itself (separate, evidence-backed call).
+- ~~The `--ranked` default-promotion decision itself~~ — decided 2026-07-06: **opt-in stays for the 4.x line** across CLI/MCP/SDK; any future flip is a coordinated 5.0 major event. Full rationale recorded in [AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md) ("Ranked-default decision closure").
 - Next-surface re-evaluation per the updated decision record in [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md).
 
 ## Phase 762 — Ranked-search eval checkpoint (FU-3, implemented, unreleased)
