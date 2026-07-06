@@ -2,7 +2,7 @@
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/ko/)
-[![Knowledge files](https://img.shields.io/badge/knowledge-94-blue)](knowledge/PRINCIPLES.md)
+[![Knowledge files](https://img.shields.io/badge/knowledge-95-blue)](knowledge/PRINCIPLES.md)
 [![Examples](https://img.shields.io/badge/examples-221-blue)](examples/README.md)
 [![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
 
