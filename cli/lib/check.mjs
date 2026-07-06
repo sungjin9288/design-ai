@@ -417,6 +417,32 @@ const ROUTE_REQUIREMENTS = {
       ],
     },
   ],
+  "marketing-page": [
+    {
+      id: "marketing-conversion",
+      title: "Conversion and CTA evidence",
+      required: [
+        { label: "call to action", patterns: [/\bcta\b|\bcall.to.action\b/i, /전환|버튼 문구|행동 유도/] },
+        { label: "conversion reasoning", patterns: [/\bconversion\b/i, /전환율|전환/] },
+      ],
+    },
+    {
+      id: "marketing-visual-hierarchy",
+      title: "Visual hierarchy and fold coverage",
+      required: [
+        { label: "hierarchy or hero", patterns: [/\bhierarchy\b|\bhero\b/i, /위계|히어로/] },
+        { label: "fold or scroll order", patterns: [/\babove the fold\b/i, /폴드|스크롤 순서/] },
+      ],
+    },
+    {
+      id: "marketing-responsive-email",
+      title: "Responsive and email-client behavior coverage",
+      required: [
+        { label: "responsive or mobile", patterns: [/\bresponsive\b/i, /반응형|모바일/] },
+        { label: "email client behavior", patterns: [/\bemail client\b/i, /이메일 클라이언트|다크모드 대응/] },
+      ],
+    },
+  ],
 };
 
 function routeRequirementResult(routeId, requirement, text) {

@@ -247,6 +247,12 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | --- | --- | --- |
 | [dashboard-design-settlement.md](dashboard-design-settlement.md) | `design-critique` / `handoff-spec` (`dashboard-design` route) | Seller settlement dashboard. KPI strip + table-first layout, Korean amount/number formatting, table accessibility (caption, header scope, aria-sort), density + responsive degradation, export/alert edge cases. |
 
+### Marketing page & campaign surface specs
+
+| File | Skill | Demonstrates |
+| --- | --- | --- |
+| [marketing-page-saas-landing.md](marketing-page-saas-landing.md) | `design-critique` / `handoff-spec` (`marketing-page` route) | Developer-tool SaaS landing page. Hero archetype selection, above-the-fold section sequencing, pricing plan comparison, Korean trust/CTA copy, email-client-safe responsive behavior. |
+
 ### End-to-end deliverables
 
 | File | Skill | Demonstrates |

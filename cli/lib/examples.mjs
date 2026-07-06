@@ -33,6 +33,7 @@ const ROUTE_EXAMPLE_QUERIES = {
   "stability-review": "dogfood findings release",
   "flow-design": "flow report block moderation onboarding",
   "dashboard-design": "dashboard settlement admin data table KPI",
+  "marketing-page": "landing hero pricing email template saas",
 };
 
 const ROUTE_CATEGORY_BOOSTS = {
@@ -57,6 +58,7 @@ const CANONICAL_ROUTE_EXAMPLES = {
   "slide-deck": ["examples/slide-deck-example.md"],
   "flow-design": ["examples/flow-design-report-block.md"],
   "dashboard-design": ["examples/dashboard-design-settlement.md"],
+  "marketing-page": ["examples/marketing-page-saas-landing.md"],
 };
 
 export function parseExamplesArgs(args) {

@@ -311,6 +311,26 @@ export const ROUTES = [
       // states-design brief outscores illustration's bare `빈 상태` hit. Kept compound
       // (not bare `상태`/`에러`/`빈`) to avoid hijacking other routes' bare terms.
       "에러 상태", "빈 상태 화면", "상태 설계", "검색 결과 없음", "empty state", "error state",
+      // Phase 768 (docs/ROUTE-COVERAGE-SWEEP.md): nine interaction-flow sweep classes
+      // (checkout, notifications, account, file-upload, collaboration, product-tour,
+      // search-filter, navigation, long-form) were zero/low/misrouted despite curated
+      // knowledge (search-ux.md, mobile-navigation.md, information-architecture.md,
+      // settings-page.md) reaching them through recall. `product tour` is kept as a
+      // compound even though it substring-contains design-from-brief's bare `product`,
+      // because the extra flow-design keyword hits on the same brief (온보딩, 투어,
+      // 코치마크) outweigh design-from-brief's single hit.
+      "체크아웃", "알림 센터", "계정 관리", "프로필 수정", "회원 탈퇴", "업로드", "드래그 앤 드롭",
+      "댓글", "멘션", "공유 권한", "코치마크", "투어", "필터", "정렬", "무한 스크롤",
+      "내비게이션", "하단 탭", "다단계",
+      "checkout", "notification center", "account management", "file upload", "drag and drop",
+      "comment thread", "mention", "coachmark", "product tour", "infinite scroll", "bottom tab",
+      "multi-step",
+      // Sweep long-form class (docs/ROUTE-COVERAGE-SWEEP.md): a multi-step form brief
+      // ("다단계 입력... 임시저장... 유효성 검증") tied against component-spec's bare
+      // `입력`/`폼` hits without these two. `임시저장` (save-draft) and `유효성 검증`
+      // (validation timing) are flow-specific signals distinct from a static
+      // component contract, and neither collides with any other route's keywords.
+      "임시저장", "유효성 검증",
     ],
   },
   {
@@ -336,6 +356,38 @@ export const ROUTES = [
       "대시보드", "정산", "매출 화면", "지표", "어드민", "백오피스", "데이터 테이블",
       "정산 내역", "KPI",
       "dashboard", "admin panel", "back-office", "back office", "analytics screen", "data table",
+      // Phase 768 (docs/ROUTE-COVERAGE-SWEEP.md): data-viz and rbac-admin sweep classes
+      // matched zero route keywords despite dedicated knowledge (chart-types.md,
+      // chart-color-encoding.md, realtime-data.md) already existing. Bare `chart` is
+      // safe (no other route claims it); `permissions matrix`/`role management` are
+      // compound so they don't hijack shorter generic terms from other routes.
+      "차트", "데이터 시각화", "시계열", "범례", "권한 관리", "역할 관리", "권한",
+      "chart", "data visualization", "time series", "legend", "permissions matrix", "role management",
+    ],
+  },
+  {
+    id: "marketing-page",
+    label: "Marketing page & campaign surface design",
+    command: null,
+    skills: ["skills/design-critique/SKILL.md", "skills/handoff-spec/SKILL.md"],
+    agents: ["agents/a11y-reviewer.md", "agents/design-critic.md"],
+    knowledge: [
+      "knowledge/patterns/landing-hero-design.md",
+      "knowledge/patterns/landing-page-patterns.md",
+      "knowledge/patterns/pricing-page-design.md",
+      "knowledge/patterns/email-design.md",
+      "knowledge/patterns/brand-identity.md",
+    ],
+    keywords: [
+      // Phase 768 (docs/ROUTE-COVERAGE-SWEEP.md): landing, pricing-page, and
+      // email-template sweep classes were zero-match or misrouted (landing fell
+      // through to handoff-spec via bare `개발자`; email-template misrouted to
+      // palette-from-brand via bare `다크모드`) despite dedicated knowledge files
+      // already existing. `랜딩 페이지` is compound because `website-improvement` owns
+      // bare `랜딩`; `히어로`/`히어로 섹션` are safe (no other route claims them).
+      "랜딩 페이지", "히어로", "히어로 섹션", "가격 페이지", "플랜 비교", "이메일 템플릿",
+      "CTA", "전환율",
+      "landing page", "pricing page", "hero section", "email template", "campaign page",
     ],
   },
 ];
