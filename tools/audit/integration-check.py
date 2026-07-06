@@ -25,6 +25,7 @@ WALKTHROUGH_FILES = [
     "aider-walkthrough.md",
     "sdk-walkthrough.md",
     "vscode-walkthrough.md",
+    "agent-sdk-walkthrough.md",
 ]
 
 # Required headings (substring match, case-insensitive).

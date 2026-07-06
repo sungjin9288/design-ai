@@ -247,3 +247,7 @@ All three verbs use the same `cli/sdk/validate.mjs` helpers as Phase A: `require
 ### What stays unchanged
 
 `check()` (the Phase A read-only verb) is untouched: it still never writes, and it has no capture option. Capture is exclusively reached through `learn.captureFromCheck`, which is a separate, explicitly-named write verb — this keeps the read/write boundary visible at the call site rather than hidden behind an option flag on a read-only function.
+
+## Walkthrough
+
+See [`docs/integrations/agent-sdk-walkthrough.md`](integrations/agent-sdk-walkthrough.md) for a complete, copy-pastable script that drives `route` → `pack` → author → `check` → `learn.captureFromCheck` end-to-end, based on a real dogfooded run (see [`docs/DOGFOOD-SDK-FINDINGS.md`](DOGFOOD-SDK-FINDINGS.md)).

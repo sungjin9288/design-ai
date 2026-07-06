@@ -1,5 +1,18 @@
 # Roadmap
 
+## Phase 764 — SDK adoption + dogfood composed slice (implemented, unreleased)
+
+Executes the composed slice accepted in [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md) (re-evaluation of 2026-07-06): a real design task driven end-to-end through the Agent SDK, recorded as both the SDK adoption walkthrough and a dogfood pass.
+
+### Delivered
+- [x] Dogfood run on a genuine brief (커뮤니티 앱 신고·차단 플로우) through `route` → `pack --withRecall` → author → `check` → `learn.captureFromCheck` with temp-profile isolation; SDK verdict: zero friction. Findings recorded in [DOGFOOD-SDK-FINDINGS.md](DOGFOOD-SDK-FINDINGS.md): F-1 flow-design route gap, F-2 recall pollution by repo-meta docs, F-3 trust & safety corpus gap.
+- [x] `docs/integrations/agent-sdk-walkthrough.md` + `.ko.md` — copy-pastable end-to-end consumer script with measured outputs (doc outputs verified against a live run of the embedded sample artifact), registered in the integration-completeness audit and mkdocs nav; README(+ko) SDK row links it; `docs/SDK.md` gains a walkthrough pointer.
+- [x] `cli/sdk/flow-example.test.mjs` — the walkthrough flow as a `node --test` regression guard (shape-based assertions; 583/583 total).
+
+### Remaining
+- [ ] Evidence-backed backlog from the dogfood, in priority order: F-2 recall meta-doc exclusion (small, mirrors the v4.58 exclusion mechanism) → F-3 `knowledge/patterns/trust-safety-moderation.md` → F-1 flow-design route (route table + check requirements + smoke surfaces).
+- [ ] Release: bundle into the next npm version.
+
 ## Phase 763 — Ranked-search Eval Checkpoint Release (v4.61.0) ✓ ready
 
 Ships the FU-3 ranked-search eval checkpoint (Phase 762) as an npm version: `search --eval-template` / `search --eval [--strict]` over the shipped BM25 path, with the Korean particle-form regression cases in the default template. Additive and backward-compatible; default `search` behavior is unchanged. With this release the AI-learning Phase A follow-ups (FU-1–FU-4) are all closed and published.

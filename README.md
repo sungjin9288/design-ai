@@ -89,7 +89,7 @@ See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution gui
 | **Aider** | Pass `AGENTS.md` as system prompt. [Walkthrough](docs/integrations/aider-walkthrough.md). |
 | **Anthropic / OpenAI SDK** | Embed relevant skill `PLAYBOOK.md` files in your prompt. [Walkthrough](docs/integrations/sdk-walkthrough.md). |
 | **VS Code** | Install the public Marketplace extension for sidebar trees + quick-pick commands. [Walkthrough](docs/integrations/vscode-walkthrough.md). |
-| **Node.js / Agent SDK** | `import { route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk"` — call design-ai's deterministic verbs as functions, no CLI shell-out or MCP server needed. Read-only (Phase A). [SDK reference](docs/SDK.md). |
+| **Node.js / Agent SDK** | `import { route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk"` — call design-ai's deterministic verbs as functions, no CLI shell-out or MCP server needed. Read-only (Phase A). [SDK reference](docs/SDK.md). [Walkthrough](docs/integrations/agent-sdk-walkthrough.md). |
 | **Plain prompt** | Paste any `skills/*/PLAYBOOK.md` body — each is self-contained. |
 
 See [`docs/USING.md`](docs/USING.md) for per-agent setup details, or the linked walkthroughs for concrete example sessions.
