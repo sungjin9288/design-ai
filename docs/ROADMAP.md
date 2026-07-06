@@ -1,5 +1,19 @@
 # Roadmap
 
+## Phase 768 — Route coverage sweep (implemented, unreleased)
+
+Generalizes the two dogfood rounds' converged finding (route-table coverage is the recurring gap class) into one systematic batch: 18 common task classes probed through `route()`, 13 found low/misrouted/zero-match, all fixed at once. Full sweep tables and fix evidence in [ROUTE-COVERAGE-SWEEP.md](ROUTE-COVERAGE-SWEEP.md).
+
+### Delivered
+- [x] 18-class sweep probe at v4.63.0: 13 gaps, with the defining pattern that the knowledge corpus already covered nearly every weak class (pricing-page had dedicated knowledge yet scored 0) — the route table simply didn't connect briefs to it.
+- [x] New `marketing-page` route (`command: null`) consolidating landing/pricing/email-template: five dedicated knowledge files curated, conversion/hierarchy/responsive-email check requirements, `examples/marketing-page-saas-landing.md` at example-qa 12/12 (routes now 22/22).
+- [x] `dashboard-design` enrichment: chart/data-viz and permissions/role keywords (incl. bare `권한` for middle-dot forms like "권한·역할 관리") + `chart-types`, `chart-color-encoding`, `realtime-data` knowledge — data-viz and rbac-admin move from score 0 to medium.
+- [x] `flow-design` keyword batch for nine interaction classes (checkout, notifications, account, file-upload, collaboration, product-tour, search-filter, navigation, long-form incl. 임시저장/유효성 검증 tie-breakers) — keywords only; browse/IA knowledge reaches briefs via recall, with a dedicated route noted as the follow-up if dogfood shows curation mismatch.
+- [x] Post-fix probe: 18/18 classes land on target routes at medium+ where vocabulary allows; the previously-correct classes unchanged; no keyword hijacks (programmatically verified against every route's keyword set); route eval 6/6; both dogfood briefs keep their routes.
+
+### Remaining
+- [ ] Release: bundle into the next npm version.
+
 ## Phase 767 — Dogfood Round 2 Release (v4.63.0) ✓ ready
 
 Ships the dogfood loop's second turn (Phase 766) as an npm version: the `dashboard-design` route with data-screen check requirements and the settlement worked example, plus the `flow-design` Korean step-flow and states-design keyword depth verified in both directions. Additive and backward-compatible; route eval 6/6 and representative-brief routing unchanged.
