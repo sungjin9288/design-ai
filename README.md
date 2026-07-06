@@ -12,7 +12,7 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 
 > **Not a model. Not a fine-tune.** A structured corpus of design expertise + agent-ready instructions that turn a general-purpose LLM into an expert.
 
-> **Distribution status, checked 2026-07-05:** local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.60.0` is published, `@design-ai/cli@4.60.0` is public on npm (`latest`) with provenance, and the live `npm run registry:smoke` passes cleanly against `@design-ai/cli@4.60.0`. The Homebrew formula is pinned to `v4.60.0`, and `sungjin.design-ai-vscode@0.4.1` is public on the VS Code Marketplace. See [`docs/external-status.md`](docs/external-status.md).
+> **Distribution status, checked 2026-07-06:** local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.61.0` is published, `@design-ai/cli@4.61.0` is public on npm (`latest`) with provenance, and the live `npm run registry:smoke` passes cleanly against `@design-ai/cli@4.61.0`. The Homebrew formula is pinned to `v4.61.0`, and `sungjin.design-ai-vscode@0.4.1` is public on the VS Code Marketplace. See [`docs/external-status.md`](docs/external-status.md).
 
 ## Coverage at a glance
 
@@ -214,7 +214,7 @@ Refresh refs/ on demand: `./tools/extractors/run-all.sh`.
 
 ## Status
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. Currently at **v4.60.0**: the Agent SDK (`@design-ai/cli/sdk`) with shipped TypeScript types and the opt-in `learn.*` local-write namespace, public npm publish, provenance-backed GitHub Actions release, public registry smoke, Website Console MCP readiness, workspace learning restore/eval coverage, handoff bundle verification, and 90%+ component coverage are complete.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. Currently at **v4.61.0**: the ranked-search eval checkpoint (`search --eval`), the Agent SDK (`@design-ai/cli/sdk`) with shipped TypeScript types and the opt-in `learn.*` local-write namespace, public npm publish, provenance-backed GitHub Actions release, public registry smoke, Website Console MCP readiness, workspace learning restore/eval coverage, handoff bundle verification, and 90%+ component coverage are complete.
 
 Core design consulting workflows are locally release-ready. The website improvement control tower ships as a zero-dependency static Web App plus a `website-improvement` route/skill/command, covering Site Profiles, audit checklists, MCP readiness, refactor prompts, handoff evidence tracking, and bundle export/verify/repair. Local learning preferences are available through `design-ai learn` — profile bootstrap, feedback capture, a read-only signals registry, skill-proposal generation from repeated QA signals, and full backup/restore/curate/audit tooling, all local-only and opt-in. AI model training or fine-tuning remains outside the shipped scope.
 
