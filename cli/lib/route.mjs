@@ -482,9 +482,10 @@ function relatedKnowledgeFor({ brief, sourceRoot, curatedRelPaths }) {
     dirs: RELATED_KNOWLEDGE_DIRS,
     limit: RELATED_KNOWLEDGE_RECALL_LIMIT,
     designAiPath: sourceRoot,
-    // Recall/injection surface: keep generated index/meta docs (COVERAGE.md,
-    // INDEX.md, docs/reference/*) out of the advisory related-knowledge list.
-    excludeGeneratedIndex: true,
+    // Recall/injection surface: keep non-knowledge docs (generated index/meta docs,
+    // package-excluded repo-meta docs, docs/integrations/ walkthroughs) out of the
+    // advisory related-knowledge list (docs/DOGFOOD-SDK-FINDINGS.md, F-2).
+    excludeNonKnowledge: true,
   });
 
   return hits

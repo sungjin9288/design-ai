@@ -109,7 +109,7 @@ export function buildRecallContext({
   const candidateCount = collectCorpusDocuments({ designAiPath, dirs }).length;
 
   const hits = query
-    ? rankedSearchCorpus({ query, designAiPath, dirs, limit: recallLimit, excludeGeneratedIndex: true }).hits
+    ? rankedSearchCorpus({ query, designAiPath, dirs, limit: recallLimit, excludeNonKnowledge: true }).hits
     : [];
 
   const selected = hits.map((hit) => ({
@@ -150,7 +150,7 @@ export function buildLearnRecall({
 
   const corpusCandidateCount = collectCorpusDocuments({ designAiPath, dirs }).length;
   const corpusHits = normalizedQuery
-    ? rankedSearchCorpus({ query: normalizedQuery, designAiPath, dirs, limit, excludeGeneratedIndex: true }).hits
+    ? rankedSearchCorpus({ query: normalizedQuery, designAiPath, dirs, limit, excludeNonKnowledge: true }).hits
     : [];
   const corpusSelected = corpusHits.map((hit) => ({
     id: hit.relPath,

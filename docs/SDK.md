@@ -126,6 +126,8 @@ recall(query: string, opts?: { limit?: number, category?: string }): { corpus: o
 
 Returns `{ corpus: { candidateCount, selectedCount, selected }, learning: { mode, candidateCount, selectedCount, selected } }` — the same shape as `design-ai learn --recall --json`.
 
+The corpus side (and every other recall-injection surface — `pack`/`prompt` `--with-recall` and `route --explain`'s `relatedKnowledge`) excludes non-knowledge docs before ranking is cut to `limit`: generated index/meta docs (`COVERAGE.md`, `INDEX.md`, `docs/reference/*`), the repo-meta docs excluded from the npm package (`docs/case-study.md`, `docs/project-card.md`, etc. — see `package.json` `files`), and `docs/integrations/*` agent walkthroughs. Raw `search`/`search --ranked` never applies this filter (docs/DOGFOOD-SDK-FINDINGS.md, F-2).
+
 ### `check(artifact, opts)`
 
 Check a generated design Markdown artifact for grounding, accessibility, responsive, unresolved-marker, and route-specific requirements.

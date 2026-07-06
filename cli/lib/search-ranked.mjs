@@ -40,6 +40,36 @@ export function isGeneratedIndexDoc(relPath) {
     || normalized.startsWith("docs/reference/");
 }
 
+// Repo-meta docs (portfolio/case-study/interview material) that ship in the repo
+// but are deliberately excluded from the npm package via the `!docs/*.md` entries
+// in package.json `files`. Keep this Set in sync with that list — verify against
+// package.json `files` before adding/removing an entry. Not design knowledge;
+// found polluting recall-injection results in the Phase 764 dogfood pass
+// (docs/DOGFOOD-SDK-FINDINGS.md, F-2: docs/case-study.md ranked #1 for a design brief).
+const NON_KNOWLEDGE_META_DOCS = new Set([
+  "docs/case-study.md",
+  "docs/evidence-checklist.md",
+  "docs/evidence-gallery.md",
+  "docs/implementation-evidence.md",
+  "docs/interview-story.md",
+  "docs/project-card.md",
+  "docs/project-roadmap.md",
+  "docs/readme-improvement.md",
+  "docs/resume-bullets.md",
+]);
+
+// Predicate for the full RECALL-injection exclusion set (docs/DOGFOOD-SDK-FINDINGS.md,
+// F-2): generated index/meta docs (isGeneratedIndexDoc) OR the package-excluded
+// repo-meta docs (NON_KNOWLEDGE_META_DOCS) OR anything under docs/integrations/
+// (agent walkthroughs, not design knowledge). Same recall-injection-surfaces-only
+// boundary as isGeneratedIndexDoc: raw `search --ranked` never applies this.
+export function isRecallExcludedDoc(relPath) {
+  const normalized = String(relPath || "").replace(/\\/g, "/");
+  return isGeneratedIndexDoc(normalized)
+    || NON_KNOWLEDGE_META_DOCS.has(normalized)
+    || normalized.startsWith("docs/integrations/");
+}
+
 // N = max(limit*5, 25): the number of top lexical candidates handed to the embedding
 // reranker. Documented constant (docs/AI-LEARNING-PHASE2.md, Phase B CLI wiring).
 export function embeddingCandidateCount(limit) {
@@ -82,25 +112,27 @@ export function rankedSearchCorpus({
   dirs = DEFAULT_SEARCH_DIRS,
   limit = 20,
   indexDir = defaultIndexDir(),
-  // Opt-in RECALL filter: when true, drop generated index/meta docs
-  // (isGeneratedIndexDoc) BEFORE applying `limit`, so the limit fills with real
-  // knowledge instead of index files. Default false keeps raw `search --ranked`
-  // byte-unchanged. Filtering before the limit preserves determinism (score desc,
-  // id asc) — the rank pass already orders fully, we only remove excluded ids.
-  excludeGeneratedIndex = false,
+  // Opt-in RECALL filter: when true, drop non-knowledge docs (isRecallExcludedDoc —
+  // generated index/meta docs, package-excluded repo-meta docs, docs/integrations/
+  // walkthroughs) BEFORE applying `limit`, so the limit fills with real knowledge
+  // instead of those files. Default false keeps raw `search --ranked` byte-unchanged.
+  // Filtering before the limit preserves determinism (score desc, id asc) — the rank
+  // pass already orders fully, we only remove excluded ids.
+  excludeNonKnowledge = false,
 } = {}) {
   const documents = collectCorpusDocuments({ designAiPath, dirs });
   const stats = buildLexicalStats(documents.map(({ id, text }) => ({ id, text })));
   const textById = new Map(documents.map((doc) => [doc.id, doc.text]));
 
   // When excluding, rank the FULL candidate pool first (limit = documents.length)
-  // so that filtering out index docs cannot let a real-knowledge hit fall off the
-  // pre-limit cutoff; then re-apply `limit`. Ordering is unchanged (score desc, id asc).
+  // so that filtering out non-knowledge docs cannot let a real-knowledge hit fall
+  // off the pre-limit cutoff; then re-apply `limit`. Ordering is unchanged (score
+  // desc, id asc).
   const ranked = rankLexical(query, stats, {
-    limit: excludeGeneratedIndex ? documents.length : limit,
+    limit: excludeNonKnowledge ? documents.length : limit,
   });
-  const filtered = excludeGeneratedIndex
-    ? ranked.filter((hit) => !isGeneratedIndexDoc(hit.id)).slice(0, limit)
+  const filtered = excludeNonKnowledge
+    ? ranked.filter((hit) => !isRecallExcludedDoc(hit.id)).slice(0, limit)
     : ranked;
 
   const hits = filtered.map((hit) => ({

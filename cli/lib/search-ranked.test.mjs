@@ -9,7 +9,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { buildEmbeddingIndex, writeEmbeddingIndex } from "./embedding-index.mjs";
-import { embeddingCandidateCount, embeddingRerankSearch, isGeneratedIndexDoc, rankedPreview, rankedSearchCorpus } from "./search-ranked.mjs";
+import { embeddingCandidateCount, embeddingRerankSearch, isGeneratedIndexDoc, isRecallExcludedDoc, rankedPreview, rankedSearchCorpus } from "./search-ranked.mjs";
 import { DEFAULT_SEARCH_DIRS } from "./search.mjs";
 
 function withTempDir(fn) {
@@ -76,7 +76,42 @@ test("isGeneratedIndexDoc flags COVERAGE.md, INDEX.md, and docs/reference/* only
   assert.equal(isGeneratedIndexDoc(""), false);
 });
 
-// The recall/injection layer opts in to excludeGeneratedIndex; raw `search --ranked`
+// Truth table for the broader RECALL exclusion predicate (docs/DOGFOOD-SDK-FINDINGS.md,
+// F-2): generated-index cases stay true, each package-excluded meta doc is true,
+// anything under docs/integrations/ is true, and real knowledge/docs stay false.
+test("isRecallExcludedDoc truth table", () => {
+  // Still covers every isGeneratedIndexDoc case.
+  assert.equal(isRecallExcludedDoc("knowledge/COVERAGE.md"), true);
+  assert.equal(isRecallExcludedDoc("knowledge/components/INDEX.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/reference/ant-design.md"), true);
+  assert.equal(isRecallExcludedDoc("docs\\reference\\shadcn-ui.md"), true);
+
+  // Package-excluded repo-meta docs (the `!docs/*.md` entries in package.json `files`).
+  assert.equal(isRecallExcludedDoc("docs/case-study.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/evidence-checklist.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/evidence-gallery.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/implementation-evidence.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/interview-story.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/project-card.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/project-roadmap.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/readme-improvement.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/resume-bullets.md"), true);
+
+  // Agent walkthroughs under docs/integrations/.
+  assert.equal(isRecallExcludedDoc("docs/integrations/codex-walkthrough.ko.md"), true);
+  assert.equal(isRecallExcludedDoc("docs/integrations/agent-sdk-walkthrough.md"), true);
+  // Backslash paths are normalized before matching.
+  assert.equal(isRecallExcludedDoc("docs\\integrations\\anything.md"), true);
+
+  // Real design knowledge and live docs are never flagged.
+  assert.equal(isRecallExcludedDoc("knowledge/patterns/money-and-amount.md"), false);
+  assert.equal(isRecallExcludedDoc("examples/dashboard-composition.md"), false);
+  assert.equal(isRecallExcludedDoc("docs/USING.md"), false);
+  assert.equal(isRecallExcludedDoc("docs/SDK.md"), false);
+  assert.equal(isRecallExcludedDoc(""), false);
+});
+
+// The recall/injection layer opts in to excludeNonKnowledge; raw `search --ranked`
 // (default false) must keep returning index docs. Filtering happens BEFORE the limit
 // so it fills with real knowledge, and determinism (score desc, id asc) is preserved.
 function writeIndexCorpus(root) {
@@ -89,7 +124,7 @@ function writeIndexCorpus(root) {
   writeFileSync(path.join(root, "knowledge", "widget-two.md"), "# Widget two\nwidget matrix more knowledge", "utf8");
 }
 
-test("rankedSearchCorpus default (excludeGeneratedIndex=false) still returns index docs", () => withTempDir((root) => {
+test("rankedSearchCorpus default (excludeNonKnowledge=false) still returns index docs", () => withTempDir((root) => {
   writeIndexCorpus(root);
   const { hits } = rankedSearchCorpus({
     query: "widget matrix",
@@ -103,14 +138,14 @@ test("rankedSearchCorpus default (excludeGeneratedIndex=false) still returns ind
   assert.ok(ids.includes("docs/reference/mui.md"), "raw search must keep docs/reference pages");
 }));
 
-test("rankedSearchCorpus excludeGeneratedIndex drops index docs before the limit", () => withTempDir((root) => {
+test("rankedSearchCorpus excludeNonKnowledge drops index docs before the limit", () => withTempDir((root) => {
   writeIndexCorpus(root);
   const { hits } = rankedSearchCorpus({
     query: "widget matrix",
     designAiPath: root,
     dirs: ["knowledge", "docs"],
     indexDir: path.join(root, "index"),
-    excludeGeneratedIndex: true,
+    excludeNonKnowledge: true,
   });
   const ids = hits.map((hit) => hit.relPath);
   assert.ok(!ids.some((id) => id === "knowledge/COVERAGE.md"));
@@ -127,7 +162,7 @@ test("rankedSearchCorpus excludeGeneratedIndex drops index docs before the limit
   }
 }));
 
-test("rankedSearchCorpus excludeGeneratedIndex fills the limit with real knowledge, not index files", () => withTempDir((root) => {
+test("rankedSearchCorpus excludeNonKnowledge fills the limit with real knowledge, not index files", () => withTempDir((root) => {
   writeIndexCorpus(root);
   // limit 2 with COVERAGE.md/INDEX.md/mui.md ranking high on 'matrix': excluding them
   // must let the two real widget knowledge files fill the two slots.
@@ -137,13 +172,60 @@ test("rankedSearchCorpus excludeGeneratedIndex fills the limit with real knowled
     dirs: ["knowledge", "docs"],
     indexDir: path.join(root, "index"),
     limit: 2,
-    excludeGeneratedIndex: true,
+    excludeNonKnowledge: true,
   });
   assert.equal(hits.length, 2);
   assert.deepEqual(
     hits.map((hit) => hit.relPath).sort(),
     ["knowledge/widget-two.md", "knowledge/widget.md"],
   );
+}));
+
+// Integration-style regression for F-2: a query that matches a repo-meta doc must
+// have it excluded from recall-mode results (excludeNonKnowledge: true), while raw
+// ranked search (the default) still surfaces it — same boundary as the v4.58
+// generated-index exclusion.
+test("rankedSearchCorpus excludeNonKnowledge drops a matching meta doc; raw ranked search still returns it", () => withTempDir((root) => {
+  mkdirSync(path.join(root, "docs", "integrations"), { recursive: true });
+  mkdirSync(path.join(root, "knowledge"), { recursive: true });
+  writeFileSync(
+    path.join(root, "docs", "case-study.md"),
+    "# Case study\nreport moderation flow design story\n",
+    "utf8",
+  );
+  writeFileSync(
+    path.join(root, "docs", "integrations", "codex-walkthrough.ko.md"),
+    "# Codex walkthrough\nreport moderation flow design story\n",
+    "utf8",
+  );
+  writeFileSync(
+    path.join(root, "knowledge", "moderation.md"),
+    "# Moderation\nreport moderation flow design story\n",
+    "utf8",
+  );
+
+  const query = "report moderation flow design";
+  const raw = rankedSearchCorpus({
+    query,
+    designAiPath: root,
+    dirs: ["knowledge", "docs"],
+    indexDir: path.join(root, "index"),
+  });
+  const rawIds = raw.hits.map((hit) => hit.relPath);
+  assert.ok(rawIds.includes("docs/case-study.md"), "raw ranked search must still return the meta doc");
+  assert.ok(rawIds.includes("docs/integrations/codex-walkthrough.ko.md"), "raw ranked search must still return the walkthrough");
+
+  const recall = rankedSearchCorpus({
+    query,
+    designAiPath: root,
+    dirs: ["knowledge", "docs"],
+    indexDir: path.join(root, "index"),
+    excludeNonKnowledge: true,
+  });
+  const recallIds = recall.hits.map((hit) => hit.relPath);
+  assert.ok(!recallIds.includes("docs/case-study.md"), "recall mode must drop the meta doc");
+  assert.ok(!recallIds.includes("docs/integrations/codex-walkthrough.ko.md"), "recall mode must drop the walkthrough");
+  assert.ok(recallIds.includes("knowledge/moderation.md"), "recall mode must still surface real knowledge");
 }));
 
 test("rankedSearchCorpus reports a not-built notice when no corpus index exists", () => withTempDir((root) => {
