@@ -2,6 +2,31 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.61.0 — Ranked-search eval checkpoint (2026-07)
+
+Closes the last open follow-up from the AI-learning Phase A review (FU-3 in `docs/AI-LEARNING-PHASE2.md`): `design-ai search` gains eval-checkpoint modes mirroring the route/prompt/pack/learn pattern, run through the shipped ranked (BM25) search path. This is the standing evidence artifact for any future decision to promote `--ranked` to the default search mode. Additive and backward-compatible; default `search` behavior is unchanged.
+
+### Added
+- `search --eval-template [--json]` — emit a versioned ranked-search checkpoint template. The default template ships six cases that all pass against the shipped corpus, including the Korean particle-form regression queries (`버튼`, `버튼을`, `접근성이`) from the Hangul-bigram work, so the eval doubles as the retrieval-level Korean tokenization regression.
+- `search --eval [--strict] [--json]` with `--from-file file` / `--stdin` — run a checkpoint file's cases through the ranked search path and report pass/warn/fail per case; `--strict` exits nonzero on any failure. Case assertions: `expectRelPathIn` (top hit), `minHits`, and `matchedTokenIncludes`.
+
+### Changed
+- `search` help/usage lines (CLI `help` topic and command help) document the new eval modes; the shared smoke assertion pins were updated in lockstep.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `npm run release:metadata`.
+- `git diff --check`.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.60.0 → 4.61.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- Any future `--ranked` default promotion is now evidence-backed and announced: the checkpoint demonstrates ranked-search quality (including Korean agglutinative queries) reproducibly, per the FU-3 gate set in the Phase A implementation review.
+
 ## v4.60.0 — Agent SDK types and local-write namespace (2026-07)
 
 Extends the Agent SDK (`@design-ai/cli/sdk`) two ways, both additive and backward-compatible. First, hand-written TypeScript declarations now ship with the package, so TypeScript and editors resolve `@design-ai/cli/sdk` with full types — no `@types` install and no build step. Second, an opt-in `learn.*` namespace adds the SDK's first local-write verbs, keeping the eight Phase A verbs read-only and unchanged.

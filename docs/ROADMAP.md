@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 763 — Ranked-search Eval Checkpoint Release (v4.61.0) ✓ ready
+
+Ships the FU-3 ranked-search eval checkpoint (Phase 762) as an npm version: `search --eval-template` / `search --eval [--strict]` over the shipped BM25 path, with the Korean particle-form regression cases in the default template. Additive and backward-compatible; default `search` behavior is unchanged. With this release the AI-learning Phase A follow-ups (FU-1–FU-4) are all closed and published.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check` (unit tests incl. search-eval and search-command suites, strict audits, whitespace, package contents, release metadata, release self-tests, packed-tarball smoke).
+- `npm run release:metadata`.
+- `git diff --check`.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.60.0 → 4.61.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- The `--ranked` default-promotion decision becomes evidence-backed for npm users too: the published CLI carries the checkpoint tooling, so the eval can be re-run against any installed version — including Korean agglutinative-query regressions — before and after such a change.
+
+### What's still ahead
+- The `--ranked` default-promotion decision itself (separate, evidence-backed call).
+- Next-surface re-evaluation per the updated decision record in [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md).
+
 ## Phase 762 — Ranked-search eval checkpoint (FU-3, implemented, unreleased)
 
 Closes the last open follow-up from the AI-learning Phase A review ([AI-LEARNING-PHASE2.md](AI-LEARNING-PHASE2.md), FU-3): `design-ai search` gains `--eval-template` / `--eval [--strict]` checkpoint modes mirroring the route/prompt/pack/learn eval pattern, run through the shipped ranked (BM25) search path. This is the standing evidence artifact for any future decision to promote `--ranked` to the default; with FU-1/FU-2/FU-4 already annotated done, all four Phase A follow-ups are now closed.
