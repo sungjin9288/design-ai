@@ -6,6 +6,8 @@
 
 See [`AGENT-SDK.md`](AGENT-SDK.md) for the full design rationale, phased plan, and open questions. This page is the public reference for the shipped Phase A (read-only) and Phase B (local-write) surface.
 
+MCP parity: the SDK's `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to the MCP tools `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
+
 ## Install and import
 
 The SDK ships inside the `@design-ai/cli` package (no separate install):

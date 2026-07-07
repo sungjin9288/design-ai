@@ -6,8 +6,10 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 import { DESIGN_AI_HOME, PACKAGE_ROOT } from "./paths.mjs";
+import { LEARNING_CATEGORIES, LEARNING_FEEDBACK_OUTCOMES } from "./learn-args.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
+const LEARNING_WRITE_BOUNDARY = "Writes ONLY the local learning profile (DESIGN_AI_LEARNING_FILE or its default), and only when explicitly called.";
 const MAX_TOOL_OUTPUT_BYTES = 220_000;
 const DESIGN_AI_BIN = path.join(PACKAGE_ROOT, "cli", "bin", "design-ai.mjs");
 const MCP_RESPONSE_METHODS = new Set([
@@ -21,6 +23,10 @@ const MCP_RESPONSE_METHODS = new Set([
 
 function optionalString(description = "") {
   return { type: "string", description };
+}
+
+function optionalEnumString(values, description = "") {
+  return { type: "string", enum: values, description };
 }
 
 function optionalBoolean(description = "") {
@@ -134,6 +140,21 @@ export const MCP_TOOLS = [
     },
   },
   {
+    name: "design_ai_recall",
+    title: "Recall corpus and learning context",
+    description: "Recall brief-relevant shipped corpus knowledge plus local learning-profile entries for a query, ranked by the deterministic lexical scorer. Read-only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: { type: "string", minLength: 1, description: "Recall query text." },
+        limit: optionalInteger({ description: "Maximum results per list (corpus and learning), 1-20.", minimum: 1, maximum: 20 }),
+        category: optionalEnumString(LEARNING_CATEGORIES, "Optional learning category filter, scopes only the learning list."),
+      },
+      required: ["query"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "design_ai_check",
     title: "Check Markdown artifact quality",
     description: "Check generated Markdown for grounding, accessibility, responsive notes, unresolved markers, and route-specific requirements. Read-only.",
@@ -183,6 +204,49 @@ export const MCP_TOOLS = [
     },
   },
   {
+    name: "design_ai_learn_remember",
+    title: "Remember a learning preference",
+    description: `Record a local learning-profile preference for prompt personalization. ${LEARNING_WRITE_BOUNDARY}`,
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: { type: "string", minLength: 1, description: "Preference text to remember." },
+        category: optionalEnumString(LEARNING_CATEGORIES, "Optional learning category. Defaults to preference."),
+      },
+      required: ["text"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_learn_feedback",
+    title: "Record learning feedback",
+    description: `Record keep/improve/avoid feedback as a local learning-profile entry. ${LEARNING_WRITE_BOUNDARY}`,
+    inputSchema: {
+      type: "object",
+      properties: {
+        text: { type: "string", minLength: 1, description: "Feedback text." },
+        outcome: optionalEnumString(LEARNING_FEEDBACK_OUTCOMES, "Optional feedback outcome: keep, improve, or avoid. Defaults to improve."),
+        category: optionalEnumString(LEARNING_CATEGORIES, "Optional learning category. Defaults to workflow."),
+      },
+      required: ["text"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_learn_capture",
+    title: "Check artifact and capture learning",
+    description: `Check a Markdown artifact, then capture its non-pass results as local learning-profile entries. The only compound read+write tool. ${LEARNING_WRITE_BOUNDARY}`,
+    inputSchema: {
+      type: "object",
+      properties: {
+        content: { type: "string", minLength: 1, description: "Markdown artifact content to check via stdin, then capture." },
+        route: optionalString("Optional route id, such as component-spec."),
+      },
+      required: ["content"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "design_ai_version",
     title: "Show design-ai version",
     description: "Return design-ai CLI and corpus version metadata. Read-only.",
@@ -217,6 +281,9 @@ function assertMcpInputValue(name, value, schema) {
     }
     if (schema.minLength && value.length < schema.minLength) {
       throw new Error(`${name} must be at least ${schema.minLength} characters`);
+    }
+    if (schema.enum && !schema.enum.includes(value)) {
+      throw new Error(`${name} must be one of: ${schema.enum.join(", ")}`);
     }
     return;
   }
@@ -328,6 +395,13 @@ export function buildCliInvocation(toolName, input = {}) {
     return { args, stdin };
   }
 
+  if (toolName === "design_ai_recall") {
+    args.push("learn", "--recall", assertString(input.query, "query"), "--json");
+    maybePush(args, "--limit", input.limit);
+    maybePush(args, "--category", input.category);
+    return { args, stdin };
+  }
+
   if (toolName === "design_ai_check") {
     args.push("check", "--stdin");
     stdin = assertString(input.artifact, "artifact");
@@ -353,6 +427,26 @@ export function buildCliInvocation(toolName, input = {}) {
     maybeBool(args, "--probes", input.probes);
     maybeBool(args, "--strict", input.strict);
     maybeBool(args, "--json", input.json);
+    return { args, stdin };
+  }
+
+  if (toolName === "design_ai_learn_remember") {
+    args.push("learn", "--remember", assertString(input.text, "text"), "--json");
+    maybePush(args, "--category", input.category);
+    return { args, stdin };
+  }
+
+  if (toolName === "design_ai_learn_feedback") {
+    args.push("learn", "--feedback", assertString(input.text, "text"), "--json");
+    maybePush(args, "--outcome", input.outcome);
+    maybePush(args, "--category", input.category);
+    return { args, stdin };
+  }
+
+  if (toolName === "design_ai_learn_capture") {
+    args.push("check", "--stdin", "--learn", "--yes", "--json");
+    stdin = assertString(input.content, "content");
+    maybePush(args, "--route", input.route);
     return { args, stdin };
   }
 
@@ -547,7 +641,7 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
         name: "design-ai",
         version: readPackageVersion(),
       },
-      instructions: "Use design-ai MCP tools for local, deterministic design expertise: route briefs, generate prompts/packs, search/show the design corpus, check Markdown artifacts, and validate Website Improvement MCP readiness. Prefer read-only tools unless the user explicitly asks to record local learning usage.",
+      instructions: "Use design-ai MCP tools for local, deterministic design expertise: route briefs, generate prompts/packs, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, and validate Website Improvement MCP readiness. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
     });
   }
 

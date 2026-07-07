@@ -14,10 +14,18 @@ The server is local, stdio-based, and deterministic. It wraps existing `design-a
 | `design_ai_search` | Search `knowledge/`, `examples/`, `skills/`, `docs/`, `agents/`, and `commands/`. Optional `ranked` opts into deterministic BM25-style results (`design-ai search --ranked`); requires no index and never builds one. | Read-only |
 | `design_ai_show` | Read a corpus file or line range. | Read-only |
 | `design_ai_examples` | Find worked examples by query or route. | Read-only |
+| `design_ai_recall` | Recall brief-relevant shipped corpus knowledge plus local learning-profile entries for a query, ranked by the deterministic lexical scorer (`design-ai learn --recall`). | Read-only |
 | `design_ai_check` | Check generated Markdown artifacts for grounding, accessibility, responsive notes, and unresolved markers. | Read-only |
 | `design_ai_site_mcp_check` | Validate Website Improvement MCP readiness from workspace JSON. | Read-only |
 | `design_ai_site_mcp_plan` | Generate a Website Improvement MCP action plan. | Read-only |
+| `design_ai_learn_remember` | Record a local learning-profile preference for prompt personalization. | Writes only the local learning profile, opt-in |
+| `design_ai_learn_feedback` | Record keep/improve/avoid feedback as a local learning-profile entry. | Writes only the local learning profile, opt-in |
+| `design_ai_learn_capture` | Check a Markdown artifact, then capture its non-pass results as local learning-profile entries. The only compound read+write tool. | Writes only the local learning profile, opt-in |
 | `design_ai_version` | Return CLI and corpus version metadata. | Read-only |
+
+### Opt-in write tools
+
+`design_ai_learn_remember`, `design_ai_learn_feedback`, and `design_ai_learn_capture` are the MCP mirror of the SDK's `learn.*` namespace (see [`../SDK.md`](../SDK.md)). Each writes ONLY the local learning profile (`DESIGN_AI_LEARNING_FILE` or its default path), and only when explicitly called by name — no other tool call implicitly triggers a write. `design_ai_learn_capture` maps to `design-ai check --stdin --learn --yes --json`, the same path as the CLI's `--learn --yes` capture flow.
 
 ## Start the server manually
 
@@ -147,6 +155,7 @@ Then generate a design_ai_site_mcp_plan and summarize blocking MCP gaps.
 - The default tools do not call external MCP servers.
 - Website Improvement MCP readiness tools inspect local workspace JSON only.
 - `design_ai_prompt` and `design_ai_pack` are read-only unless `withLearning` is set.
+- `design_ai_learn_remember`, `design_ai_learn_feedback`, and `design_ai_learn_capture` write only the local learning profile, never the network, and only when called explicitly.
 - The server does not mutate target repositories.
 - Do not pass secrets in briefs, workspace JSON, or artifacts.
 

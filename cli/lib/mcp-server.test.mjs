@@ -64,6 +64,36 @@ test("MCP tool list exposes design-ai read-only workflow tools", async () => {
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_mcp_check"));
 });
 
+test("MCP tool list exposes 14 tools including recall and the learning-write set", async () => {
+  const response = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 1,
+    method: "tools/list",
+  });
+
+  assert.equal(response.result.tools.length, 14);
+  const toolNames = response.result.tools.map((tool) => tool.name);
+  assert.ok(toolNames.includes("design_ai_recall"));
+  assert.ok(toolNames.includes("design_ai_learn_remember"));
+  assert.ok(toolNames.includes("design_ai_learn_feedback"));
+  assert.ok(toolNames.includes("design_ai_learn_capture"));
+});
+
+test("MCP write tool descriptions carry the local-learning-profile write-boundary marker", async () => {
+  const response = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 1,
+    method: "tools/list",
+  });
+
+  const writeToolNames = ["design_ai_learn_remember", "design_ai_learn_feedback", "design_ai_learn_capture"];
+  for (const name of writeToolNames) {
+    const tool = response.result.tools.find((item) => item.name === name);
+    assert.ok(tool, `expected ${name} to be listed`);
+    assert.match(tool.description, /Writes ONLY the local learning profile/);
+  }
+});
+
 test("MCP initialize advertises tool capability and server instructions", async () => {
   const response = await handleMcpRequest({
     jsonrpc: "2.0",
@@ -262,6 +292,74 @@ test("buildCliInvocation maps design_ai_pack withRecall and recallLimit to CLI f
   );
 });
 
+test("buildCliInvocation maps design_ai_recall to learn --recall", () => {
+  assert.deepEqual(
+    buildCliInvocation("design_ai_recall", { query: "접근성 버튼", limit: 3, category: "accessibility" }),
+    { args: ["learn", "--recall", "접근성 버튼", "--json", "--limit", "3", "--category", "accessibility"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_recall", { query: "접근성 버튼", limit: 3 }),
+    { args: ["learn", "--recall", "접근성 버튼", "--json", "--limit", "3"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_recall", { query: "접근성 버튼", category: "accessibility" }),
+    { args: ["learn", "--recall", "접근성 버튼", "--json", "--category", "accessibility"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_recall", { query: "접근성 버튼" }),
+    { args: ["learn", "--recall", "접근성 버튼", "--json"], stdin: "" },
+  );
+});
+
+test("buildCliInvocation maps design_ai_learn_remember to learn --remember", () => {
+  assert.deepEqual(
+    buildCliInvocation("design_ai_learn_remember", { text: "Use 44px touch targets", category: "accessibility" }),
+    { args: ["learn", "--remember", "Use 44px touch targets", "--json", "--category", "accessibility"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_learn_remember", { text: "Use 44px touch targets" }),
+    { args: ["learn", "--remember", "Use 44px touch targets", "--json"], stdin: "" },
+  );
+});
+
+test("buildCliInvocation maps design_ai_learn_feedback to learn --feedback", () => {
+  assert.deepEqual(
+    buildCliInvocation("design_ai_learn_feedback", { text: "Loved the contrast callouts", outcome: "keep", category: "workflow" }),
+    { args: ["learn", "--feedback", "Loved the contrast callouts", "--json", "--outcome", "keep", "--category", "workflow"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_learn_feedback", { text: "Loved the contrast callouts", outcome: "keep" }),
+    { args: ["learn", "--feedback", "Loved the contrast callouts", "--json", "--outcome", "keep"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_learn_feedback", { text: "Loved the contrast callouts", category: "workflow" }),
+    { args: ["learn", "--feedback", "Loved the contrast callouts", "--json", "--category", "workflow"], stdin: "" },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_learn_feedback", { text: "Loved the contrast callouts" }),
+    { args: ["learn", "--feedback", "Loved the contrast callouts", "--json"], stdin: "" },
+  );
+});
+
+test("buildCliInvocation maps design_ai_learn_capture to check --stdin --learn --yes", () => {
+  assert.deepEqual(
+    buildCliInvocation("design_ai_learn_capture", { content: "# Spec\n\nA button.", route: "component-spec" }),
+    { args: ["check", "--stdin", "--learn", "--yes", "--json", "--route", "component-spec"], stdin: "# Spec\n\nA button." },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_learn_capture", { content: "# Spec\n\nA button." }),
+    { args: ["check", "--stdin", "--learn", "--yes", "--json"], stdin: "# Spec\n\nA button." },
+  );
+});
+
 test("tools/call returns recall-augmented prompt output from injected runner when withRecall is true", async () => {
   const calls = [];
   const response = await handleMcpRequest({
@@ -338,6 +436,32 @@ test("tools/call returns ranked CLI output from injected runner when ranked is t
   assert.equal(response.result.isError, false);
   assert.equal(response.result.content[0].type, "text");
   assert.equal(response.result.content[0].text, "{\"query\":\"Pretendard\",\"ranked\":true,\"hits\":[]}");
+});
+
+test("tools/call returns recall output from injected runner for design_ai_recall", async () => {
+  const calls = [];
+  const response = await handleMcpRequest({
+    jsonrpc: "2.0",
+    id: 2,
+    method: "tools/call",
+    params: {
+      name: "design_ai_recall",
+      arguments: { query: "접근성 버튼", limit: 3, category: "accessibility" },
+    },
+  }, {
+    runCli: async (args, opts) => {
+      calls.push({ args, opts });
+      return { code: 0, stdout: "{\"query\":\"접근성 버튼\",\"corpus\":{},\"learning\":{}}\n", stderr: "" };
+    },
+  });
+
+  assert.deepEqual(calls, [{
+    args: ["learn", "--recall", "접근성 버튼", "--json", "--limit", "3", "--category", "accessibility"],
+    opts: { stdin: "" },
+  }]);
+  assert.equal(response.result.isError, false);
+  assert.equal(response.result.content[0].type, "text");
+  assert.equal(response.result.content[0].text, "{\"query\":\"접근성 버튼\",\"corpus\":{},\"learning\":{}}");
 });
 
 test("tools/call reports CLI failures without failing JSON-RPC", async () => {
