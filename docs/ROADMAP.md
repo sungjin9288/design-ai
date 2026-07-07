@@ -1,5 +1,27 @@
 # Roadmap
 
+## Phase 771 — MCP Parity Release (v4.65.0) ✓ ready
+
+Ships the Phase 770 MCP ↔ SDK parity work as an npm version: `design_ai_recall` plus the opt-in learning-write tool set (`design_ai_learn_remember`/`feedback`/`capture`), growing the MCP server from 10 to 14 tools with the SDK `learn.*` write boundary mirrored and test-guarded. Additive; write tools are strictly opt-in.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check` (unit tests incl. MCP mapping/boundary tests, strict audits, whitespace, package contents, release metadata, release self-tests, packed-tarball smoke).
+- `npm run release:metadata`.
+- `git diff --check`.
+- Real-server stdio E2E (14 tools; live recall; temp-profile writes verified).
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.64.0 → 4.65.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- The learn loop closes on the primary agent surface: MCP clients recall combined corpus+learning context and record learnings with the same explicit write boundary the SDK ships — CLI, SDK, and MCP are now at full surface parity.
+
+### What's still ahead
+- Next planning window per [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md); dogfood loop remains cheap to rerun on curation-quality questions (browse/IA).
+
 ## Phase 770 — MCP ↔ SDK parity (implemented, unreleased)
 
 Closes the parity gap the 2026-07-07 planning window fact-checked ([NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md)): the MCP server had no recall tool and no learning-write tools while the SDK shipped both, so an MCP-connected agent could not run the recall→learn loop the SDK walkthrough demonstrates.

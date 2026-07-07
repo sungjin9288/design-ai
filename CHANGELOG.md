@@ -2,6 +2,32 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v4.65.0 — MCP ↔ SDK parity: recall and opt-in learning-write tools (2026-07)
+
+Closes the parity gap the 2026-07-07 planning window fact-checked: the MCP server — the primary agent surface — had no recall tool and no learning-write tools, while the SDK shipped both. An MCP-connected agent can now run the same recall → author → check → capture loop the Agent SDK walkthrough demonstrates. The MCP server grows from 10 to **14 tools**; all additions are additive and the write tools are strictly opt-in.
+
+### Added
+- **`design_ai_recall`** (read-only) — combined corpus + learning-profile recall for a query, ranked by the deterministic lexical scorer (wraps `learn --recall`), with `limit` (1-20) and learning-`category` filters.
+- **`design_ai_learn_remember`**, **`design_ai_learn_feedback`** (outcome enum `keep`/`improve`/`avoid`, mirroring the CLI's real `--outcome` flag), **`design_ai_learn_capture`** (check an artifact, then capture its non-pass results — the only compound read+write tool). All three mirror the SDK `learn.*` boundary: they write ONLY the local learning profile (`DESIGN_AI_LEARNING_FILE` or its default), only when explicitly called, and never the network. The shared write-boundary language in the tool descriptions is guarded by a test, and the server's instructions name the write set explicitly so agents keep preferring read-only tools by default.
+
+### Changed
+- MCP input validation gains enum support: `category` and `outcome` are validated against the CLI's own value sets before any CLI invocation.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `npm run release:metadata`.
+- `git diff --check`.
+- Real-server stdio E2E: initialize → tools/list (14) → live recall query → remember/capture against a temp learning profile with the file verified after each write.
+- Main-branch GitHub Actions (`Design-AI audit`, `Deploy doc site`) passed for the constituent commits.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.64.0 → 4.65.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- MCP consumers (Claude Code, Codex, any MCP client) get full parity with the Agent SDK: standalone combined recall, and an explicit, clearly-bounded way to record preferences, feedback, and check-derived learnings into the local profile — completing the learn loop on the surface where design-ai is most consumed.
+
 ## v4.64.0 — Route coverage sweep: marketing-page route and 18-class routing (2026-07)
 
 Generalizes the two dogfood rounds' converged finding — route-table coverage is the recurring gap class — into one systematic batch. Eighteen common task classes were probed through `route()`; thirteen were low/misrouted/zero-match despite the knowledge corpus already covering nearly every one of them (a pricing-page brief scored 0 with `pricing-page-design.md` sitting in the corpus). All fixed in one pass; evidence tables in `docs/ROUTE-COVERAGE-SWEEP.md`. Additive and backward-compatible.
