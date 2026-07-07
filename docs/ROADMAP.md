@@ -1,5 +1,19 @@
 # Roadmap
 
+## Phase 770 — MCP ↔ SDK parity (implemented, unreleased)
+
+Closes the parity gap the 2026-07-07 planning window fact-checked ([NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md)): the MCP server had no recall tool and no learning-write tools while the SDK shipped both, so an MCP-connected agent could not run the recall→learn loop the SDK walkthrough demonstrates.
+
+### Delivered
+- [x] `design_ai_recall` (read-only): combined corpus+learning recall over `learn --recall`, with limit and category-enum validation.
+- [x] Opt-in write set mirroring the SDK `learn.*` boundary: `design_ai_learn_remember`, `design_ai_learn_feedback` (outcome enum keep/improve/avoid — mirrored only after verifying the CLI's `--outcome` flag exists), `design_ai_learn_capture` (check + capture, the only compound read+write tool). All three carry a shared write-boundary description (writes ONLY the local learning profile, only when explicitly called), guarded by a test that fails if the safety language is dropped; serverInfo instructions name the write set explicitly.
+- [x] `assertMcpInputValue` gains enum validation (category/outcome checked against `LEARNING_CATEGORIES`/`LEARNING_FEEDBACK_OUTCOMES` before CLI invocation).
+- [x] Real-server stdio E2E: initialize → tools/list (10 → **14** tools) → live `design_ai_recall` query → `learn_remember` and `learn_capture` against a temp `DESIGN_AI_LEARNING_FILE` with the profile file verified after each write. 593/593 tests; smoke assertions are presence-based (no drift risk, verified in both smoke files).
+- [x] Docs: MCP server guide tool table + write-boundary note; SDK ↔ MCP parity cross-reference in `docs/SDK.md`.
+
+### Remaining
+- [ ] Release: bundle into the next npm version (external-status "10 tools" evidence line updates at release handoff).
+
 ## Phase 769 — Route Coverage Sweep Release (v4.64.0) ✓ ready
 
 Ships the Phase 768 route-coverage sweep as an npm version: the `marketing-page` route with its worked example, the `dashboard-design` chart/permissions enrichment, and the `flow-design` nine-class keyword batch — 18/18 probed task classes now land on target routes at medium+ confidence. Additive and backward-compatible.
