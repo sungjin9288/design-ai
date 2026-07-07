@@ -1,7 +1,7 @@
 # Next surface decision
 
-> Status: proposed — awaiting maintainer sign-off
-> Date: 2026-07-03
+> Status: living decision record — original recommendation accepted and executed (v4.57–v4.61); re-evaluated 2026-07-06 (composed slice, executed v4.62–v4.64) and 2026-07-07 (MCP ↔ SDK parity, accepted). See the dated sections below for each decision's status.
+> Date: 2026-07-03 (original) / 2026-07-07 (latest re-evaluation)
 
 This record answers option 3 of the "Recommended next decision" in [`PRODUCT-READINESS.md`](PRODUCT-READINESS.md): if the goal is "best design tool" as a broader product, which surface do we deepen next — CLI, VS Code extension, web UI, Figma plugin, or agent SDK?
 
@@ -157,3 +157,26 @@ Scored with the same seven criteria, in the post-execution landscape: CLI deepen
 **Run the two leaders as one composed slice: a real SDK consumer example that drives a design task end-to-end (`route` → `pack` → `check` → `learn.captureFromCheck`), documented as the SDK walkthrough.** The example is simultaneously the SDK adoption artifact (D) and a dogfood pass (G): building it exercises the shipped surfaces against a genuine task, and any friction or corpus gaps it surfaces become the evidence-backed next backlog — the same loop that produced the v4.58 corpus additions.
 
 - **Status:** accepted — maintainer signed off 2026-07-06; the composed slice is the next work item
+
+## Re-evaluation (2026-07-07)
+
+The 2026-07-06 composed slice executed and compounded: two dogfood rounds plus a systematic 18-class route-coverage sweep shipped as v4.62.0–v4.64.0. Route coverage has converged (18/18 probed classes at medium+; 22 routes; example-qa 22/22), so further sweeps are diminishing returns. Scored against the same seven criteria in the new landscape:
+
+| Candidate | Leverage | Reach | Build cost | Maintenance | Distribution | Risk | Synergy | Total |
+|---|---|---|---|---|---|---|---|---|
+| MCP ↔ SDK surface parity | 5 | 5 | 5 | 4 | 5 | 4 | 5 | **33** |
+| Dogfood round 3 (browse/IA class) | 4 | 3 | 4 | 5 | 3 | 5 | 4 | 28 |
+| Corpus automation (spec extractor v2) | 3 | 3 | 3 | 4 | 3 | 4 | 2 | 22 |
+| VS Code deepening | 4 | 3 | 3 | 3 | 4 | 3 | 3 | 23 |
+| Web UI expansion | 4 | 3 | 3 | 4 | 3 | 4 | 3 | 24 |
+| Skill-proposal apply path | 3 | 3 | 3 | 3 | 4 | 2 | 4 | 22 |
+
+- **MCP ↔ SDK surface parity** — fact-checked gap: the MCP server exposes 10 tools with **no `design_ai_recall`** and **no learning-write tools**, while the SDK ships `recall` plus the `learn.*` namespace (remember/feedback/captureFromCheck). MCP is the primary agent surface, yet an MCP-connected agent today cannot recall combined corpus+learning context as a standalone verb, nor record what it learned — the exact loop the SDK walkthrough demonstrates. The fix is the proven playbook: thin wrappers over the same `cli/lib` functions, with the write tools opt-in and clearly marked (the server instructions already say "prefer read-only tools unless the user explicitly asks to record local learning"). Highest leverage (serves every MCP consumer), lowest cost (adapter-only), direct synergy with everything shipped this month.
+- Dogfood round 3 stays the standing loop — cheap to rerun, but its route-coverage yield has converged; next run should target curation quality (browse/IA) rather than routing.
+- VS Code / Web UI / Figma: unchanged triggers, still no demand signal — deferred.
+
+### Recommendation (2026-07-07)
+
+**Close the MCP ↔ SDK parity gap: add `design_ai_recall` (read-only) and an opt-in learning-write tool set (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) mirroring the SDK's `learn.*` boundary — writes only the local learning profile, clearly marked in tool descriptions, never enabled implicitly.** Same verification pattern as every surface addition: MCP protocol tests, smoke assertions, docs (MCP server guide + SDK/MCP parity note).
+
+- **Status:** accepted — maintainer signed off 2026-07-07; MCP ↔ SDK parity is the next work item
