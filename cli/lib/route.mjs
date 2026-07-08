@@ -85,6 +85,30 @@ export const ROUTES = [
     keywords: ["website", "webpage", "homepage", "landing", "seo", "performance", "lighthouse", "core web vitals", "mcp", "refactor plan", "handoff report", "site profile", "웹사이트", "홈페이지", "랜딩", "성능", "검색엔진", "개선", "리팩터"],
   },
   {
+    id: "agentic-design-development",
+    label: "Agentic design development",
+    command: null,
+    skills: ["skills/website-improvement/SKILL.md", "skills/design-system-builder/SKILL.md", "skills/handoff-spec/SKILL.md"],
+    agents: ["agents/a11y-reviewer.md", "agents/design-critic.md"],
+    knowledge: [
+      "knowledge/patterns/agentic-design-workflows.md",
+      "knowledge/patterns/design-system-qa.md",
+      "knowledge/patterns/technical-writing.md",
+      "docs/AGENT-DEVELOPMENT.md",
+      "docs/SDK.md",
+      "docs/MCP-INTEGRATION.md",
+    ],
+    keywords: [
+      "agentic design", "agentic workflow", "internal skill", "skill development",
+      "feature development", "reference mining", "artifact contract", "human gate",
+      "approval gate", "design-ai feature", "design-ai skill", "mcp feature", "mcp tool",
+      "sdk surface", "plugin surface",
+      "내부 스킬", "스킬 개발", "스킬 디밸롭", "기능 디밸롭", "우리 기능",
+      "내부 기능", "에이전트형", "레퍼런스 분석", "레퍼런스 마이닝",
+      "승인 게이트", "아티팩트 계약", "기능 개발",
+    ],
+  },
+  {
     id: "design-from-brief",
     label: "Design system from brief",
     command: "commands/design-from-brief.md",
@@ -712,6 +736,12 @@ export function buildRouteEvalTemplate({ sourceRoot, generatedAt = new Date() } 
         id: "website-improvement-control-tower",
         brief: "Improve a website homepage with SEO, performance, MCP readiness, and a refactor plan",
         expectedRouteId: "website-improvement",
+        minConfidence: "high",
+      },
+      {
+        id: "agentic-design-development-loop",
+        brief: "Use OpenTag, Open Design, WWIT, and React Bits reference mining to develop internal design-ai skills, MCP feature surfaces, approval gates, and SDK workflows",
+        expectedRouteId: "agentic-design-development",
         minConfidence: "high",
       },
       {

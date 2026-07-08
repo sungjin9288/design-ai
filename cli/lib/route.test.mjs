@@ -37,12 +37,16 @@ function makeFixture() {
     "skills/component-spec-writer/SKILL.md",
     "skills/color-palette/SKILL.md",
     "skills/design-system-builder/SKILL.md",
+    "skills/website-improvement/PLAYBOOK.md",
     "skills/handoff-spec/SKILL.md",
     "agents/a11y-reviewer.md",
     "agents/design-critic.md",
     "agents/component-architect.md",
     "knowledge/PRINCIPLES.md",
     "knowledge/patterns/ux-guidelines.md",
+    "knowledge/patterns/agentic-design-workflows.md",
+    "knowledge/patterns/design-system-qa.md",
+    "knowledge/patterns/technical-writing.md",
     "knowledge/a11y/contrast.md",
     "knowledge/a11y/keyboard-and-focus.md",
     "knowledge/layout/spacing-and-grid.md",
@@ -55,6 +59,8 @@ function makeFixture() {
     "knowledge/patterns/styles-catalog.md",
     "knowledge/layout/spacing-and-grid.md",
     "knowledge/typography/type-scale-fundamentals.md",
+    "docs/AGENT-DEVELOPMENT.md",
+    "docs/SDK.md",
   ];
 
   for (const file of files) {
@@ -345,6 +351,25 @@ test("routeBrief recommends website improvement for site optimization briefs", (
     assert.equal(routes[0].id, "website-improvement");
     assert.ok(routes[0].matchedKeywords.includes("website"));
     assert.equal(routes[0].command.exists, true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("routeBrief recommends agentic design development for internal skill and feature development briefs", () => {
+  const root = makeFixture();
+  try {
+    const routes = routeBrief({
+      brief: "내부 스킬 및 우리 기능 디밸롭에 OpenTag React Bits 레퍼런스 분석을 사용하자",
+      sourceRoot: root,
+    });
+
+    assert.equal(routes[0].id, "agentic-design-development");
+    assert.ok(routes[0].matchedKeywords.includes("내부 스킬"));
+    assert.ok(routes[0].matchedKeywords.includes("우리 기능"));
+    assert.ok(["medium", "high"].includes(routes[0].confidence));
+    assert.equal(routes[0].skills[0].exists, true);
+    assert.equal(routes[0].knowledge.some((entry) => entry.path === "knowledge/patterns/agentic-design-workflows.md" && entry.exists), true);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

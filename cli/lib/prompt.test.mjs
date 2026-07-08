@@ -30,6 +30,8 @@ function makeFixture() {
     "skills/design-critique/SKILL.md",
     "skills/website-improvement/SKILL.md",
     "skills/website-improvement/PLAYBOOK.md",
+    "skills/design-system-builder/SKILL.md",
+    "skills/design-system-builder/PLAYBOOK.md",
     "skills/handoff-spec/SKILL.md",
     "skills/handoff-spec/PLAYBOOK.md",
     "skills/component-spec-writer/SKILL.md",
@@ -43,8 +45,13 @@ function makeFixture() {
     "knowledge/patterns/ux-guidelines.md",
     "knowledge/layout/spacing-and-grid.md",
     "knowledge/patterns/report-design.md",
+    "knowledge/patterns/agentic-design-workflows.md",
+    "knowledge/patterns/design-system-qa.md",
+    "knowledge/patterns/technical-writing.md",
     "docs/MCP-INTEGRATION.md",
     "docs/WEBSITE-IMPROVEMENT.md",
+    "docs/AGENT-DEVELOPMENT.md",
+    "docs/SDK.md",
     "knowledge/a11y/contrast.md",
     "knowledge/components/INDEX.md",
     "knowledge/components/shadcn-registry.md",
@@ -422,6 +429,7 @@ test("buildPromptEvalTemplate creates runnable prompt-plan checkpoints", () => {
     assert.equal(report.summary.fail, 0);
     assert.equal(report.cases.every((testCase) => testCase.routeId === testCase.expectedRouteId), true);
     assert.equal(report.cases.some((testCase) => testCase.id === "website-improvement-prompt-plan"), true);
+    assert.equal(report.cases.some((testCase) => testCase.id === "agentic-development-prompt-plan"), true);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

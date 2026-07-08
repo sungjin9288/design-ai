@@ -3,7 +3,7 @@
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/)
 [![Knowledge files](https://img.shields.io/badge/knowledge-96-blue)](knowledge/PRINCIPLES.md)
-[![Examples](https://img.shields.io/badge/examples-224-blue)](examples/README.md)
+[![Examples](https://img.shields.io/badge/examples-225-blue)](examples/README.md)
 [![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
 
 > 🇺🇸 English / [🇰🇷 한국어](https://github.com/sungjin9288/design-ai/blob/main/README.ko.md)
@@ -21,7 +21,7 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 | Design tokens (W3C DTCG, OKLCH) | ✓ | ✓ | `color-palette` |
 | Components (Ant + MUI + shadcn synthesis) | ✓ | 210 component specs | `component-spec-writer` |
 | UX patterns (auth, pricing, hero, forms, etc.) | ✓ | ✓ | `ux-audit`, `design-critique` |
-| Agentic design workflows (MCP, artifact contracts, human gates) | ✓ | ✓ | `website-improvement`, `design-system-builder` |
+| Agentic design workflows (MCP, artifact contracts, human gates) | ✓ | ✓ | `agentic-design-development`, `website-improvement`, `design-system-builder` |
 | Website improvement control tower | ✓ | ✓ | `website-improvement` |
 | Korean i18n (Hangul, payments, app store, fintech) | ✓ | ✓ | (cross-cutting) |
 | Documentation (Diátaxis, slide deck, report, email) | ✓ | ✓ | `document-author`, `slide-deck-author` |
@@ -109,7 +109,7 @@ design-ai/
 │
 ├── refs/                    # Sparse-cloned upstream sources (gitignored)
 │
-├── knowledge/               # 95 hand-written + extracted knowledge files
+├── knowledge/               # 96 hand-written + extracted knowledge files
 │   ├── design-tokens/       # Token systems (W3C DTCG, OKLCH, HCT)
 │   ├── components/          # Component synthesis (Ant + MUI + shadcn)
 │   ├── patterns/            # Auth, pricing, landing hero, brand, email, ...
@@ -127,7 +127,7 @@ design-ai/
 │   ├── spatial/             # VR / AR / panels / comfort
 │   └── i18n/                # Korean typography, payments, app store, ...
 │
-├── examples/                # 224 worked outputs (what "good" looks like)
+├── examples/                # 225 worked outputs (what "good" looks like)
 │
 ├── skills/                  # 20 reusable playbooks (task-focused)
 │   ├── design-system-builder/   illustration-designer/
@@ -210,12 +210,15 @@ The knowledge is synthesized from battle-tested sources, not invented:
 | [awesome-design-md](https://github.com/VoltAgent/awesome-design-md) | Curated design markdown guides |
 | [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | UI/UX patterns + palettes + font pairings |
 | [open-design](https://github.com/nexu-io/open-design) | Open source design system reference |
+| [OpenTag](https://github.com/CopilotKit/OpenTag) | Agentic inline results and human-gated action workflow reference |
+| [WWIT](https://wwit.design/) | Korean app pattern taxonomy reference |
+| [React Bits](https://reactbits.dev/) | Animated React component adoption-gate reference |
 
 Refresh refs/ on demand: `./tools/extractors/run-all.sh`.
 
 ## Status
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. Currently at **v4.65.0**: full CLI–SDK–MCP surface parity (14 MCP tools incl. recall + opt-in learning writes), route coverage across 18 probed task classes (`flow-design`, `dashboard-design`, `marketing-page` routes, trust & safety corpus, design-knowledge-only recall, `pack` byte-budget guarantee, SDK walkthrough), the ranked-search eval checkpoint (`search --eval`), the Agent SDK (`@design-ai/cli/sdk`) with shipped TypeScript types and the opt-in `learn.*` local-write namespace, public npm publish, provenance-backed GitHub Actions release, public registry smoke, Website Console MCP readiness, workspace learning restore/eval coverage, handoff bundle verification, and 90%+ component coverage are complete.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. Currently at **v4.65.0**: full CLI–SDK–MCP surface parity (14 MCP tools incl. recall + opt-in learning writes), route coverage across 18 probed task classes (`flow-design`, `dashboard-design`, `marketing-page` routes, trust & safety corpus, design-knowledge-only recall, `pack` byte-budget guarantee, SDK walkthrough), the ranked-search eval checkpoint (`search --eval`), the Agent SDK (`@design-ai/cli/sdk`) with shipped TypeScript types and the opt-in `learn.*` local-write namespace, public npm publish, provenance-backed GitHub Actions release, public registry smoke, Website Console MCP readiness, workspace learning restore/eval coverage, handoff bundle verification, and 90%+ component coverage are complete. Unreleased local work now adds the `agentic-design-development` route so external reference mining feeds internal skill, CLI/SDK/MCP, and approval-gated feature development instead of staying as static guidance.
 
 Core design consulting workflows are locally release-ready. The website improvement control tower ships as a zero-dependency static Web App plus a `website-improvement` route/skill/command, covering Site Profiles, audit checklists, MCP readiness, refactor prompts, handoff evidence tracking, and bundle export/verify/repair. Local learning preferences are available through `design-ai learn` — profile bootstrap, feedback capture, a read-only signals registry, skill-proposal generation from repeated QA signals, and full backup/restore/curate/audit tooling, all local-only and opt-in. AI model training or fine-tuning remains outside the shipped scope.
 

@@ -174,6 +174,35 @@ const ROUTE_REQUIREMENTS = {
       ],
     },
   ],
+  "agentic-design-development": [
+    {
+      id: "agentic-artifact-contract",
+      title: "Agentic artifact contract coverage",
+      required: [
+        { label: "artifact contract", patterns: [/\bartifact contract\b/i, /아티팩트.*계약/] },
+        { label: "source of truth", patterns: [/\bsource of truth\b/i, /원천|소스.*오브.*트루스/] },
+        { label: "mutation boundary", patterns: [/\bmutation boundary\b/i, /변경.*경계|쓰기.*경계/] },
+      ],
+    },
+    {
+      id: "agentic-reference-mining",
+      title: "Reference mining and ownership coverage",
+      required: [
+        { label: "reference mining", patterns: [/\breference mining\b/i, /레퍼런스.*마이닝|레퍼런스.*분석/] },
+        { label: "do-not-copy boundary", patterns: [/\bdo[- ]not[- ]copy\b|\bdo not copy\b/i, /복사.*금지/] },
+        { label: "license or ownership", patterns: [/\blicen[cs]e\b|\bownership\b/i, /라이선스|소유권/] },
+      ],
+    },
+    {
+      id: "agentic-surface-verification",
+      title: "Internal surface and verification mapping",
+      required: [
+        { label: "CLI, SDK, or MCP surface", patterns: [/\b(cli|sdk|mcp)\b/i] },
+        { label: "verification command", patterns: [/\bverification command\b|\bnpm test\b|\bdesign-ai check\b/i, /검증.*명령/] },
+        { label: "human approval gate", patterns: [/\b(human )?approval gate\b/i, /승인.*게이트/] },
+      ],
+    },
+  ],
   "design-from-brief": [
     {
       id: "design-system-foundation",

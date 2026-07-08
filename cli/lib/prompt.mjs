@@ -183,6 +183,13 @@ const ROUTE_CHECKLIST = {
     "State that implementation happens in the target website repo, not in design-ai.",
     "Cover accessibility, responsive QA, SEO/performance, runtime issues, and verification evidence.",
   ],
+  "agentic-design-development": [
+    "Separate reference-mining findings from product feature or skill changes; extract categories, constraints, and do-not-copy boundaries before implementation.",
+    "Map every adopted pattern to an internal skill/playbook, CLI/SDK/MCP surface, verification command, rollout boundary, and reviewer-facing evidence.",
+    "Add a human approval gate for any external write, publish, deployment, target-repo mutation, or generated task creation.",
+    "Keep the implementation additive and testable: prefer route, prompt, skill proposal, SDK, or MCP slices with focused regression coverage.",
+    "Include accessibility, keyboard, responsive, reduced-motion, provenance, and ownership/license notes when UI previews or animated components are involved.",
+  ],
   "design-from-brief": [
     "Produce foundations, tokens, component baseline, and handoff guidance.",
     "Include light/dark behavior when color tokens are introduced.",
@@ -343,6 +350,26 @@ export function buildPromptEvalTemplate({ sourceRoot, generatedAt = new Date() }
         requiredChecklist: [
           "Include Site Profile, Audit Checklist, MCP Readiness Matrix, Refactor Plan, Prompt Generator, and Handoff Report sections.",
           "State that implementation happens in the target website repo, not in design-ai.",
+        ],
+      },
+      {
+        id: "agentic-development-prompt-plan",
+        brief: "Use OpenTag, Open Design, WWIT, and React Bits references to develop internal design-ai skills, SDK workflows, MCP feature surfaces, and approval-gated previews",
+        expectedRouteId: "agentic-design-development",
+        requiredFiles: [
+          "AGENTS.md",
+          "skills/website-improvement/SKILL.md",
+          "skills/website-improvement/PLAYBOOK.md",
+          "skills/design-system-builder/SKILL.md",
+          "skills/handoff-spec/SKILL.md",
+          "knowledge/patterns/agentic-design-workflows.md",
+          "docs/AGENT-DEVELOPMENT.md",
+          "docs/SDK.md",
+        ],
+        requiredChecklist: [
+          "Separate reference-mining findings from product feature or skill changes; extract categories, constraints, and do-not-copy boundaries before implementation.",
+          "Map every adopted pattern to an internal skill/playbook, CLI/SDK/MCP surface, verification command, rollout boundary, and reviewer-facing evidence.",
+          "Keep the implementation additive and testable: prefer route, prompt, skill proposal, SDK, or MCP slices with focused regression coverage.",
         ],
       },
     ],

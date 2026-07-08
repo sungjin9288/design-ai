@@ -14,7 +14,7 @@ generated_at: 2026-07-08
 | --- | --- | --- |
 | Knowledge files | 96 | 81 hand-written + 15 generated |
 | Skills (PLAYBOOK + SKILL) | 20 | 20 with verification phase |
-| Worked examples | 224 | |
+| Worked examples | 225 | |
 | Extractors | 12 | |
 | Canonical components | 200 | indexed across Ant / MUI / shadcn |
 | Components with worked spec | 181 | **90.5% spec coverage** (16 via parent/alias specs) |
@@ -49,7 +49,7 @@ generated_at: 2026-07-08
 
 | File | Lines | Type | Title |
 | --- | --- | --- | --- |
-| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 748 | generated | Coverage report |
+| [knowledge/COVERAGE.md](../knowledge/COVERAGE.md) | 749 | generated | Coverage report |
 | [knowledge/PRINCIPLES.md](../knowledge/PRINCIPLES.md) | 115 | hand-written | Design-AI principles |
 
 #### a11y
@@ -260,6 +260,7 @@ generated_at: 2026-07-08
 
 | File | Lines | Title |
 | --- | --- | --- |
+| [examples/agentic-design-development-reference-mining.md](../examples/agentic-design-development-reference-mining.md) | 113 | Worked example: agentic design development reference mining |
 | [examples/component-accordion-actions.md](../examples/component-accordion-actions.md) | 153 | `AccordionActions` - spec |
 | [examples/component-accordion-details.md](../examples/component-accordion-details.md) | 147 | `AccordionDetails` - spec |
 | [examples/component-accordion-summary.md](../examples/component-accordion-summary.md) | 180 | `AccordionSummary` - spec |

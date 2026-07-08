@@ -114,6 +114,50 @@ test("buildSkillEvolutionProposals honors custom minimum evidence threshold", ()
   assert.equal(payload.status, "pass");
 }));
 
+test("buildSkillEvolutionProposals maps agentic development captures to internal feature checkpoints", () => withTempDir((dir) => {
+  const filePath = path.join(dir, "learning.json");
+  const usageFile = defaultLearningUsageFile(filePath);
+  writeFileSync(filePath, JSON.stringify({
+    version: 1,
+    updatedAt: "2026-06-02T00:00:02.000Z",
+    entries: [
+      {
+        id: "learn-agentic-a",
+        category: "workflow",
+        text: "Improve future outputs by addressing Reference mining: Missing internal skill, MCP surface, rollout, and approval gate mapping.",
+        source: "check:agentic-design-development",
+        createdAt: "2026-06-02T00:00:01.000Z",
+      },
+      {
+        id: "learn-agentic-b",
+        category: "workflow",
+        text: "Improve future outputs by addressing Reference mining: Missing SDK workflow, verification command, and do-not-copy boundary.",
+        source: "check:agentic-design-development",
+        createdAt: "2026-06-02T00:00:02.000Z",
+      },
+    ],
+  }), "utf8");
+
+  const payload = buildSkillEvolutionProposals({
+    filePath,
+    usageFile,
+    signalSource: dir,
+    root: dir,
+    now: new Date("2026-06-02T00:00:03.000Z"),
+    signalRegistryProvider: ({ signalSource }) => ({
+      status: "pass",
+      signalSource: path.resolve(signalSource),
+    }),
+  });
+
+  assert.equal(payload.proposalCount, 1);
+  assert.equal(payload.proposals[0].candidateSkillPath, "skills/website-improvement/SKILL.md");
+  assert.deepEqual(payload.proposals[0].routeIds, ["agentic-design-development"]);
+  assert.match(payload.proposals[0].proposedInstructionDelta, /internal agentic-development checkpoint/);
+  assert.match(payload.proposals[0].proposedInstructionDelta, /CLI\/SDK\/MCP surface/);
+  assert.match(payload.proposals[0].verificationCommand, /--route agentic-design-development/);
+}));
+
 test("renderSkillEvolutionProposalReport emits reviewer-friendly Markdown without apply semantics", () => withTempDir((dir) => {
   const filePath = path.join(dir, "learning.json");
   const usageFile = defaultLearningUsageFile(filePath);

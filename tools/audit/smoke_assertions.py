@@ -671,6 +671,7 @@ EXPECTED_FUNCTIONAL_ALIAS_SMOKES = (
 EXPECTED_ROUTE_CATALOG_IDS = (
     "design-review",
     "website-improvement",
+    "agentic-design-development",
     "design-from-brief",
     "component-spec",
     "palette-from-brand",

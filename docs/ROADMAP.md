@@ -1,5 +1,18 @@
 # Roadmap
 
+## Phase 773 — Agentic development routing loop (implemented, unreleased)
+
+Turns the Phase 772 reference-mining guidance into executable design-ai behavior. The new route makes internal skill/product feature development briefs land on the agentic workflow corpus instead of falling through to generic website or design-system routes, and it pins the behavior in route, prompt, and learning-proposal tests.
+
+### Delivered
+- [x] Added the `agentic-design-development` route for internal skill development, design-ai feature development, MCP/SDK surface work, reference mining, artifact contracts, human approval gates, and do-not-copy boundaries.
+- [x] Wired the route into prompt planning with required files from `knowledge/patterns/agentic-design-workflows.md`, `docs/AGENT-DEVELOPMENT.md`, `docs/SDK.md`, MCP integration docs, and the relevant skill playbooks.
+- [x] Added route and prompt eval checkpoints so OpenTag/Open Design/WWIT/React Bits-style briefs must resolve to the new internal development route with the correct checklist.
+- [x] Updated `learn --propose-skills` generation so repeated `check:agentic-design-development` captures propose an internal agentic-development checkpoint covering skill delta, CLI/SDK/MCP surface, verification command, rollout boundary, approval gate, and licensing/do-not-copy note.
+
+### Remaining
+- [ ] Release: bundle into the next npm version.
+
 ## Phase 772 — Agentic design reference mining (implemented, unreleased)
 
 Turns the OpenTag, Open Design, WWIT, and React Bits reference scan into reusable design-ai skill guidance. The goal is not to vendor or clone those projects; it is to strengthen design-ai's agent-native design workflow rules: artifact contracts, human approval gates, Korean pattern taxonomy mining, and animated component adoption checks.
@@ -12,8 +25,8 @@ Turns the OpenTag, Open Design, WWIT, and React Bits reference scan into reusabl
 - [x] Updated `design-system-builder` to emit an optional agent-readable `DESIGN.md` brand contract when coding agents or MCP surfaces will consume the system.
 - [x] Updated public corpus counts and MkDocs navigation for the new knowledge file.
 
-### Remaining
-- [ ] Decide in a later route-coverage pass whether "agentic artifact design" deserves its own route/command or should stay as cross-cutting knowledge behind existing skills.
+### Follow-up
+- [x] Decided in Phase 773: agentic artifact and internal feature development deserves its own route, while the Phase 772 knowledge remains cross-cutting guidance for website improvement, motion, and design-system skills.
 
 ## Phase 771 — MCP Parity Release (v4.65.0) ✓ ready
 

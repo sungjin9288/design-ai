@@ -91,6 +91,18 @@ function riskForGroup(group) {
 
 function instructionDeltaForGroup(group) {
   const titleText = [...group.titles].join(" ").toLowerCase();
+  const routeIds = new Set(group.routeIds);
+  if (
+    routeIds.has("agentic-design-development")
+    || titleText.includes("agentic")
+    || titleText.includes("internal skill")
+    || titleText.includes("reference mining")
+    || titleText.includes("approval gate")
+    || titleText.includes("mcp")
+    || titleText.includes("sdk")
+  ) {
+    return "Add an internal agentic-development checkpoint: map each external reference into skill delta, CLI/SDK/MCP surface, verification command, rollout boundary, human approval gate, and do-not-copy/licensing note before implementation.";
+  }
   if (group.category === "accessibility") {
     return "Add a pre-handoff accessibility checkpoint: when the artifact includes UI behavior, explicitly cover keyboard reachability, visible focus state, screen-reader semantics, and WCAG 2.1 AA contrast.";
   }

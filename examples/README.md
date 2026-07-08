@@ -8,6 +8,12 @@ Worked outputs from each skill — what "good" looks like. Use as reference when
 | --- | --- | --- | --- |
 | [website-improvement-report.md](website-improvement-report.md) | `website-improvement` | Korean SaaS marketing site improvement control tower | Site Profile, audit summary, MCP readiness, refactor plan, prompt/report handoff, and MVP boundary that keeps target repo changes outside design-ai |
 
+### Agentic design development
+
+| File | Route | Input | What it demonstrates |
+| --- | --- | --- | --- |
+| [agentic-design-development-reference-mining.md](agentic-design-development-reference-mining.md) | `agentic-design-development` | OpenTag, Open Design, WWIT, and React Bits reference mining for internal design-ai work | Artifact contract, reference-mining table, CLI/SDK/MCP surface mapping, human approval gates, route/check/example QA, and do-not-copy/licensing boundaries |
+
 ### Color & tokens
 
 | File | Skill | Input | What it demonstrates |
