@@ -18,6 +18,7 @@ Design and spec motion for a screen, component, or page. Output is a **motion sp
 4. **Audience + platform** — web / mobile web / native / hybrid; Korean / global.
 5. **Performance budget** — bundle target, target devices.
 6. **Existing motion language** — does the brand have one (rubber-band? snappy? gentle?). If not, this skill helps define it.
+7. **Reference or component library** — optional React Bits, Motion, GSAP examples, brand sites, or local component primitives.
 
 ## Steps
 
@@ -75,6 +76,22 @@ Bias rules:
 - **react-spring** only when you need physics (drag, swipe).
 
 Don't load 4 motion libraries. Pick 1–2 max. Justify each.
+
+### 4.5. Gate animated component adoption
+
+If the user references an animated component catalog such as React Bits, decide whether to adapt the pattern, install a dependency, or reject it. Use [`knowledge/patterns/agentic-design-workflows.md`](../../knowledge/patterns/agentic-design-workflows.md).
+
+| Check | Required output |
+| --- | --- |
+| Intent | Which product goal the motion supports: orientation, feedback, hierarchy, delight, or brand moment. |
+| Category | Text animation, background, component, cursor/gesture, loading, or decorative layer. |
+| Dependency | Required package(s), CSS-only alternative, and bundle risk. |
+| Variant | JS/TS and CSS/Tailwind target, or local equivalent. |
+| Customization | Props/tokens the team can tune safely. |
+| Accessibility | Reduced-motion fallback, loop pause/stop behavior, keyboard/focus impact, contrast. |
+| Ownership | License, attribution, local copy strategy, and maintenance responsibility. |
+
+Default to re-expressing the idea in the product's token and motion system. Do not add a library for one hover, press, or focus state.
 
 ### 5. Spec the motion
 
@@ -164,6 +181,9 @@ Use this structure:
 ## Tokens used
 <list>
 
+## Reference / adoption decision
+<if applicable: adapt / install / reject, with gate results>
+
 ## Sequence
 <step-by-step with durations, easings, properties>
 
@@ -191,6 +211,7 @@ Use this structure:
 - [`knowledge/motion/app-loading-sequences.md`](../../knowledge/motion/app-loading-sequences.md) — splash / route / progressive
 - [`knowledge/motion/choreography-depth.md`](../../knowledge/motion/choreography-depth.md) — multi-element coordination
 - [`knowledge/motion/motion-tools.md`](../../knowledge/motion/motion-tools.md) — tool decision tree
+- [`knowledge/patterns/agentic-design-workflows.md`](../../knowledge/patterns/agentic-design-workflows.md) — animated component adoption gate
 - [`examples/component-loading-sequence.md`](../../examples/component-loading-sequence.md) — reference spec
 - [`examples/component-page-transition.md`](../../examples/component-page-transition.md) — reference spec
 - [`examples/component-lottie-player.md`](../../examples/component-lottie-player.md) — Lottie integration
@@ -204,6 +225,7 @@ Use this structure:
 - [ ] Is the tool choice justified ("CSS because it's a < 100ms hover" — not just "Framer Motion")?
 - [ ] Are only `opacity` / `transform` / `filter` animated?
 - [ ] If multi-element: is stagger ≤ 80ms and total ≤ 800ms (entrance) / 300ms (in-app)?
+- [ ] If using an animated component library: did the adoption gate pass and state dependency/ownership?
 - [ ] Is `prefers-reduced-motion` behavior specified for every element?
 - [ ] Is bundle cost stated if a library is used?
 - [ ] Does the "Don't" section catch 2–3 specific misuses?

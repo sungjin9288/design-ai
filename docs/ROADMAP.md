@@ -1,5 +1,20 @@
 # Roadmap
 
+## Phase 772 — Agentic design reference mining (implemented, unreleased)
+
+Turns the OpenTag, Open Design, WWIT, and React Bits reference scan into reusable design-ai skill guidance. The goal is not to vendor or clone those projects; it is to strengthen design-ai's agent-native design workflow rules: artifact contracts, human approval gates, Korean pattern taxonomy mining, and animated component adoption checks.
+
+### Delivered
+- [x] Added `knowledge/patterns/agentic-design-workflows.md` with reusable rules for artifact contracts, `DESIGN.md` brand contracts, external-write approval gates, structured previews, reference mining, Korean pattern taxonomy checks, and animated component adoption gates.
+- [x] Updated `knowledge/PRINCIPLES.md` with four agentic-design rules so agents load the new workflow discipline before generating artifacts.
+- [x] Updated `website-improvement` to mine supplied repos/sites into taxonomy and tasks without copying visuals, and to require approval gates for prompts that write issues, pages, messages, deployments, or target-repo changes.
+- [x] Updated `motion-designer` with a React Bits-style animated component adoption gate covering intent, category, dependency, variant, customization, accessibility, performance, and ownership.
+- [x] Updated `design-system-builder` to emit an optional agent-readable `DESIGN.md` brand contract when coding agents or MCP surfaces will consume the system.
+- [x] Updated public corpus counts and MkDocs navigation for the new knowledge file.
+
+### Remaining
+- [ ] Decide in a later route-coverage pass whether "agentic artifact design" deserves its own route/command or should stay as cross-cutting knowledge behind existing skills.
+
 ## Phase 771 — MCP Parity Release (v4.65.0) ✓ ready
 
 Ships the Phase 770 MCP ↔ SDK parity work as an npm version: `design_ai_recall` plus the opt-in learning-write tool set (`design_ai_learn_remember`/`feedback`/`capture`), growing the MCP server from 10 to 14 tools with the SDK `learn.*` write boundary mirrored and test-guarded. Additive; write tools are strictly opt-in.

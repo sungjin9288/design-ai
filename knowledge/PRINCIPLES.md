@@ -83,6 +83,13 @@ The 30 load-bearing rules across this knowledge base. Read this first; it primes
 40. **Slide title = the message, not the topic.** "Revenue tripled in Q4" beats "Revenue". Cite [`patterns/slide-deck-design.md`](patterns/slide-deck-design.md).
 41. **Korean documents: pick honorific level (~합니다 vs ~해요) and stay consistent.** Cite [`i18n/korean-document-style.md`](i18n/korean-document-style.md).
 
+## Agentic design workflows
+
+42. **Artifact contract before generation.** State mode, source of truth, output, preview surface, verification, and mutation boundary before asking an agent to produce design work. Cite [`patterns/agentic-design-workflows.md`](patterns/agentic-design-workflows.md).
+43. **Human gate before external writes.** Issues, pages, messages, deployments, and target-repo mutations need a visible approval or verification boundary. Cite [`patterns/agentic-design-workflows.md`](patterns/agentic-design-workflows.md).
+44. **Reference mining extracts taxonomy, not assets.** Use outside repos/sites to derive flow, component, motion, and artifact rules; do not copy proprietary visuals or code without license review. Cite [`patterns/agentic-design-workflows.md`](patterns/agentic-design-workflows.md).
+45. **Animated components need an adoption gate.** Check intent, dependency, variant, customization, reduced motion, performance, and ownership before recommending a React animation library. Cite [`patterns/agentic-design-workflows.md`](patterns/agentic-design-workflows.md).
+
 ## Output discipline
 
 When producing any design artifact:

@@ -16,6 +16,7 @@ Plan and coordinate professional website improvement work for an existing site. 
 2. **Audit findings** — visual design, UX flow, responsive QA, accessibility, performance, SEO, technical quality, runtime issues, and content quality.
 3. **MCP readiness** — GitHub, Figma, Browser/Playwright, Chrome DevTools, deploy provider, Sentry, database, CMS, collaboration, and research status.
 4. **Execution target** — Codex for repo work, Claude for design/research/copy review, or final handoff.
+5. **Reference set** — optional competitor sites, inspiration repos, pattern libraries, or Korean app examples to mine for taxonomy and constraints.
 
 ## Steps
 
@@ -49,6 +50,18 @@ Use the relevant design-ai knowledge files when making judgments:
 - [`knowledge/typography/type-scale-fundamentals.md`](../../knowledge/typography/type-scale-fundamentals.md)
 - [`knowledge/patterns/technical-writing.md`](../../knowledge/patterns/technical-writing.md)
 - [`knowledge/patterns/report-design.md`](../../knowledge/patterns/report-design.md)
+- [`knowledge/patterns/agentic-design-workflows.md`](../../knowledge/patterns/agentic-design-workflows.md)
+
+### 2.5. Mine References Without Copying Them
+
+When the user supplies inspiration repos or sites, treat them as reference taxonomy, not a source of UI to clone. For each reference, capture:
+
+- pattern category: flow, component, layout, motion, artifact contract, or operational workflow
+- reusable rule in your own words
+- local mapping: audit category, refactor task, prompt, or verification check
+- explicit "do not copy" boundary
+
+For Korean product references, map examples by industry -> flow -> component before making a recommendation. Do not claim a market convention from one app.
 
 ### 3. Classify MCP Readiness
 
@@ -93,6 +106,8 @@ Generate the appropriate prompt:
 
 Every Codex prompt must say that the work happens in the target website repo and must preserve the target repo's architecture, components, state patterns, styling conventions, and verification commands.
 
+For prompts that create issues, pages, messages, deployments, or other external writes, include an explicit human approval gate. The prompt should show destination, action summary, verification plan, and a Create/Cancel or proceed/stop boundary before the write.
+
 ### 6. Produce Handoff Report
 
 The report should include target site information, diagnostic summary, major issues, priority recommendations, executed work, verification results, remaining risks, and next tasks.
@@ -107,7 +122,9 @@ Use [`TEMPLATE.md`](TEMPLATE.md) for the final report or planning artifact.
 - [ ] Audit categories cover visual, UX, responsive, accessibility, performance, SEO, technical, runtime, and content quality.
 - [ ] MCP readiness uses only `required`, `optional`, `unused`, or `unavailable`.
 - [ ] Refactor tasks include problem, evidence, impact, effort, priority, pages, MCP, prompt, verification, and risks.
+- [ ] External references were mined into taxonomy/rules, with a clear do-not-copy boundary.
 - [ ] Codex prompts clearly state that implementation happens in the target website repo.
+- [ ] Any external write or publish path includes an approval or verification gate.
 - [ ] Handoff report includes verification evidence or explicit placeholders for evidence not yet run.
 - [ ] Accessibility, responsive, and source-grounding notes are present.
 

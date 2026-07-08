@@ -18,6 +18,7 @@ Bootstrap a complete design system from a brand brief. Output is a directory of 
 4. **Content language(s)** — affects type system (Korean line-height, RTL).
 5. **Density default** — comfortable / compact.
 6. **Light + dark, or light only?** — default both.
+7. **Agent surfaces** — optional target agents, MCP tools, preview/export formats, and any external references to mine.
 
 ## Steps
 
@@ -78,6 +79,22 @@ Write a `FOUNDATIONS.md` with:
 - Voice and tone (1 paragraph or skip).
 - Layout grid (12-col, 24px gutter, 24px margin scaling).
 - Density modes if applicable.
+
+### 5.5. Define the agent-readable brand contract
+
+If the system will be used by coding agents, output a `DESIGN.md` alongside the foundations docs. Use [`knowledge/patterns/agentic-design-workflows.md`](../../knowledge/patterns/agentic-design-workflows.md) for the contract shape.
+
+`DESIGN.md` should be short enough for an agent to read every time and must include:
+
+- brand promise and target audience
+- color roles and contrast constraints
+- typography, spacing, radius, elevation, and density rules
+- component defaults and forbidden variants
+- motion personality, duration tiers, and reduced-motion policy
+- voice, imagery, and anti-patterns
+- artifact modes the system supports: prototype, dashboard, deck, image, video, component spec, or handoff report
+
+Do not copy an external brand system. If the user supplies Open Design, React Bits, WWIT, or other references, mine only the taxonomy and decision rules.
 
 ### 6. Pick component baseline
 
@@ -147,6 +164,7 @@ Produce a directory:
 
 ```
 design-system/
+├── DESIGN.md             # agent-readable brand contract
 ├── tokens/
 │   ├── color.css        # all color tokens, light + dark
 │   ├── typography.css
@@ -189,6 +207,7 @@ Before declaring done, verify:
 - [`knowledge/design-tokens/ant-design.md`](../../knowledge/design-tokens/ant-design.md)
 - [`knowledge/components/INDEX.md`](../../knowledge/components/INDEX.md)
 - [`knowledge/motion/principles.md`](../../knowledge/motion/principles.md)
+- [`knowledge/patterns/agentic-design-workflows.md`](../../knowledge/patterns/agentic-design-workflows.md)
 - [`knowledge/i18n/korean-typography.md`](../../knowledge/i18n/korean-typography.md) (Korean content)
 - [`knowledge/i18n/korean-product-conventions.md`](../../knowledge/i18n/korean-product-conventions.md) (Korean content)
 - [`knowledge/platforms/react-native.md`](../../knowledge/platforms/react-native.md) (RN target)
@@ -206,12 +225,14 @@ Before declaring done, verify:
 - [ ] Is the starter set sized for the product category (consumer mobile vs B2B SaaS)?
 - [ ] Does each starter component have a status (derived / custom)?
 - [ ] Did I include foundations docs (color, type, spacing, motion, iconography)?
+- [ ] If agent consumption is expected: did I include `DESIGN.md` with artifact modes and anti-patterns?
 - [ ] Is the engineering hand-off list specific (commands, configs, vendor SDKs)?
 
 ## Done when
 
 - Token files in the requested format(s).
 - Foundations docs cover color, type, spacing, motion, iconography.
+- Agent-readable `DESIGN.md` exists when the system will be consumed by AI agents.
 - Component baseline is named with one-paragraph rationale.
 - Starter component list with derived/custom labels and category-appropriate scope.
 - A consumer (frontend dev) can import and start building without questions.

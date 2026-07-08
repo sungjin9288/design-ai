@@ -2,7 +2,7 @@
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/)
-[![Knowledge files](https://img.shields.io/badge/knowledge-95-blue)](knowledge/PRINCIPLES.md)
+[![Knowledge files](https://img.shields.io/badge/knowledge-96-blue)](knowledge/PRINCIPLES.md)
 [![Examples](https://img.shields.io/badge/examples-224-blue)](examples/README.md)
 [![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
 
@@ -21,6 +21,7 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 | Design tokens (W3C DTCG, OKLCH) | ✓ | ✓ | `color-palette` |
 | Components (Ant + MUI + shadcn synthesis) | ✓ | 210 component specs | `component-spec-writer` |
 | UX patterns (auth, pricing, hero, forms, etc.) | ✓ | ✓ | `ux-audit`, `design-critique` |
+| Agentic design workflows (MCP, artifact contracts, human gates) | ✓ | ✓ | `website-improvement`, `design-system-builder` |
 | Website improvement control tower | ✓ | ✓ | `website-improvement` |
 | Korean i18n (Hangul, payments, app store, fintech) | ✓ | ✓ | (cross-cutting) |
 | Documentation (Diátaxis, slide deck, report, email) | ✓ | ✓ | `document-author`, `slide-deck-author` |
@@ -108,7 +109,7 @@ design-ai/
 │
 ├── refs/                    # Sparse-cloned upstream sources (gitignored)
 │
-├── knowledge/               # 94 hand-written + extracted knowledge files
+├── knowledge/               # 95 hand-written + extracted knowledge files
 │   ├── design-tokens/       # Token systems (W3C DTCG, OKLCH, HCT)
 │   ├── components/          # Component synthesis (Ant + MUI + shadcn)
 │   ├── patterns/            # Auth, pricing, landing hero, brand, email, ...
@@ -126,7 +127,7 @@ design-ai/
 │   ├── spatial/             # VR / AR / panels / comfort
 │   └── i18n/                # Korean typography, payments, app store, ...
 │
-├── examples/                # 221 worked outputs (what "good" looks like)
+├── examples/                # 224 worked outputs (what "good" looks like)
 │
 ├── skills/                  # 20 reusable playbooks (task-focused)
 │   ├── design-system-builder/   illustration-designer/

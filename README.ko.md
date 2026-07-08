@@ -2,7 +2,7 @@
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/ko/)
-[![Knowledge files](https://img.shields.io/badge/knowledge-95-blue)](knowledge/PRINCIPLES.md)
+[![Knowledge files](https://img.shields.io/badge/knowledge-96-blue)](knowledge/PRINCIPLES.md)
 [![Examples](https://img.shields.io/badge/examples-224-blue)](examples/README.md)
 [![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
 
@@ -21,6 +21,7 @@
 | 디자인 토큰 (W3C DTCG, OKLCH) | ✓ | ✓ | `color-palette` |
 | 컴포넌트 (Ant + MUI + shadcn 합성) | ✓ | 210 component specs | `component-spec-writer` |
 | UX 패턴 (인증, 가격, 히어로, 폼 등) | ✓ | ✓ | `ux-audit`, `design-critique` |
+| 에이전트형 디자인 워크플로우 (MCP, artifact contract, human gate) | ✓ | ✓ | `website-improvement`, `design-system-builder` |
 | 웹사이트 개선 컨트롤 타워 | ✓ | ✓ | `website-improvement` |
 | 한국어 i18n (한글, 결제, 앱스토어, 핀테크) | ✓ | ✓ | (전 영역 적용) |
 | 문서 (Diátaxis, 슬라이드 덱, 리포트, 이메일) | ✓ | ✓ | `document-author`, `slide-deck-author` |
@@ -108,7 +109,7 @@ design-ai/
 │
 ├── refs/                    # Sparse-clone된 업스트림 소스 (gitignored)
 │
-├── knowledge/               # 94개 손으로 쓴 + 추출된 지식 파일
+├── knowledge/               # 95개 손으로 쓴 + 추출된 지식 파일
 │   ├── design-tokens/       # W3C DTCG, OKLCH, HCT
 │   ├── components/          # Ant + MUI + shadcn 합성
 │   ├── patterns/            # 인증, 가격, 랜딩 히어로, 브랜드, 이메일 등
@@ -121,7 +122,7 @@ design-ai/
 │   ├── spatial/             # VR / AR / 패널 / 편안함
 │   └── i18n/                # 한국어 타이포그래피, 결제, 앱스토어 등
 │
-├── examples/                # 221개 워크드 예제 ("good"이 어떻게 생겼는지)
+├── examples/                # 224개 워크드 예제 ("good"이 어떻게 생겼는지)
 │
 ├── skills/                  # 20개 재사용 가능한 플레이북 (작업 중심)
 ├── agents/                  # 4개 서브 에이전트 (병렬 리뷰)

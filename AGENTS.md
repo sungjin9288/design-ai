@@ -34,6 +34,7 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Landing page section order | `knowledge/patterns/landing-page-patterns.md` |
 | Visual style by product category | `knowledge/patterns/ui-reasoning.md`, `knowledge/patterns/styles-catalog.md` |
 | UX issues / pre-ship checklist | `knowledge/patterns/ux-guidelines.md` |
+| Agentic design workflows (MCP / artifacts / human gates / reference mining) | `knowledge/patterns/agentic-design-workflows.md` |
 | Brand reference / peer comparison | `knowledge/patterns/brand-references.md` |
 | Lists, feeds, infinite scroll, pull-to-refresh | `knowledge/patterns/list-and-feed.md` |
 | Mobile navigation (tab bar, drawer, top app bar) | `knowledge/patterns/mobile-navigation.md` |

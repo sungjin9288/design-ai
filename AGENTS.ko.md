@@ -30,6 +30,7 @@
 | 레이아웃 (간격, 그리드) | `knowledge/layout/spacing-and-grid.md` |
 | 아이콘 | `knowledge/icons/curated-sets.md` |
 | 패턴 (인증, 가격, 히어로, 폼, 등) | `knowledge/patterns/` |
+| 에이전트형 디자인 워크플로우 (MCP / 산출물 / 승인 게이트 / 레퍼런스 분석) | `knowledge/patterns/agentic-design-workflows.md` |
 | 모션 (지속 시간, 이징, 안무) | `knowledge/motion/` |
 | 일러스트레이션 (시스템, 스팟, 마스코트, SVG) | `knowledge/illustration/` |
 | 인쇄 (CMYK, 재단, 포장, 한국 컨벤션) | `knowledge/print/` |
