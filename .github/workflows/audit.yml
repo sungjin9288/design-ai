@@ -12,6 +12,7 @@ on:
       - "vscode-extension/**"
       - "tools/**"
       - "docs/**"
+      - "Formula/**"
       - ".claude-plugin/**"
       - ".npmignore"
       - "AGENTS.md"
