@@ -18,6 +18,7 @@ Adds the optional code-folder/preview step without turning design-ai into a targ
 ### Verification target
 - [x] Focused linked-preview, CLI argument/help/run, MCP inventory/invocation, capability manifest, and Website Console contract tests pass.
 - [x] `npm run release:check` passed with 650 tests, 8 strict audits, 662 packaged files, and installed-bin plus one-shot `npm exec` linked-preview smoke coverage.
+- [x] `npm run ci:local` passed with Python syntax, knowledge-size budget, VS Code extension compile/unit tests, MkDocs build, and a 0/0 documentation warning policy.
 
 ## Phase 776 — Shared design artifact operation parity (implemented, unreleased)
 

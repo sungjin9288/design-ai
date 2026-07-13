@@ -34,6 +34,7 @@ Prepares the codebase for the planned structural refactor without changing the C
 ### Verified
 - All 8 audits passed.
 - `npm run release:check`.
+- `npm run ci:local`, including Python syntax checks, the knowledge-size budget, VS Code extension compile and unit tests, MkDocs build, and the 0/0 warning policy.
 - `python3 -B tools/audit/local-ci.py --docs-only`.
 - Baseline comparison confirmed stable route IDs, CLI help, SDK exports, existing MCP tool identities, and write boundaries; the additive 15th MCP tool is read-only, and the tarball removes only `commands/extract-tokens.md`.
 
