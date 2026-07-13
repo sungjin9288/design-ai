@@ -55,7 +55,7 @@
 ### 구현 완료
 
 - `design-ai` CLI entrypoint와 dispatcher
-- 17개 slash command 문서와 CLI canonical commands
+- 16개 공개 slash command 문서와 CLI canonical commands
 - 20개 skills와 92개 knowledge files
 - Website Improvement Console static app
 - local learning preference CLI

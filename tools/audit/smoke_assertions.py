@@ -10,6 +10,10 @@ import tempfile
 from pathlib import Path
 from typing import Callable
 
+from capability_manifest import (
+    SOURCE_CAPABILITIES as EXPECTED_CAPABILITIES,
+    validate_capability_manifest,
+)
 from doctor_assertions import EXPECTED_DOCTOR_PASS_LABELS, assert_doctor_report_clean
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
@@ -45,6 +49,12 @@ def count_manifest_section(manifest: dict[str, object], section: str) -> int:
 
 
 EXPECTED_RELEASE_VERSION = str(load_package_json().get("version", ""))
+EXPECTED_INSTALL_INVENTORY = EXPECTED_CAPABILITIES.get("install", {})
+EXPECTED_SKILL_COUNT = count_manifest_section(EXPECTED_INSTALL_INVENTORY, "skills")
+EXPECTED_COMMAND_COUNT = count_manifest_section(EXPECTED_INSTALL_INVENTORY, "commands")
+EXPECTED_AGENT_COUNT = count_manifest_section(EXPECTED_INSTALL_INVENTORY, "agents")
+EXPECTED_INSTALL_TOTAL = EXPECTED_SKILL_COUNT + EXPECTED_COMMAND_COUNT + EXPECTED_AGENT_COUNT
+EXPECTED_MCP_TOOL_NAMES = EXPECTED_CAPABILITIES.get("mcp", {}).get("tools", [])
 
 
 def mcp_smoke_input() -> str:
@@ -61,8 +71,49 @@ def mcp_smoke_input() -> str:
                 "arguments": {"query": "Pretendard", "limit": "10"},
             },
         },
+        {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "tools/call",
+            "params": {
+                "name": "design_ai_route",
+                "arguments": {"brief": "Spec a Button component API", "limit": 1},
+            },
+        },
     ]
     return "".join(f"{json.dumps(message, separators=(',', ':'))}\n" for message in messages)
+
+
+def passing_mcp_protocol_responses() -> list[dict[str, object]]:
+    return [
+        {"jsonrpc": "2.0", "id": 1, "result": {"serverInfo": {"name": "design-ai"}}},
+        {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "result": {
+                "tools": [
+                    {"name": name}
+                    for name in EXPECTED_MCP_TOOL_NAMES
+                ]
+            },
+        },
+        {
+            "jsonrpc": "2.0",
+            "id": 3,
+            "error": {"code": -32602, "message": EXPECTED_MCP_INVALID_ARGUMENT_MESSAGE},
+        },
+        {
+            "jsonrpc": "2.0",
+            "id": 4,
+            "result": {
+                "content": [{
+                    "type": "text",
+                    "text": json.dumps({"routes": [{"id": "component-spec"}]}),
+                }],
+                "isError": False,
+            },
+        },
+    ]
 
 
 def assert_design_ai_mcp_protocol_responses(responses: list[object], *, context: str, cmd: list[str]) -> None:
@@ -74,6 +125,7 @@ def assert_design_ai_mcp_protocol_responses(responses: list[object], *, context:
     init = by_id.get(1)
     tools = by_id.get(2)
     invalid_call = by_id.get(3)
+    route_call = by_id.get(4)
 
     if not (isinstance(init, dict) and init.get("result", {}).get("serverInfo", {}).get("name") == "design-ai"):
         raise SystemExit(f"{context}: MCP initialize response missing design-ai serverInfo")
@@ -82,8 +134,8 @@ def assert_design_ai_mcp_protocol_responses(responses: list[object], *, context:
         item.get("name")
         for item in tools.get("result", {}).get("tools", [])
     ] if isinstance(tools, dict) else []
-    if "design_ai_route" not in tool_names or "design_ai_search" not in tool_names:
-        raise SystemExit(f"{context}: MCP tools/list response missing design-ai tools")
+    if tool_names != EXPECTED_MCP_TOOL_NAMES:
+        raise SystemExit(f"{context}: MCP tools/list response changed from the capability manifest")
 
     invalid_error = invalid_call.get("error", {}) if isinstance(invalid_call, dict) else {}
     invalid_text = str(invalid_error.get("message", "")) if isinstance(invalid_error, dict) else ""
@@ -94,6 +146,16 @@ def assert_design_ai_mcp_protocol_responses(responses: list[object], *, context:
         and EXPECTED_MCP_INVALID_ARGUMENT_MESSAGE in invalid_text
     ):
         raise SystemExit(f"{context}: MCP invalid argument response did not preserve invalid params validation")
+
+    route_result = route_call.get("result", {}) if isinstance(route_call, dict) else {}
+    route_content = route_result.get("content", []) if isinstance(route_result, dict) else []
+    route_text = route_content[0].get("text", "") if route_content and isinstance(route_content[0], dict) else ""
+    if not (
+        isinstance(route_call, dict)
+        and route_result.get("isError") is False
+        and '"id": "component-spec"' in route_text
+    ):
+        raise SystemExit(f"{context}: MCP design_ai_route response did not preserve route operation output")
 
 
 def format_inventory_count(count: int, singular: str) -> str:
@@ -107,7 +169,7 @@ def build_plugin_inventory_summary(manifest: dict[str, object]) -> str:
     )
 
 
-EXPECTED_PLUGIN_INVENTORY_SUMMARY = build_plugin_inventory_summary(load_plugin_manifest())
+EXPECTED_PLUGIN_INVENTORY_SUMMARY = build_plugin_inventory_summary(EXPECTED_INSTALL_INVENTORY)
 EXPECTED_HELP_TOPICS = (
     "install",
     "update",
@@ -123,6 +185,7 @@ EXPECTED_HELP_TOPICS = (
     "pack",
     "check",
     "audit",
+    "artifact",
     "doctor",
     "examples",
     "learn",
@@ -169,11 +232,12 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "pack": "design-ai pack <brief|--from-file file|--stdin|--eval-template|--eval> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--max-bytes N]",
     "check": "design-ai check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--learn]",
     "audit": "design-ai audit [--strict] [--quiet] [--json]",
+    "artifact": "design-ai artifact <implementation-plan|critique-loop|design-contract> <brief> [--route id] [--json] [--out file]",
     "doctor": "design-ai doctor [--strict] [--json] [--fix]",
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
-    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+    "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--linked-preview [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] [--next-actions] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
     "mcp": "design-ai mcp",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
@@ -208,6 +272,11 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
     ),
     "check": ("Usage:", "design-ai check <artifact.md>", "design-ai check --examples --all-routes", "--learn"),
     "audit": ("Usage:", "design-ai audit [--strict] [--quiet] [--json]"),
+    "artifact": (
+        "Usage:",
+        "design-ai artifact <mode> <brief> [--route id] [--json] [--out file] [--force]",
+        "implementation-plan, critique-loop, design-contract",
+    ),
     "doctor": ("Usage:", "design-ai doctor [--strict] [--json] [--fix]"),
     "examples": ("Usage:", "design-ai examples [query] [--route id] [--limit N] [--json]"),
     "learn": (
@@ -296,9 +365,9 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "Usage:",
         "design-ai site <workspace.json> [--strict] [--json]",
         "cat workspace.json | design-ai site --stdin [--strict] [--json]",
-        "design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]",
-        "design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]",
-        "design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]",
+        "design-ai site --init --name name [--live-url url] [--repo-url url|--local-path path] [--out file] [--force]",
+        "design-ai site --init --name name [--live-url url] [--repo-url url|--local-path path] --next-actions [--json] [--out file] [--force]",
+        "design-ai site --init --name name [--live-url url] [--repo-url url|--local-path path] --bundle --out dir [--strict] [--force]",
         "design-ai site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] [--strict] [--force]",
         "design-ai site --intake-template [--language en|ko] [--json] [--out file] [--force]",
         "design-ai site --sample [--out file] [--force]",
@@ -384,7 +453,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "site --init",
     "site --sample",
     "site --prompt-list",
-    "[--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]]",
+    "[--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--linked-preview [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]]",
     "site <bundle-dir> --bundle-check",
     "site <bundle-dir> --bundle-compare",
     "site <bundle-dir> --bundle-handoff",
@@ -407,9 +476,9 @@ EXPECTED_INSTALL_OUTPUT_FRAGMENTS = (
     "Target:",
     "Prefix:",
     "Installing from:",
-    "Installed 20 skills",
-    "Installed 4 agents",
-    "Installed 17 slash commands",
+    f"Installed {EXPECTED_SKILL_COUNT} skills",
+    f"Installed {EXPECTED_AGENT_COUNT} agents",
+    f"Installed {EXPECTED_COMMAND_COUNT} slash commands",
     "Installed. Restart Claude Code",
     "design-ai status",
 )
@@ -427,9 +496,9 @@ EXPECTED_STATUS_OUTPUT_FRAGMENTS = (
     "Source:",
     "Target:",
     "Prefix:",
-    "Skills: 20 installed",
-    "Agents: 4 installed",
-    "Slash commands: 17 installed",
+    f"Skills: {EXPECTED_SKILL_COUNT} installed",
+    f"Agents: {EXPECTED_AGENT_COUNT} installed",
+    f"Slash commands: {EXPECTED_COMMAND_COUNT} installed",
 )
 EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "design-ai doctor",
@@ -439,7 +508,7 @@ EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "Prefix:",
     "Source layout: complete",
     f"Version alignment: {EXPECTED_RELEASE_VERSION}",
-    "Manifest paths: 41 referenced artifact(s) exist",
+    f"Manifest paths: {EXPECTED_INSTALL_TOTAL} referenced artifact(s) exist",
     "Node runtime:",
     "Python runtime:",
     "Audit runner: tools/audit/run-all.py found",
@@ -450,15 +519,15 @@ EXPECTED_DOCTOR_STRICT_OUTPUT_FRAGMENTS = (
     "Package contents check: tools/audit/package-contents.py found",
     "Package smoke check: tools/audit/package-smoke.py found",
     "Registry smoke check: tools/audit/registry-smoke.py found",
-    "Installed skills: 20/20 installed",
-    "Installed agents: 4/4 installed",
-    "Installed slash commands: 17/17 installed",
+    f"Installed skills: {EXPECTED_SKILL_COUNT}/{EXPECTED_SKILL_COUNT} installed",
+    f"Installed agents: {EXPECTED_AGENT_COUNT}/{EXPECTED_AGENT_COUNT} installed",
+    f"Installed slash commands: {EXPECTED_COMMAND_COUNT}/{EXPECTED_COMMAND_COUNT} installed",
     f"Summary: {len(EXPECTED_DOCTOR_PASS_LABELS)} pass, 0 warning(s), 0 failure(s)",
 )
 EXPECTED_UNINSTALL_OUTPUT_FRAGMENTS = (
     "design-ai uninstaller",
     "Uninstalling design-ai from",
-    "Removed 41 design-ai symlinks",
+    f"Removed {EXPECTED_INSTALL_TOTAL} design-ai symlinks",
     "Done. To remove the design-ai source",
     "Source location:",
 )
@@ -524,53 +593,8 @@ EXPECTED_UNKNOWN_OPTION_SMOKES = (
     ("site", "--jsn", "--json"),
 )
 EXPECTED_LIST_CATALOG = {
-    "skills": (
-        "design-system-builder",
-        "component-spec-writer",
-        "color-palette",
-        "ux-audit",
-        "design-critique",
-        "handoff-spec",
-        "design-system-qa",
-        "design-pr-review",
-        "website-improvement",
-        "figma-token-sync",
-        "design-broadcast",
-        "document-author",
-        "slide-deck-author",
-        "motion-designer",
-        "illustration-designer",
-        "print-designer",
-        "video-designer",
-        "game-ui-designer",
-        "conversational-ui-designer",
-        "spatial-designer",
-    ),
-    "commands": (
-        "design-from-brief",
-        "iterate",
-        "document-from-brief",
-        "slide-deck",
-        "design-review",
-        "website-improvement",
-        "palette-from-brand",
-        "component-spec",
-        "extract-tokens",
-        "motion-design",
-        "illustration",
-        "print",
-        "video",
-        "game-ui",
-        "conversational",
-        "spatial",
-        "stability-review",
-    ),
-    "agents": (
-        "design-critic",
-        "a11y-reviewer",
-        "component-architect",
-        "token-extractor",
-    ),
+    kind: tuple(EXPECTED_INSTALL_INVENTORY.get(kind, []))
+    for kind in ("skills", "commands", "agents")
 }
 EXPECTED_STATUS_SECTION_LABELS = {
     "skills": "Skills",
@@ -668,33 +692,10 @@ EXPECTED_FUNCTIONAL_ALIAS_SMOKES = (
         "check-examples-json",
     ),
 )
-EXPECTED_ROUTE_CATALOG_IDS = (
-    "design-review",
-    "website-improvement",
-    "agentic-design-development",
-    "design-from-brief",
-    "component-spec",
-    "palette-from-brand",
-    "motion-design",
-    "illustration",
-    "print",
-    "video",
-    "game-ui",
-    "conversational",
-    "spatial",
-    "document-from-brief",
-    "slide-deck",
-    "handoff-spec",
-    "design-system-qa",
-    "figma-token-sync",
-    "design-pr-review",
-    "stability-review",
-    "flow-design",
-    "dashboard-design",
-    "marketing-page",
-)
+EXPECTED_ROUTE_CATALOG_IDS = tuple(EXPECTED_CAPABILITIES["routes"])
 EXPECTED_PROMPT_SLASH_COMMAND = "/design-component-spec"
 EXPECTED_PROMPT_QUALITY_COMMAND = "design-ai check output.md --route component-spec --strict"
+EXPECTED_ARTIFACT_QUALITY_COMMAND = "design-ai check DESIGN.md --route component-spec --strict"
 EXPECTED_PROMPT_PLAYBOOK = "skills/component-spec-writer/PLAYBOOK.md"
 EXPECTED_PROMPT_A11Y_AGENT = "agents/a11y-reviewer.md"
 EXPECTED_ROUTE_AGENTS = (
@@ -1188,6 +1189,9 @@ EXPECTED_SITE_PROMPT_TEMPLATE_KEYS = [
     "taskSelectable",
 ]
 EXPECTED_SITE_PROMPT_TEMPLATE_IDS = [
+    "implementation-plan",
+    "critique-loop",
+    "design-contract",
     "codex-repo-intake",
     "codex-implementation",
     "codex-visual-qa",
@@ -2572,6 +2576,16 @@ def passing_audit_strict_quiet_output() -> str:
     ])
 
 
+def expected_audit_strict_args(name: str, *, strict: bool) -> list[str]:
+    if not strict:
+        return []
+    if name == "stale":
+        return ["--strict"]
+    if name == "coverage":
+        return ["--check"]
+    return []
+
+
 def passing_audit_json(*, strict: bool = True, quiet: bool = True) -> str:
     audits = []
     for name, script in zip(EXPECTED_AUDIT_NAMES, EXPECTED_AUDIT_SCRIPTS):
@@ -2582,7 +2596,7 @@ def passing_audit_json(*, strict: bool = True, quiet: bool = True) -> str:
             "passed": True,
             "returncode": 0,
             "durationSeconds": 0.25,
-            "strictArgs": ["--strict"] if name == "stale" and strict else [],
+            "strictArgs": expected_audit_strict_args(name, strict=strict),
         })
 
     return json.dumps(
@@ -4011,6 +4025,68 @@ def assert_prompt_json_component_spec(raw: str, *, context: str, cmd: list[str])
     assert_prompt_payload_component_spec(payload, context=context, payload_name="prompt JSON")
 
 
+def assert_artifact_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse artifact JSON after {context}") from error
+
+    expected_keys = [
+        "kind",
+        "schemaVersion",
+        "mode",
+        "title",
+        "brief",
+        "route",
+        "outputFile",
+        "sourceFiles",
+        "workflow",
+        "outputSections",
+        "approval",
+        "verification",
+        "markdown",
+    ]
+    payload = assert_smoke_json_keys(
+        payload,
+        expected_keys,
+        label="top-level",
+        context=context,
+        command_label="artifact JSON",
+    )
+    if payload.get("kind") != "design-ai-artifact" or payload.get("schemaVersion") != 1:
+        raise SystemExit(f"artifact JSON after {context} kind or schema version changed")
+    if payload.get("mode") != "design-contract" or payload.get("outputFile") != "DESIGN.md":
+        raise SystemExit(f"artifact JSON after {context} mode or output file changed")
+    if payload.get("brief") != EXPECTED_ROUTE_BRIEF:
+        raise SystemExit(f"artifact JSON after {context} brief differs from expected brief")
+
+    route = payload.get("route")
+    if not isinstance(route, dict) or route.get("id") != EXPECTED_ROUTE_ID:
+        raise SystemExit(f"artifact JSON after {context} route differs from expected route")
+    source_files = payload.get("sourceFiles")
+    if not isinstance(source_files, list) or "knowledge/PRINCIPLES.md" not in source_files:
+        raise SystemExit(f"artifact JSON after {context} source of truth is incomplete")
+    workflow = payload.get("workflow")
+    if not isinstance(workflow, list) or len(workflow) != 4:
+        raise SystemExit(f"artifact JSON after {context} workflow must contain four steps")
+    approval = payload.get("approval")
+    if not isinstance(approval, dict) or approval.get("status") != "pending-human-approval":
+        raise SystemExit(f"artifact JSON after {context} approval boundary changed")
+    verification = payload.get("verification")
+    if not isinstance(verification, dict) or verification.get("command") != EXPECTED_ARTIFACT_QUALITY_COMMAND:
+        raise SystemExit(f"artifact JSON after {context} verification command changed")
+    markdown = payload.get("markdown")
+    if not isinstance(markdown, str):
+        raise SystemExit(f"artifact JSON after {context} markdown is missing")
+    assert_contains_fragments(
+        markdown,
+        ("## Artifact contract", "## Source of truth", "## Approval boundary", "## Verification"),
+        context=context,
+        label="artifact markdown",
+    )
+
+
 def assert_prompt_markdown_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     if raw.lstrip().startswith("{"):
@@ -4352,7 +4428,7 @@ def assert_audit_json(
             raise SystemExit(f"audit JSON after {context} duration is invalid for {expected_name}")
         if not isinstance(audit.get("strictArgs"), list) or not all(isinstance(arg, str) for arg in audit["strictArgs"]):
             raise SystemExit(f"audit JSON after {context} strictArgs is invalid for {expected_name}")
-        expected_strict_args = ["--strict"] if expected_name == "stale" and strict else []
+        expected_strict_args = expected_audit_strict_args(expected_name, strict=strict)
         if audit.get("strictArgs") != expected_strict_args:
             raise SystemExit(f"audit JSON after {context} strictArgs differ for {expected_name}")
 
@@ -4696,7 +4772,7 @@ def passing_main_help_output() -> str:
         "    Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization",
         "  workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
         "    Show read-only local dogfood readiness: git, repository, learning usage, eval checkpoints, and release scripts",
-        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+        "  site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--linked-preview [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] [--next-actions] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
         "    Validate Website Improvement Console exports and generate handoff artifacts",
         "",
         "Environment overrides:",
@@ -5439,6 +5515,30 @@ Implement the smallest safe fix. After editing, run the target repo's most relev
 def passing_site_prompt_templates_json() -> str:
     templates = [
         {
+            "id": "implementation-plan",
+            "label": "Implementation plan",
+            "agent": "codex-or-claude",
+            "output": "Portable implementation plan",
+            "description": "Plan one website improvement task with source, approval, and verification evidence.",
+            "taskSelectable": True,
+        },
+        {
+            "id": "critique-loop",
+            "label": "Critique loop",
+            "agent": "codex-or-claude",
+            "output": "Observed critique and revision loop",
+            "description": "Review, revise, and re-observe one website decision without losing the evidence trail.",
+            "taskSelectable": True,
+        },
+        {
+            "id": "design-contract",
+            "label": "Agent-readable DESIGN.md",
+            "agent": "codex-or-claude",
+            "output": "DESIGN.md contract",
+            "description": "Create the canonical brand, component, motion, accessibility, and responsive contract for agents.",
+            "taskSelectable": False,
+        },
+        {
             "id": "codex-repo-intake",
             "label": "Codex repo intake",
             "agent": "codex",
@@ -5911,6 +6011,9 @@ def passing_site_workflow_graph_json() -> str:
         ("task-content-quality", "Resolve Content Quality finding", "content-quality", ["figma", "research", "cms"]),
     ]
     prompts = [
+        ("implementation-plan", "Implementation plan"),
+        ("critique-loop", "Critique loop"),
+        ("design-contract", "Agent-readable DESIGN.md"),
         ("codex-repo-intake", "Codex repo intake"),
         ("codex-implementation", "Codex implementation"),
         ("codex-visual-qa", "Codex visual QA"),
@@ -6027,7 +6130,7 @@ def passing_site_workflow_graph_json() -> str:
                 "taskCount": 3,
                 "generatedTaskCount": 2,
                 "requiredMcpCount": 3,
-                "promptTemplateCount": 8,
+                "promptTemplateCount": 11,
             },
             "nodes": nodes,
             "edges": edges,
@@ -6099,7 +6202,7 @@ def passing_doctor_strict_output() -> str:
         "",
         "✓  Source layout: complete at /tmp/design-ai",
         f"✓  Version alignment: {EXPECTED_RELEASE_VERSION}",
-        "✓  Manifest paths: 41 referenced artifact(s) exist",
+        f"✓  Manifest paths: {EXPECTED_INSTALL_TOTAL} referenced artifact(s) exist",
         "✓  Node runtime: v24.13.1",
         "✓  Python runtime: Python 3.12.12",
         "✓  Audit runner: tools/audit/run-all.py found",
@@ -6110,9 +6213,9 @@ def passing_doctor_strict_output() -> str:
         "✓  Package contents check: tools/audit/package-contents.py found",
         "✓  Package smoke check: tools/audit/package-smoke.py found",
         "✓  Registry smoke check: tools/audit/registry-smoke.py found",
-        "✓  Installed skills: 20/20 installed",
-        "✓  Installed agents: 4/4 installed",
-        "✓  Installed slash commands: 17/17 installed",
+        f"✓  Installed skills: {EXPECTED_SKILL_COUNT}/{EXPECTED_SKILL_COUNT} installed",
+        f"✓  Installed agents: {EXPECTED_AGENT_COUNT}/{EXPECTED_AGENT_COUNT} installed",
+        f"✓  Installed slash commands: {EXPECTED_COMMAND_COUNT}/{EXPECTED_COMMAND_COUNT} installed",
         "",
         f"ℹ  Summary: {len(EXPECTED_DOCTOR_PASS_LABELS)} pass, 0 warning(s), 0 failure(s)",
         "",
@@ -6134,9 +6237,9 @@ def passing_install_output() -> str:
         "Installing from: /tmp/design-ai",
         "Target:          /tmp/claude-home",
         "Symlink prefix:  smoke-design-",
-        "Installed 20 skills (prefix: smoke-design-)",
-        "Installed 4 agents (prefix: smoke-design-)",
-        "Installed 17 slash commands (prefix: /smoke-design-)",
+        f"Installed {EXPECTED_SKILL_COUNT} skills (prefix: smoke-design-)",
+        f"Installed {EXPECTED_AGENT_COUNT} agents (prefix: smoke-design-)",
+        f"Installed {EXPECTED_COMMAND_COUNT} slash commands (prefix: /smoke-design-)",
         "Done. Restart Claude Code (or open a new session) to pick up changes.",
         "Installed. Restart Claude Code (or open a new session) to pick up changes.",
         "Or: design-ai status",
@@ -6230,9 +6333,9 @@ def passing_status_output() -> str:
         "Target: /tmp/claude-home",
         "Prefix: smoke-design-",
         "",
-        "Skills: 20 installed",
-        "Agents: 4 installed",
-        "Slash commands: 17 installed",
+        f"Skills: {EXPECTED_SKILL_COUNT} installed",
+        f"Agents: {EXPECTED_AGENT_COUNT} installed",
+        f"Slash commands: {EXPECTED_COMMAND_COUNT} installed",
         "",
     ])
 
@@ -6273,7 +6376,7 @@ def passing_status_json(prefix: str = "smoke-design-") -> str:
             },
             "sections": sections,
             "summary": {
-                "installed": 41,
+                "installed": EXPECTED_INSTALL_TOTAL,
                 "missingSections": 0,
                 "emptySections": 0,
             },
@@ -6291,7 +6394,7 @@ def passing_uninstall_output() -> str:
         "design-ai installer",
         "Senior product designer for Claude Code",
         "Uninstalling design-ai from /tmp/claude-home",
-        "Removed 41 design-ai symlinks",
+        f"Removed {EXPECTED_INSTALL_TOTAL} design-ai symlinks",
         "Done. To remove the design-ai source, delete its directory manually.",
         "Source location: /tmp/design-ai",
         "",
@@ -7775,12 +7878,12 @@ def assert_site_prompt_templates_json(raw: str, *, context: str, cmd: list[str])
         context=context,
         command_label="site prompt templates JSON",
     )
-    if payload.get("count") != 8:
-        raise SystemExit(f"site prompt templates JSON after {context} expected eight templates")
+    if payload.get("count") != 11:
+        raise SystemExit(f"site prompt templates JSON after {context} expected eleven templates")
 
     templates = payload.get("templates")
-    if not isinstance(templates, list) or len(templates) != 8:
-        raise SystemExit(f"site prompt templates JSON after {context} templates must contain eight entries")
+    if not isinstance(templates, list) or len(templates) != 11:
+        raise SystemExit(f"site prompt templates JSON after {context} templates must contain eleven entries")
     ids = []
     for template in templates:
         item = assert_smoke_json_keys(
@@ -7798,7 +7901,7 @@ def assert_site_prompt_templates_json(raw: str, *, context: str, cmd: list[str])
 
     if ids != EXPECTED_SITE_PROMPT_TEMPLATE_IDS:
         raise SystemExit(f"site prompt templates JSON after {context} template ids changed")
-    implementation = templates[1]
+    implementation = templates[4]
     if implementation.get("id") != "codex-implementation" or implementation.get("taskSelectable") is not True:
         raise SystemExit(f"site prompt templates JSON after {context} codex-implementation must remain task selectable")
     if implementation.get("agent") != "codex":
@@ -8268,13 +8371,13 @@ def assert_site_workflow_graph_json(raw: str, *, context: str, cmd: list[str]) -
         "status": "pass",
         "workspaceStatus": "pass",
         "mcpStatus": "pass",
-        "nodeCount": 35,
-        "edgeCount": 67,
+        "nodeCount": 38,
+        "edgeCount": 73,
         "auditCategoryCount": 9,
         "taskCount": 3,
         "generatedTaskCount": 2,
         "requiredMcpCount": 3,
-        "promptTemplateCount": 8,
+        "promptTemplateCount": 11,
     }
     for key, expected in expected_summary.items():
         if summary.get(key) != expected:
@@ -9320,9 +9423,11 @@ def run_self_test() -> None:
         expected="top-level keys changed",
         scope="smoke assertions",
     )
+    wrong_list_count_catalog = json.loads(passing_list_catalog_json("skills"))
+    wrong_list_count_catalog["sections"][0]["count"] = EXPECTED_SKILL_COUNT - 1
     expect_self_test_failure(
         lambda: assert_list_catalog_json(
-            passing_list_catalog_json("skills").replace('"count": 20', '"count": 19'),
+            json.dumps(wrong_list_count_catalog),
             kind="skills",
             context=context,
             cmd=[*list_cmd, "--json"],
@@ -9366,7 +9471,10 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_list_catalog_output(
-            passing_list_catalog_output("skills").replace("skills (20)", "skills (19)"),
+            passing_list_catalog_output("skills").replace(
+                f"skills ({EXPECTED_SKILL_COUNT})",
+                f"skills ({EXPECTED_SKILL_COUNT - 1})",
+            ),
             kind="skills",
             context=context,
             cmd=list_cmd,
@@ -12664,7 +12772,7 @@ def run_self_test() -> None:
         scope="smoke assertions",
     )
     stale_site_prompt_templates_payload = json.loads(passing_site_prompt_templates_json())
-    stale_site_prompt_templates_payload["templates"][1]["taskSelectable"] = False
+    stale_site_prompt_templates_payload["templates"][4]["taskSelectable"] = False
     expect_self_test_failure(
         lambda: assert_site_prompt_templates_json(
             json.dumps(stale_site_prompt_templates_payload),
@@ -12973,8 +13081,8 @@ def run_self_test() -> None:
     expect_self_test_failure(
         lambda: assert_doctor_strict_output(
             passing_doctor_strict_output().replace(
-                "Installed slash commands: 17/17 installed",
-                "Installed slash commands: 15/16 installed; 1 missing",
+                f"Installed slash commands: {EXPECTED_COMMAND_COUNT}/{EXPECTED_COMMAND_COUNT} installed",
+                f"Installed slash commands: {EXPECTED_COMMAND_COUNT - 1}/{EXPECTED_COMMAND_COUNT} installed; 1 missing",
             ),
             context=context,
             cmd=doctor_strict_cmd,
@@ -13032,7 +13140,10 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_install_output(
-            passing_install_output().replace("Installed 20 skills", "Installed 19 skills"),
+            passing_install_output().replace(
+                f"Installed {EXPECTED_SKILL_COUNT} skills",
+                f"Installed {EXPECTED_SKILL_COUNT - 1} skills",
+            ),
             context=context,
             cmd=install_cmd,
         ),
@@ -13055,7 +13166,10 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_install_json(
-            passing_install_json("smoke-design-").replace('"total": 41', '"total": 40'),
+            passing_install_json("smoke-design-").replace(
+                f'"total": {EXPECTED_INSTALL_TOTAL}',
+                f'"total": {EXPECTED_INSTALL_TOTAL - 1}',
+            ),
             prefix="smoke-design-",
             context=context,
             cmd=[*install_cmd, "--json"],
@@ -13098,8 +13212,8 @@ def run_self_test() -> None:
         scope="smoke assertions",
     )
     install_payload_wrong_counts = json.loads(passing_install_json("smoke-design-"))
-    install_payload_wrong_counts["result"]["installed"]["skills"] = 19
-    install_payload_wrong_counts["result"]["installed"]["commands"] = 18
+    install_payload_wrong_counts["result"]["installed"]["skills"] = EXPECTED_SKILL_COUNT - 1
+    install_payload_wrong_counts["result"]["installed"]["commands"] = EXPECTED_COMMAND_COUNT + 1
     expect_self_test_failure(
         lambda: assert_install_json(
             json.dumps(install_payload_wrong_counts),
@@ -13264,7 +13378,10 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_status_output(
-            passing_status_output().replace("Skills: 20 installed", "Skills: 0 installed"),
+            passing_status_output().replace(
+                f"Skills: {EXPECTED_SKILL_COUNT} installed",
+                "Skills: 0 installed",
+            ),
             context=context,
             cmd=status_cmd,
         ),
@@ -13273,7 +13390,10 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_status_output(
-            passing_status_output().replace("Slash commands: 17 installed", "Slash commands: 15 installed"),
+            passing_status_output().replace(
+                f"Slash commands: {EXPECTED_COMMAND_COUNT} installed",
+                f"Slash commands: {EXPECTED_COMMAND_COUNT - 1} installed",
+            ),
             context=context,
             cmd=status_cmd,
         ),
@@ -13292,7 +13412,10 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_status_json(
-            passing_status_json("smoke-design-").replace('"installed": 41', '"installed": 40'),
+            passing_status_json("smoke-design-").replace(
+                f'"installed": {EXPECTED_INSTALL_TOTAL}',
+                f'"installed": {EXPECTED_INSTALL_TOTAL - 1}',
+            ),
             prefix="smoke-design-",
             context=context,
             cmd=[*status_cmd, "--json"],
@@ -13402,16 +13525,21 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_uninstall_output(
-            passing_uninstall_output().replace("Removed 41 design-ai symlinks", "Removed 40 design-ai symlinks"),
+            passing_uninstall_output().replace(
+                f"Removed {EXPECTED_INSTALL_TOTAL} design-ai symlinks",
+                f"Removed {EXPECTED_INSTALL_TOTAL - 1} design-ai symlinks",
+            ),
             context=context,
             cmd=uninstall_cmd,
         ),
         expected="missing expected content",
         scope="smoke assertions",
     )
+    uninstall_payload_wrong_removed = json.loads(passing_uninstall_json("smoke-design-"))
+    uninstall_payload_wrong_removed["result"]["removed"] = EXPECTED_INSTALL_TOTAL - 1
     expect_self_test_failure(
         lambda: assert_uninstall_json(
-            passing_uninstall_json("smoke-design-").replace('"removed": 41', '"removed": 40'),
+            json.dumps(uninstall_payload_wrong_removed),
             prefix="smoke-design-",
             context=context,
             cmd=[*uninstall_cmd, "--json"],

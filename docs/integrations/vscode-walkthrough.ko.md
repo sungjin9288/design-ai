@@ -89,7 +89,7 @@ Cmd+Shift+P → "design-ai: Open knowledge file..."
 
 같은 패턴:
 - "design-ai: Open component spec..." → 142개 spec
-- "design-ai: Open skill PLAYBOOK..." → 20개 스킬
+- "design-ai: Open skill PLAYBOOK..." → 21개 스킬
 - "design-ai: Open integration walkthrough..." → 5개 워크스루
 
 ## 워크스루 5: 멀티 파일 디자인 시스템 부트스트랩

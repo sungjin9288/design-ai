@@ -1,7 +1,7 @@
 {
   "name": "design-ai",
-  "version": "4.65.0",
-  "description": "Senior product designer for any AI coding agent. 20 skills, 17 commands, 4 review agents covering UI/UX, website improvement, design systems, motion, illustration, print, video, game UI, conversational, and spatial design. Korean market depth.",
+  "version": "5.0.0",
+  "description": "Senior product designer for any AI coding agent. 21 skills, 16 commands, 4 review agents covering UI/UX, design engineering, website improvement, design systems, motion, illustration, print, video, game UI, conversational, and spatial design. Korean market depth.",
   "author": {
     "name": "Sungjin Park",
     "email": "sungjin9288@gmail.com"
@@ -76,6 +76,11 @@
       "name": "website-improvement",
       "path": "skills/website-improvement/SKILL.md",
       "description": "Plan website audits, Site Profiles, MCP readiness, refactor tasks, prompts, and handoff reports."
+    },
+    {
+      "name": "design-engineering-review",
+      "path": "skills/design-engineering-review/SKILL.md",
+      "description": "Review web and app interface craft across code, runtime interaction, motion, accessibility, and responsive behavior."
     },
     {
       "name": "figma-token-sync",
@@ -173,11 +178,6 @@
       "name": "component-spec",
       "path": "commands/component-spec.md",
       "description": "Spec a single component using the component-spec-writer skill."
-    },
-    {
-      "name": "extract-tokens",
-      "path": "commands/extract-tokens.md",
-      "description": "Run the token extractor pipeline."
     },
     {
       "name": "motion-design",

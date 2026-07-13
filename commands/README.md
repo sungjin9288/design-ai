@@ -12,7 +12,6 @@ Slash commands. In Claude Code, drop these into `~/.claude/commands/` (or symlin
 | [/website-improvement](website-improvement.md) | Plan website improvement work with Site Profile, audit checklist, MCP readiness, prompt generation, and handoff report. |
 | [/palette-from-brand](palette-from-brand.md) | Generate a full palette from a brand input (hex, category, or mood). |
 | [/component-spec](component-spec.md) | Spec a single component using the component-spec-writer skill. |
-| [/extract-tokens](extract-tokens.md) | Run the token extractor pipeline. |
 | [/motion-design](motion-design.md) | Spec motion for a screen / component / page. Picks tool, durations, easings; reduced-motion-safe. |
 | [/illustration](illustration.md) | Design or spec an illustration system or piece. Style, voice, format; Korean-market-aware. |
 | [/print](print.md) | Spec a print piece (business card, brochure, poster, packaging). CMYK + Pantone, bleed, finish; KR conventions. |
@@ -23,3 +22,5 @@ Slash commands. In Claude Code, drop these into `~/.claude/commands/` (or symlin
 | [/stability-review](stability-review.md) | Run the quarterly stability review report and surface promotion candidates, stale files, and next maintenance actions. |
 
 Each file has YAML frontmatter (`description`) and a body. The body is the prompt the command expands to.
+
+Token extraction is clone-only maintainer tooling, not a public slash command. Maintainers should use `tools/extractors/README.md` and `./tools/extractors/run-all.sh` from a repository clone.

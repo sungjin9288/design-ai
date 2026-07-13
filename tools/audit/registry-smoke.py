@@ -137,6 +137,7 @@ from smoke_assertions import (
     help_topic_script,
     mcp_smoke_input,
     parse_help_topics,
+    passing_mcp_protocol_responses,
     passing_doctor_report_json,
     passing_check_artifact_content,
     passing_index_build_json,
@@ -6923,34 +6924,19 @@ def run_self_test() -> None:
             scope="registry smoke",
         )
         mcp_protocol_cmd = ["design-ai-mcp"]
+        mcp_responses = passing_mcp_protocol_responses()
         assert_design_ai_mcp_protocol_responses(
-            [
-                {"jsonrpc": "2.0", "id": 1, "result": {"serverInfo": {"name": "design-ai"}}},
-                {"jsonrpc": "2.0", "id": 2, "result": {"tools": [{"name": "design_ai_route"}, {"name": "design_ai_search"}]}},
-                {
-                    "jsonrpc": "2.0",
-                    "id": 3,
-                    "error": {"code": -32602, "message": "design_ai_search.limit must be an integer"},
-                },
-            ],
+            mcp_responses,
             context="registry smoke self-test design-ai MCP protocol",
             cmd=mcp_protocol_cmd,
         )
+        invalid_mcp_responses = json.loads(json.dumps(mcp_responses))
+        next(response for response in invalid_mcp_responses if response.get("id") == 3)["error"]["message"] = (
+            "wrong validation message"
+        )
         expect_self_test_failure(
             lambda: assert_design_ai_mcp_protocol_responses(
-                [
-                    {"jsonrpc": "2.0", "id": 1, "result": {"serverInfo": {"name": "design-ai"}}},
-                    {
-                        "jsonrpc": "2.0",
-                        "id": 2,
-                        "result": {"tools": [{"name": "design_ai_route"}, {"name": "design_ai_search"}]},
-                    },
-                    {
-                        "jsonrpc": "2.0",
-                        "id": 3,
-                        "error": {"code": -32602, "message": "wrong validation message"},
-                    },
-                ],
+                invalid_mcp_responses,
                 context="registry smoke self-test design-ai MCP protocol",
                 cmd=mcp_protocol_cmd,
             ),

@@ -7,11 +7,12 @@ import {
   buildRouteEvalTemplate,
   formatRouteJson,
   parseRouteArgs,
-  readRouteManifestVersion,
-  routeBrief,
-  routeCatalog,
   routeEvalReport,
 } from "../lib/route.mjs";
+import {
+  buildRouteCatalogPayload,
+  buildRoutePayload,
+} from "../lib/route-operation.mjs";
 
 function printHelp() {
   console.log("Usage:  design-ai route <brief> [--limit N] [--explain] [--json]");
@@ -176,11 +177,8 @@ export async function runRoute(args) {
   }
 
   if (parsed.list) {
-    const routes = routeCatalog({ sourceRoot: DESIGN_AI_HOME });
-    const payload = {
-      version: readRouteManifestVersion(DESIGN_AI_HOME),
-      routes,
-    };
+    const payload = buildRouteCatalogPayload({ sourceRoot: DESIGN_AI_HOME });
+    const routes = payload.routes;
 
     if (parsed.json) {
       console.log(formatRouteJson(payload));
@@ -218,18 +216,13 @@ export async function runRoute(args) {
     return;
   }
 
-  const routes = routeBrief({
+  const payload = buildRoutePayload({
     brief,
     sourceRoot: DESIGN_AI_HOME,
     limit: parsed.limit,
     explain: parsed.explain,
   });
-
-  const payload = {
-    brief,
-    version: readRouteManifestVersion(DESIGN_AI_HOME),
-    routes,
-  };
+  const routes = payload.routes;
 
   if (parsed.json) {
     console.log(formatRouteJson(payload));

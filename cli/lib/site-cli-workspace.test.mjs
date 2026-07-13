@@ -1,6 +1,6 @@
 // Tests for runSite sample/init/tasks/strict/help CLI flows.
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -113,14 +113,14 @@ test("runSite emits and writes a valid project init workspace", async () => {
     assert.equal(bundleSummary.counts.refactorTasks, 0);
     assert.equal(bundleSummary.taskGeneration.totalTasks, 0);
     assert.deepEqual(bundleSummary.handoff, {
-      strictReady: false,
-      readiness: "review-warnings-before-strict-handoff",
-    recommendedCommand: "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md",
-    strictCommand: "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md",
-    draftCommand: "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md",
-    verifyCommand: "design-ai site <bundle-dir> --bundle-check --strict --json",
-    note: "Use the draft handoff command only for planning while readiness warnings remain; use the strict handoff command before treating the bundle as implementation authority.",
-    executionChecklist: [
+      strictReady: true,
+      readiness: "ready-for-strict-handoff",
+      recommendedCommand: "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md",
+      strictCommand: "design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff.md",
+      draftCommand: "design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff.md",
+      verifyCommand: "design-ai site <bundle-dir> --bundle-check --strict --json",
+      note: "Use the strict handoff command before target-repo implementation.",
+      executionChecklist: [
       {
         id: "confirm-target-repo",
         label: "Confirm target repo working directory",
@@ -153,8 +153,8 @@ test("runSite emits and writes a valid project init workspace", async () => {
       },
     ],
   });
-    assert.match(readFileSync(path.join(bundleDir, "README.md"), "utf8"), /Strict-ready: no/);
-    assert.match(readFileSync(path.join(bundleDir, "README.md"), "utf8"), /Recommended command: `design-ai site <bundle-dir> --bundle-handoff --out target-repo-handoff\.md`/);
+    assert.match(readFileSync(path.join(bundleDir, "README.md"), "utf8"), /Strict-ready: yes/);
+    assert.match(readFileSync(path.join(bundleDir, "README.md"), "utf8"), /Recommended command: `design-ai site <bundle-dir> --bundle-handoff --strict --out target-repo-handoff\.md`/);
     assert.equal(JSON.parse(readFileSync(path.join(bundleDir, "website-workspace.tasks.json"), "utf8")).siteProfile.name, "Company marketing site");
     assert.equal(buildSiteBundleCheckReport({ target: bundleDir }).valid, true);
 
@@ -182,6 +182,43 @@ test("runSite emits and writes a valid project init workspace", async () => {
     assert.equal(report.summary.site.name, "Company marketing site");
     assert.equal(report.summary.counts.refactorTasks, 0);
     assert.ok(report.summary.issues.some((issue) => issue.id === "workspace-ready"));
+  });
+});
+
+test("runSite creates a strict-ready pre-deployment bundle from a target repo", async () => {
+  await withTempDir(async (dir) => {
+    const targetRepo = path.join(dir, "greenfield-site");
+    const bundleDir = path.join(dir, "greenfield-handoff-bundle");
+    mkdirSync(targetRepo);
+
+    const output = await captureConsole(() => runSite([
+      "--init",
+      "--name",
+      "Greenfield homepage",
+      "--local-path",
+      targetRepo,
+      "--deploy",
+      "vercel",
+      "--bundle",
+      "--out",
+      bundleDir,
+      "--strict",
+    ]));
+    const summary = JSON.parse(readFileSync(path.join(bundleDir, "summary.json"), "utf8"));
+
+    assert.equal(output.exitCode, undefined);
+    assert.equal(summary.status, "pass");
+    assert.equal(summary.site.liveUrl, "");
+    assert.equal(summary.handoff.strictReady, true);
+
+    const checked = await captureConsole(() => runSite([
+      bundleDir,
+      "--bundle-check",
+      "--strict",
+      "--json",
+    ]));
+    assert.equal(checked.exitCode, undefined);
+    assert.equal(JSON.parse(checked.stdout).status, "pass");
   });
 });
 
@@ -341,9 +378,9 @@ test("runSite strict exits non-zero on warnings", async () => {
 test("runSite prints command-specific help", async () => {
   const output = await captureConsole(() => runSite(["--help"]));
   assert.match(output.stdout, /Usage:\s+design-ai site <workspace\.json>/);
-  assert.match(output.stdout, /design-ai site --init --name name --live-url url/);
-  assert.match(output.stdout, /design-ai site --init --name name --live-url url --next-actions \[--json\] \[--out file\]/);
-  assert.match(output.stdout, /design-ai site --init --name name --live-url url --bundle --out dir \[--strict\] \[--force\]/);
+  assert.match(output.stdout, /design-ai site --init --name name \[--live-url url\] \[--repo-url url\|--local-path path\]/);
+  assert.match(output.stdout, /\[--repo-url url\|--local-path path\] --next-actions \[--json\] \[--out file\]/);
+  assert.match(output.stdout, /\[--repo-url url\|--local-path path\] --bundle --out dir \[--strict\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --from-intake file\.md\|--stdin \[--json\|--next-actions \[--json\]\|--tasks\|--bundle \[--tasks\] --out dir\] \[--out file\] \[--strict\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --intake-template \[--language en\|ko\] \[--json\] \[--out file\] \[--force\]/);
   assert.match(output.stdout, /design-ai site --sample \[--out file\] \[--force\]/);

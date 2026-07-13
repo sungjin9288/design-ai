@@ -16,6 +16,7 @@ import {
   buildSiteBundleRepairPreview,
   buildSiteMcpActionPlan,
   buildSiteMcpActionPlanData,
+  buildSiteLinkedPreviewReport,
   buildSiteNextActionsReport,
   buildSiteMcpCheckReport,
   buildSitePrompt,
@@ -39,6 +40,8 @@ import {
   formatSiteMcpCheckHuman,
   formatSiteMcpCheckJson,
   formatSiteMcpActionPlanJson,
+  formatSiteLinkedPreviewHuman,
+  formatSiteLinkedPreviewJson,
   formatSiteNextActionsHuman,
   formatSiteNextActionsJson,
   formatSitePromptTemplatesHuman,
@@ -54,15 +57,16 @@ import { dim, error, header, info, success, warn } from "../lib/log.mjs";
 function printHelp() {
   console.log("Usage:  design-ai site <workspace.json> [--strict] [--json]");
   console.log("        cat workspace.json | design-ai site --stdin [--strict] [--json]");
-  console.log("        design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]");
-  console.log("        design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]");
-  console.log("        design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]");
+  console.log("        design-ai site --init --name name [--live-url url] [--repo-url url|--local-path path] [--out file] [--force]");
+  console.log("        design-ai site --init --name name [--live-url url] [--repo-url url|--local-path path] --next-actions [--json] [--out file] [--force]");
+  console.log("        design-ai site --init --name name [--live-url url] [--repo-url url|--local-path path] --bundle --out dir [--strict] [--force]");
   console.log("        design-ai site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] [--strict] [--force]");
   console.log("        design-ai site --intake-template [--language en|ko] [--json] [--out file] [--force]");
   console.log("        design-ai site --sample [--out file] [--force]");
   console.log("        design-ai site --prompt-list [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --mcp-check [--probes] [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --mcp-plan [--probes] [--strict] [--json] [--out file] [--force]");
+  console.log("        design-ai site <workspace.json> --linked-preview [--strict] [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --next-actions [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --graph [--json] [--out file] [--force]");
   console.log("        design-ai site <workspace.json> --tasks [--out file] [--force]");
@@ -80,7 +84,7 @@ function printHelp() {
   console.log("  --init      Generate a real-project Website Improvement workspace JSON from CLI fields");
   console.log("  --name text Site name for --init");
   console.log("  --live-url url");
-  console.log("              Live website URL for --init");
+  console.log("              Optional live website URL for --init after a preview or deployment exists");
   console.log("  --repo-url url");
   console.log("              Target website repository URL for --init; this repo is not mutated");
   console.log("  --local-path path");
@@ -115,6 +119,8 @@ function printHelp() {
   console.log("              Add read-only local URL/path/tool-handoff probes to --mcp-check or --mcp-plan; no external writes or MCP calls");
   console.log("  --mcp-plan");
   console.log("              Generate a Markdown or JSON MCP readiness action plan without external MCP calls");
+  console.log("  --linked-preview");
+  console.log("              Inspect linked root project metadata and prepare a manual preview loop without starting a process or mutating the target repo");
   console.log("  --next-actions");
   console.log("              Generate a prioritized local next-action list from validation, MCP readiness, and refactor tasks; can be combined with --init");
   console.log("  --graph");
@@ -137,7 +143,7 @@ function printHelp() {
   console.log("  --prompt id Generate one Markdown prompt template");
   console.log("              id: codex-repo-intake, codex-implementation, codex-visual-qa, codex-deployment, claude-design-review, claude-competitor, claude-copy-ux, handoff-report");
   console.log("  --task id   Select a refactor task by id or 1-based top-task number; requires --prompt codex-implementation or --bundle-handoff");
-  console.log("  --out file  Write --json, --init, --intake-template, --sample, --prompt-list, --mcp-check, --mcp-plan, --next-actions, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --report, --prompts, or --prompt output to a file or directory");
+  console.log("  --out file  Write --json, --init, --intake-template, --sample, --prompt-list, --mcp-check, --mcp-plan, --linked-preview, --next-actions, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --report, --prompts, or --prompt output to a file or directory");
   console.log("  --force     Overwrite an existing --out file");
   console.log("");
   console.log("Examples:");
@@ -163,6 +169,7 @@ function printHelp() {
   console.log("  design-ai site website-workspace.json --mcp-plan --out mcp-action-plan.md");
   console.log("  design-ai site website-workspace.json --mcp-plan --probes --json");
   console.log("  design-ai site website-workspace.json --mcp-plan --probes --json --out mcp-action-plan-probes.json");
+  console.log("  design-ai site website-workspace.json --linked-preview --json --out linked-preview.json");
   console.log("  design-ai site website-workspace.json --next-actions --json");
   console.log("  design-ai site website-workspace.json --next-actions --out website-next-actions.md");
   console.log("  design-ai site website-workspace.json --graph --json --out website-workflow-graph.json");
@@ -500,7 +507,11 @@ export async function runSite(args) {
 
   let content = "";
   let status = summary.status;
-  if (parsed.mcpCheck) {
+  if (parsed.linkedPreview) {
+    const linkedPreview = buildSiteLinkedPreviewReport(workspace, { filePath: summary.filePath });
+    status = linkedPreview.status;
+    content = `${parsed.json ? formatSiteLinkedPreviewJson(linkedPreview) : formatSiteLinkedPreviewHuman(linkedPreview)}\n`;
+  } else if (parsed.mcpCheck) {
     const mcpReport = buildSiteMcpCheckReport(workspace, summary, { probes: parsed.probes });
     status = mcpReport.status;
     content = `${parsed.json ? formatSiteMcpCheckJson(mcpReport) : formatSiteMcpCheckHuman(mcpReport)}\n`;
@@ -546,7 +557,7 @@ export async function runSite(args) {
       force: parsed.force,
     });
     success(`Wrote ${written}`);
-  } else if (parsed.mcpCheck || parsed.mcpPlan || parsed.nextActions || parsed.graph || parsed.report || parsed.prompts || parsed.promptTemplate || parsed.tasks || parsed.json) {
+  } else if (parsed.linkedPreview || parsed.mcpCheck || parsed.mcpPlan || parsed.nextActions || parsed.graph || parsed.report || parsed.prompts || parsed.promptTemplate || parsed.tasks || parsed.json) {
     console.log(content.trimEnd());
   } else {
     printHumanSummary(summary);

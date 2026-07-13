@@ -32,6 +32,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install documentation dependencies
+        run: pip install -r docs/requirements.txt
+
       - name: Verify package.json version matches tag
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
@@ -86,19 +89,12 @@ jobs:
 
           echo "NPM publish token authentication preflight completed for ${PACKAGE_NAME} ✓"
 
-      - name: Run all 8 audits before publishing
-        run: python3 tools/audit/run-all.py --strict
-
-      - name: Run CLI unit tests
+      - name: Install package dependencies
         run: |
           npm install --no-audit --no-fund
-          npm test
 
-      - name: Run release assertion self-tests
-        run: npm run release:self-test
-
-      - name: Check package contents
-        run: npm run package:check
+      - name: Run non-publishing release preflight
+        run: npm run release:preflight
 
       - name: Pack package tarball
         run: |
@@ -113,7 +109,7 @@ jobs:
 
       - name: Publish to npm
         if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
-        run: npm publish --provenance --access public
+        run: npm publish dist/*.tgz --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

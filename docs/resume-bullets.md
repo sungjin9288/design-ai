@@ -14,7 +14,7 @@
 
 ## 3. 현재 이력서에 넣어도 되는 bullet
 
-- AI coding agent의 디자인 작업 품질 편차 문제를 해결하기 위해 92개 knowledge file, 20개 skill, 17개 command 문서를 구조화하고 Node.js CLI routing workflow와 연결했습니다.
+- AI coding agent의 디자인 작업 품질 편차 문제를 해결하기 위해 92개 knowledge file, 20개 skill, 16개 공개 slash command 문서를 구조화하고 Node.js CLI routing workflow와 연결했습니다.
 - 사용자의 brief를 workflow로 분류하는 deterministic route engine을 구현해 design review, website improvement, component spec, motion, document workflow 등으로 연결했습니다.
 - Website Improvement Console을 dependency 없는 static Web App으로 구현해 site profile, audit checklist, MCP readiness, refactor task, handoff evidence를 browser-local workflow로 관리했습니다.
 - `design-ai site` CLI를 통해 Website Console JSON export를 task, report, prompt, bundle artifact로 변환하는 local handoff pipeline을 구축했습니다.

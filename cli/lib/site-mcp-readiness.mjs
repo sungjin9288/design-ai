@@ -31,12 +31,14 @@ function mcpReadinessEvidence(workspace, key) {
       actions: ["Add siteProfile.figmaUrl or mark Figma unused for this site."],
     },
     browser: {
-      ready: hasLiveUrl && profile.viewports.length > 0,
+      ready: (hasLiveUrl || hasRepo) && profile.viewports.length > 0,
       evidence: [
         hasLiveUrl ? `liveUrl: ${profile.liveUrl}` : "",
+        !hasLiveUrl && profile.repoUrl ? `repoUrl preview source: ${profile.repoUrl}` : "",
+        !hasLiveUrl && profile.localPath ? `localPath preview source: ${profile.localPath}` : "",
         profile.viewports.length ? `viewports: ${profile.viewports.join(", ")}` : "",
       ].filter(Boolean),
-      actions: ["Add a valid siteProfile.liveUrl and at least one viewport for Browser/Playwright QA."],
+      actions: ["Add a live URL or target repo reference plus at least one viewport before Browser/Playwright QA."],
     },
     chromeDevtools: {
       ready: hasLiveUrl,
@@ -44,12 +46,12 @@ function mcpReadinessEvidence(workspace, key) {
       actions: ["Add a valid siteProfile.liveUrl before Chrome DevTools debugging."],
     },
     deploy: {
-      ready: profile.deployProvider !== "none" && hasLiveUrl,
+      ready: profile.deployProvider !== "none",
       evidence: [
         `deployProvider: ${profile.deployProvider}`,
         hasLiveUrl ? `liveUrl: ${profile.liveUrl}` : "",
       ].filter(Boolean),
-      actions: ["Set siteProfile.deployProvider and liveUrl before deployment verification."],
+      actions: ["Set siteProfile.deployProvider before implementation handoff, then record liveUrl before deployment verification."],
     },
     sentry: {
       ready: Boolean(profile.sentryProject),

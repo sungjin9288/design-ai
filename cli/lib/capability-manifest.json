@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "routes": [
+    "design-review",
+    "design-engineering-review",
+    "website-improvement",
+    "agentic-design-development",
+    "design-from-brief",
+    "component-spec",
+    "palette-from-brand",
+    "motion-design",
+    "illustration",
+    "print",
+    "video",
+    "game-ui",
+    "conversational",
+    "spatial",
+    "document-from-brief",
+    "slide-deck",
+    "handoff-spec",
+    "design-system-qa",
+    "figma-token-sync",
+    "design-pr-review",
+    "stability-review",
+    "flow-design",
+    "dashboard-design",
+    "marketing-page"
+  ],
+  "install": {
+    "skills": [
+      "design-system-builder",
+      "component-spec-writer",
+      "color-palette",
+      "ux-audit",
+      "design-critique",
+      "handoff-spec",
+      "design-system-qa",
+      "design-pr-review",
+      "website-improvement",
+      "design-engineering-review",
+      "figma-token-sync",
+      "design-broadcast",
+      "document-author",
+      "slide-deck-author",
+      "motion-designer",
+      "illustration-designer",
+      "print-designer",
+      "video-designer",
+      "game-ui-designer",
+      "conversational-ui-designer",
+      "spatial-designer"
+    ],
+    "commands": [
+      "design-from-brief",
+      "iterate",
+      "document-from-brief",
+      "slide-deck",
+      "design-review",
+      "website-improvement",
+      "palette-from-brand",
+      "component-spec",
+      "motion-design",
+      "illustration",
+      "print",
+      "video",
+      "game-ui",
+      "conversational",
+      "spatial",
+      "stability-review"
+    ],
+    "agents": [
+      "design-critic",
+      "a11y-reviewer",
+      "component-architect",
+      "token-extractor"
+    ]
+  },
+  "mcp": {
+    "tools": [
+      "design_ai_route",
+      "design_ai_prompt",
+      "design_ai_artifact",
+      "design_ai_pack",
+      "design_ai_search",
+      "design_ai_show",
+      "design_ai_examples",
+      "design_ai_recall",
+      "design_ai_check",
+      "design_ai_site_mcp_check",
+      "design_ai_site_mcp_plan",
+      "design_ai_site_linked_preview",
+      "design_ai_site_bundle_handoff",
+      "design_ai_learn_remember",
+      "design_ai_learn_feedback",
+      "design_ai_learn_capture",
+      "design_ai_version"
+    ],
+    "learningProfileWriteTools": [
+      "design_ai_learn_remember",
+      "design_ai_learn_feedback",
+      "design_ai_learn_capture"
+    ]
+  },
+  "sdk": {
+    "exports": [
+      "artifact",
+      "check",
+      "learn",
+      "pack",
+      "prompt",
+      "recall",
+      "route",
+      "routes",
+      "search",
+      "version"
+    ],
+    "learnMethods": [
+      "remember",
+      "feedback",
+      "captureFromCheck"
+    ]
+  }
+}

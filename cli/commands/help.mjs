@@ -1,12 +1,12 @@
 // `design-ai help`
 
-import { readFileSync } from "node:fs";
-
+import { pluginInventoryCounts, readPluginManifest } from "../lib/plugin-manifest.mjs";
 import { header, dim } from "../lib/log.mjs";
-import { PLUGIN_MANIFEST, pathExists } from "../lib/paths.mjs";
+import { PLUGIN_MANIFEST } from "../lib/paths.mjs";
 import { suggestNearest } from "../lib/suggest.mjs";
 
 import { runAudit } from "./audit.mjs";
+import { runArtifact } from "./artifact.mjs";
 import { runCheck } from "./check.mjs";
 import { runDoctor } from "./doctor.mjs";
 import { runExamples } from "./examples.mjs";
@@ -42,11 +42,12 @@ export const HELP_COMMANDS = [
   { topic: "pack", usage: "pack <brief|--from-file file|--stdin|--eval-template|--eval> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--max-bytes N]", description: "Generate prompt plus bounded context and prompt-pack eval checkpoints" },
   { topic: "check", usage: "check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--learn]", description: "Check generated Markdown artifact quality; add --issues-only or --learn" },
   { topic: "audit", usage: "audit [--strict] [--quiet] [--json]", description: "Run repository quality checks" },
+  { topic: "artifact", usage: "artifact <implementation-plan|critique-loop|design-contract> <brief> [--route id] [--json] [--out file]", description: "Build a portable read-only design artifact plan" },
   { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
   { topic: "learn", usage: "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]", description: "Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization" },
   { topic: "workspace", usage: "workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]", description: "Show read-only local dogfood readiness: git, repository, learning usage, eval checkpoints, and release scripts" },
-  { topic: "site", usage: "site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]", description: "Validate Website Improvement Console exports and generate handoff artifacts" },
+  { topic: "site", usage: "site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--linked-preview [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] [--next-actions] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]", description: "Validate Website Improvement Console exports and generate handoff artifacts" },
   { topic: "mcp", usage: "mcp", description: "Start the stdio MCP server for Claude Code, Codex, and other MCP clients" },
   { topic: "version", usage: "version [--json]", description: "Show CLI + plugin versions" },
   { topic: "help", usage: "help [command|--json]", description: "Show top-level or command-specific help" },
@@ -89,6 +90,7 @@ const HELP_RUNNERS = {
   pack: () => runPack(["--help"]),
   check: () => runCheck(["--help"]),
   audit: () => runAudit(["--help"]),
+  artifact: () => runArtifact(["--help"]),
   doctor: () => runDoctor(["--help"]),
   examples: () => runExamples(["--help"]),
   learn: () => runLearn(["--help"]),
@@ -162,30 +164,22 @@ function printHelpJson() {
   console.log(formatHelpJson(buildHelpCatalog()));
 }
 
-function countManifestSection(manifest, section) {
-  const items = manifest?.[section];
-  return Array.isArray(items) ? items.length : 0;
-}
-
 function formatInventoryCount(count, singular) {
   return `${count} ${singular}${count === 1 ? "" : "s"}`;
 }
 
 export function buildPluginInventorySummary(manifest) {
+  const counts = pluginInventoryCounts(manifest);
   return [
-    formatInventoryCount(countManifestSection(manifest, "skills"), "skill"),
-    formatInventoryCount(countManifestSection(manifest, "commands"), "command"),
-    formatInventoryCount(countManifestSection(manifest, "agents"), "agent"),
+    formatInventoryCount(counts.skills, "skill"),
+    formatInventoryCount(counts.commands, "command"),
+    formatInventoryCount(counts.agents, "agent"),
   ].join(", ");
 }
 
 function loadPluginInventorySummary() {
-  if (!pathExists(PLUGIN_MANIFEST)) {
-    return "plugin manifest unavailable";
-  }
-
   try {
-    return buildPluginInventorySummary(JSON.parse(readFileSync(PLUGIN_MANIFEST, "utf8")));
+    return buildPluginInventorySummary(readPluginManifest(PLUGIN_MANIFEST));
   } catch {
     return "plugin manifest unavailable";
   }
@@ -227,6 +221,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai prompt --from-file brief.md --route design-review --out prompt.md`);
   console.log(`  ${dim("$")} design-ai prompt "improve homepage conversion" --route website-improvement`);
   console.log(`  ${dim("$")} design-ai prompt "spec a Button component"`);
+  console.log(`  ${dim("$")} design-ai artifact implementation-plan "refactor account settings"`);
   console.log(`  ${dim("$")} design-ai pack "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai check output.md --route component-spec --strict`);
   console.log(`  ${dim("$")} design-ai check output.md --learn --yes`);

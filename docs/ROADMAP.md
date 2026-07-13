@@ -1,5 +1,107 @@
 # Roadmap
 
+## Phase 777 — Linked-code preview readiness loop (implemented, unreleased)
+
+Adds the optional code-folder/preview step without turning design-ai into a target-repository runner. The operation reports what can be started, while the operator remains responsible for starting, verifying, and recording the preview.
+
+### Delivered
+- [x] Added `design-ai site <workspace.json> --linked-preview` with JSON/human output, strict status handling, output-file support, absolute-path and symlink guards, root-only project metadata inspection, framework/package-manager detection, and existing manual start-command discovery.
+- [x] Added read-only MCP `design_ai_site_linked_preview`; the canonical source inventory is now 17 MCP tools and 10 SDK exports. The SDK stays unchanged because this operation owns a local-project filesystem boundary.
+- [x] Added Website Console import, readiness metrics, copy-ready start/refresh commands, stage display, JSON export/clear actions, and handoff Markdown that keeps configured URL, process state, browser probe state, and recorded evidence separate.
+- [x] Added focused unit/CLI/MCP/Console tests and installed-bin plus one-shot `npm exec` packed-tarball smoke fixtures.
+
+### Boundary
+- The operation reads only root `package.json`, a supported lockfile, and root `index.html` existence. It does not install, start, probe, crawl, screenshot, scan source files, or mutate the target repository.
+- A passing report means metadata is ready for an operator-controlled preview start. It does not mean the page passed browser, responsive, accessibility, performance, or deployment verification.
+- Target-repo edits, dependency changes, migrations, commits, pushes, deployments, and external writes remain explicit approval gates.
+
+### Verification target
+- [x] Focused linked-preview, CLI argument/help/run, MCP inventory/invocation, capability manifest, and Website Console contract tests pass.
+- [x] `npm run release:check` passed with 650 tests, 8 strict audits, 662 packaged files, and installed-bin plus one-shot `npm exec` linked-preview smoke coverage.
+- [x] `npm run ci:local` passed with Python syntax, knowledge-size budget, VS Code extension compile/unit tests, MkDocs build, and a 0/0 documentation warning policy.
+
+## Phase 776 — Shared design artifact operation parity (implemented, unreleased)
+
+Turns implementation planning, critique iteration, and agent-readable design contracts into one portable, read-only artifact contract across every agent-facing surface.
+
+### Delivered
+- [x] Added `design-ai artifact` with explicit `implementation-plan`, `critique-loop`, and `design-contract` modes, route-aware source files, four-step workflows, output sections, approval boundaries, verification checklists, JSON output, and opt-in local `--out` writes.
+- [x] Added SDK `artifact()` and MCP `design_ai_artifact` adapters over the same core operation; both are read-only and preserve the canonical return shape.
+- [x] Added the three modes to Website Console Prompt Generator and the portable workflow graph, with server/standalone parity tests for mode IDs and contract headings.
+- [x] Updated the capability identity contract to 16 MCP tools and 10 SDK exports while keeping exactly three opt-in learning-profile write tools.
+- [x] Added installed-bin and one-shot `npm exec` packed-tarball smoke coverage for the new artifact command.
+
+### Verification target
+- [x] Focused CLI/SDK/MCP/Website Console parity tests passed, including shared mode, contract-shape, help, dispatch, and standalone Console checks.
+- [x] All 8 strict audits and the documentation build/check passed.
+- [x] `npm run release:check` passed with 643 tests, 661 packaged files, and installed-bin plus one-shot `npm exec` artifact smoke coverage.
+
+### Boundary
+- The operation generates planning artifacts only. Target-repo edits, dependency changes, migrations, commits, pushes, deployments, and external-system writes remain explicit approval gates.
+- No runtime dependency, model inference, screenshot automation, or public slash command was added.
+
+## Phase 775 — Web/app interface craft review (implemented, unreleased)
+
+Converts the Emil Kowalski design-engineering reference scan into an evidence-grounded design-ai workflow. The implementation extracts review taxonomy rather than copying upstream voice, code, or brand material.
+
+### Delivered
+- [x] Added `knowledge/patterns/interface-craft.md` with eight review lenses: purpose/frequency, response, spatial continuity, interruptibility, timing/cohesion, performance, accessibility, and responsive resilience.
+- [x] Added the `design-engineering-review` skill with explicit `review`, `plan`, and `implement` modes, code/runtime evidence hierarchy, Before/After/Why findings, and automated plus feel-check verification.
+- [x] Added a dedicated route, strict artifact requirements, and a command-palette worked example without increasing the public slash-command inventory.
+- [x] Connected the shared craft contract to `ux-audit`, `motion-designer`, and `website-improvement` while preserving existing local duration/easing tokens.
+- [x] Updated the canonical capability inventory to 24 routes and 21/16/4 installed skills/commands/agents.
+
+### Verification target
+- [x] Focused route, example, and artifact-check tests passed, including the 12/12 strict command-palette artifact check.
+- [x] All 8 audits and the generated coverage check passed.
+- [x] `npm run release:check` passed with 630 tests and packed-tarball smoke coverage.
+
+### Reference boundary
+- Upstream: `https://github.com/emilkowalski/skills` (MIT).
+- Reused: evaluation categories, audit sequencing, and interaction-quality questions expressed in design-ai's own terminology.
+- Not reused: author voice, promotional copy, long-form skill text, implementation snippets, or a blanket replacement of design-ai motion tokens.
+
+## Phase 774 — Refactor foundation release candidate (v5.0.0)
+
+Establishes the verified boundary for the larger refactor while correcting release-integrity gaps found during the Sol architecture review.
+
+### Delivered
+- [x] Added focused public-contract guards for routes, package bins/exports, MCP tool inventory, closed MCP schemas, and the three opt-in learning-write tools.
+- [x] Moved token extraction out of the public command inventory and into clone-only maintainer documentation.
+- [x] Restored `dashboard-design` chart and real-time knowledge promised by the route coverage record.
+- [x] Made PR audits strict and added a read-only, non-deploying PR documentation build.
+- [x] Fixed docs source generation so deleted tracked files do not create broken symlinks.
+- [x] Separated the published v4.65.0 status from the v5.0.0 release-candidate source state.
+- [x] Added a canonical capability identity manifest and parity checks for routes, plugin installation, MCP tools, SDK exports, and learning-write boundaries.
+- [x] Moved route payload assembly behind one read-only operation consumed by CLI, SDK, and MCP without changing route identities or response shape.
+- [x] Separated the stable route catalog and ID validation from routing, enrichment, and eval behavior while preserving the original route module exports.
+- [x] Isolated Python capability-contract validation and deduplicated the package/registry MCP protocol fixture without merging the runners.
+- [x] Extracted the Website Console source-bundle provenance/revalidation contract into a zero-build classic script with direct Node VM coverage.
+- [x] Separated generated coverage writes from strict checks and unified release/publish workflows around a non-publishing preflight plus one final-artifact smoke.
+- [x] Added a 15th read-only MCP tool that converts a verified Website Improvement bundle into a task-selectable, approval-gated target-repo handoff without external calls or repository mutation.
+- [x] Routed homepage implementation/refactor briefs to Website Improvement and tightened its prompts around read-only repo intake, explicit approval, and browser/accessibility/responsive evidence.
+- [x] Guarded deterministic Website Console fallback task IDs, marketing-page browser/viewport evidence, and packaged Console stylesheet presence.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `python3 -B tools/audit/local-ci.py --docs-only`.
+- CLI/SDK/MCP baseline comparison and temporary Claude install lifecycle.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.65.0 → 5.0.0. The major boundary reflects removal of the former public `extract-tokens` command.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- Internal routing, adapter, audit, and Website Console refactors can proceed behind explicit public-contract and release-integrity guards.
+- Inventory counts and public names now have one machine-readable source without moving runtime behavior into configuration.
+
+### What's still ahead
+- [ ] Merge, tag, and publish require explicit maintainer approval.
+- [ ] Decide whether Playwright becomes a maintained development dependency before adding automated screenshot regression; visual baselines require a stable, versioned execution environment.
+- [x] Completed in Phase 777: added a root-metadata-only linked-code-folder preview readiness loop while preserving the approval boundary and target-repo ownership.
+- [x] Completed in Phase 776: unified implementation-plan artifacts across CLI, SDK, MCP, and Website Console, then added critique-loop and agent-readable `DESIGN.md` operation parity.
+
 ## Phase 773 — Agentic development routing loop (implemented, unreleased)
 
 Turns the Phase 772 reference-mining guidance into executable design-ai behavior. The new route makes internal skill/product feature development briefs land on the agentic workflow corpus instead of falling through to generic website or design-system routes, and it pins the behavior in route, prompt, and learning-proposal tests.

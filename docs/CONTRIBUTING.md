@@ -240,3 +240,27 @@ For each prop, the proposal includes:
 - Code blocks tagged with language (`json`, `tsx`, `css`).
 - Links to local files use relative paths.
 - Links to upstream use the GitHub canonical URL, not local `refs/` (so docs survive if `refs/` is wiped).
+
+## Generated artifacts and preflight
+
+Do not use a CI check to regenerate tracked files. Generate locally, review the diff,
+and let the check command prove that the committed artifact is current.
+
+```bash
+# Update the coverage report after changing routes, skills, examples, or knowledge.
+npm run coverage:generate
+
+# Verify the committed report without changing it.
+npm run coverage:check
+
+# Run every non-publishing release gate except the packed-tarball execution smoke.
+npm run release:preflight
+
+# Run the complete local release gate, including one packed-tarball smoke.
+npm run release:check
+```
+
+Use `release:preflight` inside a workflow that will build and smoke its own final
+tarball. Use `release:check` before a release PR or tag when no later step owns that
+artifact. Both commands are read-only with respect to tracked source and generated
+reports.

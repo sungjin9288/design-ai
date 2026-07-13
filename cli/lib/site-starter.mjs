@@ -30,8 +30,8 @@ export function formatSiteIntakeTemplateJson({ language = "en" } = {}) {
       storesCustomerData: false,
     },
     commands: {
-      nextActions: "design-ai site --init --name \"<site name>\" --live-url <live-url> --local-path <absolute-target-repo-path> --next-actions --out website-next-actions.md --force",
-      bundle: "design-ai site --init --name \"<site name>\" --live-url <live-url> --local-path <absolute-target-repo-path> --bundle --out website-handoff-bundle --strict --force",
+      nextActions: "design-ai site --init --name \"<site name>\" --local-path <absolute-target-repo-path> [--live-url <live-url>] --next-actions --out website-next-actions.md --force",
+      bundle: "design-ai site --init --name \"<site name>\" --local-path <absolute-target-repo-path> [--live-url <live-url>] --bundle --out website-handoff-bundle --strict --force",
       bundleCheck: "design-ai site website-handoff-bundle --bundle-check --strict --json --out website-bundle-check.json --force",
       bundleHandoff: "design-ai site website-handoff-bundle --bundle-handoff --strict --out target-repo-handoff.md --force",
     },

@@ -34,6 +34,7 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Landing page section order | `knowledge/patterns/landing-page-patterns.md` |
 | Visual style by product category | `knowledge/patterns/ui-reasoning.md`, `knowledge/patterns/styles-catalog.md` |
 | UX issues / pre-ship checklist | `knowledge/patterns/ux-guidelines.md` |
+| Web/app interface craft (response / frequency / interruptibility / motion polish) | `knowledge/patterns/interface-craft.md` |
 | Agentic design workflows (MCP / artifacts / human gates / reference mining) | `knowledge/patterns/agentic-design-workflows.md` |
 | Brand reference / peer comparison | `knowledge/patterns/brand-references.md` |
 | Lists, feeds, infinite scroll, pull-to-refresh | `knowledge/patterns/list-and-feed.md` |
@@ -119,6 +120,7 @@ Each task type has a playbook in `skills/`. Open the matching skill before start
 | "Spec this component" | `skills/component-spec-writer/` |
 | "Generate a color palette" | `skills/color-palette/` |
 | "Audit this UI" | `skills/ux-audit/` |
+| "Review or improve web/app interface quality" | `skills/design-engineering-review/` |
 | "Critique this design" | `skills/design-critique/` |
 | "Write a dev handoff" | `skills/handoff-spec/` |
 | "Audit our design system QA / set up testing" | `skills/design-system-qa/` |

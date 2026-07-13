@@ -5,6 +5,35 @@
   var ACTIVE_TAB_KEY = "design-ai.website-console.active-tab";
   var SELECTED_TEMPLATE_KEY = "design-ai.website-console.prompt-template";
 
+  var sourceBundleApi = window.DesignAiWebsiteConsoleSourceBundle;
+  var sourceBundleFunctionNames = [
+    "normalizeRunbookSourceBundle",
+    "extractSourceBundleProvenancePayload",
+    "extractSourceBundleRevalidationGatePayload",
+    "sourceBundleNeedsRevalidation",
+    "buildSourceBundleRevalidationGate",
+    "buildSourceBundleJson",
+    "buildSourceBundleRevalidationGateJson",
+  ];
+  var sourceBundleReady = sourceBundleApi && sourceBundleFunctionNames.every(function (name) {
+    return typeof sourceBundleApi[name] === "function";
+  });
+  if (!sourceBundleReady) {
+    var failedApp = document.getElementById("app");
+    if (failedApp) {
+      failedApp.setAttribute("data-status", "error");
+      failedApp.innerHTML = '<main id="main" class="loading-shell" tabindex="-1"><h1>Website Console unavailable</h1><p>Required local scripts did not load. Reload after updating the complete Website Console bundle.</p></main>';
+    }
+    throw new Error("Website Console source-bundle contract failed to load all required functions.");
+  }
+  var normalizeRunbookSourceBundle = sourceBundleApi.normalizeRunbookSourceBundle;
+  var extractSourceBundleProvenancePayload = sourceBundleApi.extractSourceBundleProvenancePayload;
+  var extractSourceBundleRevalidationGatePayload = sourceBundleApi.extractSourceBundleRevalidationGatePayload;
+  var sourceBundleNeedsRevalidation = sourceBundleApi.sourceBundleNeedsRevalidation;
+  var buildSourceBundleRevalidationGate = sourceBundleApi.buildSourceBundleRevalidationGate;
+  var buildSourceBundleJson = sourceBundleApi.buildSourceBundleJson;
+  var buildSourceBundleRevalidationGateJson = sourceBundleApi.buildSourceBundleRevalidationGateJson;
+
   var auditCategories = [
     {
       id: "visual-design",
@@ -96,6 +125,9 @@
   ];
 
   var templates = [
+    ["implementation-plan", "Implementation plan"],
+    ["critique-loop", "Critique loop"],
+    ["design-contract", "Agent-readable DESIGN.md"],
     ["codex-repo-intake", "Codex repo intake"],
     ["codex-implementation", "Codex implementation"],
     ["codex-visual-qa", "Codex visual QA"],
@@ -233,6 +265,7 @@
         nextActions: [],
       },
       operatorRunbook: null,
+      linkedPreview: null,
       reportNotes: "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
     };
   }
@@ -267,12 +300,65 @@
       refactorTasks: normalizeTasks(source.refactorTasks || fallback.refactorTasks),
       implementationEvidence: normalizeImplementationEvidence(source.implementationEvidence || fallback.implementationEvidence),
       operatorRunbook: normalizeOperatorRunbook(source.operatorRunbook || (source.bundle && source.bundle.operatorRunbook), source),
+      linkedPreview: normalizeLinkedPreview(source.linkedPreview),
       reportNotes: String(source.reportNotes || ""),
     };
     if (workspace.siteProfile.viewports.length === 0) {
       workspace.siteProfile.viewports = ["desktop"];
     }
     return workspace;
+  }
+
+  function normalizeLinkedPreview(value) {
+    if (!value || typeof value !== "object" || value.kind !== "website-improvement-linked-preview") return null;
+    var linkedCode = value.linkedCode && typeof value.linkedCode === "object" ? value.linkedCode : {};
+    var preview = value.preview && typeof value.preview === "object" ? value.preview : {};
+    var commands = value.commands && typeof value.commands === "object" ? value.commands : {};
+    var source = value.source && typeof value.source === "object" ? value.source : {};
+    return {
+      kind: "website-improvement-linked-preview",
+      version: 1,
+      status: ["pass", "warn", "fail"].indexOf(value.status) === -1 ? "fail" : value.status,
+      source: {
+        workspace: String(source.workspace || ""),
+        siteId: String(source.siteId || ""),
+        siteName: String(source.siteName || ""),
+      },
+      linkedCode: {
+        configuredPath: String(linkedCode.configuredPath || ""),
+        resolvedPath: String(linkedCode.resolvedPath || ""),
+        packageManager: String(linkedCode.packageManager || ""),
+        framework: String(linkedCode.framework || "Unknown"),
+        startScript: String(linkedCode.startScript || ""),
+        startCommand: String(linkedCode.startCommand || ""),
+      },
+      preview: {
+        url: String(preview.url || ""),
+        processStatus: String(preview.processStatus || "not-started"),
+        probeStatus: String(preview.probeStatus || "not-run"),
+        verificationStatus: String(preview.verificationStatus || "not-recorded"),
+      },
+      stages: Array.isArray(value.stages) ? value.stages.map(function (stage) {
+        return {
+          id: String(stage && stage.id || ""),
+          label: String(stage && stage.label || ""),
+          status: String(stage && stage.status || "blocked"),
+          command: String(stage && stage.command || ""),
+        };
+      }).filter(function (stage) { return stage.id && stage.label; }) : [],
+      commands: {
+        refresh: String(commands.refresh || ""),
+        start: String(commands.start || ""),
+      },
+      boundaries: value.boundaries && typeof value.boundaries === "object" ? value.boundaries : {},
+      issues: Array.isArray(value.issues) ? value.issues.map(function (issue) {
+        return {
+          level: String(issue && issue.level || "warn"),
+          id: String(issue && issue.id || ""),
+          message: String(issue && issue.message || ""),
+        };
+      }).filter(function (issue) { return issue.id; }) : [],
+    };
   }
 
   function normalizeOperatorRunbook(value, container) {
@@ -326,30 +412,6 @@
     };
   }
 
-  function normalizeRunbookSourceBundle(value) {
-    if (!value || typeof value !== "object") return null;
-    return {
-      directory: String(value.directory || ""),
-      sourceWorkspace: String(value.sourceWorkspace || ""),
-      siteName: String(value.siteName || ""),
-      status: String(value.status || "unknown"),
-      valid: value.valid === true,
-      workspaceStatus: String(value.workspaceStatus || ""),
-      mcpStatus: String(value.mcpStatus || ""),
-      mcpProbeStatus: String(value.mcpProbeStatus || ""),
-      checksumAlgorithm: String(value.checksumAlgorithm || ""),
-      checksumBundleDigest: String(value.checksumBundleDigest || ""),
-      verifiedChecksumFiles: Number(value.verifiedChecksumFiles || 0),
-      expectedChecksumFiles: Number(value.expectedChecksumFiles || 0),
-      verifiedGeneratedFiles: Number(value.verifiedGeneratedFiles || 0),
-      expectedGeneratedFiles: Number(value.expectedGeneratedFiles || 0),
-      issueCount: Number(value.issueCount || 0),
-      warningCount: Number(value.warningCount || 0),
-      failureCount: Number(value.failureCount || 0),
-      strictCheckCommand: String(value.strictCheckCommand || ""),
-      strictHandoffCommand: String(value.strictHandoffCommand || ""),
-    };
-  }
 
   function normalizeRunbookRow(value) {
     var row = value && typeof value === "object" ? value : {};
@@ -408,33 +470,7 @@
     return null;
   }
 
-  function extractSourceBundleProvenancePayload(value) {
-    if (!value || typeof value !== "object") return null;
-    if (value.type === "website-improvement-source-bundle-provenance") return value.sourceBundle;
-    if (!value.siteProfile && !value.operatorRunbook && !(value.bundle && value.bundle.operatorRunbook) && value.sourceBundle) {
-      return value.sourceBundle;
-    }
-    return null;
-  }
 
-  function extractSourceBundleRevalidationGatePayload(value) {
-    if (!value || typeof value !== "object") return null;
-    if (value.type !== "website-improvement-source-bundle-revalidation-gate") return null;
-    var sourceBundle = value.sourceBundle && typeof value.sourceBundle === "object" ? value.sourceBundle : {};
-    var gate = value.revalidationGate && typeof value.revalidationGate === "object" ? value.revalidationGate : {};
-    return {
-      directory: sourceBundle.directory || "",
-      sourceWorkspace: sourceBundle.sourceWorkspace || "",
-      siteName: sourceBundle.siteName || "",
-      checksumBundleDigest: sourceBundle.checksumBundleDigest || "",
-      status: sourceBundle.status || gate.status || "unknown",
-      valid: sourceBundle.valid === true || gate.valid === true,
-      failureCount: Number(gate.failureCount || 0),
-      warningCount: Number(gate.warningCount || 0),
-      issueCount: Number(gate.issueCount || 0),
-      strictCheckCommand: gate.strictCheckCommand || "",
-    };
-  }
 
   function createSourceBundleOnlyRunbook(sourceBundle, source) {
     return normalizeOperatorRunbook({
@@ -483,7 +519,7 @@
     return value.map(function (task, index) {
       var item = task && typeof task === "object" ? task : {};
       return {
-        id: String(item.id || "task-" + Date.now() + "-" + index),
+        id: String(item.id || "task-" + (index + 1)),
         title: String(item.title || "Untitled website improvement task"),
         category: normalizeEnum(item.category, auditCategories.map(function (category) { return category.id; }), "ux-flow"),
         problem: String(item.problem || ""),
@@ -649,7 +685,7 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\">Import workspace/runbook JSON</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\">Import workspace/runbook/preview JSON</button>",
       "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
@@ -1027,6 +1063,7 @@
     var report = buildHandoffReport();
     var evidence = appState.workspace.implementationEvidence;
     return [
+      renderLinkedPreview(),
       renderOperatorRunbook(),
       panel("Handoff Report", "Draft the before/after and verification report after target repo implementation work.", [
         "<div class=\"evidence-summary\" aria-label=\"Implementation evidence summary\">",
@@ -1052,6 +1089,49 @@
         "<pre class=\"report-preview\" data-output=\"report\">" + escapeHtml(report) + "</pre>",
       ].join("")),
     ].join("");
+  }
+
+  function renderLinkedPreview() {
+    var report = appState.workspace.linkedPreview;
+    if (!report) {
+      return panel("Linked Code Preview", "Import a read-only `design-ai site <workspace.json> --linked-preview --json` report before starting a target-repo preview.", [
+        "<div class=\"empty-state\">No linked preview report imported. The console cannot read a local project folder directly from the browser.</div>",
+      ].join(""));
+    }
+    var linkedCode = report.linkedCode;
+    var preview = report.preview;
+    var statusTone = report.status === "pass" ? "pass" : report.status === "warn" ? "warn" : "blocked";
+    return panel("Linked Code Preview", "Use the inspected command manually, then verify the running page and record evidence in the target repository.", [
+      "<div class=\"evidence-summary\" aria-label=\"Linked preview readiness summary\">",
+      metric("Readiness", report.status, "Metadata inspection"),
+      metric("Framework", linkedCode.framework, linkedCode.packageManager || "No package manager"),
+      metric("Process", preview.processStatus, "No process started by design-ai"),
+      metric("Evidence", preview.verificationStatus, "Browser probe " + preview.probeStatus),
+      "</div>",
+      "<div class=\"graph-boundaries\" aria-label=\"Linked preview boundaries\">",
+      "<span class=\"badge badge--" + escapeAttr(statusTone) + "\">Status: " + escapeHtml(report.status) + "</span>",
+      "<span class=\"pill\">Read-only metadata</span>",
+      "<span class=\"pill\">No process spawn</span>",
+      "<span class=\"pill\">No target-repo mutation</span>",
+      "</div>",
+      "<div class=\"runbook-source-bundle\" aria-label=\"Linked preview details\">",
+      "<div class=\"table-wrap\"><table><caption class=\"sr-only\">Linked preview details</caption><tbody>",
+      sourceBundleRow("Linked path", linkedCode.resolvedPath || linkedCode.configuredPath || "not provided"),
+      sourceBundleRow("Preview URL", preview.url || "not provided"),
+      sourceBundleCommandRow("Manual start command", report.commands.start, "copy-linked-preview-start"),
+      sourceBundleCommandRow("Refresh metadata command", report.commands.refresh, "copy-linked-preview-refresh"),
+      "</tbody></table></div></div>",
+      "<div class=\"button-row\" style=\"margin-bottom: 12px;\">",
+      "<button type=\"button\" class=\"button\" data-action=\"download-linked-preview\">Export preview JSON</button>",
+      "<button type=\"button\" class=\"button button--danger\" data-action=\"clear-linked-preview\">Clear preview report</button>",
+      "</div>",
+      "<div class=\"runbook-list\" aria-label=\"Linked preview stages\">",
+      report.stages.map(function (stage) {
+        return "<div class=\"runbook-row\"><div><strong>" + escapeHtml(stage.label) + "</strong><small>" + escapeHtml(stage.id) + "</small></div><span class=\"pill\">" + escapeHtml(stage.status) + "</span></div>";
+      }).join(""),
+      "</div>",
+      "<div class=\"notice\">This report proves metadata readiness only. A configured URL is not browser verification, and no runtime evidence is recorded until you add it below.</div>",
+    ].join(""));
   }
 
   function renderOperatorRunbook() {
@@ -1728,12 +1808,13 @@
 
     templates.forEach(function (template) {
       var promptId = "prompt:" + template[0];
+      var artifactTemplate = ["implementation-plan", "critique-loop", "design-contract"].indexOf(template[0]) >= 0;
       nodes.push(workflowNode(promptId, "prompt-template", template[1], "ready", {
         id: template[0],
-        agent: template[0].indexOf("claude") === 0 ? "Claude" : "Codex",
+        agent: artifactTemplate ? "Codex or Claude" : template[0].indexOf("claude") === 0 ? "Claude" : "Codex",
         output: template[0] === "handoff-report" ? "report" : "prompt",
         description: template[1],
-        taskSelectable: template[0] === "codex-implementation",
+        taskSelectable: ["codex-implementation", "implementation-plan", "critique-loop"].indexOf(template[0]) >= 0,
       }));
       edges.push(workflowEdge(profileId, promptId, "profile-context", "Prompt template receives site profile context"));
     });
@@ -1827,7 +1908,78 @@
       "- Verify desktop, tablet, and mobile layouts.",
     ].join("\n");
 
+    function artifactPrompt(mode) {
+      var definitions = {
+        "implementation-plan": {
+          title: "Implementation plan",
+          output: "implementation-plan.md",
+          steps: ["Read the current state", "Define the change", "Implement after the gate", "Verify the result"],
+          sections: ["Context", "Scope", "Implementation steps", "Verification", "Risks and approval boundaries"],
+        },
+        "critique-loop": {
+          title: "Critique loop",
+          output: "critique-loop.md",
+          steps: ["Observe before judging", "Name the highest-impact gap", "Revise one decision", "Re-observe and close the loop"],
+          sections: ["Decision and audience", "Observed evidence", "Top recommendation", "Revision", "Verification and remaining risk"],
+        },
+        "design-contract": {
+          title: "Agent-readable design contract",
+          output: "DESIGN.md",
+          steps: ["Ground the product intent", "Define visual foundations", "Define component and motion behavior", "Set boundaries and ownership"],
+          sections: ["Product intent and audience", "Brand principles and artifact modes", "Color, typography, spacing, and layout", "Components, states, and motion", "Accessibility and responsive behavior", "Anti-patterns, ownership, and verification"],
+        },
+      };
+      var definition = definitions[mode];
+      var taskSummary = task || "No refactor task selected. Establish one from the audit evidence before implementation.";
+      return [
+        "# " + definition.title + ": " + appState.workspace.siteProfile.name,
+        "",
+        "> Generated by design-ai as a read-only planning artifact. It does not modify a repository or contact an external service.",
+        "",
+        "## Artifact contract",
+        "",
+        "- Kind: `design-ai-artifact`",
+        "- Schema version: `1`",
+        "- Mode: `" + mode + "`",
+        "- Route: `website-improvement` (Website improvement)",
+        "- Output: `" + definition.output + "`",
+        "- Mutation boundary: planning and local output only; target-repo edits and external writes require explicit approval.",
+        "",
+        "## Brief",
+        "",
+        profile,
+        "",
+        taskSummary,
+        "",
+        "## Source of truth",
+        "",
+        "- Website Console site profile, audit checklist, MCP matrix, and refactor plan",
+        "- Target repository architecture, components, tokens, and verification scripts",
+        "",
+        "## Workflow",
+        "",
+        definition.steps.map(function (step, index) { return (index + 1) + ". " + step; }).join("\n"),
+        "",
+        "## Output structure",
+        "",
+        definition.sections.map(function (section) { return "- " + section; }).join("\n"),
+        "",
+        "## Approval boundary",
+        "",
+        "- Approval required before editing the target repository, changing dependencies, running migrations, committing, pushing, deploying, or writing to an external system.",
+        "",
+        "## Verification",
+        "",
+        "- Run the target repository's focused tests and broad release gate.",
+        "- Verify keyboard, focus, screen-reader, WCAG 2.1 AA contrast, reduced motion, and configured viewports.",
+        "- Record commands, results, browser evidence, and remaining risk.",
+      ].join("\n");
+    }
+
     var map = {
+      "implementation-plan": [artifactPrompt("implementation-plan")],
+      "critique-loop": [artifactPrompt("critique-loop")],
+      "design-contract": [artifactPrompt("design-contract")],
       "codex-repo-intake": [
         "# Codex repo intake prompt",
         profile,
@@ -1931,6 +2083,10 @@
       "",
       auditBlock(),
       "",
+      "## Linked code preview",
+      "",
+      buildLinkedPreviewMarkdown(),
+      "",
       "## MCP Readiness",
       "",
       mcpBlock(),
@@ -1976,6 +2132,20 @@
       "## Notes",
       "",
       appState.workspace.reportNotes || "No notes recorded.",
+    ].join("\n");
+  }
+
+  function buildLinkedPreviewMarkdown() {
+    var report = appState.workspace.linkedPreview;
+    if (!report) return "Not imported. Generate `design-ai site <workspace.json> --linked-preview --json` before starting a local preview.";
+    return [
+      "- Readiness: " + report.status,
+      "- Linked path: " + (report.linkedCode.resolvedPath || report.linkedCode.configuredPath || "not provided"),
+      "- Project: " + report.linkedCode.framework + " / " + (report.linkedCode.packageManager || "no package manager"),
+      "- Manual start command: " + (report.commands.start || "not available"),
+      "- Preview URL: " + (report.preview.url || "not provided"),
+      "- Runtime state: process " + report.preview.processStatus + ", browser probe " + report.preview.probeStatus + ", evidence " + report.preview.verificationStatus,
+      "- Boundary: metadata only; no process start, external call, source scan, or target-repo mutation.",
     ].join("\n");
   }
 
@@ -2042,32 +2212,7 @@
     ].join("\n");
   }
 
-  function buildSourceBundleJson(sourceBundle) {
-    return JSON.stringify({
-      type: "website-improvement-source-bundle-provenance",
-      version: 1,
-      source: "source-bundle-provenance",
-      sourceBundle: sourceBundle || null,
-      revalidationGate: buildSourceBundleRevalidationGate(sourceBundle),
-    }, null, 2);
-  }
 
-  function buildSourceBundleRevalidationGateJson(sourceBundle) {
-    return JSON.stringify({
-      type: "website-improvement-source-bundle-revalidation-gate",
-      version: 1,
-      source: "source-bundle-revalidation-gate",
-      sourceBundle: sourceBundle ? {
-        directory: sourceBundle.directory || "",
-        sourceWorkspace: sourceBundle.sourceWorkspace || "",
-        siteName: sourceBundle.siteName || "",
-        checksumBundleDigest: sourceBundle.checksumBundleDigest || "",
-        status: sourceBundle.status || "unknown",
-        valid: sourceBundle.valid === true,
-      } : null,
-      revalidationGate: buildSourceBundleRevalidationGate(sourceBundle),
-    }, null, 2);
-  }
 
   function sourceBundleMarkdownRow(label, value) {
     return "- " + label + ": " + (value || "not recorded");
@@ -2099,10 +2244,6 @@
     return sourceBundle[key];
   }
 
-  function sourceBundleNeedsRevalidation(sourceBundle) {
-    if (!sourceBundle) return false;
-    return sourceBundle.valid !== true || Number(sourceBundle.failureCount || 0) > 0;
-  }
 
   function formatSourceBundleRevalidationMarkdown(sourceBundle) {
     if (!sourceBundle) return "not provided";
@@ -2121,44 +2262,6 @@
       : "required - strict check command not recorded";
   }
 
-  function buildSourceBundleRevalidationGate(sourceBundle) {
-    if (!sourceBundle) {
-      return {
-        required: false,
-        status: "not-provided",
-        valid: false,
-        failureCount: 0,
-        warningCount: 0,
-        issueCount: 0,
-        strictCheckCommand: "",
-        strictCheckCommandAvailable: false,
-        reason: "source-bundle-not-provided",
-        message: "No source bundle provenance recorded.",
-      };
-    }
-    var failureCount = Number(sourceBundle.failureCount || 0);
-    var warningCount = Number(sourceBundle.warningCount || 0);
-    var issueCount = Number(sourceBundle.issueCount || 0);
-    var required = sourceBundleNeedsRevalidation(sourceBundle);
-    var status = (sourceBundle.status || "unknown") + "/" + (sourceBundle.valid ? "valid" : "invalid");
-    var strictCheckCommandAvailable = Boolean(sourceBundle.strictCheckCommand);
-    return {
-      required: required,
-      status: status,
-      valid: sourceBundle.valid === true,
-      failureCount: failureCount,
-      warningCount: warningCount,
-      issueCount: issueCount,
-      strictCheckCommand: String(sourceBundle.strictCheckCommand || ""),
-      strictCheckCommandAvailable: strictCheckCommandAvailable,
-      reason: required
-        ? strictCheckCommandAvailable ? "revalidation-required" : "revalidation-required-command-missing"
-        : "revalidation-not-required",
-      message: required
-        ? "Run the strict bundle check before target-repo execution."
-        : "Source bundle revalidation is not required.",
-    };
-  }
 
   function shortDisplay(value, maxLength) {
     var text = String(value || "");
@@ -2336,6 +2439,21 @@
     } else if (action === "download-report") {
       downloadFile("website-improvement-handoff.md", buildHandoffReport(), "text/markdown");
       setMessage("Handoff report exported.");
+    } else if (action === "copy-linked-preview-start") {
+      var startReport = appState.workspace.linkedPreview;
+      copyText(startReport && startReport.commands.start || "", "Manual preview command copied.");
+    } else if (action === "copy-linked-preview-refresh") {
+      var refreshReport = appState.workspace.linkedPreview;
+      copyText(refreshReport && refreshReport.commands.refresh || "", "Linked preview refresh command copied.");
+    } else if (action === "download-linked-preview") {
+      if (appState.workspace.linkedPreview) {
+        downloadFile("website-linked-preview.json", JSON.stringify(appState.workspace.linkedPreview, null, 2), "application/json");
+        setMessage("Linked preview JSON exported.");
+      }
+    } else if (action === "clear-linked-preview") {
+      appState.workspace.linkedPreview = null;
+      saveWorkspace();
+      setMessage("Linked preview report cleared.");
     } else if (action === "copy-runbook") {
       copyText(buildOperatorRunbookMarkdown(), "Operator runbook copied.");
     } else if (action === "download-runbook") {
@@ -2470,6 +2588,15 @@
     reader.onload = function () {
       try {
         var parsed = JSON.parse(String(reader.result || ""));
+        var importedLinkedPreview = normalizeLinkedPreview(parsed);
+        if (importedLinkedPreview && !parsed.siteProfile) {
+          appState.workspace.linkedPreview = importedLinkedPreview;
+          appState.activeTab = "report";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveWorkspace();
+          setMessage("Linked preview readiness JSON imported. Report tab opened.");
+          return;
+        }
         var importedRunbook = normalizeOperatorRunbook(extractOperatorRunbookPayload(parsed), parsed);
         if (importedRunbook && !parsed.siteProfile) {
           appState.workspace.operatorRunbook = importedRunbook;
@@ -2519,7 +2646,7 @@
         saveWorkspace();
         setMessage("Workspace JSON imported.");
       } catch (error) {
-        setMessage("Import failed. Use a valid Website Improvement workspace JSON file.");
+        setMessage("Import failed. Use a valid Website Improvement workspace, runbook, or linked preview JSON file.");
       }
     };
     reader.readAsText(file);

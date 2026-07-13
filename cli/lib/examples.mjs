@@ -5,7 +5,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 
-import { assertKnownRouteId } from "./route.mjs";
+import { assertKnownRouteId } from "./route-catalog.mjs";
 import { buildPreview, walkMarkdown } from "./search.mjs";
 import { unknownOptionMessage } from "./suggest.mjs";
 
@@ -14,6 +14,7 @@ const EXAMPLES_OPTIONS = ["-h", "--help", "--json", "--route", "--limit"];
 
 const ROUTE_EXAMPLE_QUERIES = {
   "design-review": "dogfood review audit",
+  "design-engineering-review": "design engineering interface craft polish motion interaction review",
   "design-from-brief": "dogfood design system",
   "component-spec": "component",
   "palette-from-brand": "palette",
@@ -50,13 +51,16 @@ const ROUTE_CATEGORY_BOOSTS = {
 
 const CANONICAL_ROUTE_EXAMPLES = {
   "design-review": ["examples/report-example.md"],
+  "design-engineering-review": ["examples/design-engineering-review-command-palette.md"],
   "design-from-brief": ["examples/dogfood-korean-fintech-system.md"],
   "component-spec": ["examples/component-button.md"],
   "palette-from-brand": ["examples/palette-saas-violet.md"],
   "motion-design": ["examples/component-carousel.md"],
+  "spatial": ["examples/component-spatial-panel.md"],
   "print": ["examples/print-business-card-spec.md", "examples/print-packaging-spec.md"],
   "game-ui": ["examples/component-game-menu.md"],
   "slide-deck": ["examples/slide-deck-example.md"],
+  "figma-token-sync": ["examples/palette-saas-violet.md"],
   "agentic-design-development": ["examples/agentic-design-development-reference-mining.md"],
   "flow-design": ["examples/flow-design-report-block.md"],
   "dashboard-design": ["examples/dashboard-design-settlement.md"],

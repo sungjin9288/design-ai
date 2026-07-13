@@ -19,9 +19,14 @@ import json
 import os
 import subprocess
 import sys
+import tarfile
 import tempfile
 from pathlib import Path
 
+from capability_manifest import (
+    SOURCE_CAPABILITIES as EXPECTED_CAPABILITIES,
+    validate_capability_manifest,
+)
 from smoke_assertions import (
     EXPECTED_CHECK_ARTIFACT_NAME,
     EXPECTED_CHECK_EXAMPLES_LIMIT,
@@ -47,6 +52,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_SEARCH_DIR,
     assert_audit_json,
     assert_audit_strict_quiet_output,
+    assert_artifact_json,
     assert_check_artifact_json_component_spec,
     assert_check_all_routes_issues_only_output,
     assert_check_examples_json_component_spec,
@@ -151,6 +157,7 @@ from smoke_assertions import (
     passing_site_mcp_plan_json,
     passing_site_next_actions_human,
     passing_site_next_actions_json,
+    passing_mcp_protocol_responses,
     parse_help_topics,
     seed_force_overwrite_target,
     site_guidance_command,
@@ -1001,6 +1008,13 @@ def site_workspace_fixture_json() -> str:
     )
 
 
+def site_linked_preview_fixture_json(local_path: Path) -> str:
+    payload = json.loads(site_workspace_fixture_json())
+    payload["siteProfile"]["localPath"] = str(local_path)
+    payload["siteProfile"]["liveUrl"] = "http://localhost:4173"
+    return json.dumps(payload)
+
+
 def site_workspace_evidence_fixture_json() -> str:
     payload = json.loads(site_workspace_fixture_json())
     payload["implementationEvidence"] = {
@@ -1743,6 +1757,44 @@ def assert_site_mcp_check_json_smoke(
         env=env,
     )
     assert_site_mcp_check_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_linked_preview_json_smoke(
+    cmd: list[str],
+    linked_site_root: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    linked_site_root.mkdir(parents=True, exist_ok=True)
+    (linked_site_root / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'\n", encoding="utf-8")
+    (linked_site_root / "package.json").write_text(
+        json.dumps({
+            "scripts": {"dev": "vite", "build": "vite build"},
+            "devDependencies": {"vite": "7.0.0"},
+        }),
+        encoding="utf-8",
+    )
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_linked_preview_fixture_json(linked_site_root),
+        cwd=cwd,
+        env=env,
+    )
+    payload = json.loads(result.stdout)
+    if (
+        payload.get("kind") != "website-improvement-linked-preview"
+        or payload.get("status") != "pass"
+        or payload.get("linkedCode", {}).get("framework") != "Vite"
+        or payload.get("linkedCode", {}).get("packageManager") != "pnpm"
+        or payload.get("linkedCode", {}).get("startCommand") != "pnpm run dev"
+        or payload.get("preview", {}).get("processStatus") != "not-started"
+        or payload.get("preview", {}).get("probeStatus") != "not-run"
+        or payload.get("boundaries", {}).get("targetRepoMutation") is not False
+        or payload.get("boundaries", {}).get("startsPreviewProcess") is not False
+    ):
+        raise SystemExit(f"site linked preview after {context} changed: {payload!r}")
 
 
 def assert_site_mcp_check_probes_json_smoke(
@@ -8008,6 +8060,24 @@ def assert_prompt_smoke(
     )
 
 
+def assert_artifact_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
+    assert_artifact_json(
+        read_forced_json_output_file(output_path, context=context, cmd=cmd),
+        context=context,
+        cmd=cmd,
+    )
+
+
 def assert_prompt_stdout_smoke(
     cmd: list[str],
     *,
@@ -13094,30 +13164,19 @@ def run_self_test() -> None:
         context=f"{context} site bundle mcp-probes.json",
     )
     mcp_protocol_cmd = ["design-ai-mcp"]
+    mcp_responses = passing_mcp_protocol_responses()
     assert_design_ai_mcp_protocol_responses(
-        [
-            {"jsonrpc": "2.0", "id": 1, "result": {"serverInfo": {"name": "design-ai"}}},
-            {"jsonrpc": "2.0", "id": 2, "result": {"tools": [{"name": "design_ai_route"}, {"name": "design_ai_search"}]}},
-            {
-                "jsonrpc": "2.0",
-                "id": 3,
-                "error": {"code": -32602, "message": "design_ai_search.limit must be an integer"},
-            },
-        ],
+        mcp_responses,
         context=f"{context} design-ai MCP protocol",
         cmd=mcp_protocol_cmd,
     )
+    invalid_mcp_responses = json.loads(json.dumps(mcp_responses))
+    next(response for response in invalid_mcp_responses if response.get("id") == 3)["error"]["message"] = (
+        "wrong validation message"
+    )
     expect_self_test_failure(
         lambda: assert_design_ai_mcp_protocol_responses(
-            [
-                {"jsonrpc": "2.0", "id": 1, "result": {"serverInfo": {"name": "design-ai"}}},
-                {"jsonrpc": "2.0", "id": 2, "result": {"tools": [{"name": "design_ai_route"}, {"name": "design_ai_search"}]}},
-                {
-                    "jsonrpc": "2.0",
-                    "id": 3,
-                    "error": {"code": -32602, "message": "wrong validation message"},
-                },
-            ],
+            invalid_mcp_responses,
             context=f"{context} design-ai MCP protocol",
             cmd=mcp_protocol_cmd,
         ),
@@ -13152,6 +13211,39 @@ def run_self_test() -> None:
     )
 
     with tempfile.TemporaryDirectory(prefix="design-ai-package-smoke-self-test-") as tmp:
+        tarball_root = Path(tmp) / "tarball-root" / "package" / "cli" / "lib"
+        tarball_root.mkdir(parents=True)
+        packed_manifest_path = tarball_root / "capability-manifest.json"
+        packed_manifest_path.write_text(
+            json.dumps(EXPECTED_CAPABILITIES),
+            encoding="utf-8",
+        )
+        packed_manifest_tarball = Path(tmp) / "capability-manifest.tgz"
+        with tarfile.open(packed_manifest_tarball, "w:gz") as archive:
+            archive.add(
+                packed_manifest_path,
+                arcname="package/cli/lib/capability-manifest.json",
+            )
+        assert_tarball_capability_manifest(packed_manifest_tarball)
+
+        drifted_capabilities = json.loads(json.dumps(EXPECTED_CAPABILITIES))
+        drifted_capabilities["routes"][0] = "design-review-drifted"
+        packed_manifest_path.write_text(
+            json.dumps(drifted_capabilities),
+            encoding="utf-8",
+        )
+        drifted_manifest_tarball = Path(tmp) / "capability-manifest-drifted.tgz"
+        with tarfile.open(drifted_manifest_tarball, "w:gz") as archive:
+            archive.add(
+                packed_manifest_path,
+                arcname="package/cli/lib/capability-manifest.json",
+            )
+        expect_self_test_failure(
+            lambda: assert_tarball_capability_manifest(drifted_manifest_tarball),
+            expected="differs from the verified source contract",
+            scope="package smoke packed capability manifest",
+        )
+
         report_path = Path(tmp) / "doctor.json"
         report_path.write_text(passing_doctor_report_json(), encoding="utf-8")
         assert_doctor_report_file(report_path, context=context)
@@ -20228,11 +20320,30 @@ def run_self_test() -> None:
     print("Package smoke self-test passed")
 
 
+def assert_tarball_capability_manifest(tarball: Path) -> None:
+    member_name = "package/cli/lib/capability-manifest.json"
+    try:
+        with tarfile.open(tarball, "r:gz") as archive:
+            member = archive.getmember(member_name)
+            source = archive.extractfile(member)
+            if source is None:
+                raise SystemExit(f"packed capability manifest is unreadable: {member_name}")
+            manifest = json.loads(source.read().decode("utf-8"))
+    except (KeyError, OSError, tarfile.TarError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise SystemExit(f"packed capability manifest is missing or invalid: {member_name}") from error
+
+    validated = validate_capability_manifest(manifest)
+    if validated != EXPECTED_CAPABILITIES:
+        raise SystemExit("packed capability manifest differs from the verified source contract")
+
+
 def smoke_tarball(tarball: Path) -> None:
     if not tarball.exists():
         raise SystemExit(f"tarball not found: {tarball}")
     if tarball.suffix != ".tgz":
         raise SystemExit(f"expected .tgz tarball, got: {tarball}")
+
+    assert_tarball_capability_manifest(tarball)
 
     with tempfile.TemporaryDirectory(prefix="design-ai-package-smoke-") as tmp:
         tmp_root = Path(tmp)
@@ -20410,6 +20521,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site JSON",
+        )
+        assert_site_linked_preview_json_smoke(
+            [str(bin_path), "site", "--stdin", "--linked-preview", "--strict", "--json"],
+            install_root / "linked-preview-site",
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site linked preview JSON",
         )
         assert_site_next_actions_json_smoke(
             [str(bin_path), "site", "--stdin", "--next-actions", "--json"],
@@ -21273,6 +21391,24 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke installed bin route eval",
         )
         installed_prompt_json = tmp_root / "installed-prompt.json"
+        installed_artifact_json = tmp_root / "installed-artifact.json"
+        assert_artifact_smoke(
+            [
+                str(bin_path),
+                "artifact",
+                "design-contract",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--json",
+                "--out",
+                str(installed_artifact_json),
+                "--force",
+            ],
+            installed_artifact_json,
+            env=smoke_env,
+            context="package smoke installed bin design artifact",
+        )
         assert_prompt_smoke(
             [
                 str(bin_path),
@@ -21835,6 +21971,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site JSON",
+        )
+        assert_site_linked_preview_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--linked-preview", "--strict", "--json"),
+            npx_root / "linked-preview-site",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site linked preview JSON",
         )
         assert_site_next_actions_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--next-actions", "--json"),
@@ -22698,6 +22841,25 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke npm exec route eval",
         )
         npx_prompt_json = npx_root / "npx-prompt.json"
+        npx_artifact_json = npx_root / "npx-artifact.json"
+        assert_artifact_smoke(
+            npm_exec_cmd(
+                tarball,
+                "artifact",
+                "design-contract",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--json",
+                "--out",
+                str(npx_artifact_json),
+                "--force",
+            ),
+            npx_artifact_json,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec design artifact",
+        )
         assert_prompt_smoke(
             npm_exec_cmd(
                 tarball,

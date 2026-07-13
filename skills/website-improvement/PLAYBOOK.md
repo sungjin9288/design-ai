@@ -1,10 +1,12 @@
 # website-improvement — playbook
 
-Plan and coordinate professional website improvement work for an existing site. This skill does not modify the target website repository directly; it prepares the audit, MCP readiness, task plan, prompts, and handoff report that another agent can execute in the target repo.
+Plan and coordinate professional website implementation and improvement work. This includes building a new homepage and refactoring an existing site. The skill does not modify the target website repository directly; it prepares the audit, MCP readiness, task plan, prompts, and approval-gated handoff that another agent can execute in the target repo.
 
 ## When to use
 
 - "Improve this homepage."
+- "Build this homepage in our product repo."
+- "Refactor the existing homepage without replacing our design system."
 - "Audit our website before a redesign sprint."
 - "Create a Codex prompt to refactor the pricing page."
 - "Plan MCP setup for a site improvement project."
@@ -12,7 +14,7 @@ Plan and coordinate professional website improvement work for an existing site. 
 
 ## Inputs
 
-1. **Site Profile** — name, live URL, repo URL/local path, priority pages, user flows, Figma URL, brand notes, deploy provider, Sentry, CMS, database, and target viewports.
+1. **Site Profile** — name, repo URL/local path, live URL when a preview or deployed site exists, priority pages, user flows, Figma URL, brand notes, deploy provider, Sentry, CMS, database, and target viewports.
 2. **Audit findings** — visual design, UX flow, responsive QA, accessibility, performance, SEO, technical quality, runtime issues, and content quality.
 3. **MCP readiness** — GitHub, Figma, Browser/Playwright, Chrome DevTools, deploy provider, Sentry, database, CMS, collaboration, and research status.
 4. **Execution target** — Codex for repo work, Claude for design/research/copy review, or final handoff.
@@ -37,6 +39,7 @@ Evaluate each category and record findings:
 | Performance | Core Web Vitals, images, bundle size, render bottlenecks |
 | SEO | Title, description, headings, canonical, OG, sitemap |
 | Technical Quality | Component structure, style duplication, dead code, dependency risk |
+| Interaction Craft | Purpose/frequency, response, spatial continuity, interruptibility, timing/cohesion, performance, accessibility, and responsive resilience |
 | Runtime Issues | Console errors, network errors, hydration issues, broken assets |
 | Content Quality | Copy clarity, IA, proof, trust, CTA language |
 
@@ -51,6 +54,7 @@ Use the relevant design-ai knowledge files when making judgments:
 - [`knowledge/patterns/technical-writing.md`](../../knowledge/patterns/technical-writing.md)
 - [`knowledge/patterns/report-design.md`](../../knowledge/patterns/report-design.md)
 - [`knowledge/patterns/agentic-design-workflows.md`](../../knowledge/patterns/agentic-design-workflows.md)
+- [`knowledge/patterns/interface-craft.md`](../../knowledge/patterns/interface-craft.md)
 
 ### 2.5. Mine References Without Copying Them
 
@@ -108,6 +112,20 @@ Every Codex prompt must say that the work happens in the target website repo and
 
 For prompts that create issues, pages, messages, deployments, or other external writes, include an explicit human approval gate. The prompt should show destination, action summary, verification plan, and a Create/Cancel or proceed/stop boundary before the write.
 
+### 5.5. Hand Off To The Target Repository
+
+Use the verified bundle as the implementation boundary:
+
+1. Generate and strictly verify the local bundle.
+2. Call `design_ai_site_bundle_handoff` with the absolute bundle directory, or run the equivalent `design-ai site <bundle-dir> --bundle-handoff --strict --json` command.
+3. Confirm that the returned approval state is `pending-human-approval` and that both external calls and target-repo mutation remain false.
+4. Let the consuming agent inspect the target repository read-only and present the exact files, scope, risks, and verification commands.
+5. Stop until the user explicitly approves the selected task and target repository.
+6. After approval, implement in the target repo and collect browser evidence at desktop, tablet, and mobile viewports plus keyboard/focus, contrast, screen-reader, lint, test, and build evidence where applicable.
+7. Ask again before any broader scope, new dependency, migration, deploy, commit, push, or external write.
+
+The MCP tool transports a verified execution contract. It does not grant implementation authority and never edits the target repository itself.
+
 ### 6. Produce Handoff Report
 
 The report should include target site information, diagnostic summary, major issues, priority recommendations, executed work, verification results, remaining risks, and next tasks.
@@ -118,12 +136,16 @@ Use [`TEMPLATE.md`](TEMPLATE.md) for the final report or planning artifact.
 
 ## Verification phase
 
-- [ ] Site Profile includes live URL, target repo reference, pages, user flows, viewports, and platform notes.
+- [ ] Site Profile includes a target repo reference, pages, user flows, viewports, platform notes, and a live URL when a preview or deployed site exists.
 - [ ] Audit categories cover visual, UX, responsive, accessibility, performance, SEO, technical, runtime, and content quality.
+- [ ] Implemented interactive surfaces include all eight craft lenses, each with runtime/code evidence or an explicit `unverified` state.
+- [ ] Interaction proof covers keyboard/focus, screen reader, contrast, reduced motion, coarse pointer, and desktop/tablet/mobile behavior.
 - [ ] MCP readiness uses only `required`, `optional`, `unused`, or `unavailable`.
 - [ ] Refactor tasks include problem, evidence, impact, effort, priority, pages, MCP, prompt, verification, and risks.
 - [ ] External references were mined into taxonomy/rules, with a clear do-not-copy boundary.
 - [ ] Codex prompts clearly state that implementation happens in the target website repo.
+- [ ] The target-repo handoff identifies the selected task and remains pending until explicit human approval.
+- [ ] Homepage build/refactor tasks require real browser checks at desktop, tablet, and mobile viewports.
 - [ ] Any external write or publish path includes an approval or verification gate.
 - [ ] Handoff report includes verification evidence or explicit placeholders for evidence not yet run.
 - [ ] Accessibility, responsive, and source-grounding notes are present.
@@ -132,4 +154,4 @@ Use [`TEMPLATE.md`](TEMPLATE.md) for the final report or planning artifact.
 
 - One Website Improvement plan or handoff report is produced.
 - The plan can be executed by Codex in the target repo without requiring design-ai to contain the target source.
-- The MVP boundary is explicit: no automatic crawling, external writes, model training, embeddings, or target repo mutation from design-ai.
+- The MVP boundary is explicit: no automatic crawling, unapproved external writes, model training, embeddings, or target repo mutation from design-ai.

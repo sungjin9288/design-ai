@@ -16,7 +16,7 @@ import { route, pack, check, learn } from "@design-ai/cli/sdk";
 
 ## 설치
 
-설정할 게 없어요. 8개 읽기 전용 함수(`route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`)는 디스크에 절대 쓰지 않아요. 유일한 쓰기 표면은 `learn` 네임스페이스(`learn.remember`, `learn.feedback`, `learn.captureFromCheck`)예요 — 모든 `learn.*` 호출은 로컬 학습 프로필에만, 그것도 명시적으로 호출했을 때만 써요. 아래 모든 워크스루가 하는 것처럼 `DESIGN_AI_LEARNING_FILE`을 임시 경로로 지정하면 언제든 이 쓰기를 실제 프로필 바깥에 격리할 수 있어요 — 그래서 아래 스크립트를 실행해도 `~/.design-ai/learning.json`은 전혀 건드리지 않아요.
+설정할 게 없어요. 9개 읽기 전용 함수(`artifact`, `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`)는 디스크에 절대 쓰지 않아요. 유일한 쓰기 표면은 `learn` 네임스페이스(`learn.remember`, `learn.feedback`, `learn.captureFromCheck`)예요 — 모든 `learn.*` 호출은 로컬 학습 프로필에만, 그것도 명시적으로 호출했을 때만 써요. 아래 모든 워크스루가 하는 것처럼 `DESIGN_AI_LEARNING_FILE`을 임시 경로로 지정하면 언제든 이 쓰기를 실제 프로필 바깥에 격리할 수 있어요 — 그래서 아래 스크립트를 실행해도 `~/.design-ai/learning.json`은 전혀 건드리지 않아요.
 
 ## 워크스루 1: 브리프를 design-ai 라우트로 라우팅
 
@@ -204,14 +204,14 @@ console.log(`added ${captured.addedCount}, skipped ${captured.skippedCount}`);
 
 ## 읽기 전용 vs `learn.*` 쓰기 경계
 
-- `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version` — 순수 읽기 전용. 파일 쓰기, 네트워크 호출, 학습 사용량 사이드카 쓰기가 전혀 없어요. `prompt`/`pack`의 `withLearning` 옵션을 설정해도 마찬가지예요 (이 옵션은 로컬 학습 프로필을 **읽기만** 해요).
+- `artifact`, `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version` — 순수 읽기 전용. 파일 쓰기, 네트워크 호출, 학습 사용량 사이드카 쓰기가 전혀 없어요. `prompt`/`pack`의 `withLearning` 옵션을 설정해도 마찬가지예요 (이 옵션은 로컬 학습 프로필을 **읽기만** 해요).
 - `learn.remember`, `learn.feedback`, `learn.captureFromCheck` — 유일한 쓰기 표면. `learn` 네임스페이스로 묶여 있어서 호출 지점에서 읽기/쓰기 경계가 눈에 보여요. 모든 `learn.*` 호출은 정확히 파일 하나 — `DESIGN_AI_LEARNING_FILE`(또는 기본 경로)의 로컬 학습 프로필 — 만 써요.
 
 전체 함수별 레퍼런스(이 워크스루가 직접 다루지 않는 `search`, `recall`, `prompt`, `routes` 포함)는 [`docs/SDK.md`](../SDK.md)를 참고하세요.
 
 ## 다음
 
-- [`docs/SDK.md`](../SDK.md) — 전체 Agent SDK 레퍼런스 (8개 읽기 전용 함수 + `learn.*`)
+- [`docs/SDK.md`](../SDK.md) — 전체 Agent SDK 레퍼런스 (9개 읽기 전용 함수 + `learn.*`)
 - [`docs/AGENT-SDK.md`](../AGENT-SDK.md) — 설계 근거와 단계별 계획
 - [`docs/DOGFOOD-SDK-FINDINGS.md`](../DOGFOOD-SDK-FINDINGS.md) — 이 워크스루의 근거가 된 실제 end-to-end 실행
 - [`docs/integrations/sdk-walkthrough.ko.md`](sdk-walkthrough.ko.md) — Anthropic/OpenAI SDK 패턴 (코퍼스 마크다운을 시스템 프롬프트에 임베드, 이 문서와는 다른 표면)

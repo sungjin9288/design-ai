@@ -25,6 +25,7 @@ function makeFixture() {
     "examples/component-carousel.md": "# Carousel\n\nMotion transition uses 250ms ease-out, reduced motion handling, and responsive slides.",
     "examples/component-game-hud.md": "# GameHUD\n\nGame HUD overlay for score and status.",
     "examples/component-game-menu.md": "# GameMenu\n\nGame menu with keyboard focus, controller input, and responsive pause navigation.",
+    "examples/design-engineering-review-command-palette.md": "# Design engineering review\n\nUser goal and craft scorecard with purpose and frequency, response, interruptibility, Before, After, Why, verification, keyboard focus, reduced motion, and responsive mobile viewport evidence.",
     "examples/component-menu.md": "# Menu\n\nGeneric menu component.",
     "examples/palette-saas-violet.md": "# SaaS violet palette\n\nOKLCH colors with 4.8:1 contrast.",
     "examples/print-business-card-spec.md": "# Business card\n\nCMYK print guidance.",
@@ -190,6 +191,21 @@ test("listExamples prefers the canonical motion example over generic motion matc
     });
 
     assert.equal(result.examples[0].relPath, path.join("examples", "component-carousel.md"));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("listExamples prefers the canonical design engineering review", () => {
+  const root = makeFixture();
+  try {
+    const result = listExamples({
+      designAiPath: root,
+      routeId: "design-engineering-review",
+      limit: 5,
+    });
+
+    assert.equal(result.examples[0].relPath, path.join("examples", "design-engineering-review-command-palette.md"));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

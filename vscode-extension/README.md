@@ -51,7 +51,7 @@ Run via `Cmd+Shift+P` → "design-ai: ...":
 - **Show install status** — displays plugin manifest version + skill / command / agent counts.
 - **Open knowledge file...** — quick-pick across all knowledge files.
 - **Open component spec...** — quick-pick across the 210 component specs.
-- **Open skill PLAYBOOK...** — quick-pick across the 20 skills.
+- **Open skill PLAYBOOK...** — quick-pick across the 21 skills.
 - **Open integration walkthrough...** — quick-pick across walkthroughs.
 
 ### Use with your AI assistant

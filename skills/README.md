@@ -18,6 +18,7 @@ Task-focused playbooks. Each skill is a directory containing:
 | [design-system-qa](design-system-qa/PLAYBOOK.md) | Audit a design system across 5 testing layers (types / tokens / contract / a11y / visual) and recommend CI integration. |
 | [design-pr-review](design-pr-review/PLAYBOOK.md) | Review a GitHub PR for design system compliance. Uses GitHub MCP when connected. |
 | [website-improvement](website-improvement/PLAYBOOK.md) | Plan a website improvement control tower with Site Profile, audit pipeline, MCP readiness, refactor tasks, prompts, and handoff report. |
+| [design-engineering-review](design-engineering-review/PLAYBOOK.md) | Review or improve web/app interface craft across code, runtime response, motion, accessibility, and responsive states. |
 | [figma-token-sync](figma-token-sync/PLAYBOOK.md) | Sync tokens between Figma and code. Uses Figma MCP. |
 | [design-broadcast](design-broadcast/PLAYBOOK.md) | Post artifacts to Slack / Notion. Uses Slack + Notion MCPs. |
 | [document-author](document-author/PLAYBOOK.md) | Write technical / product documentation. Picks the right Diátaxis type, applies template, follows technical-writing voice rules. Korean-aware. |

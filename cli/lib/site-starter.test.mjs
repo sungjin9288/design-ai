@@ -63,10 +63,22 @@ test("createSiteWorkspaceFromInitOptions creates a valid real-project workspace"
   assert.deepEqual(minimal.siteProfile.pages, ["/"]);
   assert.deepEqual(minimal.siteProfile.viewports, ["desktop", "tablet", "mobile"]);
   assert.equal(minimal.mcpReadiness.github, "optional");
-  assert.equal(minimal.mcpReadiness.deploy, "optional");
+  assert.equal(minimal.mcpReadiness.deploy, "unused");
   assert.equal(minimal.mcpReadiness.figma, "unused");
   assert.equal(minimal.mcpReadiness.cms, "unused");
   assert.equal(minimal.mcpReadiness.database, "unused");
+
+  const greenfield = createSiteWorkspaceFromInitOptions({
+    name: "Greenfield homepage",
+    repoUrl: "https://github.com/acme/greenfield-site",
+    deployProvider: "vercel",
+  });
+  const greenfieldSummary = analyzeSiteWorkspace(greenfield, { filePath: "greenfield.json" }).summary;
+  assert.equal(greenfield.siteProfile.liveUrl, "");
+  assert.equal(greenfield.mcpReadiness.github, "required");
+  assert.equal(greenfield.mcpReadiness.browser, "required");
+  assert.equal(greenfield.mcpReadiness.deploy, "required");
+  assert.equal(greenfieldSummary.status, "pass");
 });
 
 test("buildSiteInitNextActionsReport prepends a durable workspace save action", () => {
@@ -246,14 +258,18 @@ test("formatSitePromptTemplates lists all Website Improvement prompt templates",
   const json = JSON.parse(formatSitePromptTemplatesJson());
 
   assert.match(human, /Website Improvement prompt templates/);
-  assert.match(human, /1\. codex-repo-intake/);
-  assert.match(human, /2\. codex-implementation/);
+  assert.match(human, /1\. implementation-plan/);
+  assert.match(human, /3\. design-contract/);
+  assert.match(human, /5\. codex-implementation/);
   assert.match(human, /Task selectable: yes/);
   assert.match(human, /design-ai site <workspace\.json> --prompt codex-implementation --task <id-or-number>/);
 
   assert.deepEqual(Object.keys(json), ["count", "templates"]);
-  assert.equal(json.count, 8);
+  assert.equal(json.count, 11);
   assert.deepEqual(json.templates.map((template) => template.id), [
+    "implementation-plan",
+    "critique-loop",
+    "design-contract",
     "codex-repo-intake",
     "codex-implementation",
     "codex-visual-qa",
@@ -263,6 +279,8 @@ test("formatSitePromptTemplates lists all Website Improvement prompt templates",
     "claude-copy-ux",
     "handoff-report",
   ]);
-  assert.equal(json.templates[1].taskSelectable, true);
-  assert.equal(json.templates[1].agent, "codex");
+  assert.equal(json.templates[0].taskSelectable, true);
+  assert.equal(json.templates[0].agent, "codex-or-claude");
+  assert.equal(json.templates[4].taskSelectable, true);
+  assert.equal(json.templates[4].agent, "codex");
 });

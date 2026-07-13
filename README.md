@@ -2,9 +2,9 @@
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/)
-[![Knowledge files](https://img.shields.io/badge/knowledge-96-blue)](knowledge/PRINCIPLES.md)
-[![Examples](https://img.shields.io/badge/examples-225-blue)](examples/README.md)
-[![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
+[![Knowledge files](https://img.shields.io/badge/knowledge-97-blue)](knowledge/PRINCIPLES.md)
+[![Examples](https://img.shields.io/badge/examples-226-blue)](examples/README.md)
+[![Skills](https://img.shields.io/badge/skills-21-blue)](skills/README.md)
 
 > 🇺🇸 English / [🇰🇷 한국어](https://github.com/sungjin9288/design-ai/blob/main/README.ko.md)
 
@@ -21,6 +21,7 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 | Design tokens (W3C DTCG, OKLCH) | ✓ | ✓ | `color-palette` |
 | Components (Ant + MUI + shadcn synthesis) | ✓ | 210 component specs | `component-spec-writer` |
 | UX patterns (auth, pricing, hero, forms, etc.) | ✓ | ✓ | `ux-audit`, `design-critique` |
+| Web/app interface craft (response, frequency, continuity, interruptibility) | ✓ | ✓ | `design-engineering-review` |
 | Agentic design workflows (MCP, artifact contracts, human gates) | ✓ | ✓ | `agentic-design-development`, `website-improvement`, `design-system-builder` |
 | Website improvement control tower | ✓ | ✓ | `website-improvement` |
 | Korean i18n (Hangul, payments, app store, fintech) | ✓ | ✓ | (cross-cutting) |
@@ -66,7 +67,7 @@ brew install design-ai
 design-ai install
 ```
 
-Any available path installs all 20 skills, 17 commands, and 4 agents under `~/.claude/` with the `design-` prefix. Restart Claude Code; try:
+The current source installs 21 skills, 16 public slash commands, and 4 agents under `~/.claude/` with the `design-` prefix. Restart Claude Code; try:
 
 ```
 /design-component-spec Banner
@@ -76,7 +77,7 @@ Any available path installs all 20 skills, 17 commands, and 4 agents under `~/.c
 /design-from-brief Korean fintech for freelancers
 ```
 
-CLI commands: `design-ai install [--json]`, `update [--dry-run] [--json]`, `uninstall [--json]`, `status [--json]`, `list [skills|commands|agents] [--json]`, `route <brief|--from-file file|--stdin|--list|--eval-template|--eval> [--limit N] [--explain] [--strict] [--json]`, `routes [--json]`, `prompt <brief|--from-file file|--stdin|--eval-template|--eval> [--out file] [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--strict] [--json]`, `pack <brief|--from-file file|--stdin|--eval-template|--eval> [--out file] [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--max-bytes N] [--strict] [--json]`, `learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]`, `check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--issues-only] [--strict] [--learn [--yes] [--learning-file path]] [--json]`, `workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]`, `site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name --live-url url [--next-actions] [--out file] | site --init --name name --live-url url --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]`, `examples [query|--route id] [--limit N] [--json]`, `search <query|--eval-template|--eval> [--dir kind] [--limit N] [--ranked] [--embeddings [--provider "cmd args"]] [--strict] [--json]`, `index [--build|--status|--verify] [--json] [--embeddings [--provider "cmd args"]]`, `show <file[:line]> [--lines N:M] [--context N] [--json]`, `audit [--strict] [--quiet] [--json]`, `doctor [--strict] [--json] [--fix]`, `mcp`, `version [--json]`, `help [command|--json]`.
+CLI commands: `design-ai install [--json]`, `update [--dry-run] [--json]`, `uninstall [--json]`, `status [--json]`, `list [skills|commands|agents] [--json]`, `route <brief|--from-file file|--stdin|--list|--eval-template|--eval> [--limit N] [--explain] [--strict] [--json]`, `routes [--json]`, `prompt <brief|--from-file file|--stdin|--eval-template|--eval> [--out file] [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--strict] [--json]`, `artifact <implementation-plan|critique-loop|design-contract> <brief|--from-file file|--stdin> [--route id] [--json] [--out file]`, `pack <brief|--from-file file|--stdin|--eval-template|--eval> [--out file] [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--max-bytes N] [--strict] [--json]`, `learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]`, `check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--issues-only] [--strict] [--learn [--yes] [--learning-file path]] [--json]`, `workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]`, `site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--linked-preview [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] [--next-actions] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]`, `examples [query|--route id] [--limit N] [--json]`, `search <query|--eval-template|--eval> [--dir kind] [--limit N] [--ranked] [--embeddings [--provider "cmd args"]] [--strict] [--json]`, `index [--build|--status|--verify] [--json] [--embeddings [--provider "cmd args"]]`, `show <file[:line]> [--lines N:M] [--context N] [--json]`, `audit [--strict] [--quiet] [--json]`, `doctor [--strict] [--json] [--fix]`, `mcp`, `version [--json]`, `help [command|--json]`.
 
 See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution guide.
 
@@ -90,7 +91,7 @@ See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution gui
 | **Aider** | Pass `AGENTS.md` as system prompt. [Walkthrough](docs/integrations/aider-walkthrough.md). |
 | **Anthropic / OpenAI SDK** | Embed relevant skill `PLAYBOOK.md` files in your prompt. [Walkthrough](docs/integrations/sdk-walkthrough.md). |
 | **VS Code** | Install the public Marketplace extension for sidebar trees + quick-pick commands. [Walkthrough](docs/integrations/vscode-walkthrough.md). |
-| **Node.js / Agent SDK** | `import { route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk"` — call design-ai's deterministic verbs as functions, no CLI shell-out or MCP server needed. Read-only (Phase A). [SDK reference](docs/SDK.md). [Walkthrough](docs/integrations/agent-sdk-walkthrough.md). |
+| **Node.js / Agent SDK** | `import { artifact, route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk"` — call design-ai's deterministic verbs as functions, no CLI shell-out or MCP server needed. Read-only except the explicit `learn.*` namespace. [SDK reference](docs/SDK.md). [Walkthrough](docs/integrations/agent-sdk-walkthrough.md). |
 | **Plain prompt** | Paste any `skills/*/PLAYBOOK.md` body — each is self-contained. |
 
 See [`docs/USING.md`](docs/USING.md) for per-agent setup details, or the linked walkthroughs for concrete example sessions.
@@ -127,9 +128,9 @@ design-ai/
 │   ├── spatial/             # VR / AR / panels / comfort
 │   └── i18n/                # Korean typography, payments, app store, ...
 │
-├── examples/                # 225 worked outputs (what "good" looks like)
+├── examples/                # 226 worked outputs (what "good" looks like)
 │
-├── skills/                  # 20 reusable playbooks (task-focused)
+├── skills/                  # 21 reusable playbooks (task-focused)
 │   ├── design-system-builder/   illustration-designer/
 │   ├── component-spec-writer/   print-designer/
 │   ├── color-palette/           video-designer/
@@ -138,6 +139,7 @@ design-ai/
 │   ├── handoff-spec/            spatial-designer/
 │   ├── design-system-qa/        document-author/
 │   ├── design-pr-review/        website-improvement/
+│   ├── design-engineering-review/
 │   ├── figma-token-sync/        slide-deck-author/
 │   ├── motion-designer/
 │   └── design-broadcast/
@@ -146,7 +148,7 @@ design-ai/
 │   ├── design-critic.md         a11y-reviewer.md
 │   ├── component-architect.md   token-extractor.md
 │
-├── commands/                # 17 slash commands
+├── commands/                # 16 public slash commands
 │   ├── design-from-brief.md     motion-design.md
 │   ├── component-spec.md        illustration.md
 │   ├── design-review.md         website-improvement.md
@@ -155,7 +157,6 @@ design-ai/
 │   ├── document-from-brief.md   game-ui.md
 │   ├── slide-deck.md            conversational.md
 │   ├── iterate.md               spatial.md
-│   ├── extract-tokens.md
 │   └── stability-review.md
 │
 ├── tools/                   # Maintenance pipeline
@@ -214,13 +215,13 @@ The knowledge is synthesized from battle-tested sources, not invented:
 | [WWIT](https://wwit.design/) | Korean app pattern taxonomy reference |
 | [React Bits](https://reactbits.dev/) | Animated React component adoption-gate reference |
 
-Refresh refs/ on demand: `./tools/extractors/run-all.sh`.
+Maintainers can refresh refs/ with `./tools/extractors/run-all.sh`; token extraction is clone-only tooling, documented at `tools/extractors/README.md`.
 
 ## Status
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. Currently at **v4.65.0**: full CLI–SDK–MCP surface parity (14 MCP tools incl. recall + opt-in learning writes), route coverage across 18 probed task classes (`flow-design`, `dashboard-design`, `marketing-page` routes, trust & safety corpus, design-knowledge-only recall, `pack` byte-budget guarantee, SDK walkthrough), the ranked-search eval checkpoint (`search --eval`), the Agent SDK (`@design-ai/cli/sdk`) with shipped TypeScript types and the opt-in `learn.*` local-write namespace, public npm publish, provenance-backed GitHub Actions release, public registry smoke, Website Console MCP readiness, workspace learning restore/eval coverage, handoff bundle verification, and 90%+ component coverage are complete. Unreleased local work now adds the `agentic-design-development` route so external reference mining feeds internal skill, CLI/SDK/MCP, and approval-gated feature development instead of staying as static guidance.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. **v4.65.0** remains the published baseline with CLI–SDK–MCP parity and 14 MCP tools. The current source is the **v5.0.0 release candidate**: it adds the `agentic-design-development` route, the read-only `design_ai_site_bundle_handoff`, `design_ai_site_linked_preview`, and `design_ai_artifact` tools (17 source MCP tools total), the SDK `artifact()` adapter (10 exports total), and the `design-engineering-review` skill/route for evidence-grounded web/app interface craft review. The linked-preview operation reads only root project metadata and prepares an operator-controlled preview loop without starting a process, probing a URL, scanning source files, or mutating the target repo. The shared artifact operation produces `implementation-plan`, `critique-loop`, and agent-readable `DESIGN.md` contracts across CLI, SDK, MCP, and Website Console. It also restores dashboard chart knowledge, makes token extraction clone-only, and strengthens public-contract and PR verification. The major version records removal of the former public `extract-tokens` command.
 
-Core design consulting workflows are locally release-ready. The website improvement control tower ships as a zero-dependency static Web App plus a `website-improvement` route/skill/command, covering Site Profiles, audit checklists, MCP readiness, refactor prompts, handoff evidence tracking, and bundle export/verify/repair. Local learning preferences are available through `design-ai learn` — profile bootstrap, feedback capture, a read-only signals registry, skill-proposal generation from repeated QA signals, and full backup/restore/curate/audit tooling, all local-only and opt-in. AI model training or fine-tuning remains outside the shipped scope.
+Core design consulting workflows are locally release-ready. The website improvement control tower ships as a zero-dependency static Web App plus a `website-improvement` route/skill/command, covering Site Profiles, audit checklists, MCP readiness, refactor prompts, handoff evidence tracking, bundle export/verify/repair, linked-code preview readiness, and an explicit read-only intake → human approval → target-repo implementation → browser evidence contract. Greenfield homepage work can create a strict handoff from a repo URL or local path before a live URL exists; `design-ai site <workspace.json> --linked-preview --json` then detects the existing manual start command from root metadata. Browser and deployment evidence remains required after the operator starts a preview. Local learning preferences are available through `design-ai learn` — profile bootstrap, feedback capture, a read-only signals registry, skill-proposal generation from repeated QA signals, and full backup/restore/curate/audit tooling, all local-only and opt-in. AI model training or fine-tuning remains outside the shipped scope.
 
 Full assertion-level detail for every one of the surfaces above — including every `learn`, `site`, and `workspace` flag and what it verifies — lives in [`docs/RELEASE-GATES.md`](docs/RELEASE-GATES.md).
 
@@ -239,6 +240,7 @@ All 8 pass on every commit to `main`.
 ## Contributing
 
 See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). The bar:
+- Install the documentation toolchain once with `pip install -r docs/requirements.txt`; `release:check` includes the MkDocs build and warning policy.
 - Run `npm run release:check` as the core gate before release PRs or tags. It wraps `npm test` (CLI unit tests), `npm run audit:strict` (all 8 audits), `git diff --check` (whitespace), `npm run package:check` (package contents), `npm run release:metadata` (release metadata + Product Readiness guard), `npm run release:self-test` (release assertion self-tests), and `npm run package:smoke` (packed-tarball smoke covering install, `site`, `workspace`, `learn`, and help/version/audit surfaces for both installed-bin and one-shot `npm exec --package <tarball>` paths).
 - After npm publish completes, run `npm run registry:smoke` to verify the same surfaces against the public `npm exec --package` install path.
 - Knowledge files use `<!-- hand-written -->` marker if hand-authored.

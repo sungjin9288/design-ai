@@ -75,6 +75,7 @@ AUDITS: tuple[AuditSpec, ...] = (
     AuditSpec(
         name="coverage",
         script="check-coverage.py",
+        strict_args=("--check",),
         description="Component / skill / example coverage report",
     ),
     AuditSpec(
@@ -269,6 +270,10 @@ def run_self_test() -> int:
     assert_self_test(
         any(spec.name == "stale" and "--strict" in spec.strict_args for spec in AUDITS),
         "stale audit should still receive strict args in strict mode",
+    )
+    assert_self_test(
+        any(spec.name == "coverage" and spec.strict_args == ("--check",) for spec in AUDITS),
+        "strict coverage audit should check without regenerating the committed report",
     )
 
     print("Audit runner self-test passed")

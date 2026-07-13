@@ -1,8 +1,7 @@
 // Repair guidance helpers for Website Improvement handoff bundles.
 
 import {
-  existsSync,
-  statSync,
+  lstatSync,
 } from "node:fs";
 import path from "node:path";
 
@@ -14,7 +13,13 @@ export function buildBundleRepairGuidance(directory, generatedContract) {
   const reportDirectory = path.dirname(directory);
   const previewReportPath = path.join(reportDirectory, `${reportBaseName}-repair-preview.json`);
   const appliedReportPath = path.join(reportDirectory, `${reportBaseName}-repair-applied.json`);
-  const hasWorkspace = existsSync(workspacePath) && statSync(workspacePath).isFile();
+  let workspaceStats = null;
+  try {
+    workspaceStats = lstatSync(workspacePath);
+  } catch {
+    // Missing workspace files make repair unavailable.
+  }
+  const hasWorkspace = Boolean(workspaceStats && !workspaceStats.isSymbolicLink() && workspaceStats.isFile());
   const available = Boolean(generatedContract.available && hasWorkspace);
   return {
     available,

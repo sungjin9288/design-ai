@@ -22,6 +22,12 @@ export {
 } from "./site-mcp-probes.mjs";
 
 export {
+  buildSiteLinkedPreviewReport,
+  formatSiteLinkedPreviewHuman,
+  formatSiteLinkedPreviewJson,
+} from "./site-linked-preview.mjs";
+
+export {
   buildSiteBundleCompareReport,
   formatSiteBundleCompareHuman,
   formatSiteBundleCompareJson,

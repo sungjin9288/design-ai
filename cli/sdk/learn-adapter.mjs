@@ -12,7 +12,7 @@
 
 import { checkArtifactContent, buildCheckLearningCapture } from "../lib/check.mjs";
 import { rememberLearning, recordLearningFeedback } from "../lib/learn-profile.mjs";
-import { assertKnownRouteId } from "../lib/route.mjs";
+import { assertKnownRouteId } from "../lib/route-catalog.mjs";
 import { optionalString, requireNonEmptyString, requireOptions } from "./validate.mjs";
 
 /**

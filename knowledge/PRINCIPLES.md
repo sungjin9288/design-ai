@@ -89,6 +89,7 @@ The 30 load-bearing rules across this knowledge base. Read this first; it primes
 43. **Human gate before external writes.** Issues, pages, messages, deployments, and target-repo mutations need a visible approval or verification boundary. Cite [`patterns/agentic-design-workflows.md`](patterns/agentic-design-workflows.md).
 44. **Reference mining extracts taxonomy, not assets.** Use outside repos/sites to derive flow, component, motion, and artifact rules; do not copy proprietary visuals or code without license review. Cite [`patterns/agentic-design-workflows.md`](patterns/agentic-design-workflows.md).
 45. **Animated components need an adoption gate.** Check intent, dependency, variant, customization, reduced motion, performance, and ownership before recommending a React animation library. Cite [`patterns/agentic-design-workflows.md`](patterns/agentic-design-workflows.md).
+46. **Interface craft needs code and runtime evidence.** Review purpose/frequency, response, spatial continuity, interruptibility, motion cohesion, performance, accessibility, and responsive resilience; mark unobserved behavior as unverified. Cite [`patterns/interface-craft.md`](patterns/interface-craft.md).
 
 ## Output discipline
 

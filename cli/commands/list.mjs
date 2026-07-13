@@ -1,19 +1,16 @@
 // `design-ai list [domain]` — list skills / commands / agents from the plugin manifest.
 
-import { readFileSync } from "node:fs";
 import { hasHelpFlag } from "../lib/help-flags.mjs";
 import { header, info, dim } from "../lib/log.mjs";
-import { PLUGIN_MANIFEST, pathExists } from "../lib/paths.mjs";
+import { readPluginManifest } from "../lib/plugin-manifest.mjs";
+import { PLUGIN_MANIFEST } from "../lib/paths.mjs";
 import { expectedValueMessage, unknownOptionMessage } from "../lib/suggest.mjs";
 
 export const LIST_KINDS = ["skills", "commands", "agents"];
 const LIST_OPTIONS = ["-h", "--help", "--json"];
 
 function loadManifest() {
-  if (!pathExists(PLUGIN_MANIFEST)) {
-    throw new Error(`Plugin manifest not found at ${PLUGIN_MANIFEST}`);
-  }
-  return JSON.parse(readFileSync(PLUGIN_MANIFEST, "utf8"));
+  return readPluginManifest(PLUGIN_MANIFEST);
 }
 
 export function parseListArgs(args) {

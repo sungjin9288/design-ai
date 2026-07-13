@@ -24,6 +24,10 @@ test("buildSiteBundleHandoffReport task selection and tampered bundle detection"
   assert.equal(selectedReport.bundle.selectedTask.strictHandoffCommandRunPolicy, "writes-local-file");
   assert.equal(selectedReport.bundle.selectedTask.strictHandoffCommandSafety.strict, true);
   assert.equal(selectedReport.bundle.effectiveTask.id, "task-content-quality");
+  assert.equal(selectedReport.approval.taskId, "task-content-quality");
+  assert.equal(selectedReport.approval.status, "pending-human-approval");
+  assert.match(selectedReport.approval.confirmation, /Approve task-content-quality for /);
+  assert.deepEqual(selectedReport.bundle.approval, selectedReport.approval);
   assert.equal(selectedReport.bundle.effectiveTask.handoffOutFile, "target-repo-task-content-quality-handoff.md");
   assert.match(selectedReport.bundle.effectiveTask.strictHandoffCommand, /--bundle-handoff --task task-content-quality --strict --out target-repo-task-content-quality-handoff\.md/);
   assert.deepEqual(selectedReport.bundle.effectiveTask.strictHandoffCommandArgs, ["design-ai", "site", dir, "--bundle-handoff", "--task", "task-content-quality", "--strict", "--out", "target-repo-task-content-quality-handoff.md"]);
@@ -58,6 +62,9 @@ test("buildSiteBundleHandoffReport task selection and tampered bundle detection"
   assert.deepEqual(selectedJson.bundle.selectedTask.strictHandoffCommandArgs, ["design-ai", "site", dir, "--bundle-handoff", "--task", "task-content-quality", "--strict", "--out", "target-repo-task-content-quality-handoff.md"]);
   assert.equal(selectedJson.bundle.selectedTask.strictHandoffCommandSafety.targetRepoMutation, false);
   assert.equal(selectedJson.bundle.effectiveTask.id, "task-content-quality");
+  assert.equal(selectedJson.approval.taskId, "task-content-quality");
+  assert.equal(selectedJson.bundle.approval.taskId, "task-content-quality");
+  assert.equal(selectedJson.bundle.approval.confirmation, selectedJson.approval.confirmation);
   assert.match(selectedJson.bundle.effectiveTask.strictHandoffCommand, /--bundle-handoff --task task-content-quality --strict --out target-repo-task-content-quality-handoff\.md/);
   assert.deepEqual(selectedJson.bundle.effectiveTask.strictHandoffCommandArgs, ["design-ai", "site", dir, "--bundle-handoff", "--task", "task-content-quality", "--strict", "--out", "target-repo-task-content-quality-handoff.md"]);
   assert.equal(selectedJson.bundle.effectiveTask.strictHandoffCommandSafety.externalCalls, false);
@@ -71,6 +78,9 @@ test("buildSiteBundleHandoffReport task selection and tampered bundle detection"
 
   const selectedByNumberReport = buildSiteBundleHandoffReport({ target: dir, taskSelector: "3" });
   assert.equal(selectedByNumberReport.bundle.selectedTask.id, "task-content-quality");
+  assert.equal(selectedByNumberReport.approval.taskId, "task-content-quality");
+  assert.match(selectedByNumberReport.approval.confirmation, /Approve task-content-quality for /);
+  assert.deepEqual(selectedByNumberReport.bundle.approval, selectedByNumberReport.approval);
   assert.match(selectedByNumberReport.prompt, /Task ID: task-content-quality/);
   assert.throws(
     () => buildSiteBundleHandoffReport({ target: dir, taskSelector: "missing-task" }),

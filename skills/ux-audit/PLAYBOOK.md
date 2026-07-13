@@ -63,6 +63,14 @@ For every text element:
 | Web | Browser back behavior, deep linking, copy-pastable URLs, refresh resilience |
 | Responsive web | Touch on touchscreens, hover only as enhancement |
 
+### 6.5. Escalate interaction craft when needed
+
+If the artifact includes implemented motion, rapid repeated input, anchored overlays, direct manipulation, or a request to make the UI feel more polished, apply [`knowledge/patterns/interface-craft.md`](../../knowledge/patterns/interface-craft.md) and the [`design-engineering-review`](../design-engineering-review/PLAYBOOK.md) contract.
+
+Do not infer interaction quality from a screenshot. Mark response, interruptibility, reduced motion, and coarse-pointer behavior as `unverified` until code or runtime evidence is available.
+
+For an escalated craft audit, append the complete eight-lens `Craft scorecard` and use the required `Before / After / Why / Verification` finding table from `design-engineering-review`. Map priorities without creating two competing severity systems: Critical = P0, High = P1, Medium = P2, Low = P3.
+
 ### 7. Score each issue
 
 | Severity | Definition | Action |
@@ -104,6 +112,13 @@ A structured report:
 ## Low (n)
 ...
 
+## Craft scorecard
+<required only when interaction craft is escalated; all eight lenses with evidence>
+
+## Craft findings
+| Priority | Location | Before | After | Why | Verification |
+| --- | --- | --- | --- | --- | --- |
+
 ## Things that work well
 <2–4 bullets, genuine praise — keeps the report constructive>
 ```
@@ -119,6 +134,7 @@ A structured report:
 - [`knowledge/patterns/form-design.md`](../../knowledge/patterns/form-design.md) — when auditing forms
 - [`knowledge/patterns/list-and-feed.md`](../../knowledge/patterns/list-and-feed.md) — when auditing feeds/lists
 - [`knowledge/patterns/mobile-navigation.md`](../../knowledge/patterns/mobile-navigation.md) — when auditing mobile nav
+- [`knowledge/patterns/interface-craft.md`](../../knowledge/patterns/interface-craft.md) — when auditing implemented interaction quality
 - [`knowledge/i18n/korean-product-conventions.md`](../../knowledge/i18n/korean-product-conventions.md) — Korean apps
 
 ## Verification phase (run before declaring done)
@@ -131,6 +147,8 @@ A structured report:
 - [ ] Is each fix recommendation actionable (not "consider improving")?
 - [ ] If platform-specific (mobile / KR): did I check the relevant convention file?
 - [ ] Are duplicate issues merged (not listed in both a11y and UX)?
+- [ ] If implemented interaction craft is in scope, did I provide runtime/code evidence or mark it unverified?
+- [ ] If interaction craft was escalated, is the eight-lens scorecard complete and does every craft finding include Before / After / Why / Verification?
 
 ## Done when
 
@@ -139,4 +157,5 @@ A structured report:
 - Every Critical issue has at least one knowledge/ or WCAG citation.
 - The report names the user goal up top.
 - The report is **specific** — no "could be improved" without a stated alternative.
+- An escalated interaction-craft report includes the complete scorecard and P0–P3 finding contract.
 - The verification phase checklist passes.

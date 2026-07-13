@@ -98,11 +98,11 @@ Capture only findings that are grounded in inspection. Do not invent Lighthouse,
 ## First Bundle Commands
 
 Replace placeholders and run from the \`design-ai\` repository.
+Add \`--live-url <live-url>\` when a preview or deployed site already exists.
 
 \`\`\`bash
 design-ai site --init \\
   --name "<site name>" \\
-  --live-url <live-url> \\
   --local-path <absolute-target-repo-path> \\
   --page / \\
   --page <priority-page-2> \\
@@ -115,7 +115,6 @@ design-ai site --init \\
 \`\`\`bash
 design-ai site --init \\
   --name "<site name>" \\
-  --live-url <live-url> \\
   --local-path <absolute-target-repo-path> \\
   --page / \\
   --page <priority-page-2> \\
@@ -243,11 +242,11 @@ export const SITE_INTAKE_TEMPLATE_MARKDOWN_KO = `# 회사 웹사이트 Intake Te
 ## 첫 Bundle Commands
 
 placeholder를 바꾼 뒤 \`design-ai\` repo에서 실행합니다.
+preview 또는 배포된 사이트가 이미 있으면 \`--live-url <live-url>\`을 추가합니다.
 
 \`\`\`bash
 design-ai site --init \\
   --name "<site name>" \\
-  --live-url <live-url> \\
   --local-path <absolute-target-repo-path> \\
   --page / \\
   --page <priority-page-2> \\
@@ -260,7 +259,6 @@ design-ai site --init \\
 \`\`\`bash
 design-ai site --init \\
   --name "<site name>" \\
-  --live-url <live-url> \\
   --local-path <absolute-target-repo-path> \\
   --page / \\
   --page <priority-page-2> \\
@@ -303,6 +301,9 @@ design-ai site website-handoff-bundle --bundle-handoff --strict --out target-rep
 `;
 
 export const SITE_PROMPT_TEMPLATE_IDS = [
+  "implementation-plan",
+  "critique-loop",
+  "design-contract",
   "codex-repo-intake",
   "codex-implementation",
   "codex-visual-qa",
@@ -328,6 +329,30 @@ export const SITE_BUNDLE_FILES = [
 export const SITE_BUNDLE_CHECKSUM_FILES = SITE_BUNDLE_FILES.filter((filePath) => filePath !== "summary.json");
 
 export const SITE_PROMPT_TEMPLATES = [
+  {
+    id: "implementation-plan",
+    label: "Implementation plan",
+    agent: "codex-or-claude",
+    output: "Portable implementation plan",
+    description: "Plan one website improvement task with source, approval, and verification evidence.",
+    taskSelectable: true,
+  },
+  {
+    id: "critique-loop",
+    label: "Critique loop",
+    agent: "codex-or-claude",
+    output: "Observed critique and revision loop",
+    description: "Review, revise, and re-observe one website decision without losing the evidence trail.",
+    taskSelectable: true,
+  },
+  {
+    id: "design-contract",
+    label: "Agent-readable DESIGN.md",
+    agent: "codex-or-claude",
+    output: "DESIGN.md contract",
+    description: "Create the canonical brand, component, motion, accessibility, and responsive contract for agents.",
+    taskSelectable: false,
+  },
   {
     id: "codex-repo-intake",
     label: "Codex repo intake",

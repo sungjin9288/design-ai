@@ -1,7 +1,7 @@
 // SDK adapter: route(brief, opts) and routes(). See docs/AGENT-SDK.md.
 
 import { DESIGN_AI_HOME } from "../lib/paths.mjs";
-import { readRouteManifestVersion, routeBrief, routeCatalog } from "../lib/route.mjs";
+import { buildRouteCatalogPayload, buildRoutePayload } from "../lib/route-operation.mjs";
 import {
   optionalBoolean,
   optionalInteger,
@@ -23,12 +23,12 @@ export function route(brief, opts = {}) {
   const limit = optionalInteger(options.limit, "limit", { fallback: 3, min: 1, max: 10 });
   const explain = optionalBoolean(options.explain, "explain", false);
 
-  return routeBrief({
+  return buildRoutePayload({
     brief,
     sourceRoot: DESIGN_AI_HOME,
     limit,
     explain,
-  });
+  }).routes;
 }
 
 /**
@@ -38,8 +38,5 @@ export function route(brief, opts = {}) {
  * @returns {{version: string, routes: Array<object>}} RouteCatalog
  */
 export function routes() {
-  return {
-    version: readRouteManifestVersion(DESIGN_AI_HOME),
-    routes: routeCatalog({ sourceRoot: DESIGN_AI_HOME }),
-  };
+  return buildRouteCatalogPayload({ sourceRoot: DESIGN_AI_HOME });
 }

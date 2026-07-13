@@ -1,16 +1,14 @@
 # Agent SDK design
 
-> Status: draft / planning — 2026-07-04
+> Status: implemented; this page preserves the design rationale and phased delivery record — updated 2026-07-13
 
-This document opens the Agent SDK phase — the fast-follow chosen in [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md), now unblocked because the CLI recall interface has been stable across two releases (`--with-recall` / `learn --recall` shipped in v4.57.0 and stayed stable through v4.58.0's `route --explain` enrichment).
-
-Nothing here is shipped until a phase below is implemented and release-gated. Until then, the only supported programmatic entry to design-ai is the CLI and the MCP server.
+This document records the Agent SDK phase chosen in [NEXT-SURFACE-DECISION.md](NEXT-SURFACE-DECISION.md). The public `@design-ai/cli/sdk` entry now ships alongside the CLI and MCP server; [`SDK.md`](SDK.md) is the current API reference.
 
 ## Goal
 
 Let an external Node.js program — an agent runtime, a build script, a custom tool — use design-ai's deterministic design capabilities **as importable functions**, without shelling out to the CLI or spawning the MCP server. The SDK is a thin, documented, semver-stable adapter over the same `cli/lib` functions the CLI and MCP already call, so a capability that ships in the CLI is instantly available to an SDK consumer.
 
-The decision record scored this surface highest on leverage and learning synergy precisely because it reuses the shared library verbatim: `route`, `prompt`, `pack`, `search --ranked`, `recall`, and `check` are already pure functions in `cli/lib`.
+The decision record scored this surface highest on leverage and learning synergy precisely because it reuses the shared library verbatim. The same core now serves `artifact`, `route`, `prompt`, `pack`, `search --ranked`, `recall`, and `check` across the supported surfaces.
 
 ## Non-goals
 
@@ -24,11 +22,12 @@ The decision record scored this surface highest on leverage and learning synergy
 
 A single curated entry (`cli/sdk/index.mjs`) re-exports a small set of adapter functions with **their own stable signatures**, independent of the internal `cli/lib` shapes. Internal functions may be renamed or refactored; the SDK adapter absorbs that so the public API stays put.
 
-Proposed surface (Phase A — read-only verbs):
+Current read-only surface:
 
 ```js
-import { route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
+import { artifact, route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
 
+artifact(brief, { mode: "implementation-plan", routeId }) // → DesignArtifact
 route(brief, { limit = 3, explain = false })            // → RouteResult[]
 prompt(brief, { routeId, withLearning, learningCategory, learningLimit, withRecall, recallLimit })  // → PromptPlan
 pack(brief, { routeId, maxBytes, withLearning, learningCategory, learningLimit, withRecall, recallLimit })  // → Pack
@@ -66,7 +65,7 @@ Add an `exports` map to `package.json`:
 
 ### Phase A — read-only SDK core
 
-The verbs above (`route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) as pure adapters over existing `cli/lib` functions. Read-only: no file writes, no network, no learning-usage sidecar writes (the SDK's `prompt`/`pack` default to not recording usage, unlike the CLI's opt-in `--with-learning` sidecar write — an SDK caller opts in explicitly if that is added later).
+The nine verbs above (`artifact`, `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) are pure adapters over existing `cli/lib` functions. They perform no file writes or network calls. `prompt` and `pack` may read the local learning profile when requested, but they do not record a learning-usage sidecar through the SDK.
 
 Verification gates:
 - `node --test` unit coverage for each adapter: signature, option defaults, return-shape keys, determinism, and parity with the CLI `--json` output for a fixed brief.
@@ -77,7 +76,7 @@ Verification gates:
 
 ### Phase B — explicit local writes (shipped)
 
-Implemented as a single `learn` namespace export grouping three opt-in adapters that mirror the CLI's local-write commands: `learn.remember`, `learn.feedback`, and `learn.captureFromCheck` (capture from a `check()` report). Each writes only the local learning profile (`DESIGN_AI_LEARNING_FILE` / `defaultLearningFile()`), never the network — no `filePath` or `now`/timestamp option; consumers target a profile via the env var, exactly like the CLI. The 8 Phase A verbs are unchanged and stay read-only; `check()` in particular gets no capture option — capture is reached only through the separate, explicitly-named `learn.captureFromCheck`, keeping the write boundary visible at the call site. See [`SDK.md`](SDK.md#phase-b--local-writes) for the full reference.
+Implemented as a single `learn` namespace export grouping three opt-in adapters that mirror the CLI's local-write commands: `learn.remember`, `learn.feedback`, and `learn.captureFromCheck` (capture from a `check()` report). Each writes only the local learning profile (`DESIGN_AI_LEARNING_FILE` / `defaultLearningFile()`), never the network — no `filePath` or `now`/timestamp option; consumers target a profile via the env var, exactly like the CLI. The nine read-only verbs remain separate from this write surface; `check()` in particular gets no capture option. Capture is reached only through the explicitly named `learn.captureFromCheck`, keeping the write boundary visible at the call site. See [`SDK.md`](SDK.md#phase-b--local-writes) for the full reference.
 
 ## Integration points
 
@@ -88,7 +87,7 @@ Implemented as a single `learn` namespace export grouping three opt-in adapters 
 ## Risks and open questions
 
 Risks:
-- **Semver commitment.** Once published, the SDK surface is a promise. Mitigation: keep Phase A small (8 verbs), pin names/shapes in a contract test, and treat the adapter as the only stable seam.
+- **Semver commitment.** The published SDK surface is a promise. Mitigation: keep the read-only surface small (currently nine verbs), pin names and shapes in a contract test, and treat the adapter as the only stable seam.
 - **Return-shape coupling.** SDK returns mirror the CLI `--json` shapes; if those change, the SDK breaks. Mitigation: the same smoke/parity tests that already guard the CLI JSON guard the SDK, and shape changes are already major-version events.
 
 Open questions (answer during Phase A implementation review):

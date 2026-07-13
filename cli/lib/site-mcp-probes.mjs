@@ -78,7 +78,8 @@ function buildSiteMcpProbeItems(workspace) {
   const localRepoAvailable = pathExistsAsDirectory(profile.localPath);
   const figmaRef = figmaFileReference(profile.figmaUrl);
   const deployConfigured = profile.deployProvider !== "none";
-  const browserTargetReady = Boolean(liveUrl && profile.viewports.length > 0);
+  const repoPreviewSource = Boolean(repoSlug || localRepoAvailable);
+  const browserTargetReady = Boolean((liveUrl || repoPreviewSource) && profile.viewports.length > 0);
 
   return [
     buildProbeItem({
@@ -115,28 +116,34 @@ function buildSiteMcpProbeItems(workspace) {
       requestedStatus: workspace.mcpReadiness.browser,
       passed: browserTargetReady,
       message: browserTargetReady
-        ? "Browser smoke target and viewport set are ready for manual or MCP-driven QA."
+        ? liveUrl
+          ? "Browser smoke target and viewport set are ready for manual or MCP-driven QA."
+          : "Target repo and viewport set are ready to start a local preview before Browser/Playwright QA."
         : "Browser smoke target is incomplete.",
       evidence: [
         liveUrl ? `liveUrl host: ${liveUrl.hostname}` : "",
+        !liveUrl && repoSlug ? `preview source repo: ${repoSlug}` : "",
+        !liveUrl && localRepoAvailable ? `preview source localPath: ${profile.localPath}` : "",
         profile.viewports.length ? `viewports: ${profile.viewports.join(", ")}` : "",
       ].filter(Boolean),
-      actions: ["Add a valid http(s) liveUrl and at least one viewport before Browser/Playwright QA."],
+      actions: ["Add a valid liveUrl or target repo reference and at least one viewport before Browser/Playwright QA."],
     }),
     buildProbeItem({
       id: "deploy-provider-reference",
       key: "deploy",
       label: "Deployment provider reference",
       requestedStatus: workspace.mcpReadiness.deploy,
-      passed: Boolean(deployConfigured && liveUrl),
-      message: deployConfigured && liveUrl
-        ? "Deployment provider and live URL are configured for verification handoff."
-        : "Deployment provider or live URL is not configured.",
+      passed: deployConfigured,
+      message: deployConfigured
+        ? liveUrl
+          ? "Deployment provider and live URL are configured for verification handoff."
+          : "Deployment provider is configured; live verification remains pending until preview or production deployment."
+        : "Deployment provider is not configured.",
       evidence: [
         `deployProvider: ${profile.deployProvider}`,
         liveUrl ? `liveUrl host: ${liveUrl.hostname}` : "",
       ].filter(Boolean),
-      actions: ["Set siteProfile.deployProvider and liveUrl before deployment verification."],
+      actions: ["Set siteProfile.deployProvider before implementation handoff, then add liveUrl before deployment verification."],
     }),
   ];
 }

@@ -16,7 +16,7 @@ Only the `./sdk` subpath is exported — no CLI shell-out, no MCP server, no sep
 
 ## Setup
 
-Nothing to configure. The 8 read-only verbs (`route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) never write to disk. The single write surface is the `learn` namespace (`learn.remember`, `learn.feedback`, `learn.captureFromCheck`) — every `learn.*` call writes only the local learning profile, and only when you call it. Point `DESIGN_AI_LEARNING_FILE` at a temp path any time you want to keep that write out of your real profile — which is what every walkthrough below does, so running these scripts never touches `~/.design-ai/learning.json`.
+Nothing to configure. The nine read-only verbs (`artifact`, `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) never write to disk. The single write surface is the `learn` namespace (`learn.remember`, `learn.feedback`, `learn.captureFromCheck`) — every `learn.*` call writes only the local learning profile, and only when you call it. Point `DESIGN_AI_LEARNING_FILE` at a temp path any time you want to keep that write out of your real profile — which is what every walkthrough below does, so running these scripts never touches `~/.design-ai/learning.json`.
 
 ## Walkthrough 1: route a brief to a design-ai route
 
@@ -204,14 +204,14 @@ This exact flow was dogfooded end-to-end before this walkthrough was written —
 
 ## Read-only vs `learn.*` write boundary
 
-- `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version` — pure, read-only. No file writes, no network calls, no learning-usage sidecar writes, even when `prompt`/`pack`'s `withLearning` option is set (that option only **reads** the local learning profile).
+- `artifact`, `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version` — pure, read-only. No file writes, no network calls, no learning-usage sidecar writes, even when `prompt`/`pack`'s `withLearning` option is set (that option only **reads** the local learning profile).
 - `learn.remember`, `learn.feedback`, `learn.captureFromCheck` — the only write surface, grouped under the `learn` namespace so the read/write boundary is visible at the call site. Every `learn.*` call writes exactly one file: the local learning profile at `DESIGN_AI_LEARNING_FILE` (or its default path).
 
 See [`docs/SDK.md`](../SDK.md) for the full verb-by-verb reference, including `search`, `recall`, `prompt`, and `routes`, which this walkthrough doesn't exercise directly.
 
 ## Next
 
-- [`docs/SDK.md`](../SDK.md) — full Agent SDK reference (all 8 read-only verbs + `learn.*`)
+- [`docs/SDK.md`](../SDK.md) — full Agent SDK reference (all nine read-only verbs + `learn.*`)
 - [`docs/AGENT-SDK.md`](../AGENT-SDK.md) — design rationale and phased plan
 - [`docs/DOGFOOD-SDK-FINDINGS.md`](../DOGFOOD-SDK-FINDINGS.md) — the real end-to-end run this walkthrough is based on
 - [`docs/integrations/sdk-walkthrough.md`](sdk-walkthrough.md) — the Anthropic/OpenAI SDK pattern (embedding corpus Markdown in a system prompt, a different surface than this page)

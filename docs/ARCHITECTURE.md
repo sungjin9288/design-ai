@@ -103,3 +103,46 @@ Considered, rejected for this version:
 | `git -C refs/<repo> pull` | Monthly, or when a new feature in upstream is referenced |
 | `./tools/extractors/run-all.sh` | After any `refs/` update |
 | Hand-written `knowledge/` review | Quarterly, or after major ecosystem shifts |
+
+## Runtime and release boundaries
+
+The public product surface and its internal implementation have separate owners:
+
+| Boundary | Source of truth | Responsibility |
+|---|---|---|
+| Public identities | `cli/lib/capability-manifest.json` | Route, skill, command, agent, MCP tool, and SDK export names |
+| Plugin inventory | `.claude-plugin/plugin.json` | Installed Claude assets and package metadata |
+| Route catalog | `cli/lib/route-catalog.mjs` | Stable route definitions and route ID validation |
+| Route operation | `cli/lib/route-operation.mjs` | Shared read-only route payload assembly for CLI, SDK, and MCP |
+| Route engine | `cli/lib/route.mjs` | Scoring, parsing, reference enrichment, and evaluation |
+| Website Console source bundle | `docs/website-console/source-bundle.js` | Provenance and revalidation data contract without DOM access |
+| Website Console UI | `docs/website-console/app.js` | DOM, storage, graph, copy, and Markdown rendering |
+| Python capability audit | `tools/audit/capability_manifest.py` | Package-independent validation of the canonical identity contract |
+
+The manifest protects names and counts; it does not dispatch runtime behavior. Each
+runtime owner keeps an explicit implementation so a metadata change cannot silently
+change execution.
+
+## Artifact ownership
+
+Generated artifacts have distinct write and verification commands:
+
+| Artifact | Generate | Verify without mutation |
+|---|---|---|
+| `knowledge/COVERAGE.md` | `npm run coverage:generate` | `npm run coverage:check` |
+| Documentation staging tree | `tools/build-docs.sh` | `npm run docs:check` builds the final MkDocs site |
+| npm tarball | `npm pack` | `npm run package:check`, then `npm run package:smoke` |
+
+Strict audits and release workflows use the verification commands. They must not
+repair tracked files as a side effect. This keeps a passing CI run reproducible from
+the committed tree and makes stale generated artifacts fail with an actionable
+regeneration command.
+
+The npm package intentionally omits clone-only extractors. Its strict audit preserves
+that already-verified extractor inventory from the bundled coverage report while
+recomputing every packaged knowledge, skill, example, and component section.
+
+`npm run release:preflight` runs every non-publishing release gate except the packed
+tarball execution smoke. `npm run release:check` adds that smoke once. Release and
+publish workflows run the preflight, build their final tarball, and smoke-test that
+same artifact before release or publication.

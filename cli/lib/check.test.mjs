@@ -571,6 +571,71 @@ test("checkArtifactContent warns about missing route-specific evidence", () => {
   assert.ok(report.results.some((item) => item.id === "route-palette-from-brand-palette-token-contract" && item.level === "warn"));
 });
 
+test("marketing-page homepage artifacts pass without email-client requirements", () => {
+  const report = checkArtifactContent({
+    content: `
+# SaaS homepage implementation
+
+This plan cites knowledge/patterns/landing-hero-design.md. The hero establishes a clear visual hierarchy above the fold, with one primary CTA and conversion reasoning tied to signup intent.
+
+The foreground and background tokens have a measured 4.8:1 contrast ratio. Keyboard users get visible focus, semantic landmarks, and screen reader labels. Responsive mobile and desktop layouts use explicit browser viewport breakpoints.
+
+Don't hide the primary CTA or add decorative motion that competes with the product proof.
+    `,
+    filePath: "homepage.md",
+    routeId: "marketing-page",
+  });
+
+  assert.equal(report.status, "pass");
+  assert.ok(report.results.some((item) => item.id === "route-marketing-page-marketing-responsive-surface" && item.level === "pass"));
+});
+
+test("design engineering reviews require craft and inclusive runtime evidence", () => {
+  const report = checkArtifactContent({
+    content: `
+# Design engineering review
+
+The user goal is fast keyboard execution. This review cites knowledge/patterns/interface-craft.md and records a craft scorecard covering purpose and frequency, response, spatial continuity, interruptibility, timing and cohesion, performance, accessibility, and responsive resilience.
+
+| Priority | Location | Before | After | Why | Verification |
+| --- | --- | --- | --- | --- | --- |
+| P1 | src/palette.css:18 | The keyboard path waits for motion. | Keep state feedback without decorative motion. | Repeated actions should remain responsive. | Repeat five times in Playwright. |
+
+Keyboard focus is visible and screen reader naming is preserved. Reduced motion removes transform. Responsive mobile and desktop viewport checks verify the 4.8:1 contrast ratio. Don't add a library for one transition.
+    `,
+    filePath: "design-engineering-review.md",
+    routeId: "design-engineering-review",
+  });
+
+  assert.equal(report.status, "pass");
+  assert.ok(report.results.some((item) => item.id === "route-design-engineering-review-design-engineering-evidence" && item.level === "pass"));
+  assert.ok(report.results.some((item) => item.id === "route-design-engineering-review-design-engineering-finding-contract" && item.level === "pass"));
+});
+
+test("design engineering reviews warn when the eight-lens scorecard is incomplete", () => {
+  const report = checkArtifactContent({
+    content: `
+# Design engineering review
+
+The user goal is fast keyboard execution. The craft scorecard covers purpose and frequency, response, and interruptibility.
+
+| Priority | Location | Before | After | Why | Verification |
+| --- | --- | --- | --- | --- | --- |
+| P1 | src/palette.css:18 | Motion blocks input. | Keep input responsive. | Repeated actions should remain fast. | Test rapid toggles. |
+
+Keyboard focus remains visible. Reduced motion removes transforms. Responsive mobile checks are included.
+    `,
+    filePath: "incomplete-design-engineering-review.md",
+    routeId: "design-engineering-review",
+  });
+
+  assert.equal(report.status, "warn");
+  const evidence = report.results.find((item) => item.id === "route-design-engineering-review-design-engineering-evidence");
+  assert.equal(evidence?.level, "warn");
+  assert.match(evidence?.evidence || "", /spatial continuity/);
+  assert.match(evidence?.evidence || "", /responsive resilience/);
+});
+
 test("checkArtifactContent rejects unknown route ids", () => {
   assert.throws(
     () => checkArtifactContent({ content: GOOD_ARTIFACT, routeId: "component-spce" }),

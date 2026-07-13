@@ -24,10 +24,14 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const promptList = path.join(dir, "out", "prompt-templates.json");
     const mcpCheck = path.join(dir, "out", "mcp-check.json");
     const mcpPlan = path.join(dir, "out", "mcp-action-plan.md");
+    const linkedPreview = path.join(dir, "out", "linked-preview.json");
     const nextActions = path.join(dir, "out", "next-actions.json");
     const nextActionsHuman = path.join(dir, "out", "next-actions.md");
     const workflowGraph = path.join(dir, "out", "website-workflow-graph.json");
-    writeFileSync(file, JSON.stringify(createSampleSiteWorkspace()), "utf8");
+    const workspace = createSampleSiteWorkspace();
+    workspace.siteProfile.localPath = dir;
+    writeFileSync(path.join(dir, "package.json"), JSON.stringify({ scripts: { dev: "vite" }, devDependencies: { vite: "7.0.0" } }), "utf8");
+    writeFileSync(file, JSON.stringify(workspace), "utf8");
 
     const jsonOutput = await captureConsole(() => runSite([file, "--json"]));
     const payload = JSON.parse(jsonOutput.stdout);
@@ -51,8 +55,9 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const promptListOutput = await captureConsole(() => runSite(["--prompt-list", "--json", "--out", promptList]));
     assert.match(promptListOutput.stdout, /Wrote /);
     const promptListPayload = JSON.parse(readFileSync(promptList, "utf8"));
-    assert.equal(promptListPayload.count, 8);
-    assert.equal(promptListPayload.templates[1].id, "codex-implementation");
+    assert.equal(promptListPayload.count, 11);
+    assert.equal(promptListPayload.templates[0].id, "implementation-plan");
+    assert.equal(promptListPayload.templates[4].id, "codex-implementation");
 
     const mcpCheckOutput = await captureConsole(() => runSite([file, "--mcp-check", "--json", "--out", mcpCheck]));
     assert.match(mcpCheckOutput.stdout, /Wrote /);
@@ -61,6 +66,14 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const mcpPlanOutput = await captureConsole(() => runSite([file, "--mcp-plan", "--out", mcpPlan]));
     assert.match(mcpPlanOutput.stdout, /Wrote /);
     assert.match(readFileSync(mcpPlan, "utf8"), /Website improvement MCP action plan/);
+
+    const linkedPreviewOutput = await captureConsole(() => runSite([file, "--linked-preview", "--json", "--out", linkedPreview]));
+    assert.match(linkedPreviewOutput.stdout, /Wrote /);
+    const linkedPreviewPayload = JSON.parse(readFileSync(linkedPreview, "utf8"));
+    assert.equal(linkedPreviewPayload.kind, "website-improvement-linked-preview");
+    assert.equal(linkedPreviewPayload.status, "pass");
+    assert.equal(linkedPreviewPayload.linkedCode.framework, "Vite");
+    assert.equal(linkedPreviewPayload.preview.processStatus, "not-started");
 
     const nextActionsHumanOutput = await captureConsole(() => runSite([file, "--next-actions"]));
     assert.match(nextActionsHumanOutput.stdout, /Website Improvement next actions/);
@@ -87,8 +100,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const graphJsonOutput = await captureConsole(() => runSite([file, "--graph", "--json"]));
     const graphPayload = JSON.parse(graphJsonOutput.stdout);
     assert.equal(graphPayload.kind, "website-improvement-workflow-graph");
-    assert.equal(graphPayload.summary.nodeCount, 35);
-    assert.equal(graphPayload.summary.edgeCount, 67);
+    assert.equal(graphPayload.summary.nodeCount, 38);
+    assert.equal(graphPayload.summary.edgeCount, 73);
 
     const graphHumanOutput = await captureConsole(() => runSite([file, "--graph"]));
     assert.match(graphHumanOutput.stdout, /Website improvement workflow graph/);

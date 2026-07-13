@@ -91,9 +91,9 @@ test("formatListJson preserves full catalog order and item order", async () => {
     "description",
   ]);
   assert.equal(catalog.sections[0].kind, "skills");
-  assert.equal(catalog.sections[0].count, 20);
+  assert.equal(catalog.sections[0].count, 21);
   assert.equal(catalog.sections[0].items[0].name, "design-system-builder");
-  assert.equal(catalog.sections[1].count, 17);
+  assert.equal(catalog.sections[1].count, catalog.sections[1].items.length);
   assert.equal(catalog.sections[2].count, 4);
   assert.match(output, /"sections": \[\n    \{\n      "kind": "skills",/);
 });

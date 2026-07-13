@@ -23,6 +23,21 @@
 
 브라우저에서 기록한 `implementationEvidence`는 JSON export 뒤에도 유지됩니다. `design-ai site --json`은 evidence count를 보고하고, `--tasks`는 evidence block을 보존하며, `--report`와 `--bundle`은 실행 작업 / 검증 결과 / 남은 리스크 / 다음 작업을 handoff artifact에 반영합니다.
 
+## 홈페이지 개발 및 리팩터링 흐름
+
+홈페이지 신규 구현과 기존 홈페이지 리팩터링은 승인 기반 target-repo workflow로 지원합니다. design-ai가 대상 코드를 직접 생성하거나 수정하는 방식은 아닙니다.
+
+1. 홈페이지 profile, finding, target viewport, 선택한 implementation task를 기록합니다.
+2. bundle을 만들고 `--bundle-check --strict`를 통과시킵니다.
+3. Codex 또는 Claude에서 `design_ai_site_bundle_handoff`를 호출하거나, 동일한 local `--bundle-handoff --strict --json` command를 실행합니다.
+4. 대상 repo를 read-only로 점검하고 정확한 file, scope, risk, target-repo verification command를 제시합니다.
+5. 사용자가 선택한 task와 repo를 명시적으로 승인할 때까지 멈춥니다.
+6. 승인 후 대상 repo의 기존 component, token, state pattern, styling convention을 유지하며 구현합니다.
+7. desktop, tablet, mobile 실제 browser에서 keyboard/focus, contrast, screen-reader semantic, runtime error, lint, test, build를 해당 범위에 맞게 검증합니다.
+8. dependency 추가, scope 확대, data migration, deploy, commit, push, 다른 external write가 필요하면 다시 승인을 받습니다.
+
+handoff MCP tool은 local/read-only 상태를 유지합니다. 검증된 bundle contract와 승인 대기 상태만 전달하며 대상 repo를 수정하지 않습니다.
+
 ## Boundary
 
 MVP에서 하지 않는 것:
@@ -65,6 +80,15 @@ design-ai site website-workspace.json --prompts --out website-prompts.md
 design-ai site website-workspace.json --prompt codex-implementation --out codex-implementation.md
 design-ai site website-workspace.json --prompt codex-implementation --task task-accessibility --out task-accessibility.md
 ```
+
+신규 홈페이지는 첫 preview가 없어도 대상 repo 또는 local path만으로 시작할 수 있습니다.
+
+```bash
+design-ai site --init --name "신규 회사 홈페이지" --local-path /absolute/path/to/site --deploy vercel --bundle --out website-handoff-bundle --strict
+design-ai site website-handoff-bundle --bundle-check --strict --json
+```
+
+이 배포 전 bundle은 handoff 준비 상태를 검증하며 runtime QA 완료를 의미하지 않습니다. 승인된 대상 repo 구현에서 preview를 시작한 뒤 `--live-url`을 추가하고 browser, accessibility, responsive, deployment 증빙을 기록합니다.
 
 `design-ai site --intake-template --language ko`는 한국어 content를 생성하고, `design-ai site --intake-template`은 문서에 있는 blank 회사 사이트 intake Markdown form을 CLI에서 바로 생성합니다. `--json`을 붙이면 template metadata, privacy boundary, 추천 후속 command, Markdown content를 하나의 payload로 받을 수 있습니다. `design-ai site --from-intake company-website-intake.ko.md`는 작성 완료된 영어 또는 한국어 intake Markdown을 deterministic workspace JSON으로 변환하며 site profile, priority page, user flow, brand note, MCP readiness status, grounded initial audit finding을 보존합니다. `--next-actions [--json]`을 붙이면 `website-workspace.json` 저장부터 시작하는 local runbook을 만들고, `--bundle --out <dir>`을 붙이면 CLI field를 다시 입력하지 않고 filled intake에서 handoff bundle을 바로 생성합니다. `design-ai site --sample`은 파일 기반 workflow를 바로 시작할 수 있는 유효한 starter workspace JSON을 생성합니다. `design-ai site --prompt-list --json`은 선택 전에 사용 가능한 prompt template id를 나열합니다. `design-ai site --mcp-check --json`은 외부 MCP를 호출하지 않고 local MCP readiness evidence와 task/MCP gap을 점검하며, `--strict`를 붙이면 required readiness evidence 누락 시 실패 처리합니다. `--mcp-check` 또는 `--mcp-plan`에 `--probes`를 붙이면 GitHub, Figma, Browser smoke target, deployment provider reference를 read-only URL/path/tool-handoff probe로 확인합니다. Probe는 외부 MCP를 호출하거나 외부 시스템에 write하지 않습니다. `design-ai site --mcp-plan`은 같은 readiness 상태를 blocking item, warning, task/MCP alignment, 선택형 read-only probes, execution sequence, follow-up command가 포함된 action plan으로 변환합니다. 다른 agent, CI smoke, handoff script가 Markdown 대신 구조화된 `website-improvement-mcp-action-plan` payload를 필요로 할 때는 `--json`을 함께 사용합니다. `design-ai site --next-actions [--json]`는 validation issue, MCP readiness, task/MCP gap, top refactor task, handoff command를 target repo로 이동하기 전 prioritized local operator checklist로 정리합니다. 사람이 읽는 runbook checkpoint가 필요하면 `--json`을 빼고 `--out website-next-actions.md`를 붙입니다. `design-ai site --graph --json`은 workspace, site profile, audit, MCP readiness, refactor task, prompt template, handoff, bundle, target-repo node와 deterministic edge를 포함한 portable Website Improvement workflow graph를 생성합니다. 이 graph는 local/read-only artifact이며 static console도 브라우저 상태에서 같은 workflow를 렌더링할 수 있고, 별도 workflow runtime dependency를 추가하지 않습니다. `design-ai site --bundle --out <dir>`은 README, summary JSON, generated tasks workspace, MCP readiness JSON, MCP action plan, handoff report, prompt bundle, top-priority Codex implementation prompt를 포함한 local handoff package를 한 번에 생성합니다. `design-ai site <bundle-dir> --bundle-check --strict --json`은 target-repo handoff 전에 file manifest, JSON consistency, 재계산한 MCP readiness, 필수 Markdown anchor, `summary.json`에 기록된 SHA-256 checksum, `summary.json.checksums.bundleDigest` bundle identity를 확인해 generated package를 검증합니다. `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json`은 두 handoff bundle의 bundle digest, file checksum, summary metadata를 비교해 archive 또는 재생성된 bundle이 같은지 확인합니다. `design-ai site <bundle-dir> --bundle-handoff --strict --json`은 검증된 handoff bundle을 bundle digest, bundle-check status, implementation prompt, operating rules, final response requirements가 포함된 target-repo Codex prompt로 변환합니다. JSON output을 `--out target-repo-handoff.json --force`로 저장한 뒤 Console sidebar의 import로 다시 불러오면 Report tab의 Operator Runbook에서 stage metric, status chip, evidence progress, copy-ready next line을 검토할 수 있습니다. `design-ai site --tasks`는 audit finding를 deterministic starter refactor task로 확장합니다. `design-ai site --prompt <template-id>`는 다른 도구에 붙여넣을 다음 Codex 또는 Claude instruction만 필요할 때 단일 prompt template을 export합니다. Implementation prompt에서는 `--task <id-or-number>`를 붙여 기본 top-priority task 대신 특정 refactor task를 지정할 수 있습니다. `design-ai site`는 Website Console에서 export한 JSON을 검증하고, audit/MCP/task readiness summary, prioritized next-action checklist, Markdown handoff report, Codex/Claude prompt bundle, structured MCP action plan, portable workflow graph, complete handoff bundle directory, target-repo handoff prompt를 생성합니다. 대상 웹사이트 repo를 수정하거나 외부 MCP를 호출하지 않습니다.
 

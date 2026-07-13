@@ -26,6 +26,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -38,26 +41,9 @@ jobs:
         with:
           python-version: "3.11"
 
-      # Use the unified audit runner instead of many separate steps.
-      # On PR: warn-only (matches local dev experience).
-      # On push to main: --strict (CI fails on stale content >12 months).
+      # PR and main audits both enforce stale-content failures.
       - name: Run all 8 audits
-        run: |
-          if [ "${{ github.event_name }}" = "push" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
-            python3 tools/audit/run-all.py --strict
-          else
-            python3 tools/audit/run-all.py
-          fi
-
-      - name: COVERAGE.md is up to date
-        run: |
-          # check-coverage.py runs as part of run-all.py and overwrites
-          # knowledge/COVERAGE.md. Verify the committed file matched the
-          # regenerated one; if not, the contributor forgot to commit.
-          if ! git diff --exit-code knowledge/COVERAGE.md; then
-            echo "::error::knowledge/COVERAGE.md is out of date. Run 'python3 tools/audit/check-coverage.py' and commit."
-            exit 1
-          fi
+        run: python3 tools/audit/run-all.py --strict
 
       - name: Lint Python tools
         run: |
@@ -78,6 +64,24 @@ jobs:
           if [ "$TOTAL" -gt 150000 ]; then
             echo "::warning::Knowledge base exceeds 150K lines ($TOTAL). Consider splitting or pruning."
           fi
+
+  docs-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    name: Docs policy (PR)
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install MkDocs
+        run: pip install -r docs/requirements.txt
+
+      - name: Build docs with local policy
+        run: python3 -B tools/audit/local-ci.py --docs-only
 
   unit-tests:
     runs-on: ubuntu-latest

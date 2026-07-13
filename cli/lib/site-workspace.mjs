@@ -179,17 +179,18 @@ function buildInitAuditChecklist(profile) {
 
 function buildInitMcpReadiness(profile) {
   const hasRepoReference = Boolean(profile.repoUrl || profile.localPath);
+  const hasLiveUrl = Boolean(profile.liveUrl);
   return {
     github: hasRepoReference ? "required" : "optional",
     figma: profile.figmaUrl ? "optional" : "unused",
-    browser: "required",
-    chromeDevtools: "optional",
-    deploy: profile.deployProvider && profile.deployProvider !== "none" ? "required" : "optional",
+    browser: hasLiveUrl || hasRepoReference ? "required" : "optional",
+    chromeDevtools: hasLiveUrl ? "optional" : "unused",
+    deploy: profile.deployProvider && profile.deployProvider !== "none" ? "required" : "unused",
     sentry: profile.sentryProject ? "optional" : "unused",
     database: profile.database && profile.database !== "none" ? "optional" : "unused",
     cms: profile.cms && profile.cms !== "none" ? "optional" : "unused",
-    collaboration: "optional",
-    research: "optional",
+    collaboration: "unused",
+    research: hasLiveUrl ? "optional" : "unused",
   };
 }
 
@@ -199,16 +200,18 @@ export function createSiteWorkspaceFromInitOptions(options = {}) {
   if (!name) {
     throw new Error("--init requires --name");
   }
-  if (!liveUrl) {
-    throw new Error("--init requires --live-url");
+  const repoUrl = String(options.repoUrl || "").trim();
+  const localPath = String(options.localPath || "").trim();
+  if (!liveUrl && !repoUrl && !localPath) {
+    throw new Error("--init requires --live-url, --repo-url, or --local-path");
   }
 
   const profile = {
     id: slugifySiteId(name),
     name,
     liveUrl,
-    repoUrl: String(options.repoUrl || "").trim(),
-    localPath: String(options.localPath || "").trim(),
+    repoUrl,
+    localPath,
     figmaUrl: String(options.figmaUrl || "").trim(),
     brandNotes: String(options.brandNotes || "").trim(),
     deployProvider: normalizeEnum(options.deployProvider, DEPLOY_OPTIONS, "none"),

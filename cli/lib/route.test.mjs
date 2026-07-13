@@ -33,6 +33,8 @@ function makeFixture() {
     "commands/design-from-brief.md",
     "skills/ux-audit/SKILL.md",
     "skills/design-critique/SKILL.md",
+    "skills/design-engineering-review/SKILL.md",
+    "skills/motion-designer/SKILL.md",
     "skills/website-improvement/SKILL.md",
     "skills/component-spec-writer/SKILL.md",
     "skills/color-palette/SKILL.md",
@@ -45,6 +47,9 @@ function makeFixture() {
     "knowledge/PRINCIPLES.md",
     "knowledge/patterns/ux-guidelines.md",
     "knowledge/patterns/agentic-design-workflows.md",
+    "knowledge/patterns/interface-craft.md",
+    "knowledge/motion/principles.md",
+    "knowledge/motion/micro-interactions.md",
     "knowledge/patterns/design-system-qa.md",
     "knowledge/patterns/technical-writing.md",
     "knowledge/a11y/contrast.md",
@@ -321,6 +326,36 @@ test("routeCatalog returns discoverable route ids", () => {
   }
 });
 
+test("dashboard route keeps chart knowledge available for forced and catalog results", () => {
+  const sourceRoot = process.cwd();
+  const expectedKnowledge = [
+    "knowledge/patterns/chart-types.md",
+    "knowledge/patterns/chart-color-encoding.md",
+    "knowledge/patterns/realtime-data.md",
+  ];
+  const forced = routeById({ routeId: "dashboard-design", sourceRoot });
+  const catalog = routeCatalog({ sourceRoot }).find((route) => route.id === "dashboard-design");
+
+  assert.equal(forced.confidence, "forced");
+  assert.equal(forced.forced, true);
+  assert.equal(catalog?.confidence, "catalog");
+  for (const knowledgePath of expectedKnowledge) {
+    assert.equal(forced.knowledge.some((entry) => entry.path === knowledgePath && entry.exists), true);
+    assert.equal(catalog?.knowledge.some((entry) => entry.path === knowledgePath && entry.exists), true);
+  }
+});
+
+test("routeBrief recommends dashboard design for real-time chart briefs", () => {
+  const [route] = routeBrief({
+    brief: "Design a real-time time series chart with a legend and data visualization controls",
+    sourceRoot: process.cwd(),
+  });
+
+  assert.equal(route.id, "dashboard-design");
+  assert.ok(route.matchedKeywords.includes("chart"));
+  assert.ok(route.matchedKeywords.includes("time series"));
+});
+
 test("routeBrief recommends design review for audit briefs", () => {
   const root = makeFixture();
   try {
@@ -351,6 +386,42 @@ test("routeBrief recommends website improvement for site optimization briefs", (
     assert.equal(routes[0].id, "website-improvement");
     assert.ok(routes[0].matchedKeywords.includes("website"));
     assert.equal(routes[0].command.exists, true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("routeBrief recommends design engineering review for web and app quality briefs", () => {
+  const root = makeFixture();
+  try {
+    const routes = routeBrief({
+      brief: "웹/앱 디자인 퀄리티와 인터랙션 반응성을 리뷰해줘",
+      sourceRoot: root,
+    });
+
+    assert.equal(routes[0].id, "design-engineering-review");
+    assert.deepEqual(routes[0].matchedKeywords, ["디자인 퀄리티", "인터랙션 반응성"]);
+    assert.equal(routes[0].score, 2);
+    assert.equal(routes[0].skills[0].exists, true);
+    assert.equal(routes[0].knowledge.some((entry) => entry.path === "knowledge/patterns/interface-craft.md" && entry.exists), true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("routeBrief sends homepage implementation and refactor work to website improvement", () => {
+  const root = makeFixture();
+  try {
+    for (const brief of [
+      "Implement homepage for a new SaaS product in the existing repo",
+      "Refactor homepage layout and CTA hierarchy in our current website",
+      "신규 홈페이지 개발과 반응형 구현을 진행해줘",
+      "기존 홈페이지 리팩토링과 접근성 개선을 진행해줘",
+    ]) {
+      const [route] = routeBrief({ brief, sourceRoot: root });
+      assert.equal(route.id, "website-improvement", brief);
+      assert.ok(["medium", "high"].includes(route.confidence), brief);
+    }
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

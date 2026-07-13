@@ -127,7 +127,7 @@ User / AI coding agent
 - README 또는 문서 근거: `README.md`, `docs/ARCHITECTURE.md`, `docs/PRODUCT-READINESS.md`, `docs/AI-LEARNING.md`, `docs/WEBSITE-IMPROVEMENT.md`
 - 실행 방법이 명확한지: `README.md`, `docs/QUICKSTART.md`, `package.json` scripts로 확인됩니다.
 - 스크린샷/데모가 필요한 부분: Website Console, VS Code Extension sidebar, CLI 결과 예시입니다.
-- 수량 근거: 현재 로컬 기준 `knowledge/*.md` 92개, `skills/*/SKILL.md` 20개, `commands/*.md` 17개, `examples/*.md` 223개가 확인됩니다.
+- 수량 근거: 현재 로컬 기준 `knowledge/*.md` 92개, `skills/*/SKILL.md` 20개, 공개 명령 16개, `examples/*.md` 223개가 확인됩니다. 토큰 추출은 별도의 clone-only 유지보수 절차입니다.
 
 ## 10. Consulting Angle
 

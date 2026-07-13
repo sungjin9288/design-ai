@@ -75,7 +75,7 @@ test("analyzeSiteWorkspace reports schema failures and readiness warnings", () =
   assert.equal(summary.status, "fail");
   assert.ok(messages.includes("fail:workspace-version"));
   assert.ok(messages.includes("fail:site-name"));
-  assert.ok(messages.includes("fail:site-live-url"));
+  assert.ok(messages.includes("fail:site-target"));
   assert.ok(messages.includes("warn:site-repo-location"));
   assert.ok(messages.includes("fail:audit-accessibility-status"));
   assert.ok(messages.includes("fail:mcp-browser-status"));
