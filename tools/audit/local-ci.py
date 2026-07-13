@@ -30,6 +30,7 @@ AUDIT_WORKFLOW = ROOT / ".github" / "workflows" / "audit.yml"
 PUBLISH_WORKFLOW = ROOT / ".github" / "workflows" / "publish.yml"
 DOCS_WORKFLOW_POLICY_COMMAND = "python3 -B tools/audit/local-ci.py --docs-only"
 PUBLISH_WORKFLOW_COMMAND = "npm publish dist/*.tgz --provenance --access public"
+PUBLISH_TRUSTED_NPM_SETUP_COMMAND = "npm install --global npm@11.18.0"
 AUDIT_WORKFLOW_REQUIRED_COMMANDS = (
     "python3 tools/audit/run-all.py --strict",
     DOCS_WORKFLOW_POLICY_COMMAND,
@@ -342,12 +343,22 @@ def audit_workflow_policy_errors(text: str) -> list[str]:
 
 
 def publish_workflow_policy_errors(text: str) -> list[str]:
+    errors: list[str] = []
     publish_job = workflow_job_block(text, "publish")
     if PUBLISH_WORKFLOW_COMMAND not in workflow_run_commands(publish_job):
-        return [
-            "publish job must publish the smoke-tested dist/*.tgz artifact with provenance"
-        ]
-    return []
+        errors.append("publish job must publish the smoke-tested dist/*.tgz artifact with provenance")
+    if PUBLISH_TRUSTED_NPM_SETUP_COMMAND not in workflow_run_commands(publish_job):
+        errors.append("publish job must install the pinned npm Trusted Publishing client")
+    if 'node-version: "24"' not in publish_job:
+        errors.append("publish job must use Node.js 24 for npm Trusted Publishing")
+    if dict(workflow_permission_entries(publish_job)) != {
+        "contents": "read",
+        "id-token": "write",
+    }:
+        errors.append("publish job permissions must be exactly contents: read and id-token: write")
+    if "NPM_TOKEN" in publish_job or "NODE_AUTH_TOKEN" in publish_job or "npm whoami" in publish_job:
+        errors.append("publish job must use OIDC instead of legacy npm token authentication")
+    return errors
 
 
 def display_workflow_path(path: Path) -> str:
@@ -616,6 +627,11 @@ def run_self_test() -> int:
         passing_publish_workflow = "\n".join([
             "jobs:",
             "  publish:",
+            "    permissions:",
+            "      contents: read",
+            "      id-token: write",
+            "        node-version: \"24\"",
+            f"        run: {PUBLISH_TRUSTED_NPM_SETUP_COMMAND}",
             f"        run: {PUBLISH_WORKFLOW_COMMAND}",
         ])
         assert_condition(
@@ -627,6 +643,12 @@ def run_self_test() -> int:
                 passing_publish_workflow.replace(" dist/*.tgz", "")
             ) != [],
             "publish workflow fixture should reject repacking the repository directory",
+        )
+        assert_condition(
+            publish_workflow_policy_errors(
+                passing_publish_workflow + "\n        env:\n          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}"
+            ) != [],
+            "publish workflow fixture should reject legacy npm token authentication",
         )
         commented_policy_decoy = "\n".join([
             "# permissions:",

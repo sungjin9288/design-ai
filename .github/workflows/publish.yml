@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write  # for npm provenance
+      id-token: write
 
     steps:
       - uses: actions/checkout@v6
@@ -24,8 +24,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
+
+      - name: Set up npm Trusted Publishing client
+        run: npm install --global npm@11.18.0
 
       - name: Set up Python (for audits)
         uses: actions/setup-python@v6
@@ -56,39 +59,6 @@ jobs:
           fi
           echo "Plugin manifest version: $PLUGIN_VERSION ✓"
 
-      - name: Verify npm publish token access
-        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          PACKAGE_SCOPE="${PACKAGE_NAME%%/*}"
-
-          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
-            echo "::error::NPM_TOKEN is not configured. Add a token that can publish ${PACKAGE_NAME}."
-            exit 1
-          fi
-
-          if ! npm whoami >/tmp/npm-whoami.txt 2>/tmp/npm-whoami.err; then
-            echo "::error::NPM_TOKEN was rejected by npm. Replace the GitHub secret with a valid publish token for ${PACKAGE_NAME}."
-            sed 's/^/npm: /' /tmp/npm-whoami.err
-            exit 1
-          fi
-
-          NPM_USER=$(cat /tmp/npm-whoami.txt)
-          echo "NPM_TOKEN authenticated as ${NPM_USER} ✓"
-
-          if ! npm access list packages "${PACKAGE_SCOPE}" --json >/tmp/npm-access.json 2>/tmp/npm-access.err; then
-            echo "::warning::NPM_TOKEN authenticated, but npm refused package-list access for ${PACKAGE_SCOPE}. Package-scoped granular tokens can behave this way; npm publish remains the authoritative permission check."
-            sed 's/^/npm: /' /tmp/npm-access.err
-          else
-            PACKAGE_NAME="${PACKAGE_NAME}" node -e 'const fs = require("node:fs"); const packageName = process.env.PACKAGE_NAME; const raw = fs.readFileSync("/tmp/npm-access.json", "utf8").trim(); const packages = raw ? JSON.parse(raw) : {}; const names = Array.isArray(packages) ? packages.map((entry) => (typeof entry === "string" ? entry : entry?.name)) : Object.keys(packages); if (!names.includes(packageName)) { console.warn(`::warning::NPM_TOKEN authenticated, but ${packageName} was not present in npm access list output. npm publish remains the authoritative permission check.`); process.exit(0); } const permission = Array.isArray(packages) ? null : packages[packageName]; const serialized = JSON.stringify(permission ?? "").toLowerCase(); const canWrite = permission == null || serialized.includes("write") || serialized.includes("owner"); if (!canWrite) { console.warn(`::warning::NPM_TOKEN access list reports ${permission} for ${packageName}. npm publish remains the authoritative permission check.`); }'
-          fi
-
-          echo "NPM publish token authentication preflight completed for ${PACKAGE_NAME} ✓"
-
       - name: Install package dependencies
         run: |
           npm install --no-audit --no-fund
@@ -110,8 +80,6 @@ jobs:
       - name: Publish to npm
         if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
         run: npm publish dist/*.tgz --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Smoke-test published npm package
         if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
