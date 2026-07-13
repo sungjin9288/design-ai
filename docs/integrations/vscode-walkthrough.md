@@ -92,7 +92,7 @@ A quick-pick lists all 92 knowledge files with their paths. Filter by typing —
 
 Same pattern for:
 - "design-ai: Open component spec..." → 142 specs
-- "design-ai: Open skill PLAYBOOK..." → 20 skills
+- "design-ai: Open skill PLAYBOOK..." → 21 skills
 - "design-ai: Open integration walkthrough..." → 4 walkthroughs
 
 ## Walkthrough 5: Multi-file design system bootstrap

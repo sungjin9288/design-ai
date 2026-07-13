@@ -9323,9 +9323,11 @@ def run_self_test() -> None:
         expected="top-level keys changed",
         scope="smoke assertions",
     )
+    wrong_list_count_catalog = json.loads(passing_list_catalog_json("skills"))
+    wrong_list_count_catalog["sections"][0]["count"] = EXPECTED_SKILL_COUNT - 1
     expect_self_test_failure(
         lambda: assert_list_catalog_json(
-            passing_list_catalog_json("skills").replace('"count": 20', '"count": 19'),
+            json.dumps(wrong_list_count_catalog),
             kind="skills",
             context=context,
             cmd=[*list_cmd, "--json"],
@@ -9369,7 +9371,10 @@ def run_self_test() -> None:
     )
     expect_self_test_failure(
         lambda: assert_list_catalog_output(
-            passing_list_catalog_output("skills").replace("skills (20)", "skills (19)"),
+            passing_list_catalog_output("skills").replace(
+                f"skills ({EXPECTED_SKILL_COUNT})",
+                f"skills ({EXPECTED_SKILL_COUNT - 1})",
+            ),
             kind="skills",
             context=context,
             cmd=list_cmd,
@@ -13107,8 +13112,8 @@ def run_self_test() -> None:
         scope="smoke assertions",
     )
     install_payload_wrong_counts = json.loads(passing_install_json("smoke-design-"))
-    install_payload_wrong_counts["result"]["installed"]["skills"] = 19
-    install_payload_wrong_counts["result"]["installed"]["commands"] = 17
+    install_payload_wrong_counts["result"]["installed"]["skills"] = EXPECTED_SKILL_COUNT - 1
+    install_payload_wrong_counts["result"]["installed"]["commands"] = EXPECTED_COMMAND_COUNT + 1
     expect_self_test_failure(
         lambda: assert_install_json(
             json.dumps(install_payload_wrong_counts),
@@ -13430,9 +13435,11 @@ def run_self_test() -> None:
         expected="missing expected content",
         scope="smoke assertions",
     )
+    uninstall_payload_wrong_removed = json.loads(passing_uninstall_json("smoke-design-"))
+    uninstall_payload_wrong_removed["result"]["removed"] = EXPECTED_INSTALL_TOTAL - 1
     expect_self_test_failure(
         lambda: assert_uninstall_json(
-            passing_uninstall_json("smoke-design-").replace('"removed": 40', '"removed": 39'),
+            json.dumps(uninstall_payload_wrong_removed),
             prefix="smoke-design-",
             context=context,
             cmd=[*uninstall_cmd, "--json"],

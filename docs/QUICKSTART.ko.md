@@ -10,7 +10,7 @@ cd ~/dev/design-ai
 ./install.sh
 ```
 
-20개 스킬, 16개 공개 슬래시 명령어, 4개 리뷰 에이전트가 `~/.claude/` 아래에 심볼릭 링크로 설치돼요. Claude Code를 다시 시작(또는 새 세션 열기)하면 적용돼요.
+21개 스킬, 16개 공개 슬래시 명령어, 4개 리뷰 에이전트가 `~/.claude/` 아래에 심볼릭 링크로 설치돼요. Claude Code를 다시 시작(또는 새 세션 열기)하면 적용돼요.
 
 확인:
 
@@ -18,7 +18,7 @@ cd ~/dev/design-ai
 ./install.sh --status
 ```
 
-20 skills, 4 agents, 16 public commands가 설치되었다고 나와야 해요.
+21 skills, 4 agents, 16 public commands가 설치되었다고 나와야 해요.
 
 ```bash
 design-ai doctor

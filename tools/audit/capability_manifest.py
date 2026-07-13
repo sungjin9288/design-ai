@@ -9,8 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 CAPABILITY_MANIFEST_PATH = ROOT / "cli" / "lib" / "capability-manifest.json"
 EXPECTED_COUNTS = {
-    "routes": 23,
-    "install.skills": 20,
+    "routes": 24,
+    "install.skills": 21,
     "install.commands": 16,
     "install.agents": 4,
     "mcp.tools": 15,

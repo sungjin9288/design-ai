@@ -26,7 +26,7 @@ test("route operation catalog preserves the canonical route order", () => {
   const payload = buildRouteCatalogPayload({ sourceRoot: PACKAGE_ROOT });
 
   assert.deepEqual(Object.keys(payload), ["version", "routes"]);
-  assert.equal(payload.routes.length, 23);
+  assert.equal(payload.routes.length, 24);
   assert.equal(payload.routes[0].id, "design-review");
   assert.equal(payload.routes.at(-1).id, "marketing-page");
 });

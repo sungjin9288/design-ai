@@ -7,7 +7,7 @@
 #   ./install.sh --uninstall    # remove symlinks
 #   ./install.sh --status       # show what's installed
 #
-# After install, all 20 skills, 16 commands, and 4 agents are available
+# After install, all 21 skills, 16 commands, and 4 agents are available
 # in any Claude Code session, prefixed with "design-".
 
 set -euo pipefail

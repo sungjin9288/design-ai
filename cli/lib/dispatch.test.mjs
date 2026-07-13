@@ -104,7 +104,7 @@ test("functional command aliases dispatch to canonical command behavior", async 
       alias: "ls",
       command: "list",
       args: ["skills"],
-      expected: [/design-ai catalog/, /skills \(20\)/],
+      expected: [/design-ai catalog/, /skills \(21\)/],
     },
     {
       alias: "find",

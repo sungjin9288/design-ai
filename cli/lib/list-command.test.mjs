@@ -91,7 +91,7 @@ test("formatListJson preserves full catalog order and item order", async () => {
     "description",
   ]);
   assert.equal(catalog.sections[0].kind, "skills");
-  assert.equal(catalog.sections[0].count, 20);
+  assert.equal(catalog.sections[0].count, 21);
   assert.equal(catalog.sections[0].items[0].name, "design-system-builder");
   assert.equal(catalog.sections[1].count, catalog.sections[1].items.length);
   assert.equal(catalog.sections[2].count, 4);

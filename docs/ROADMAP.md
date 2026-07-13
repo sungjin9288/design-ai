@@ -1,5 +1,26 @@
 # Roadmap
 
+## Phase 775 — Web/app interface craft review (implemented, unreleased)
+
+Converts the Emil Kowalski design-engineering reference scan into an evidence-grounded design-ai workflow. The implementation extracts review taxonomy rather than copying upstream voice, code, or brand material.
+
+### Delivered
+- [x] Added `knowledge/patterns/interface-craft.md` with eight review lenses: purpose/frequency, response, spatial continuity, interruptibility, timing/cohesion, performance, accessibility, and responsive resilience.
+- [x] Added the `design-engineering-review` skill with explicit `review`, `plan`, and `implement` modes, code/runtime evidence hierarchy, Before/After/Why findings, and automated plus feel-check verification.
+- [x] Added a dedicated route, strict artifact requirements, and a command-palette worked example without increasing the public slash-command inventory.
+- [x] Connected the shared craft contract to `ux-audit`, `motion-designer`, and `website-improvement` while preserving existing local duration/easing tokens.
+- [x] Updated the canonical capability inventory to 24 routes and 21/16/4 installed skills/commands/agents.
+
+### Verification target
+- [x] Focused route, example, and artifact-check tests passed, including the 12/12 strict command-palette artifact check.
+- [x] All 8 audits and the generated coverage check passed.
+- [x] `npm run release:check` passed with 630 tests and packed-tarball smoke coverage.
+
+### Reference boundary
+- Upstream: `https://github.com/emilkowalski/skills` (MIT).
+- Reused: evaluation categories, audit sequencing, and interaction-quality questions expressed in design-ai's own terminology.
+- Not reused: author voice, promotional copy, long-form skill text, implementation snippets, or a blanket replacement of design-ai motion tokens.
+
 ## Phase 774 — Refactor foundation release candidate (v5.0.0)
 
 Establishes the verified boundary for the larger refactor while correcting release-integrity gaps found during the Sol architecture review.

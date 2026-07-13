@@ -28,8 +28,8 @@ test("canonical capability manifest matches every public identity surface", () =
 });
 
 test("canonical capability manifest keeps the frozen public counts", () => {
-  assert.equal(manifest.routes.length, 23);
-  assert.equal(manifest.install.skills.length, 20);
+  assert.equal(manifest.routes.length, 24);
+  assert.equal(manifest.install.skills.length, 21);
   assert.equal(manifest.install.commands.length, 16);
   assert.equal(manifest.install.agents.length, 4);
   assert.equal(manifest.mcp.tools.length, 15);

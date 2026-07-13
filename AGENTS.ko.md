@@ -30,6 +30,7 @@
 | 레이아웃 (간격, 그리드) | `knowledge/layout/spacing-and-grid.md` |
 | 아이콘 | `knowledge/icons/curated-sets.md` |
 | 패턴 (인증, 가격, 히어로, 폼, 등) | `knowledge/patterns/` |
+| 웹/앱 인터페이스 완성도 (반응 / 빈도 / 중단 가능성 / 모션 품질) | `knowledge/patterns/interface-craft.md` |
 | 에이전트형 디자인 워크플로우 (MCP / 산출물 / 승인 게이트 / 레퍼런스 분석) | `knowledge/patterns/agentic-design-workflows.md` |
 | 모션 (지속 시간, 이징, 안무) | `knowledge/motion/` |
 | 일러스트레이션 (시스템, 스팟, 마스코트, SVG) | `knowledge/illustration/` |
@@ -56,6 +57,7 @@
 | "이 컴포넌트 스펙 만들어줘" | `skills/component-spec-writer/` |
 | "컬러 팔레트 생성" | `skills/color-palette/` |
 | "이 UI 감사" | `skills/ux-audit/` |
+| "웹/앱 인터페이스 퀄리티 리뷰 또는 개선" | `skills/design-engineering-review/` |
 | "이 디자인 비평" | `skills/design-critique/` |
 | "개발자 핸드오프 작성" | `skills/handoff-spec/` |
 | "디자인 시스템 QA / 테스트 셋업" | `skills/design-system-qa/` |

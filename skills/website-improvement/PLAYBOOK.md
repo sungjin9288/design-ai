@@ -39,6 +39,7 @@ Evaluate each category and record findings:
 | Performance | Core Web Vitals, images, bundle size, render bottlenecks |
 | SEO | Title, description, headings, canonical, OG, sitemap |
 | Technical Quality | Component structure, style duplication, dead code, dependency risk |
+| Interaction Craft | Purpose/frequency, response, spatial continuity, interruptibility, timing/cohesion, performance, accessibility, and responsive resilience |
 | Runtime Issues | Console errors, network errors, hydration issues, broken assets |
 | Content Quality | Copy clarity, IA, proof, trust, CTA language |
 
@@ -53,6 +54,7 @@ Use the relevant design-ai knowledge files when making judgments:
 - [`knowledge/patterns/technical-writing.md`](../../knowledge/patterns/technical-writing.md)
 - [`knowledge/patterns/report-design.md`](../../knowledge/patterns/report-design.md)
 - [`knowledge/patterns/agentic-design-workflows.md`](../../knowledge/patterns/agentic-design-workflows.md)
+- [`knowledge/patterns/interface-craft.md`](../../knowledge/patterns/interface-craft.md)
 
 ### 2.5. Mine References Without Copying Them
 
@@ -136,6 +138,8 @@ Use [`TEMPLATE.md`](TEMPLATE.md) for the final report or planning artifact.
 
 - [ ] Site Profile includes a target repo reference, pages, user flows, viewports, platform notes, and a live URL when a preview or deployed site exists.
 - [ ] Audit categories cover visual, UX, responsive, accessibility, performance, SEO, technical, runtime, and content quality.
+- [ ] Implemented interactive surfaces include all eight craft lenses, each with runtime/code evidence or an explicit `unverified` state.
+- [ ] Interaction proof covers keyboard/focus, screen reader, contrast, reduced motion, coarse pointer, and desktop/tablet/mobile behavior.
 - [ ] MCP readiness uses only `required`, `optional`, `unused`, or `unavailable`.
 - [ ] Refactor tasks include problem, evidence, impact, effort, priority, pages, MCP, prompt, verification, and risks.
 - [ ] External references were mined into taxonomy/rules, with a clear do-not-copy boundary.

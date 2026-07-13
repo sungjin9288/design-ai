@@ -33,6 +33,8 @@ function makeFixture() {
     "commands/design-from-brief.md",
     "skills/ux-audit/SKILL.md",
     "skills/design-critique/SKILL.md",
+    "skills/design-engineering-review/SKILL.md",
+    "skills/motion-designer/SKILL.md",
     "skills/website-improvement/SKILL.md",
     "skills/component-spec-writer/SKILL.md",
     "skills/color-palette/SKILL.md",
@@ -45,6 +47,9 @@ function makeFixture() {
     "knowledge/PRINCIPLES.md",
     "knowledge/patterns/ux-guidelines.md",
     "knowledge/patterns/agentic-design-workflows.md",
+    "knowledge/patterns/interface-craft.md",
+    "knowledge/motion/principles.md",
+    "knowledge/motion/micro-interactions.md",
     "knowledge/patterns/design-system-qa.md",
     "knowledge/patterns/technical-writing.md",
     "knowledge/a11y/contrast.md",
@@ -381,6 +386,24 @@ test("routeBrief recommends website improvement for site optimization briefs", (
     assert.equal(routes[0].id, "website-improvement");
     assert.ok(routes[0].matchedKeywords.includes("website"));
     assert.equal(routes[0].command.exists, true);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("routeBrief recommends design engineering review for web and app quality briefs", () => {
+  const root = makeFixture();
+  try {
+    const routes = routeBrief({
+      brief: "웹/앱 디자인 퀄리티와 인터랙션 반응성을 리뷰해줘",
+      sourceRoot: root,
+    });
+
+    assert.equal(routes[0].id, "design-engineering-review");
+    assert.deepEqual(routes[0].matchedKeywords, ["디자인 퀄리티", "인터랙션 반응성"]);
+    assert.equal(routes[0].score, 2);
+    assert.equal(routes[0].skills[0].exists, true);
+    assert.equal(routes[0].knowledge.some((entry) => entry.path === "knowledge/patterns/interface-craft.md" && entry.exists), true);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

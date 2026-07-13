@@ -7,11 +7,13 @@ User-facing release notes for design-ai. Versions follow semver.
 Prepares the codebase for the planned structural refactor without changing the CLI, SDK, or MCP public names. Token extraction is now clearly separated as clone-only maintainer tooling, while the distributed agent surface contains only commands that work from the package.
 
 ### Changed
+- Added `design-engineering-review`, a 21st installable skill and 24th route for code/runtime interface craft review across purpose and frequency, response, spatial continuity, interruptibility, motion cohesion, performance, accessibility, and responsive resilience. Its strict artifact contract requires a craft scorecard, observed Before/After/Why findings, and inclusive runtime evidence.
+- Added `knowledge/patterns/interface-craft.md` and a command-palette worked review, then connected the shared contract to `ux-audit`, `motion-designer`, and `website-improvement` without adding a new public slash command or production dependency.
 - Public Claude command inventory is 16. The former `extract-tokens` prompt moved to `tools/extractors/README.md` and is excluded from plugin installation and npm packaging.
 - `dashboard-design` once again includes `chart-types`, `chart-color-encoding`, and `realtime-data`, matching its documented contract.
 - Pull requests run strict repository audits and a non-deploying MkDocs build under read-only repository permissions.
 - Focused contract tests protect route references, package bins and exports, MCP tool order, closed input schemas, and the three explicit learning-write tools.
-- `cli/lib/capability-manifest.json` is now the canonical identity contract for 23 routes, the 20/16/4 install inventory, 15 MCP tools, and 9 SDK exports. Runtime owners keep their implementation details, while parity tests and package smoke derive names and counts from this manifest.
+- `cli/lib/capability-manifest.json` is now the canonical identity contract for 24 routes, the 21/16/4 install inventory, 15 MCP tools, and 9 SDK exports. Runtime owners keep their implementation details, while parity tests and package smoke derive names and counts from this manifest.
 - Route payload assembly now lives in one read-only operation shared by the CLI, SDK, and `design_ai_route` MCP tool. The remaining MCP tools retain their existing CLI subprocess boundary.
 - Route definitions and ID validation now live in a pure catalog module, while scoring, reference enrichment, parsing, and eval behavior remain in the route engine behind compatibility exports.
 - Python capability schema validation now lives in a dedicated audit leaf module, and package/registry smoke self-tests share one MCP protocol fixture covering list, invalid input, and direct route execution.

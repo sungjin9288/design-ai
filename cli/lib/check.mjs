@@ -152,6 +152,45 @@ const ROUTE_REQUIREMENTS = {
       ],
     },
   ],
+  "design-engineering-review": [
+    {
+      id: "design-engineering-evidence",
+      title: "Design engineering evidence and craft coverage",
+      required: [
+        { label: "user goal", patterns: [/\buser goal\b/i, /사용자 목표/] },
+        { label: "craft scorecard", patterns: [/\bcraft scorecard\b/i, /완성도.*스코어|크래프트.*스코어/] },
+        { label: "purpose and frequency", patterns: [/\bpurpose\s+and\s+frequency\b/i, /목적.*빈도|빈도.*목적/] },
+        { label: "response", patterns: [/\bresponse\b/i, /반응성|즉시 반응/] },
+        { label: "spatial continuity", patterns: [/\bspatial continuity\b/i, /공간.*연속성|공간적.*연속성/] },
+        { label: "interruptibility", patterns: [/\binterruptib\w*/i, /중단 가능|재지정/] },
+        { label: "timing and cohesion", patterns: [/\btiming\s+and\s+cohesion\b/i, /타이밍.*응집성|시간.*일관성/] },
+        { label: "performance", patterns: [/\bperformance\b/i, /성능/] },
+        { label: "accessibility", patterns: [/\baccessibility\b/i, /접근성/] },
+        { label: "responsive resilience", patterns: [/\bresponsive resilience\b/i, /반응형.*회복력|반응형.*안정성/] },
+      ],
+    },
+    {
+      id: "design-engineering-finding-contract",
+      title: "Design engineering finding contract",
+      required: [
+        { label: "Before", patterns: [/\bbefore\b/i, /현재 동작|변경 전/] },
+        { label: "After", patterns: [/\bafter\b/i, /목표 동작|변경 후/] },
+        { label: "Why", patterns: [/\bwhy\b/i, /이유|사용자 영향/] },
+        { label: "verification", patterns: [/\bverification\b/i, /검증/] },
+      ],
+    },
+    {
+      id: "design-engineering-inclusive-proof",
+      title: "Design engineering inclusive runtime proof",
+      required: [
+        { label: "keyboard or focus", patterns: [/\b(keyboard|focus)\b/i, /키보드|포커스/] },
+        { label: "screen reader", patterns: [/\bscreen reader\b/i, /스크린.?리더/] },
+        { label: "contrast", patterns: [/\bcontrast\b/i, /명암비|대비/] },
+        { label: "reduced motion", patterns: [/prefers-reduced-motion|\breduced motion\b/i, /모션 줄이기|동작 줄이기/] },
+        { label: "responsive or mobile", patterns: [/\b(responsive|mobile|viewport)\b/i, /반응형|모바일|뷰포트/] },
+      ],
+    },
+  ],
   "website-improvement": [
     {
       id: "website-control-tower",

@@ -31,6 +31,7 @@
 | Performance | todo |  |
 | SEO | todo |  |
 | Technical Quality | todo |  |
+| Interaction Craft | todo |  |
 | Runtime Issues | todo |  |
 | Content Quality | todo |  |
 

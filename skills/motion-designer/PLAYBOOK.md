@@ -36,18 +36,19 @@ Pick the category. The category determines the rules:
 
 Get this wrong and the rules don't apply. A marketing reveal is NOT a micro-interaction; a button press is NOT a choreographed sequence.
 
+Before assigning motion, map the trigger frequency using [`knowledge/patterns/interface-craft.md`](../../knowledge/patterns/interface-craft.md). Continuous or keyboard-driven expert actions keep state feedback but should not wait for decorative choreography. Occasional and rare moments may use a larger motion budget when the purpose is explicit.
+
 ### 2. Pick duration tier
 
 From [`knowledge/motion/principles.md`](../../knowledge/motion/principles.md):
 
 | Tier | Range | Use |
 | --- | --- | --- |
-| Instant | 0–80ms | Press feedback, focus rings |
-| Fast | 100–200ms | Hover, micro-interactions, route fades |
-| Medium | 200–300ms | Modal / drawer / panel open |
-| Slow | 300–500ms | Hero entrance, page transition |
-| Long | 500ms–1.5s | Marketing storytelling, choreographed reveals |
-| Beyond | > 1.5s | Almost never. Justify or cut. |
+| Instant | 0–80ms | Immediate pressed or selected feedback; not a transition tier |
+| Fast | 100–150ms | Hover, focus, press, and simple component state changes |
+| Default | 200–300ms | Modal, drawer, tooltip, accordion, and in-app page transition |
+| Slow | 400–600ms | Rare hero, onboarding, or celebratory storytelling moments |
+| Above slow | > 600ms | Not product-UI motion; justify against a separate marketing/video timeline or cut |
 
 State the chosen tier explicitly. Map to token: `--motion-fast`, `--motion-medium`, etc.
 
@@ -101,13 +102,13 @@ For each motion event, write:
 Trigger: <what causes this>
 Duration: <ms>, tier <tier>, token <var>
 Easing: <name>, token <var>
-Properties: <opacity | transform | filter — animate ONLY these>
+Properties: <named properties and performance rationale>
 Initial: <starting value>
 Final: <end value>
 Stagger (if multiple): <ms between siblings>
 ```
 
-Animate only `opacity`, `transform`, and (sparingly) `filter`. Never `width`/`height`/`top`/`left` — they trigger layout.
+Prefer `opacity` and `transform` for movement. `color`, `background-color`, and small-area `box-shadow` transitions are valid state feedback when paint cost is measured; use `filter` sparingly. Do not animate `width`, `height`, `top`, or `left` per frame when a transform can express the same result.
 
 ### 6. Choreograph (if multi-element)
 
@@ -117,7 +118,7 @@ For sequences with > 1 element, use stagger formula from [`knowledge/motion/chor
 total budget = parent duration + (children − 1) × stagger
 ```
 
-Cap stagger at 80ms; cap total at 800ms for entrance, 300ms for in-app transitions.
+Cap stagger at 80ms. Keep coordinated product-UI reveals within the local 400ms choreography budget and in-app transitions within 300ms. Longer marketing or video timelines are a different artifact and must not delay product operation.
 
 Provide a timing diagram:
 
@@ -147,24 +148,25 @@ Reduced motion ≠ no motion. Opacity-only is usually OK; large translations / s
 
 For every motion spec, verify:
 
-- [ ] Animates only `opacity` / `transform` / (sparingly) `filter`
+- [ ] Movement prefers `opacity` / `transform`; any color, shadow, or filter transition has a bounded paint cost
 - [ ] Total page-level animation count under 10 simultaneously
 - [ ] If above-the-fold: doesn't block LCP
 - [ ] If using JS lib: bundle cost stated and justified
 - [ ] If looping: pauses when offscreen / tab hidden
 - [ ] If `filter: blur()`: only on small areas, not large lists
 - [ ] No `setInterval` driving animation (use `requestAnimationFrame` or CSS / library)
+- [ ] Rapidly repeated state changes can retarget from the current visual state
+- [ ] Anchored overlays use a trigger-aware origin; centered modals remain centered
+- [ ] Hover-only movement/elevation is gated to hover-capable fine pointers
 
-### 9. Korean market check (if relevant)
+### 9. Korean product check (if relevant)
 
-| Question | Default for Korean B2C |
-| --- | --- |
-| How much motion? | Restrained, fast, smooth (Toss-style) |
-| Brand mascot motion? | Yes if Kakao-adjacent, no otherwise |
-| Auto-play video? | No — bandwidth + battery |
-| Korean-language label? | All motion control labels in Korean |
+Read [`knowledge/i18n/korean-product-conventions.md`](../../knowledge/i18n/korean-product-conventions.md) and test the actual product audience. Do not infer a Korean-market motion preference from one well-known brand.
 
-Heavy motion reads as foreign / over-designed in Korean B2C. Lean restrained.
+- Keep Korean control labels, status text, and reduced-motion settings understandable without relying on animation.
+- Test long Hangul labels during animated layout changes at mobile widths.
+- Treat mascot motion and auto-play media as product-specific brand decisions with reduced-motion, bandwidth, and battery fallbacks.
+- Use references as comparative evidence, not as a universal Korean B2C default.
 
 ### 10. Output
 
@@ -212,6 +214,8 @@ Use this structure:
 - [`knowledge/motion/choreography-depth.md`](../../knowledge/motion/choreography-depth.md) — multi-element coordination
 - [`knowledge/motion/motion-tools.md`](../../knowledge/motion/motion-tools.md) — tool decision tree
 - [`knowledge/patterns/agentic-design-workflows.md`](../../knowledge/patterns/agentic-design-workflows.md) — animated component adoption gate
+- [`knowledge/patterns/interface-craft.md`](../../knowledge/patterns/interface-craft.md) — frequency, response, origin, and interruptibility review
+- [`knowledge/i18n/korean-product-conventions.md`](../../knowledge/i18n/korean-product-conventions.md) — Korean product behavior and localization constraints
 - [`examples/component-loading-sequence.md`](../../examples/component-loading-sequence.md) — reference spec
 - [`examples/component-page-transition.md`](../../examples/component-page-transition.md) — reference spec
 - [`examples/component-lottie-player.md`](../../examples/component-lottie-player.md) — Lottie integration
@@ -230,6 +234,7 @@ Use this structure:
 - [ ] Is bundle cost stated if a library is used?
 - [ ] Does the "Don't" section catch 2–3 specific misuses?
 - [ ] If Korean B2C: is the restraint check applied?
+- [ ] Is the trigger frequency stated, and can repeated or gesture-driven motion be interrupted safely?
 
 ## Done when
 

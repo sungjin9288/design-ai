@@ -2,9 +2,9 @@
 
 [![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
 [![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/)
-[![Knowledge files](https://img.shields.io/badge/knowledge-96-blue)](knowledge/PRINCIPLES.md)
-[![Examples](https://img.shields.io/badge/examples-225-blue)](examples/README.md)
-[![Skills](https://img.shields.io/badge/skills-20-blue)](skills/README.md)
+[![Knowledge files](https://img.shields.io/badge/knowledge-97-blue)](knowledge/PRINCIPLES.md)
+[![Examples](https://img.shields.io/badge/examples-226-blue)](examples/README.md)
+[![Skills](https://img.shields.io/badge/skills-21-blue)](skills/README.md)
 
 > 🇺🇸 English / [🇰🇷 한국어](https://github.com/sungjin9288/design-ai/blob/main/README.ko.md)
 
@@ -21,6 +21,7 @@ A model-agnostic design knowledge base + skill system. Drop it in front of any A
 | Design tokens (W3C DTCG, OKLCH) | ✓ | ✓ | `color-palette` |
 | Components (Ant + MUI + shadcn synthesis) | ✓ | 210 component specs | `component-spec-writer` |
 | UX patterns (auth, pricing, hero, forms, etc.) | ✓ | ✓ | `ux-audit`, `design-critique` |
+| Web/app interface craft (response, frequency, continuity, interruptibility) | ✓ | ✓ | `design-engineering-review` |
 | Agentic design workflows (MCP, artifact contracts, human gates) | ✓ | ✓ | `agentic-design-development`, `website-improvement`, `design-system-builder` |
 | Website improvement control tower | ✓ | ✓ | `website-improvement` |
 | Korean i18n (Hangul, payments, app store, fintech) | ✓ | ✓ | (cross-cutting) |
@@ -66,7 +67,7 @@ brew install design-ai
 design-ai install
 ```
 
-The current source installs 20 skills, 16 public slash commands, and 4 agents under `~/.claude/` with the `design-` prefix. Restart Claude Code; try:
+The current source installs 21 skills, 16 public slash commands, and 4 agents under `~/.claude/` with the `design-` prefix. Restart Claude Code; try:
 
 ```
 /design-component-spec Banner
@@ -127,9 +128,9 @@ design-ai/
 │   ├── spatial/             # VR / AR / panels / comfort
 │   └── i18n/                # Korean typography, payments, app store, ...
 │
-├── examples/                # 225 worked outputs (what "good" looks like)
+├── examples/                # 226 worked outputs (what "good" looks like)
 │
-├── skills/                  # 20 reusable playbooks (task-focused)
+├── skills/                  # 21 reusable playbooks (task-focused)
 │   ├── design-system-builder/   illustration-designer/
 │   ├── component-spec-writer/   print-designer/
 │   ├── color-palette/           video-designer/
@@ -138,6 +139,7 @@ design-ai/
 │   ├── handoff-spec/            spatial-designer/
 │   ├── design-system-qa/        document-author/
 │   ├── design-pr-review/        website-improvement/
+│   ├── design-engineering-review/
 │   ├── figma-token-sync/        slide-deck-author/
 │   ├── motion-designer/
 │   └── design-broadcast/
@@ -217,7 +219,7 @@ Maintainers can refresh refs/ with `./tools/extractors/run-all.sh`; token extrac
 
 ## Status
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. **v4.65.0** remains the published baseline with CLI–SDK–MCP parity and 14 MCP tools. The current source is the **v5.0.0 release candidate**: it adds the `agentic-design-development` route and a 15th read-only `design_ai_site_bundle_handoff` tool for approval-gated homepage implementation/refactoring, restores dashboard chart knowledge, makes token extraction clone-only, and strengthens public-contract and PR verification. The major version records removal of the former public `extract-tokens` command.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full phase log and [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md) for the current completion boundary. **v4.65.0** remains the published baseline with CLI–SDK–MCP parity and 14 MCP tools. The current source is the **v5.0.0 release candidate**: it adds the `agentic-design-development` route, a 15th read-only `design_ai_site_bundle_handoff` tool for approval-gated homepage implementation/refactoring, and the `design-engineering-review` skill/route for evidence-grounded web/app interface craft review. It also restores dashboard chart knowledge, makes token extraction clone-only, and strengthens public-contract and PR verification. The major version records removal of the former public `extract-tokens` command.
 
 Core design consulting workflows are locally release-ready. The website improvement control tower ships as a zero-dependency static Web App plus a `website-improvement` route/skill/command, covering Site Profiles, audit checklists, MCP readiness, refactor prompts, handoff evidence tracking, bundle export/verify/repair, and an explicit read-only intake → human approval → target-repo implementation → browser evidence contract. Greenfield homepage work can create a strict handoff from a repo URL or local path before a live URL exists; browser and deployment evidence remains required after an approved preview starts. Local learning preferences are available through `design-ai learn` — profile bootstrap, feedback capture, a read-only signals registry, skill-proposal generation from repeated QA signals, and full backup/restore/curate/audit tooling, all local-only and opt-in. AI model training or fine-tuning remains outside the shipped scope.
 

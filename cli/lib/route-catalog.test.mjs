@@ -6,7 +6,7 @@ import * as route from "./route.mjs";
 
 test("route catalog owns the ordered, unique route identities", () => {
   const ids = catalog.routeIds();
-  assert.equal(ids.length, 23);
+  assert.equal(ids.length, 24);
   assert.equal(new Set(ids).size, ids.length);
   assert.equal(ids[0], "design-review");
   assert.equal(ids.at(-1), "marketing-page");

@@ -15,6 +15,31 @@ export const ROUTES = [
     keywords: ["audit", "review", "critique", "figma", "screenshot", "ux", "a11y", "accessibility", "리뷰", "감사", "평가", "비평", "접근성", "스크린샷"],
   },
   {
+    id: "design-engineering-review",
+    label: "Design engineering review",
+    command: null,
+    skills: [
+      "skills/design-engineering-review/SKILL.md",
+      "skills/ux-audit/SKILL.md",
+      "skills/motion-designer/SKILL.md",
+    ],
+    agents: ["agents/a11y-reviewer.md", "agents/design-critic.md"],
+    knowledge: [
+      "knowledge/patterns/interface-craft.md",
+      "knowledge/motion/principles.md",
+      "knowledge/motion/micro-interactions.md",
+      "knowledge/a11y/keyboard-and-focus.md",
+      "knowledge/a11y/contrast.md",
+    ],
+    keywords: [
+      "design engineering", "interface craft", "ui polish", "interaction quality",
+      "animation audit", "motion audit", "perceived responsiveness", "interruptibility",
+      "premium feel", "polish this app", "polish this ui",
+      "디자인 엔지니어링", "인터페이스 완성도", "UI 퀄리티", "앱 퀄리티",
+      "웹 퀄리티", "디자인 퀄리티", "인터랙션 퀄리티", "인터랙션 반응성", "모션 감사", "반응성 개선",
+    ],
+  },
+  {
     id: "website-improvement",
     label: "Website improvement",
     command: "commands/website-improvement.md",

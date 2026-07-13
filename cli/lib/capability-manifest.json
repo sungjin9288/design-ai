@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "routes": [
     "design-review",
+    "design-engineering-review",
     "website-improvement",
     "agentic-design-development",
     "design-from-brief",
@@ -36,6 +37,7 @@
       "design-system-qa",
       "design-pr-review",
       "website-improvement",
+      "design-engineering-review",
       "figma-token-sync",
       "design-broadcast",
       "document-author",

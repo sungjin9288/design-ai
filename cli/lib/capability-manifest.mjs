@@ -5,8 +5,8 @@ export const CAPABILITY_MANIFEST_PATH = fileURLToPath(
   new URL("./capability-manifest.json", import.meta.url),
 );
 const EXPECTED_COUNTS = {
-  routes: 23,
-  "install.skills": 20,
+  routes: 24,
+  "install.skills": 21,
   "install.commands": 16,
   "install.agents": 4,
   "mcp.tools": 15,
