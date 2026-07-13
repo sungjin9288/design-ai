@@ -41,6 +41,7 @@ AUDIT_WORKFLOW_ALLOWED_ACTIONS = (
     "actions/setup-python",
     "actions/cache",
 )
+AUDIT_WORKFLOW_REQUIRED_PATHS = ("Formula/**",)
 # Reference-link policy (docs/PRODUCT-READINESS.md): corpus pages link to the
 # generated docs/reference/ pages instead of the gitignored refs/ mirror, so
 # no refs-only MkDocs warnings are expected anymore (was 632 before v4.56.x).
@@ -339,6 +340,10 @@ def audit_workflow_policy_errors(text: str) -> list[str]:
     for _, action, _ in workflow_action_refs(text):
         if action not in AUDIT_WORKFLOW_ALLOWED_ACTIONS:
             errors.append(f"audit workflow action is outside the allowlist: {action}")
+    path_entries = workflow_path_entries(text)
+    for required_path in AUDIT_WORKFLOW_REQUIRED_PATHS:
+        if required_path not in path_entries:
+            errors.append(f"audit workflow path filter missing {required_path}")
     return errors
 
 
@@ -611,6 +616,10 @@ def run_self_test() -> int:
             "docs workflow fixture should pass when it uses docs-only policy",
         )
         passing_audit_workflow = "\n".join([
+            "on:",
+            "  pull_request:",
+            "    paths:",
+            "      - \"Formula/**\"",
             "permissions:",
             "  contents: read",
             "jobs:",

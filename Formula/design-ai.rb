@@ -9,14 +9,14 @@
 #
 # Submitting to homebrew-core requires a stable release with downloadable
 # tarballs and a maintained URL. This formula targets the GitHub release
-# tarball pattern: https://github.com/sungjin9288/design-ai/archive/refs/tags/v4.65.0.tar.gz
+# tarball pattern: https://github.com/sungjin9288/design-ai/archive/refs/tags/v5.0.0.tar.gz
 
 class DesignAi < Formula
   desc "Agent-ready product design toolkit for AI coding agents"
   homepage "https://github.com/sungjin9288/design-ai"
-  url "https://github.com/sungjin9288/design-ai/archive/refs/tags/v4.65.0.tar.gz"
-  version "4.65.0"
-  sha256 "f06903131d39857253d628aaf71407e3a84119a4c08c5ecaa8c3ac5d7ddef48f"
+  url "https://github.com/sungjin9288/design-ai/archive/refs/tags/v5.0.0.tar.gz"
+  version "5.0.0"
+  sha256 "710b458eee34b9813b0e96c355271e33e0cd25d1561002229c1c19858c689ae9"
   license "MIT"
 
   # Node is required for the npm CLI; the install.sh wrapper still works without it.
@@ -24,7 +24,7 @@ class DesignAi < Formula
 
   def install
     # Install the corpus to libexec — that's our package's "home"
-    libexec.install Dir["*"]
+    libexec.install Dir["*", ".claude-plugin"]
 
     # Wrapper script that invokes install.sh from the right path
     (bin/"design-ai-install").write <<~EOS
@@ -33,7 +33,7 @@ class DesignAi < Formula
     EOS
 
     # If Node is available, also expose the npm CLI's design-ai binary
-    if Formula["node"].any_version_installed?
+    if formula_any_version_installed?("node")
       cd libexec do
         system "npm", "install", *std_npm_args(prefix: false), "--production", "--silent"
       end
@@ -85,9 +85,9 @@ class DesignAi < Formula
     assert plugin["agents"].size >= 4
 
     # Test CLI help (only if Node is available)
-    if Formula["node"].any_version_installed?
+    if formula_any_version_installed?("node")
       assert_match "design-ai", shell_output("#{bin}/design-ai help")
-      assert_match "v4.65.0", shell_output("#{bin}/design-ai version")
+      assert_match "v5.0.0", shell_output("#{bin}/design-ai version")
     end
   end
 end
