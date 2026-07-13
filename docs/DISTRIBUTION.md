@@ -126,8 +126,8 @@ For releases, both must match. The publish workflow enforces this:
 The workflow:
 - Verifies tag matches `package.json` version.
 - Verifies `package.json` and `plugin.json` versions match.
-- Verifies `NPM_TOKEN` can authenticate before the long package smoke runs; package-list access is advisory because package-scoped granular tokens can refuse broader scope listing.
-- For token-based CI publish, npm requires either an interactive 2FA flow or a granular access token with Bypass 2FA enabled. Trusted Publishing is the preferred long-term path when it is available for the package/workflow.
+- Uses npm Trusted Publishing with GitHub Actions OIDC. The npm package configuration must trust repository `sungjin9288/design-ai` and workflow `publish.yml`; no long-lived npm token is injected into the job.
+- Uses Node.js 24 and pinned npm `11.18.0`, which supports npm's OIDC exchange. The job keeps `id-token: write` scoped to the publish job and publishes only the smoke-tested `dist/*.tgz` artifact.
 - Runs `npm run audit:strict` for all 8 audits (frontmatter / link / Korean copy / raw hex / integration / stale / coverage / example QA).
 - Runs `npm test` CLI unit tests before publishing or attaching release assets.
 - Runs whitespace checks with `git diff --check` before packaging.
