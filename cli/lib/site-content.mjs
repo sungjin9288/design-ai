@@ -98,11 +98,11 @@ Capture only findings that are grounded in inspection. Do not invent Lighthouse,
 ## First Bundle Commands
 
 Replace placeholders and run from the \`design-ai\` repository.
+Add \`--live-url <live-url>\` when a preview or deployed site already exists.
 
 \`\`\`bash
 design-ai site --init \\
   --name "<site name>" \\
-  --live-url <live-url> \\
   --local-path <absolute-target-repo-path> \\
   --page / \\
   --page <priority-page-2> \\
@@ -115,7 +115,6 @@ design-ai site --init \\
 \`\`\`bash
 design-ai site --init \\
   --name "<site name>" \\
-  --live-url <live-url> \\
   --local-path <absolute-target-repo-path> \\
   --page / \\
   --page <priority-page-2> \\
@@ -243,11 +242,11 @@ export const SITE_INTAKE_TEMPLATE_MARKDOWN_KO = `# 회사 웹사이트 Intake Te
 ## 첫 Bundle Commands
 
 placeholder를 바꾼 뒤 \`design-ai\` repo에서 실행합니다.
+preview 또는 배포된 사이트가 이미 있으면 \`--live-url <live-url>\`을 추가합니다.
 
 \`\`\`bash
 design-ai site --init \\
   --name "<site name>" \\
-  --live-url <live-url> \\
   --local-path <absolute-target-repo-path> \\
   --page / \\
   --page <priority-page-2> \\
@@ -260,7 +259,6 @@ design-ai site --init \\
 \`\`\`bash
 design-ai site --init \\
   --name "<site name>" \\
-  --live-url <live-url> \\
   --local-path <absolute-target-repo-path> \\
   --page / \\
   --page <priority-page-2> \\

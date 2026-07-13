@@ -29,9 +29,8 @@ function buildSiteInitCommand(profile, outPath = "website-workspace.json") {
     "design-ai site --init",
     "--name",
     quoteCliValue(profile.name),
-    "--live-url",
-    quoteCliValue(profile.liveUrl),
   ];
+  if (profile.liveUrl) args.push("--live-url", quoteCliValue(profile.liveUrl));
   if (profile.repoUrl) args.push("--repo-url", quoteCliValue(profile.repoUrl));
   if (profile.localPath) args.push("--local-path", quoteCliValue(profile.localPath));
   if (profile.figmaUrl) args.push("--figma-url", quoteCliValue(profile.figmaUrl));

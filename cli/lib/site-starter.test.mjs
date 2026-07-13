@@ -63,10 +63,22 @@ test("createSiteWorkspaceFromInitOptions creates a valid real-project workspace"
   assert.deepEqual(minimal.siteProfile.pages, ["/"]);
   assert.deepEqual(minimal.siteProfile.viewports, ["desktop", "tablet", "mobile"]);
   assert.equal(minimal.mcpReadiness.github, "optional");
-  assert.equal(minimal.mcpReadiness.deploy, "optional");
+  assert.equal(minimal.mcpReadiness.deploy, "unused");
   assert.equal(minimal.mcpReadiness.figma, "unused");
   assert.equal(minimal.mcpReadiness.cms, "unused");
   assert.equal(minimal.mcpReadiness.database, "unused");
+
+  const greenfield = createSiteWorkspaceFromInitOptions({
+    name: "Greenfield homepage",
+    repoUrl: "https://github.com/acme/greenfield-site",
+    deployProvider: "vercel",
+  });
+  const greenfieldSummary = analyzeSiteWorkspace(greenfield, { filePath: "greenfield.json" }).summary;
+  assert.equal(greenfield.siteProfile.liveUrl, "");
+  assert.equal(greenfield.mcpReadiness.github, "required");
+  assert.equal(greenfield.mcpReadiness.browser, "required");
+  assert.equal(greenfield.mcpReadiness.deploy, "required");
+  assert.equal(greenfieldSummary.status, "pass");
 });
 
 test("buildSiteInitNextActionsReport prepends a durable workspace save action", () => {

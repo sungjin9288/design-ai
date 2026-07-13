@@ -5,7 +5,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 
-import { assertKnownRouteId } from "./route.mjs";
+import { assertKnownRouteId } from "./route-catalog.mjs";
 import { buildPreview, walkMarkdown } from "./search.mjs";
 import { unknownOptionMessage } from "./suggest.mjs";
 

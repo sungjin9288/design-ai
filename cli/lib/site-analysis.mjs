@@ -78,8 +78,12 @@ function validateRawWorkspace(raw) {
   if (!String(profile.name || "").trim()) {
     addIssue(issues, "fail", "site-name", "siteProfile.name is required");
   }
-  if (!String(profile.liveUrl || "").trim()) {
-    addIssue(issues, "fail", "site-live-url", "siteProfile.liveUrl is required");
+  if (
+    !String(profile.liveUrl || "").trim()
+    && !String(profile.repoUrl || "").trim()
+    && !String(profile.localPath || "").trim()
+  ) {
+    addIssue(issues, "fail", "site-target", "Provide siteProfile.liveUrl, siteProfile.repoUrl, or siteProfile.localPath");
   }
   if (!Array.isArray(profile.pages) || normalizeStringArray(profile.pages).length === 0) {
     addIssue(issues, "warn", "site-pages", "siteProfile.pages should include at least one priority page");

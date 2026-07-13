@@ -2,7 +2,7 @@
 
 How design-ai gets from this repo into adopters' Claude Code installations.
 
-> Distribution status, checked 2026-07-02: local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.56.0` is published, the Homebrew formula is pinned to `v4.56.0`, `@design-ai/cli@4.56.0` is the latest public npm package with registry smoke coverage, and `sungjin.design-ai-vscode@0.4.1` is published to the VS Code Marketplace by Gallery API evidence. See [`external-status.md`](external-status.md).
+> Distribution status, checked 2026-07-07: local `npm run release:check` passes, GitHub Pages docs are live, GitHub Release `v4.65.0` is published, the Homebrew formula is pinned to `v4.65.0`, `@design-ai/cli@4.65.0` is the latest public npm package with registry smoke coverage, and `sungjin.design-ai-vscode@0.4.1` is published to the VS Code Marketplace. See [`external-status.md`](external-status.md).
 
 ## Install paths
 
@@ -23,7 +23,7 @@ Use this path if you want to:
 
 ### B. NPM
 
-Use this path for the public package. `@design-ai/cli@4.56.0` is published and public registry smoke has passed.
+Use this path for the public package. `@design-ai/cli@4.65.0` is published and public registry smoke has passed.
 
 ```bash
 # One-shot via npx (no global install)
@@ -168,14 +168,15 @@ The `files` field in `package.json` is the allowlist (preferred over `.npmignore
 ├── LICENSE
 ├── README.md
 ├── .claude-plugin/      # Plugin manifest
-├── knowledge/           # 91 knowledge files (~5MB)
-├── examples/            # 99 worked examples (~3MB)
-├── skills/              # 19 skill PLAYBOOKs + SKILL.md manifests
+├── knowledge/           # 96 Markdown knowledge files
+├── examples/            # 227 Markdown example files
+├── skills/              # 20 skill PLAYBOOKs + SKILL.md manifests
 ├── agents/              # 4 sub-agent definitions
 ├── commands/            # 16 slash command files
 ├── docs/                # Architecture + integration guides
 └── tools/
     ├── audit/           # audit, release, and smoke scripts (Python)
+    ├── migrations/      # repository metadata migration helpers (Python)
     └── preview/         # HTML preview generator (Python)
 ```
 
@@ -191,6 +192,7 @@ Tarball target: < 15MB. Run `npm run package:check` to verify package contents.
 
 Before tagging a release:
 
+- [ ] Documentation dependencies are installed: `pip install -r docs/requirements.txt`
 - [ ] Local CI parity gate passes, including the MkDocs warning policy and refs-only baseline cap: `npm run ci:local`
 - [ ] Core automated gate passes: `npm run release:check`
 - [ ] Website Console bundle `mcp-probes.json` saved-payload guard phases remain covered by `npm run release:check`, package contents, release self-tests, and packed-tarball smoke

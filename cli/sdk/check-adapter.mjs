@@ -5,7 +5,7 @@
 // opt-in here, consistent with "no file writes" for Phase A).
 
 import { checkArtifactContent } from "../lib/check.mjs";
-import { assertKnownRouteId } from "../lib/route.mjs";
+import { assertKnownRouteId } from "../lib/route-catalog.mjs";
 import { optionalBoolean, optionalString, requireNonEmptyString, requireOptions } from "./validate.mjs";
 
 /**

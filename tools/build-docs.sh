@@ -61,6 +61,7 @@ if git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   for d in knowledge examples skills commands agents docs; do
     if [ -d "$REPO_ROOT/$d" ]; then
       while IFS= read -r -d '' tracked_file; do
+        [ -f "$REPO_ROOT/$tracked_file" ] || continue
         mkdir -p "$SITE_SRC/$(dirname "$tracked_file")"
         ln -sf "$REPO_ROOT/$tracked_file" "$SITE_SRC/$tracked_file"
       done < <(

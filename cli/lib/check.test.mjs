@@ -571,6 +571,25 @@ test("checkArtifactContent warns about missing route-specific evidence", () => {
   assert.ok(report.results.some((item) => item.id === "route-palette-from-brand-palette-token-contract" && item.level === "warn"));
 });
 
+test("marketing-page homepage artifacts pass without email-client requirements", () => {
+  const report = checkArtifactContent({
+    content: `
+# SaaS homepage implementation
+
+This plan cites knowledge/patterns/landing-hero-design.md. The hero establishes a clear visual hierarchy above the fold, with one primary CTA and conversion reasoning tied to signup intent.
+
+The foreground and background tokens have a measured 4.8:1 contrast ratio. Keyboard users get visible focus, semantic landmarks, and screen reader labels. Responsive mobile and desktop layouts use explicit browser viewport breakpoints.
+
+Don't hide the primary CTA or add decorative motion that competes with the product proof.
+    `,
+    filePath: "homepage.md",
+    routeId: "marketing-page",
+  });
+
+  assert.equal(report.status, "pass");
+  assert.ok(report.results.some((item) => item.id === "route-marketing-page-marketing-responsive-surface" && item.level === "pass"));
+});
+
 test("checkArtifactContent rejects unknown route ids", () => {
   assert.throws(
     () => checkArtifactContent({ content: GOOD_ARTIFACT, routeId: "component-spce" }),

@@ -204,7 +204,9 @@ test("parseSiteArgs supports Website Improvement project init fields", () => {
 test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--stdin"]), /either a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--init"]), /--init requires --name/);
-  assert.throws(() => parseSiteArgs(["--init", "--name", "Company"]), /--init requires --live-url/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company"]), /--init requires --live-url, --repo-url, or --local-path/);
+  assert.equal(parseSiteArgs(["--init", "--name", "Company", "--repo-url", "https://github.com/acme/site"]).initProfile.liveUrl, "");
+  assert.equal(parseSiteArgs(["--init", "--name", "Company", "--local-path", "/tmp/site"]).initProfile.liveUrl, "");
   assert.throws(() => parseSiteArgs(["workspace.json", "--init", "--name", "Company", "--live-url", "https://example.com"]), /Use --init without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--stdin", "--init", "--name", "Company", "--live-url", "https://example.com"]), /Use --init without a workspace JSON file path or --stdin/);
   assert.throws(() => parseSiteArgs(["--name", "Company"]), /only with --init/);

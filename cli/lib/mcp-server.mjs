@@ -7,6 +7,8 @@ import path from "node:path";
 
 import { DESIGN_AI_HOME, PACKAGE_ROOT } from "./paths.mjs";
 import { LEARNING_CATEGORIES, LEARNING_FEEDBACK_OUTCOMES } from "./learn-args.mjs";
+import { formatRouteJson } from "./route.mjs";
+import { buildRoutePayload } from "./route-operation.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
 const LEARNING_WRITE_BOUNDARY = "Writes ONLY the local learning profile (DESIGN_AI_LEARNING_FILE or its default), and only when explicitly called.";
@@ -204,6 +206,20 @@ export const MCP_TOOLS = [
     },
   },
   {
+    name: "design_ai_site_bundle_handoff",
+    title: "Prepare a verified Website Improvement target-repo handoff",
+    description: "Validate a local Website Improvement handoff bundle and return a task-scoped Codex/Claude implementation prompt with a required human approval gate. Read-only: no external calls or target-repo mutation.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        bundleDir: { type: "string", minLength: 1, description: "Local Website Improvement handoff bundle directory." },
+        taskSelector: optionalString("Optional refactor task id or 1-based task number."),
+      },
+      required: ["bundleDir"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "design_ai_learn_remember",
     title: "Remember a learning preference",
     description: `Record a local learning-profile preference for prompt personalization. ${LEARNING_WRITE_BOUNDARY}`,
@@ -340,13 +356,6 @@ export function buildCliInvocation(toolName, input = {}) {
   const args = [];
   let stdin = "";
 
-  if (toolName === "design_ai_route") {
-    args.push("route", assertString(input.brief, "brief"), "--json");
-    maybePush(args, "--limit", input.limit);
-    maybeBool(args, "--explain", input.explain);
-    return { args, stdin };
-  }
-
   if (toolName === "design_ai_prompt") {
     args.push("prompt", assertString(input.brief, "brief"));
     maybePush(args, "--route", input.routeId);
@@ -430,6 +439,13 @@ export function buildCliInvocation(toolName, input = {}) {
     return { args, stdin };
   }
 
+  if (toolName === "design_ai_site_bundle_handoff") {
+    args.push("site", assertString(input.bundleDir, "bundleDir"), "--bundle-handoff");
+    maybePush(args, "--task", input.taskSelector);
+    args.push("--strict", "--json");
+    return { args, stdin };
+  }
+
   if (toolName === "design_ai_learn_remember") {
     args.push("learn", "--remember", assertString(input.text, "text"), "--json");
     maybePush(args, "--category", input.category);
@@ -487,6 +503,19 @@ export function runDesignAiCli(args, { stdin = "" } = {}) {
 export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
   const tool = MCP_TOOLS.find((item) => item.name === name);
   if (tool) assertMcpToolInput(tool, input || {});
+
+  if (name === "design_ai_route") {
+    const payload = buildRoutePayload({
+      brief: input.brief,
+      sourceRoot: DESIGN_AI_HOME,
+      limit: input.limit,
+      explain: input.explain,
+    });
+    return {
+      content: [{ type: "text", text: truncateText(formatRouteJson(payload)) }],
+      isError: false,
+    };
+  }
 
   const invocation = buildCliInvocation(name, input || {});
   const result = await runCli(invocation.args, { stdin: invocation.stdin });
@@ -641,7 +670,7 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
         name: "design-ai",
         version: readPackageVersion(),
       },
-      instructions: "Use design-ai MCP tools for local, deterministic design expertise: route briefs, generate prompts/packs, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, and validate Website Improvement MCP readiness. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
+      instructions: "Use design-ai MCP tools for local, deterministic design expertise: route briefs, generate prompts/packs, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, validate Website Improvement MCP readiness, and prepare approval-gated target-repo handoffs. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
     });
   }
 

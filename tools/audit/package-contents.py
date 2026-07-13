@@ -62,8 +62,13 @@ REQUIRED_PATHS = {
     ".claude-plugin/plugin.json",
     "cli/bin/design-ai.mjs",
     "cli/bin/design-ai-mcp.mjs",
+    "cli/lib/capability-manifest.json",
+    "cli/lib/capability-manifest.mjs",
     "cli/lib/dispatch.mjs",
     "cli/lib/mcp-server.mjs",
+    "cli/lib/plugin-manifest.mjs",
+    "cli/lib/route-operation.mjs",
+    "cli/lib/route-catalog.mjs",
     "knowledge/PRINCIPLES.md",
     "examples/README.md",
     "skills/component-spec-writer/PLAYBOOK.md",
@@ -74,6 +79,10 @@ REQUIRED_PATHS = {
     "docs/QUICKSTART.ko.md",
     "docs/USING.md",
     "docs/USING.ko.md",
+    "docs/website-console/index.html",
+    "docs/website-console/app.js",
+    "docs/website-console/source-bundle.js",
+    "docs/website-console/styles.css",
     "tools/audit/run-all.py",
     "tools/audit/frontmatter-check.py",
     "tools/audit/link-check.py",
@@ -82,6 +91,7 @@ REQUIRED_PATHS = {
     "tools/audit/integration-check.py",
     "tools/audit/stale-check.py",
     "tools/audit/check-coverage.py",
+    "tools/audit/capability_manifest.py",
     "tools/audit/doctor_assertions.py",
     "tools/audit/smoke_assertions.py",
     "tools/audit/example-qa.py",
@@ -99,6 +109,9 @@ FORBIDDEN_PREFIXES = (
     "node_modules/",
     "tools/extractors/",
 )
+
+CLONE_ONLY_COMMANDS = {"extract-tokens"}
+CLONE_ONLY_PACKAGE_PATHS = {"commands/extract-tokens.md"}
 
 FORBIDDEN_SUFFIXES = (
     ".pyc",
@@ -222,8 +235,9 @@ def matches_package_files_exclusion(path: str, pattern: str) -> bool:
         return "/__pycache__/" in f"/{path}"
     if pattern == "**/*.pyc":
         return path.endswith(".pyc")
-    if pattern.startswith("cli/**/*."):
-        return path.startswith("cli/") and path.endswith(pattern.removeprefix("cli/**/*"))
+    if "/**/*" in pattern:
+        prefix, suffix = pattern.split("/**/*", 1)
+        return path.startswith(f"{prefix}/") and path.endswith(suffix)
     return False
 
 
@@ -333,7 +347,21 @@ def metadata_inventory_errors(package_json: dict, plugin_json: dict) -> list[str
     return errors
 
 
+def clone_only_inventory_errors(plugin_json: dict) -> list[str]:
+    commands = plugin_json.get("commands")
+    if not isinstance(commands, list):
+        return ["plugin manifest section is not a list: commands"]
+
+    errors: list[str] = []
+    for entry in commands:
+        if isinstance(entry, dict) and entry.get("name") in CLONE_ONLY_COMMANDS:
+            errors.append(f"clone-only command is publicly listed: {entry['name']}")
+    return errors
+
+
 def is_forbidden(path: str) -> bool:
+    if path in CLONE_ONLY_PACKAGE_PATHS:
+        return True
     if path.startswith(FORBIDDEN_PREFIXES):
         return True
     if path.endswith(FORBIDDEN_SUFFIXES):
@@ -469,6 +497,7 @@ def verify_package_contents(
             f"{plugin_json.get('version')} != {package_json.get('version')}"
         )
     errors.extend(metadata_inventory_errors(package_json, plugin_json))
+    errors.extend(clone_only_inventory_errors(plugin_json))
 
     if missing:
         errors.append("missing required package path(s): " + ", ".join(missing))
@@ -570,6 +599,39 @@ def run_self_test() -> int:
     assert_condition(
         passing_summary["errors"] == [],
         "complete fixture should pass without errors",
+    )
+
+    clone_only_manifest = {
+        **plugin_json,
+        "commands": [
+            *plugin_json["commands"],
+            {"name": "extract-tokens", "path": "commands/extract-tokens.md"},
+        ],
+    }
+    clone_only_manifest_summary = verify_package_contents(
+        passing_pack,
+        package_json=package_json,
+        plugin_json=clone_only_manifest,
+        required_paths=set(required_paths),
+    )
+    assert_condition(
+        "clone-only command is publicly listed: extract-tokens"
+        in "\n".join(clone_only_manifest_summary["errors"]),
+        "extract-tokens should not be publicly listed in the plugin manifest",
+    )
+
+    clone_only_tarball_summary = verify_package_contents(
+        {
+            **passing_pack,
+            "files": [*passing_pack["files"], {"path": "commands/extract-tokens.md"}],
+        },
+        package_json=package_json,
+        plugin_json=plugin_json,
+        required_paths=set(required_paths),
+    )
+    assert_condition(
+        "commands/extract-tokens.md" in clone_only_tarball_summary["forbidden"],
+        "extract-tokens should not be included in the npm tarball",
     )
 
     missing_markdown_target_paths = set(package_file_paths)

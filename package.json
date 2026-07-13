@@ -1,7 +1,7 @@
 {
   "name": "@design-ai/cli",
-  "version": "4.65.0",
-  "description": "Senior product designer for any AI coding agent. Installs design-ai (20 skills, 17 commands, 4 agents) into Claude Code globally. Korean market depth plus website improvement control tower.",
+  "version": "5.0.0",
+  "description": "Senior product designer for any AI coding agent. Installs design-ai (20 skills, 16 commands, 4 agents) into Claude Code globally. Korean market depth plus website improvement control tower.",
   "bin": {
     "design-ai": "cli/bin/design-ai.mjs",
     "design-ai-mcp": "cli/bin/design-ai-mcp.mjs"
@@ -18,11 +18,14 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node --test cli/lib/*.test.mjs cli/sdk/*.test.mjs",
+    "test": "node --test cli/lib/*.test.mjs cli/sdk/*.test.mjs docs/website-console/*.test.mjs",
     "audit": "python3 -B tools/audit/run-all.py",
     "audit:strict": "python3 -B tools/audit/run-all.py --strict",
     "audit:runner:self-test": "python3 -B tools/audit/run-all.py --self-test",
+    "coverage:generate": "python3 -B tools/audit/check-coverage.py",
+    "coverage:check": "python3 -B tools/audit/check-coverage.py --check",
     "coverage:self-test": "python3 -B tools/audit/check-coverage.py --self-test",
+    "capability:manifest:self-test": "python3 -B tools/audit/capability_manifest.py --self-test",
     "doctor:assertions:self-test": "python3 -B tools/audit/doctor_assertions.py --self-test",
     "smoke:assertions:self-test": "python3 -B tools/audit/smoke_assertions.py --self-test",
     "package:check": "python3 -B tools/audit/package-contents.py --self-test && python3 -B tools/audit/package-contents.py",
@@ -34,8 +37,10 @@
     "release:metadata:self-test": "python3 -B tools/audit/release-metadata.py --self-test",
     "ci:local:self-test": "python3 -B tools/audit/local-ci.py --self-test",
     "tokens:ant-design:self-test": "python3 -B tools/extractors/ant_design_tokens.py --self-test",
-    "release:self-test": "npm run audit:runner:self-test && npm run coverage:self-test && npm run doctor:assertions:self-test && npm run smoke:assertions:self-test && npm run package:smoke:self-test && npm run registry:smoke:self-test && npm run release:metadata:self-test && npm run ci:local:self-test && npm run tokens:ant-design:self-test",
-    "release:check": "npm test && npm run audit:strict && git diff --check && npm run package:check && npm run release:metadata && npm run release:self-test && npm run package:smoke",
+    "release:self-test": "npm run audit:runner:self-test && npm run coverage:self-test && npm run capability:manifest:self-test && npm run doctor:assertions:self-test && npm run smoke:assertions:self-test && npm run package:smoke:self-test && npm run registry:smoke:self-test && npm run release:metadata:self-test && npm run ci:local:self-test && npm run tokens:ant-design:self-test",
+    "docs:check": "python3 -B tools/audit/local-ci.py --docs-only",
+    "release:preflight": "npm test && npm run audit:strict && git diff --check && npm run package:check && npm run release:metadata && npm run release:self-test && npm run docs:check",
+    "release:check": "npm run release:preflight && npm run package:smoke",
     "ci:local": "python3 -B tools/audit/local-ci.py",
     "preview": "python3 -B tools/preview/render-tokens.py"
   },
@@ -105,6 +110,7 @@
     "tools/preview/",
     "!**/__pycache__/**",
     "!**/*.pyc",
+    "!docs/**/*.test.mjs",
     "!cli/**/*.test.mjs",
     "!cli/**/*.test.js",
     "!cli/**/*.spec.mjs",

@@ -1,5 +1,46 @@
 # Roadmap
 
+## Phase 774 — Refactor foundation release candidate (v5.0.0)
+
+Establishes the verified boundary for the larger refactor while correcting release-integrity gaps found during the Sol architecture review.
+
+### Delivered
+- [x] Added focused public-contract guards for routes, package bins/exports, MCP tool inventory, closed MCP schemas, and the three opt-in learning-write tools.
+- [x] Moved token extraction out of the public command inventory and into clone-only maintainer documentation.
+- [x] Restored `dashboard-design` chart and real-time knowledge promised by the route coverage record.
+- [x] Made PR audits strict and added a read-only, non-deploying PR documentation build.
+- [x] Fixed docs source generation so deleted tracked files do not create broken symlinks.
+- [x] Separated the published v4.65.0 status from the v5.0.0 release-candidate source state.
+- [x] Added a canonical capability identity manifest and parity checks for routes, plugin installation, MCP tools, SDK exports, and learning-write boundaries.
+- [x] Moved route payload assembly behind one read-only operation consumed by CLI, SDK, and MCP without changing route identities or response shape.
+- [x] Separated the stable route catalog and ID validation from routing, enrichment, and eval behavior while preserving the original route module exports.
+- [x] Isolated Python capability-contract validation and deduplicated the package/registry MCP protocol fixture without merging the runners.
+- [x] Extracted the Website Console source-bundle provenance/revalidation contract into a zero-build classic script with direct Node VM coverage.
+- [x] Separated generated coverage writes from strict checks and unified release/publish workflows around a non-publishing preflight plus one final-artifact smoke.
+- [x] Added a 15th read-only MCP tool that converts a verified Website Improvement bundle into a task-selectable, approval-gated target-repo handoff without external calls or repository mutation.
+- [x] Routed homepage implementation/refactor briefs to Website Improvement and tightened its prompts around read-only repo intake, explicit approval, and browser/accessibility/responsive evidence.
+- [x] Guarded deterministic Website Console fallback task IDs, marketing-page browser/viewport evidence, and packaged Console stylesheet presence.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `python3 -B tools/audit/local-ci.py --docs-only`.
+- CLI/SDK/MCP baseline comparison and temporary Claude install lifecycle.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.65.0 → 5.0.0. The major boundary reflects removal of the former public `extract-tokens` command.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- Internal routing, adapter, audit, and Website Console refactors can proceed behind explicit public-contract and release-integrity guards.
+- Inventory counts and public names now have one machine-readable source without moving runtime behavior into configuration.
+
+### What's still ahead
+- [ ] Merge, tag, and publish require explicit maintainer approval.
+- [ ] Decide whether Playwright becomes a maintained development dependency before adding automated screenshot regression; visual baselines require a stable, versioned execution environment.
+- [ ] Extend the handoff into an optional linked-code-folder/live-preview loop while preserving the current approval boundary and target-repo ownership.
+- [ ] Unify implementation-plan artifacts across CLI, SDK, MCP, and Website Console, then add critique-loop and agent-readable `DESIGN.md` operation parity.
+
 ## Phase 773 — Agentic development routing loop (implemented, unreleased)
 
 Turns the Phase 772 reference-mining guidance into executable design-ai behavior. The new route makes internal skill/product feature development briefs land on the agentic workflow corpus instead of falling through to generic website or design-system routes, and it pins the behavior in route, prompt, and learning-proposal tests.

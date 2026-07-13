@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Install documentation dependencies
+        run: pip install -r docs/requirements.txt
+
       - name: Verify package.json version matches tag
         run: |
           TAG_VERSION="${GITHUB_REF#refs/tags/v}"
@@ -47,24 +50,17 @@ jobs:
           fi
           echo "Plugin manifest version: $PLUGIN_VERSION"
 
-      - name: Run all 8 audits before release
-        run: python3 tools/audit/run-all.py --strict
-
-      - name: Run CLI unit tests before release
+      - name: Install package dependencies
         run: |
           npm install --no-audit --no-fund
-          npm test
 
-      - name: Run release assertion self-tests
-        run: npm run release:self-test
+      - name: Run non-publishing release preflight
+        run: npm run release:preflight
 
       - name: Generate CHANGELOG
         run: |
           python3 tools/audit/changelog-generate.py --output /tmp/CHANGELOG.md
           cat /tmp/CHANGELOG.md
-
-      - name: Check package contents
-        run: npm run package:check
 
       - name: Build release tarball from npm package allowlist
         run: |

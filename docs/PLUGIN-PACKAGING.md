@@ -79,7 +79,7 @@ A `plugin.json` manifest something like:
   "exposes": {
     "skills": ["color-palette", "design-system-builder", "component-spec-writer", "ux-audit", "design-critique", "handoff-spec", "design-system-qa"],
     "agents": ["design-critic", "a11y-reviewer", "token-extractor", "component-architect"],
-    "commands": ["design-from-brief", "iterate", "design-review", "palette-from-brand", "component-spec", "extract-tokens"]
+    "commands": ["design-from-brief", "iterate", "design-review", "palette-from-brand", "component-spec"]
   },
   "knowledge_bases": ["knowledge"],
   "claude_code": {

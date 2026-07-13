@@ -88,7 +88,7 @@ Work in the target website repo, not in design-ai. Inspect routing, layout primi
 ### Codex implementation
 
 ```text
-Implement the selected task in the target repo. Reuse existing components, design tokens, state patterns, and verification commands. Do not add dependencies unless the current codebase clearly requires them. Verify desktop/tablet/mobile behavior, keyboard focus, screen-reader labels, and target repo lint/build.
+First inspect the target repo read-only. Present the selected task, exact files, scope, risks, and verification commands, then stop until I explicitly approve that task and repository. After approval, implement the selected task in the target repo. Reuse existing components, design tokens, state patterns, and verification commands. Ask again before adding dependencies, widening scope, deploying, committing, or pushing. Verify desktop/tablet/mobile behavior, keyboard focus, screen-reader labels, and target repo lint/build.
 ```
 
 ### Claude design review
@@ -115,7 +115,9 @@ Review the live site or screenshots as a senior product designer. Focus on hiera
 
 ### Next Actions
 
-- Run the generated Codex repo intake prompt inside the target website repo.
+- Generate and strictly verify the local handoff bundle.
+- Call `design_ai_site_bundle_handoff` with the bundle directory and `task-homepage-cta`; confirm its approval state is pending and its target-repo mutation flag is false.
+- Run the generated Codex repo intake prompt against the target website repo, review the exact scope, then explicitly approve or reject the selected task.
 - Apply the P0 accessibility task before lower-priority visual polish.
 - Use `design-ai check output.md --route website-improvement --strict` on the final handoff artifact.
 

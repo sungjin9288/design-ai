@@ -7,7 +7,7 @@ import path from "node:path";
 
 import { listExamples } from "./examples.mjs";
 import { captureLearningEntries } from "./learn.mjs";
-import { assertKnownRouteId, ROUTES } from "./route.mjs";
+import { assertKnownRouteId, ROUTES } from "./route-catalog.mjs";
 import { unknownOptionMessage } from "./suggest.mjs";
 
 const DEFAULT_EXAMPLE_LIMIT = 3;
@@ -464,11 +464,11 @@ const ROUTE_REQUIREMENTS = {
       ],
     },
     {
-      id: "marketing-responsive-email",
-      title: "Responsive and email-client behavior coverage",
+      id: "marketing-responsive-surface",
+      title: "Responsive and target-surface behavior coverage",
       required: [
         { label: "responsive or mobile", patterns: [/\bresponsive\b/i, /반응형|모바일/] },
-        { label: "email client behavior", patterns: [/\bemail client\b/i, /이메일 클라이언트|다크모드 대응/] },
+        { label: "browser, viewport, breakpoint, or email client behavior", patterns: [/\b(browser|viewport|breakpoint|email client)\b/i, /브라우저|뷰포트|브레이크포인트|이메일 클라이언트|다크모드 대응/] },
       ],
     },
   ],

@@ -12,10 +12,11 @@ See `README.md` for the short version, [`docs/ROADMAP.md`](ROADMAP.md)
 for the full phase log, and [`docs/PRODUCT-READINESS.md`](PRODUCT-READINESS.md)
 for the current completion boundary.
 
-## Status detail (v4.56.0)
+## Status detail (published v4.65.0; source v5.0.0 release candidate)
 
-Currently at **v4.56.0**: public npm publish, provenance-backed GitHub Actions
-release, public registry smoke, Website Console MCP readiness, workspace
+Published **v4.65.0** remains the public baseline. The current source is the
+**v5.0.0 release candidate**. Public npm publish, provenance-backed GitHub
+Actions release, public registry smoke, Website Console MCP readiness, workspace
 learning restore/eval coverage, handoff bundle verification, and 90%+
 component coverage are complete.
 
@@ -107,6 +108,27 @@ The corpus has been audited under CI checks since v1.7. It currently runs 8 audi
 - Top worked example QA for every routed workflow
 
 All 8 pass on every commit to `main`.
+
+## Reproducible gate structure (v5.0.0 candidate)
+
+`npm run release:preflight` runs every non-publishing gate except packed-tarball
+execution smoke:
+
+- Unit tests
+- All 8 strict audits
+- Whitespace and package contents checks
+- Release metadata and assertion self-tests
+- Documentation build and warning policy
+
+Strict coverage auditing calls `npm run coverage:check`, which compares the committed
+`knowledge/COVERAGE.md` without rewriting it. Contributors use
+`npm run coverage:generate` when an intentional capability change requires a new
+report.
+
+`npm run release:check` adds one packed-tarball smoke to the preflight. Tag workflows
+run the preflight, build their final tarball, and smoke-test that same artifact once
+before GitHub release or npm publication. This avoids validating one temporary
+tarball and publishing another.
 
 ## release:check coverage
 

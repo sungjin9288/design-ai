@@ -315,8 +315,13 @@ export function parseSiteArgs(args) {
   if (out.init && !out.initProfile.name.trim()) {
     throw new Error("--init requires --name");
   }
-  if (out.init && !out.initProfile.liveUrl.trim()) {
-    throw new Error("--init requires --live-url");
+  if (
+    out.init
+    && !out.initProfile.liveUrl.trim()
+    && !out.initProfile.repoUrl.trim()
+    && !out.initProfile.localPath.trim()
+  ) {
+    throw new Error("--init requires --live-url, --repo-url, or --local-path");
   }
   if (out.init && (out.sample || out.tasks || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate)) {
     throw new Error("Use --init without --sample, --tasks, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --prompt-list, --mcp-check, --mcp-plan, --graph, --report, --prompts, or --prompt");

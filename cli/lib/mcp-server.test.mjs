@@ -9,6 +9,9 @@ import {
   callMcpTool,
   handleMcpRequest,
 } from "./mcp-server.mjs";
+import { readCapabilityManifest } from "./capability-manifest.mjs";
+
+const CAPABILITY_MANIFEST = readCapabilityManifest();
 
 function startMcpSubprocess() {
   const child = spawn(process.execPath, ["cli/bin/design-ai-mcp.mjs"], {
@@ -64,19 +67,32 @@ test("MCP tool list exposes design-ai read-only workflow tools", async () => {
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_mcp_check"));
 });
 
-test("MCP tool list exposes 14 tools including recall and the learning-write set", async () => {
+test("MCP tool list has the exact ordered public inventory and three write tools", async () => {
   const response = await handleMcpRequest({
     jsonrpc: "2.0",
     id: 1,
     method: "tools/list",
   });
 
-  assert.equal(response.result.tools.length, 14);
   const toolNames = response.result.tools.map((tool) => tool.name);
-  assert.ok(toolNames.includes("design_ai_recall"));
-  assert.ok(toolNames.includes("design_ai_learn_remember"));
-  assert.ok(toolNames.includes("design_ai_learn_feedback"));
-  assert.ok(toolNames.includes("design_ai_learn_capture"));
+  assert.deepEqual(toolNames, CAPABILITY_MANIFEST.mcp.tools);
+  assert.equal(new Set(toolNames).size, toolNames.length);
+  assert.deepEqual(
+    toolNames.filter((name) => name.startsWith("design_ai_learn_")),
+    CAPABILITY_MANIFEST.mcp.learningProfileWriteTools,
+  );
+});
+
+test("MCP tool input schemas are closed objects", () => {
+  for (const tool of MCP_TOOLS) {
+    const schema = tool.inputSchema;
+    assert.equal(schema.type, "object", `${tool.name} should accept an object`);
+    assert.equal(schema.additionalProperties, false, `${tool.name} should reject unknown arguments`);
+    assert.ok(schema.properties && typeof schema.properties === "object");
+    for (const required of schema.required || []) {
+      assert.ok(Object.hasOwn(schema.properties, required), `${tool.name}.${required} should be declared`);
+    }
+  }
 });
 
 test("MCP write tool descriptions carry the local-learning-profile write-boundary marker", async () => {
@@ -86,7 +102,7 @@ test("MCP write tool descriptions carry the local-learning-profile write-boundar
     method: "tools/list",
   });
 
-  const writeToolNames = ["design_ai_learn_remember", "design_ai_learn_feedback", "design_ai_learn_capture"];
+  const writeToolNames = CAPABILITY_MANIFEST.mcp.learningProfileWriteTools;
   for (const name of writeToolNames) {
     const tool = response.result.tools.find((item) => item.name === name);
     assert.ok(tool, `expected ${name} to be listed`);
@@ -216,12 +232,7 @@ test("MCP optional object params reject malformed containers", async () => {
   assert.equal(promptsWithBooleanParams.error.message, "prompts/list params must be an object when provided");
 });
 
-test("buildCliInvocation maps MCP tool args to existing CLI commands", () => {
-  assert.deepEqual(
-    buildCliInvocation("design_ai_route", { brief: "Spec a Button", limit: 1, explain: true }),
-    { args: ["route", "Spec a Button", "--json", "--limit", "1", "--explain"], stdin: "" },
-  );
-
+test("buildCliInvocation maps subprocess-backed MCP tool args to existing CLI commands", () => {
   assert.deepEqual(
     buildCliInvocation("design_ai_check", { artifact: "# Spec\n\nKeyboard reachable.", routeId: "component-spec" }),
     {
@@ -229,6 +240,29 @@ test("buildCliInvocation maps MCP tool args to existing CLI commands", () => {
       stdin: "# Spec\n\nKeyboard reachable.",
     },
   );
+  assert.throws(
+    () => buildCliInvocation("design_ai_route", { brief: "Spec a Button" }),
+    /Unknown MCP tool/,
+  );
+});
+
+test("design_ai_route uses the shared route operation without spawning the CLI", async () => {
+  let runCliCalled = false;
+  const result = await callMcpTool(
+    "design_ai_route",
+    { brief: "  Spec a Button component API  ", limit: 1, explain: true },
+    async () => {
+      runCliCalled = true;
+      return { code: 0, stdout: "unexpected", stderr: "" };
+    },
+  );
+
+  const payload = JSON.parse(result.content[0].text);
+  assert.equal(runCliCalled, false);
+  assert.equal(result.isError, false);
+  assert.equal(payload.brief, "Spec a Button component API");
+  assert.equal(payload.routes[0].id, "component-spec");
+  assert.ok(payload.routes[0].explanation);
 });
 
 test("buildCliInvocation maps design_ai_search ranked to the --ranked CLI flag", () => {
@@ -246,6 +280,41 @@ test("buildCliInvocation maps design_ai_search ranked to the --ranked CLI flag",
     buildCliInvocation("design_ai_search", { query: "Pretendard" }),
     { args: ["search", "Pretendard", "--json"], stdin: "" },
   );
+});
+
+test("buildCliInvocation maps approval-gated Website Improvement bundle handoff", () => {
+  assert.deepEqual(
+    buildCliInvocation("design_ai_site_bundle_handoff", {
+      bundleDir: "/tmp/website-handoff-bundle",
+      taskSelector: "task-homepage-cta",
+    }),
+    {
+      args: [
+        "site",
+        "/tmp/website-handoff-bundle",
+        "--bundle-handoff",
+        "--task",
+        "task-homepage-cta",
+        "--strict",
+        "--json",
+      ],
+      stdin: "",
+    },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_site_bundle_handoff", {
+      bundleDir: "/tmp/website-handoff-bundle",
+      strict: false,
+    }),
+    {
+      args: ["site", "/tmp/website-handoff-bundle", "--bundle-handoff", "--strict", "--json"],
+      stdin: "",
+    },
+  );
+
+  const handoffTool = MCP_TOOLS.find((tool) => tool.name === "design_ai_site_bundle_handoff");
+  assert.equal(Object.hasOwn(handoffTool.inputSchema.properties, "strict"), false);
 });
 
 test("buildCliInvocation maps design_ai_prompt withRecall and recallLimit to CLI flags", () => {

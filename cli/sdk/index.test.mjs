@@ -11,19 +11,13 @@ import path from "node:path";
 
 import * as sdk from "./index.mjs";
 import { withLearningEnv } from "../lib/learn-test-support.mjs";
+import { readCapabilityManifest } from "../lib/capability-manifest.mjs";
 
-const EXPECTED_FUNCTION_EXPORT_NAMES = [
-  "check",
-  "pack",
-  "prompt",
-  "recall",
-  "route",
-  "routes",
-  "search",
-  "version",
-].sort();
-
-const EXPECTED_LEARN_VERB_NAMES = ["captureFromCheck", "feedback", "remember"].sort();
+const CAPABILITY_MANIFEST = readCapabilityManifest();
+const EXPECTED_FUNCTION_EXPORT_NAMES = CAPABILITY_MANIFEST.sdk.exports
+  .filter((name) => name !== "learn")
+  .sort();
+const EXPECTED_LEARN_VERB_NAMES = [...CAPABILITY_MANIFEST.sdk.learnMethods].sort();
 
 const BRIEF = "Spec a Button component API with variants, props, and keyboard accessibility";
 

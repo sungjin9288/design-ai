@@ -116,6 +116,15 @@ function buildSiteBundleHandoffPrompt(checkReport, bundleTexts) {
     "Repair guidance:",
     ...formatBundleRepairGuidanceLines(checkReport.repairGuidance),
     "",
+    "## Human Approval Gate",
+    `Status: ${bundleTexts.approval.status}`,
+    `Target: ${bundleTexts.approval.targetRepo}`,
+    `Task: ${bundleTexts.approval.taskId || "no selected task"}`,
+    "1. Start with read-only repo intake and confirm the current working directory, architecture, existing dirty changes, likely files, verification commands, and risks.",
+    "2. Present the exact implementation scope and stop before editing files, installing dependencies, running migrations, creating commits, pushing, deploying, or writing to external systems.",
+    `3. Continue only after explicit human confirmation: \`${bundleTexts.approval.confirmation}\``,
+    "4. Ask for approval again if the discovered implementation scope changes materially.",
+    "",
     "## Operating Rules",
     "1. Confirm the current working directory is the target website repo before editing files.",
     "2. Inspect the target repo architecture, existing components, design tokens, routing, styling, and test scripts before implementation.",
@@ -188,12 +197,25 @@ export function buildSiteBundleHandoffReport({
     : emptyBundleTaskCatalog(taskCatalogError);
   const defaultTask = taskCatalog.items[0] || null;
   const effectiveTask = selectedTask || defaultTask;
+  const targetRepo = bundleWorkspace?.siteProfile?.localPath
+    || bundleWorkspace?.siteProfile?.repoUrl
+    || "target website repo";
+  const approvalTaskId = effectiveTask?.id || "selected-website-task";
+  const approval = {
+    requiredBeforeTargetRepoMutation: true,
+    status: "pending-human-approval",
+    taskId: effectiveTask?.id || "",
+    scope: "selected-target-repo-task",
+    targetRepo,
+    confirmation: `Approve ${approvalTaskId} for ${targetRepo}`,
+  };
 
   const bundleTexts = {
     taskCatalog,
     defaultTask,
     effectiveTask,
     selectedTask,
+    approval,
     codexImplementation,
     websiteHandoff: readBundleTextIfPresent(checkReport.directory, "website-handoff.md"),
   };
@@ -219,6 +241,7 @@ export function buildSiteBundleHandoffReport({
     commandManifest,
     operatorRunbook,
     boundaries,
+    approval,
     externalCalls: false,
     targetRepoMutation: false,
     bundle: {
@@ -248,6 +271,7 @@ export function buildSiteBundleHandoffReport({
       commandManifest,
       operatorRunbook,
       boundaries,
+      approval,
       externalCalls: false,
       targetRepoMutation: false,
       repairGuidance: { ...checkReport.repairGuidance },

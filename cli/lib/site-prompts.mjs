@@ -110,6 +110,8 @@ export function buildSitePrompt(workspace, templateId, { taskSelector = "" } = {
     "Rules:",
     "- Work in the target website repository, not in this design-ai repository.",
     "- Inspect existing architecture, components, state, styling, and design tokens before editing.",
+    "- Complete a read-only repo intake, present the proposed files, scope, risks, and verification commands, then wait for explicit human approval before editing target-repo files.",
+    "- Stop and request approval again if repo intake reveals a broader scope, dependency change, migration, external write, deployment, commit, or push.",
     "- Keep changes scoped and avoid new dependencies unless clearly justified.",
     "- Preserve accessibility: keyboard reachability, visible focus, semantic HTML, screen-reader labels, and WCAG 2.1 AA contrast.",
     "- Verify desktop, tablet, and mobile layouts.",
@@ -141,7 +143,7 @@ export function buildSitePrompt(workspace, templateId, { taskSelector = "" } = {
       "",
       commonRules,
       "",
-      "Implement the smallest safe fix. After editing, run the target repo's most relevant lint/typecheck/build/test command and summarize changed files plus verification.",
+      "After approval, implement the smallest safe fix. Run the target repo's most relevant lint/typecheck/build/test command, verify the requested viewports in a real browser, and summarize changed files plus evidence.",
     ],
     "codex-visual-qa": [
       "# Codex visual QA prompt",

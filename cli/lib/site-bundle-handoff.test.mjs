@@ -19,6 +19,20 @@ test("buildSiteBundleHandoffReport emits target-repo prompt from a verified bund
   ]);
   assert.equal(report.externalCalls, false);
   assert.equal(report.targetRepoMutation, false);
+  assert.deepEqual(report.approval, {
+    requiredBeforeTargetRepoMutation: true,
+    status: "pending-human-approval",
+    taskId: "task-accessibility",
+    scope: "selected-target-repo-task",
+    targetRepo: "/Users/you/dev/korean-saas-site",
+    confirmation: "Approve task-accessibility for /Users/you/dev/korean-saas-site",
+  });
+  assert.deepEqual(report.bundle.approval, report.approval);
+  assert.deepEqual(json.approval, report.approval);
+  assert.match(report.prompt, /## Human Approval Gate/);
+  assert.match(report.prompt, /wait for explicit human approval before editing target-repo files/);
+  assert.match(report.prompt, /Approve task-accessibility for \/Users\/you\/dev\/korean-saas-site/);
+  assert.match(report.prompt, /stop before editing files, installing dependencies, running migrations, creating commits, pushing, deploying/);
   assert.equal(report.bundle.siteName, "Korean SaaS marketing site");
   assert.deepEqual(report.sourceBundle, report.bundle.sourceBundle);
   assert.equal(report.sourceBundle.directory, dir);

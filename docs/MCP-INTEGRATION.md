@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; design-ai exposes route, prompt, pack, search, show, examples, check, and Website Improvement readiness tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the v5.0.0 source candidate exposes 15 tools, including a read-only Website Improvement bundle handoff and exactly three opt-in local learning-write tools. Published v4.65.0 remains at 14 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -27,6 +27,21 @@ With MCP, design-ai can:
 | **Atlassian (Jira/Confluence)** | Read briefs, design decisions | Mirror knowledge to Confluence |
 
 This turns design-ai from "a document generator" into "an agent that operates on real product workflows."
+
+### Approval-gated website implementation handoff
+
+The v5.0.0 source candidate adds `design_ai_site_bundle_handoff`. It verifies a local Website Improvement bundle through the existing CLI boundary and returns a target-repo prompt plus a `pending-human-approval` contract. The call is read-only: it does not contact an external MCP, edit the target repository, install dependencies, deploy, commit, or push.
+
+```json
+{
+  "bundleDir": "/absolute/path/website-handoff-bundle",
+  "taskSelector": "task-homepage-cta"
+}
+```
+
+Strict verification is mandatory for this MCP tool and cannot be disabled by callers.
+
+The consuming Codex or Claude task must first inspect the target repository read-only, present the exact scope and verification plan, and stop for explicit approval. Implementation begins only after that approval; any broader scope, dependency, migration, deploy, commit, push, or external write requires a new approval.
 
 ## Supported MCPs
 

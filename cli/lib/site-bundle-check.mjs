@@ -2,9 +2,9 @@
 
 import {
   existsSync,
+  lstatSync,
   readFileSync,
   readdirSync,
-  statSync,
 } from "node:fs";
 import path from "node:path";
 
@@ -109,6 +109,19 @@ function summarizeBundleBoundaries(summaryPayload) {
   };
 }
 
+function pathStats(targetPath) {
+  try {
+    return lstatSync(targetPath);
+  } catch {
+    return null;
+  }
+}
+
+function isSafeRegularFile(targetPath) {
+  const stats = pathStats(targetPath);
+  return Boolean(stats && !stats.isSymbolicLink() && stats.isFile());
+}
+
 export function buildSiteBundleCheckReport({
   target,
   cwd = process.cwd(),
@@ -120,7 +133,9 @@ export function buildSiteBundleCheckReport({
     addIssue(issues, "fail", "bundle-directory-required", "A handoff bundle directory path is required");
   } else if (!existsSync(directory)) {
     addIssue(issues, "fail", "bundle-directory-missing", `Bundle directory does not exist: ${directory}`);
-  } else if (!statSync(directory).isDirectory()) {
+  } else if (pathStats(directory)?.isSymbolicLink()) {
+    addIssue(issues, "fail", "bundle-directory-symlink", `Bundle directory must not be a symbolic link: ${directory}`);
+  } else if (!pathStats(directory)?.isDirectory()) {
     addIssue(issues, "fail", "bundle-directory-type", `Bundle path must be a directory: ${directory}`);
   }
 
@@ -129,12 +144,12 @@ export function buildSiteBundleCheckReport({
   const directEntries = canReadDirectory ? readdirSync(directory) : [];
   const directFiles = directEntries.filter((entry) => {
     const targetPath = path.join(directory, entry);
-    return existsSync(targetPath) && statSync(targetPath).isFile();
+    return isSafeRegularFile(targetPath);
   });
   const unexpectedFiles = directFiles.filter((entry) => !expected.has(entry)).sort();
   const files = SITE_BUNDLE_FILES.map((relativePath) => {
     const targetPath = path.join(directory, relativePath);
-    const present = canReadDirectory && existsSync(targetPath) && statSync(targetPath).isFile();
+    const present = canReadDirectory && isSafeRegularFile(targetPath);
     return {
       path: relativePath,
       present,
@@ -142,20 +157,28 @@ export function buildSiteBundleCheckReport({
   });
 
   if (canReadDirectory) {
+    for (const entry of directEntries) {
+      if (pathStats(path.join(directory, entry))?.isSymbolicLink()) {
+        addIssue(issues, "fail", `bundle-symlink-${entry}`, `Bundle path must not be a symbolic link: ${entry}`);
+      }
+    }
     for (const file of SITE_BUNDLE_FILES) {
       const targetPath = path.join(directory, file);
-      if (!existsSync(targetPath)) {
+      const stats = pathStats(targetPath);
+      if (!stats) {
         addIssue(issues, "fail", `bundle-missing-${file}`, `Bundle file is missing: ${file}`);
-      } else if (!statSync(targetPath).isFile()) {
+      } else if (!stats.isSymbolicLink() && !stats.isFile()) {
         addIssue(issues, "fail", `bundle-file-${file}`, `Bundle path must be a file: ${file}`);
       }
     }
   }
 
-  const summaryPayload = canReadDirectory ? parseBundleJson(directory, "summary.json", issues) : null;
-  const workspacePayload = canReadDirectory ? parseBundleJson(directory, "website-workspace.tasks.json", issues) : null;
-  const mcpPayload = canReadDirectory ? parseBundleJson(directory, "mcp-check.json", issues) : null;
-  const mcpProbePayload = canReadDirectory ? parseBundleJson(directory, "mcp-probes.json", issues) : null;
+  const safeBundleFile = (file) => canReadDirectory && isSafeRegularFile(path.join(directory, file));
+  const summaryPayload = safeBundleFile("summary.json") ? parseBundleJson(directory, "summary.json", issues) : null;
+  const workspacePayload = safeBundleFile("website-workspace.tasks.json") ? parseBundleJson(directory, "website-workspace.tasks.json", issues) : null;
+  const mcpPayload = safeBundleFile("mcp-check.json") ? parseBundleJson(directory, "mcp-check.json", issues) : null;
+  const mcpProbePayload = safeBundleFile("mcp-probes.json") ? parseBundleJson(directory, "mcp-probes.json", issues) : null;
+  const allBundleFilesSafe = files.every((file) => file.present);
   const summary = summarizeBundlePayload(summaryPayload);
   const boundarySummary = summarizeBundleBoundaries(summaryPayload);
 
@@ -234,7 +257,7 @@ export function buildSiteBundleCheckReport({
       if (canReadDirectory) {
         for (const expectedPath of expectedChecksumKeys) {
           const targetPath = path.join(directory, expectedPath);
-          if (!existsSync(targetPath) || !statSync(targetPath).isFile()) continue;
+          if (!isSafeRegularFile(targetPath)) continue;
           const expectedDigest = checksumFiles[expectedPath];
           if (!expectedDigest || !/^[a-f0-9]{64}$/.test(String(expectedDigest))) continue;
           const actualDigest = sha256Hex(readFileSync(targetPath, "utf8"));
@@ -247,7 +270,7 @@ export function buildSiteBundleCheckReport({
             expectedChecksumKeys
               .filter((filePath) => {
                 const targetPath = path.join(directory, filePath);
-                return existsSync(targetPath) && statSync(targetPath).isFile();
+                return isSafeRegularFile(targetPath);
               })
               .map((filePath) => [filePath, sha256Hex(readFileSync(path.join(directory, filePath), "utf8"))]),
           );
@@ -286,7 +309,7 @@ export function buildSiteBundleCheckReport({
     } else {
       summary.implementationEvidence = workspaceEvidenceCounts;
     }
-    if (canReadDirectory && workspaceSummary.status !== "fail") {
+    if (allBundleFilesSafe && workspaceSummary.status !== "fail") {
       generatedContract = buildBundleGeneratedContract(directory, analyzed.workspace, summary.source);
       addBundleGeneratedContractIssues(generatedContract, issues);
     }
@@ -333,7 +356,7 @@ export function buildSiteBundleCheckReport({
     }
   }
 
-  if (canReadDirectory) {
+  if (allBundleFilesSafe) {
     addBundleMarkdownIssue(directory, "README.md", [
       "Website improvement handoff bundle",
       "does not call external MCPs",
@@ -380,7 +403,7 @@ export function buildSiteBundleCheckReport({
         const expectedDigest = summary.checksumFiles[filePath];
         const targetPath = path.join(directory, filePath);
         if (!expectedDigest || !/^[a-f0-9]{64}$/.test(String(expectedDigest))) return false;
-        if (!canReadDirectory || !existsSync(targetPath) || !statSync(targetPath).isFile()) return false;
+        if (!canReadDirectory || !isSafeRegularFile(targetPath)) return false;
         return sha256Hex(readFileSync(targetPath, "utf8")) === expectedDigest;
       }).length,
       checksumFailures: issues.filter((issue) => issue.level === "fail" && issue.id.startsWith("bundle-checksum-")).length,

@@ -37,13 +37,13 @@ test("parseInstalledCounts extracts install counts from installer output", () =>
     parseInstalledCounts([
       "Installed 20 skills (prefix: smoke-design-)",
       "Installed 4 agents (prefix: smoke-design-)",
-      "Installed 17 slash commands (prefix: /smoke-design-)",
+      "Installed 16 slash commands (prefix: /smoke-design-)",
     ].join("\n")),
     {
       skills: 20,
       agents: 4,
-      commands: 17,
-      total: 41,
+      commands: 16,
+      total: 40,
     },
   );
   assert.throws(
@@ -60,8 +60,8 @@ test("formatInstallJson preserves key order and readable localized paths", () =>
     installed: {
       skills: 20,
       agents: 4,
-      commands: 17,
-      total: 41,
+      commands: 16,
+      total: 40,
     },
   }));
   const parsed = JSON.parse(formatted);
@@ -76,8 +76,8 @@ test("formatInstallJson preserves key order and readable localized paths", () =>
   assert.deepEqual(parsed.result.installed, {
     skills: 20,
     agents: 4,
-    commands: 17,
-    total: 41,
+    commands: 16,
+    total: 40,
   });
   assert.ok(formatted.includes("디자인-"));
   assert.ok(!formatted.includes("\\u"));

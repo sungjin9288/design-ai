@@ -2,6 +2,43 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v5.0.0 — Refactor foundation and release-integrity guards (2026-07)
+
+Prepares the codebase for the planned structural refactor without changing the CLI, SDK, or MCP public names. Token extraction is now clearly separated as clone-only maintainer tooling, while the distributed agent surface contains only commands that work from the package.
+
+### Changed
+- Public Claude command inventory is 16. The former `extract-tokens` prompt moved to `tools/extractors/README.md` and is excluded from plugin installation and npm packaging.
+- `dashboard-design` once again includes `chart-types`, `chart-color-encoding`, and `realtime-data`, matching its documented contract.
+- Pull requests run strict repository audits and a non-deploying MkDocs build under read-only repository permissions.
+- Focused contract tests protect route references, package bins and exports, MCP tool order, closed input schemas, and the three explicit learning-write tools.
+- `cli/lib/capability-manifest.json` is now the canonical identity contract for 23 routes, the 20/16/4 install inventory, 15 MCP tools, and 9 SDK exports. Runtime owners keep their implementation details, while parity tests and package smoke derive names and counts from this manifest.
+- Route payload assembly now lives in one read-only operation shared by the CLI, SDK, and `design_ai_route` MCP tool. The remaining MCP tools retain their existing CLI subprocess boundary.
+- Route definitions and ID validation now live in a pure catalog module, while scoring, reference enrichment, parsing, and eval behavior remain in the route engine behind compatibility exports.
+- Python capability schema validation now lives in a dedicated audit leaf module, and package/registry smoke self-tests share one MCP protocol fixture covering list, invalid input, and direct route execution.
+- Website Console source-bundle provenance and revalidation logic now lives in a dependency-free classic script loaded before the UI, with DOM, storage, graph, and Markdown rendering left in `app.js`.
+- Coverage generation now has separate write and non-mutating check modes, and release workflows share a reproducible `release:preflight` before smoke-testing their final tarball once.
+- Added the read-only `design_ai_site_bundle_handoff` MCP tool, which verifies a local Website Improvement bundle and returns a task-selectable target-repo prompt with a `pending-human-approval` contract. The tool makes no external calls and never mutates the target repository.
+- Homepage implementation/refactor briefs now route to `website-improvement`; generated implementation prompts require read-only repo intake, exact scope disclosure, explicit approval, and real browser/accessibility/responsive evidence before close-out.
+- Website Console fallback task IDs are deterministic, marketing-page responsive checks accept browser/viewport evidence instead of requiring email-client behavior, and package contents now require the Console stylesheet.
+
+### Fixed
+- Documentation builds now skip tracked files deleted in the current change instead of creating broken symlinks in `site-src/`.
+- Public readiness and distribution docs now distinguish the published v4.65.0 baseline from this v5.0.0 release candidate.
+
+### Verified
+- All 8 audits passed.
+- `npm run release:check`.
+- `python3 -B tools/audit/local-ci.py --docs-only`.
+- Baseline comparison confirmed stable route IDs, CLI help, SDK exports, existing MCP tool identities, and write boundaries; the additive 15th MCP tool is read-only, and the tarball removes only `commands/extract-tokens.md`.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 4.65.0 → 5.0.0. The major version records removal of the former public `extract-tokens` command.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- The larger refactor can move internal modules behind explicit contract guards without silently changing the installed command, route, SDK, or MCP surfaces.
+- Later adapter refactors can remove duplicated public-name lists without making runtime dispatch data-driven.
+
 ## v4.65.0 — MCP ↔ SDK parity: recall and opt-in learning-write tools (2026-07)
 
 Closes the parity gap the 2026-07-07 planning window fact-checked: the MCP server — the primary agent surface — had no recall tool and no learning-write tools, while the SDK shipped both. An MCP-connected agent can now run the same recall → author → check → capture loop the Agent SDK walkthrough demonstrates. The MCP server grows from 10 to **14 tools**; all additions are additive and the write tools are strictly opt-in.

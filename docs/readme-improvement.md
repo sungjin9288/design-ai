@@ -7,7 +7,7 @@
 - README가 기능 범위를 많이 담고 있어 구현 완료, 검증 필요, 향후 계획의 경계가 first-time reader에게 즉시 보이지 않습니다.
 - Website Console, CLI, VS Code Extension의 대표 화면 또는 실행 결과가 부족합니다.
 - backend/API/database/model training이 없다는 boundary는 문서에 있지만, README 상단에서 더 명확히 분리하면 좋습니다.
-- 현재 로컬 기준 `knowledge/*.md` 92개, `skills/*/SKILL.md` 20개, `commands/*.md` 17개, `examples/*.md` 223개가 확인됩니다. README 수치와 일치하지만, release 전에는 자동 검증 결과를 함께 남기는 편이 안전합니다.
+- 현재 로컬 기준 `knowledge/*.md` 92개, `skills/*/SKILL.md` 20개, 공개 명령 16개, `examples/*.md` 223개가 확인됩니다. 토큰 추출은 별도의 clone-only 유지보수 절차입니다. README 수치와 일치하지만, release 전에는 자동 검증 결과를 함께 남기는 편이 안전합니다.
 
 ## 2. README에 추가해야 할 섹션
 
@@ -53,7 +53,7 @@ AI coding agent는 코드 구현에는 강하지만, 디자인 시스템, 접근
 
 - 92개 Markdown knowledge files
 - 20개 design skill playbooks
-- 17개 slash command 문서
+- 16개 공개 slash command 문서
 - Node.js 기반 `design-ai` CLI
 - route, prompt, pack, check, audit, workspace, site, learn workflow
 - Website Improvement Console static app

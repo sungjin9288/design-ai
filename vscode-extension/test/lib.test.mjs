@@ -7,7 +7,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -198,15 +198,18 @@ test("chooseWalkthrough returns null when both missing", () => {
 
 test("readManifest reads real manifest", () => {
   const m = readManifest(REPO_ROOT);
+  const capabilities = JSON.parse(
+    readFileSync(path.join(REPO_ROOT, "cli", "lib", "capability-manifest.json"), "utf8"),
+  );
   assert.ok(m, "manifest should parse");
   assert.equal(typeof m.version, "string");
   assert.ok(/^\d+\.\d+\.\d+$/.test(m.version), `version ${m.version} should be semver`);
   assert.ok(Array.isArray(m.skills));
   assert.ok(Array.isArray(m.commands));
   assert.ok(Array.isArray(m.agents));
-  assert.ok(m.skills.length >= 20);
-  assert.ok(m.commands.length >= 17);
-  assert.ok(m.agents.length >= 4);
+  assert.deepEqual(m.skills.map((item) => item.name), capabilities.install.skills);
+  assert.deepEqual(m.commands.map((item) => item.name), capabilities.install.commands);
+  assert.deepEqual(m.agents.map((item) => item.name), capabilities.install.agents);
 });
 
 test("readManifest returns null on missing", () => {

@@ -2,7 +2,7 @@
 
 Use this guide when you want Claude Code or Codex to call design-ai as an MCP server instead of asking the agent to read files manually.
 
-The server is local, stdio-based, and deterministic. It wraps existing `design-ai` CLI workflows such as route selection, prompt generation, corpus search, artifact checks, and Website Improvement MCP readiness checks.
+The server is local, stdio-based, and deterministic. The v5.0.0 source candidate exposes 15 tools, including recall, a read-only Website Improvement bundle handoff, and exactly three opt-in local learning-write tools. Published v4.65.0 remains at 14 tools. The server wraps existing `design-ai` CLI workflows such as route selection, prompt generation, corpus search, artifact checks, and Website Improvement planning.
 
 ## What the server exposes
 
@@ -18,6 +18,7 @@ The server is local, stdio-based, and deterministic. It wraps existing `design-a
 | `design_ai_check` | Check generated Markdown artifacts for grounding, accessibility, responsive notes, and unresolved markers. | Read-only |
 | `design_ai_site_mcp_check` | Validate Website Improvement MCP readiness from workspace JSON. | Read-only |
 | `design_ai_site_mcp_plan` | Generate a Website Improvement MCP action plan. | Read-only |
+| `design_ai_site_bundle_handoff` | Verify a local Website Improvement bundle and return an approval-gated target-repo implementation prompt for an optional task selector. | Read-only; no external calls or target-repo mutation |
 | `design_ai_learn_remember` | Record a local learning-profile preference for prompt personalization. | Writes only the local learning profile, opt-in |
 | `design_ai_learn_feedback` | Record keep/improve/avoid feedback as a local learning-profile entry. | Writes only the local learning profile, opt-in |
 | `design_ai_learn_capture` | Check a Markdown artifact, then capture its non-pass results as local learning-profile entries. The only compound read+write tool. | Writes only the local learning profile, opt-in |
@@ -51,7 +52,7 @@ cd "$tmp"
 printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25"}}' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
-  | npm exec --yes --package=@design-ai/cli@4.56.0 -- design-ai-mcp
+  | npm exec --yes --package=@design-ai/cli@4.65.0 -- design-ai-mcp
 ```
 
 Running that one-shot command from the package source root can make npm prefer the local checkout context, which may hide the temporary package bin shim.
@@ -149,11 +150,18 @@ Use design_ai_site_mcp_check on this Website Improvement workspace JSON.
 Then generate a design_ai_site_mcp_plan and summarize blocking MCP gaps.
 ```
 
+For homepage implementation or refactoring after a bundle is ready:
+
+```text
+Call design_ai_site_bundle_handoff with the absolute bundle directory and selected homepage task id. Strict bundle verification is mandatory and cannot be disabled. Inspect the target repository read-only, present the exact files, risks, and verification plan, then stop until I approve that task. After approval, implement and verify desktop, tablet, mobile, keyboard, focus, contrast, lint, test, and build behavior. Ask again before dependencies, deployment, commit, push, or broader scope.
+```
+
 ## Safety boundaries
 
 - The server runs locally over stdio.
 - The default tools do not call external MCP servers.
-- Website Improvement MCP readiness tools inspect local workspace JSON only.
+- Website Improvement MCP readiness tools inspect local workspace JSON only; the bundle handoff tool inspects a local verified bundle only.
+- `design_ai_site_bundle_handoff` returns a pending approval contract and never edits the target repository or calls an external service.
 - `design_ai_prompt` and `design_ai_pack` are read-only unless `withLearning` is set.
 - `design_ai_learn_remember`, `design_ai_learn_feedback`, and `design_ai_learn_capture` write only the local learning profile, never the network, and only when called explicitly.
 - The server does not mutate target repositories.

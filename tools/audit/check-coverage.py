@@ -207,9 +207,34 @@ def example_coverage() -> dict:
     return {"examples": rows, "total": len(rows)}
 
 
-def extractor_coverage() -> dict:
-    scripts = sorted((ROOT / "tools/extractors").glob("*.py"))
-    return {"total": len(scripts), "scripts": [s.name for s in scripts]}
+def extractors_from_report(text: str) -> dict:
+    match = re.search(
+        r"^## Extractors\s*$\n(?P<section>.*?)(?=^## |\Z)",
+        text,
+        re.MULTILINE | re.DOTALL,
+    )
+    scripts = (
+        re.findall(
+            r"^- `tools/extractors/([^`]+)`$",
+            match.group("section"),
+            re.MULTILINE,
+        )
+        if match
+        else []
+    )
+    return {"total": len(scripts), "scripts": scripts}
+
+
+def extractor_coverage(coverage_path: Path | None = None) -> dict:
+    extractor_dir = ROOT / "tools/extractors"
+    if extractor_dir.is_dir():
+        scripts = sorted(extractor_dir.glob("*.py"))
+        return {"total": len(scripts), "scripts": [s.name for s in scripts]}
+
+    if coverage_path and coverage_path.exists():
+        return extractors_from_report(coverage_path.read_text(encoding="utf-8"))
+
+    return {"total": 0, "scripts": []}
 
 
 # --- rendering --------------------------------------------------------------
@@ -341,13 +366,35 @@ Wrote: knowledge/COVERAGE.md
 
 
 def write_report(report: dict, out_path: Path) -> str:
+    rendered = expected_report_text(report, out_path)
+    out_path.write_text(rendered, encoding="utf-8")
+    return rendered
+
+
+def expected_report_text(report: dict, out_path: Path) -> str:
     existing = out_path.read_text(encoding="utf-8") if out_path.exists() else ""
     preserved = existing_generated_at(existing) if existing else None
     rendered = render(report, generated_at=preserved)
     if rendered != existing:
         rendered = render(report)
-    out_path.write_text(rendered, encoding="utf-8")
     return rendered
+
+
+def check_report(report: dict, out_path: Path) -> bool:
+    if not out_path.exists():
+        return False
+    existing = out_path.read_text(encoding="utf-8")
+    return existing == expected_report_text(report, out_path)
+
+
+def build_report(coverage_path: Path | None = None) -> dict:
+    return {
+        "knowledge": knowledge_coverage(),
+        "components": component_coverage(),
+        "skills": skill_coverage(),
+        "examples": example_coverage(),
+        "extractors": extractor_coverage(coverage_path),
+    }
 
 
 def self_test_report(*, example_title: str = "Button") -> dict:
@@ -425,6 +472,10 @@ def run_self_test() -> int:
         existing_generated_at("title: no coverage frontmatter\n") is None,
         "existing_generated_at should return None when generated_at is absent",
     )
+    assert_self_test(
+        extractors_from_report(render(report))["scripts"] == ["component_index.py"],
+        "packaged coverage should recover the clone-only extractor inventory",
+    )
 
     with tempfile.TemporaryDirectory(prefix="design-ai-coverage-self-test-") as tmp:
         out_path = Path(tmp) / "COVERAGE.md"
@@ -436,7 +487,17 @@ def run_self_test() -> int:
             rendered == existing and out_path.read_text(encoding="utf-8") == existing,
             "write_report should preserve an unchanged report without timestamp-only churn",
         )
+        assert_self_test(check_report(report, out_path), "check_report should accept unchanged content")
 
+        before_stale_check = out_path.read_text(encoding="utf-8")
+        assert_self_test(
+            not check_report(self_test_report(example_title="Updated Button"), out_path),
+            "check_report should reject stale content",
+        )
+        assert_self_test(
+            out_path.read_text(encoding="utf-8") == before_stale_check,
+            "check_report should not mutate stale content",
+        )
         changed = write_report(self_test_report(example_title="Updated Button"), out_path)
         assert_self_test(
             existing_generated_at(changed) == date.today().isoformat(),
@@ -445,6 +506,12 @@ def run_self_test() -> int:
         assert_self_test(
             "Updated Button" in changed,
             "write_report should persist changed report content",
+        )
+
+        missing_path = Path(tmp) / "missing.md"
+        assert_self_test(
+            not check_report(report, missing_path) and not missing_path.exists(),
+            "check_report should reject a missing report without creating it",
         )
 
     print("Coverage self-test passed")
@@ -460,20 +527,30 @@ def main() -> int:
         action="store_true",
         help="Run built-in timestamp preservation fixtures without touching knowledge/COVERAGE.md",
     )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Fail when knowledge/COVERAGE.md differs without modifying it",
+    )
     args = parser.parse_args()
 
+    if args.self_test and args.check:
+        parser.error("--self-test and --check cannot be combined")
     if args.self_test:
         return run_self_test()
 
-    report = {
-        "knowledge": knowledge_coverage(),
-        "components": component_coverage(),
-        "skills": skill_coverage(),
-        "examples": example_coverage(),
-        "extractors": extractor_coverage(),
-    }
-
     out_path = ROOT / "knowledge/COVERAGE.md"
+    report = build_report(out_path)
+    if args.check:
+        if not check_report(report, out_path):
+            print(
+                "knowledge/COVERAGE.md is stale; run `npm run coverage:generate` and commit the result.",
+                file=sys.stderr,
+            )
+            return 1
+        print("Coverage report check passed: knowledge/COVERAGE.md is current")
+        return 0
+
     write_report(report, out_path)
     print(render_console(report))
     return 0

@@ -26,7 +26,7 @@ function buildCodexTaskPrompt(workspace, categoryId, finding) {
   return [
     "You are working in the target website repo, not in design-ai.",
     `Site: ${profile.name}`,
-    `Live URL: ${profile.liveUrl}`,
+    `Live URL: ${profile.liveUrl || "not provided (pre-deployment)"}`,
     `Category: ${categoryById(categoryId).label}`,
     `Problem: ${finding}`,
     "",

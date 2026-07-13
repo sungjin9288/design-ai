@@ -1,6 +1,6 @@
 // Tests for site bundle check/repair/compare reports.
 
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -196,6 +196,31 @@ test("buildSiteBundleCheckReport validates a generated handoff bundle directory"
   assert.equal(missingReport.status, "fail");
   assert.equal(missingReport.valid, false);
   assert.ok(missingReport.issues.some((issue) => issue.id === "bundle-missing-mcp-check.json"));
+}));
+
+test("bundle check and repair reject symbolic links without changing external files", () => withTempDir((dir) => {
+  const bundleDir = path.join(dir, "bundle");
+  const outside = path.join(dir, "outside.md");
+  mkdirSync(bundleDir);
+  const workspace = createSampleSiteWorkspace();
+  const { summary } = analyzeSiteWorkspace(workspace, { filePath: "stdin" });
+  const bundle = buildSiteHandoffBundle(workspace, summary);
+  for (const file of bundle.files) {
+    writeFileSync(path.join(bundleDir, file.path), file.content, "utf8");
+  }
+
+  writeFileSync(outside, "sentinel", "utf8");
+  rmSync(path.join(bundleDir, "website-handoff.md"));
+  symlinkSync(outside, path.join(bundleDir, "website-handoff.md"));
+
+  const report = buildSiteBundleCheckReport({ target: bundleDir });
+  const repair = buildSiteBundleRepairBundle({ target: bundleDir });
+  assert.equal(report.status, "fail");
+  assert.equal(report.valid, false);
+  assert.ok(report.issues.some((issue) => issue.id === "bundle-symlink-website-handoff.md"));
+  assert.equal(repair.bundle, null);
+  assert.equal(repair.preview.applied, false);
+  assert.equal(readFileSync(outside, "utf8"), "sentinel");
 }));
 
 test("buildSiteBundleRepairPreview reports local bundle repair without mutating files", () => withTempDir((dir) => {

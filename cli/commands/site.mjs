@@ -54,9 +54,9 @@ import { dim, error, header, info, success, warn } from "../lib/log.mjs";
 function printHelp() {
   console.log("Usage:  design-ai site <workspace.json> [--strict] [--json]");
   console.log("        cat workspace.json | design-ai site --stdin [--strict] [--json]");
-  console.log("        design-ai site --init --name name --live-url url [--repo-url url|--local-path path] [--out file] [--force]");
-  console.log("        design-ai site --init --name name --live-url url --next-actions [--json] [--out file] [--force]");
-  console.log("        design-ai site --init --name name --live-url url --bundle --out dir [--strict] [--force]");
+  console.log("        design-ai site --init --name name [--live-url url] [--repo-url url|--local-path path] [--out file] [--force]");
+  console.log("        design-ai site --init --name name [--live-url url] [--repo-url url|--local-path path] --next-actions [--json] [--out file] [--force]");
+  console.log("        design-ai site --init --name name [--live-url url] [--repo-url url|--local-path path] --bundle --out dir [--strict] [--force]");
   console.log("        design-ai site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] [--strict] [--force]");
   console.log("        design-ai site --intake-template [--language en|ko] [--json] [--out file] [--force]");
   console.log("        design-ai site --sample [--out file] [--force]");
@@ -80,7 +80,7 @@ function printHelp() {
   console.log("  --init      Generate a real-project Website Improvement workspace JSON from CLI fields");
   console.log("  --name text Site name for --init");
   console.log("  --live-url url");
-  console.log("              Live website URL for --init");
+  console.log("              Optional live website URL for --init after a preview or deployment exists");
   console.log("  --repo-url url");
   console.log("              Target website repository URL for --init; this repo is not mutated");
   console.log("  --local-path path");
