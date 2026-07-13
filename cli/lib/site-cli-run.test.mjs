@@ -51,8 +51,9 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const promptListOutput = await captureConsole(() => runSite(["--prompt-list", "--json", "--out", promptList]));
     assert.match(promptListOutput.stdout, /Wrote /);
     const promptListPayload = JSON.parse(readFileSync(promptList, "utf8"));
-    assert.equal(promptListPayload.count, 8);
-    assert.equal(promptListPayload.templates[1].id, "codex-implementation");
+    assert.equal(promptListPayload.count, 11);
+    assert.equal(promptListPayload.templates[0].id, "implementation-plan");
+    assert.equal(promptListPayload.templates[4].id, "codex-implementation");
 
     const mcpCheckOutput = await captureConsole(() => runSite([file, "--mcp-check", "--json", "--out", mcpCheck]));
     assert.match(mcpCheckOutput.stdout, /Wrote /);
@@ -87,8 +88,8 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const graphJsonOutput = await captureConsole(() => runSite([file, "--graph", "--json"]));
     const graphPayload = JSON.parse(graphJsonOutput.stdout);
     assert.equal(graphPayload.kind, "website-improvement-workflow-graph");
-    assert.equal(graphPayload.summary.nodeCount, 35);
-    assert.equal(graphPayload.summary.edgeCount, 67);
+    assert.equal(graphPayload.summary.nodeCount, 38);
+    assert.equal(graphPayload.summary.edgeCount, 73);
 
     const graphHumanOutput = await captureConsole(() => runSite([file, "--graph"]));
     assert.match(graphHumanOutput.stdout, /Website improvement workflow graph/);

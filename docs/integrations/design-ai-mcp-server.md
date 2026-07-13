@@ -2,7 +2,7 @@
 
 Use this guide when you want Claude Code or Codex to call design-ai as an MCP server instead of asking the agent to read files manually.
 
-The server is local, stdio-based, and deterministic. The v5.0.0 source candidate exposes 15 tools, including recall, a read-only Website Improvement bundle handoff, and exactly three opt-in local learning-write tools. Published v4.65.0 remains at 14 tools. The server wraps existing `design-ai` CLI workflows such as route selection, prompt generation, corpus search, artifact checks, and Website Improvement planning.
+The server is local, stdio-based, and deterministic. The v5.0.0 source candidate exposes 16 tools, including the shared design artifact operation, recall, a read-only Website Improvement bundle handoff, and exactly three opt-in local learning-write tools. Published v4.65.0 remains at 14 tools. The server wraps existing `design-ai` CLI workflows such as route selection, prompt generation, corpus search, artifact checks, and Website Improvement planning.
 
 ## What the server exposes
 
@@ -10,6 +10,7 @@ The server is local, stdio-based, and deterministic. The v5.0.0 source candidate
 |---|---|---|
 | `design_ai_route` | Recommend the best design-ai route, skill, command, and knowledge files for a task brief. | Read-only |
 | `design_ai_prompt` | Generate a ready-to-use prompt from a brief. Optional `withRecall` (with `recallLimit`, 1-20) augments the output with brief-relevant shipped corpus knowledge ranked by the deterministic lexical scorer; requires no index and makes no network call. | Read-only by default; `withLearning` records local usage metadata |
+| `design_ai_artifact` | Build an `implementation-plan`, `critique-loop`, or agent-readable `DESIGN.md` contract with source files, approval boundary, and verification evidence. | Read-only; no file writes, external calls, or target-repo mutation |
 | `design_ai_pack` | Generate a prompt plus bounded context files. Optional `withRecall` (with `recallLimit`, 1-20) augments the output with brief-relevant shipped corpus knowledge ranked by the deterministic lexical scorer; requires no index and makes no network call. | Read-only by default; `withLearning` records local usage metadata |
 | `design_ai_search` | Search `knowledge/`, `examples/`, `skills/`, `docs/`, `agents/`, and `commands/`. Optional `ranked` opts into deterministic BM25-style results (`design-ai search --ranked`); requires no index and never builds one. | Read-only |
 | `design_ai_show` | Read a corpus file or line range. | Read-only |

@@ -258,14 +258,18 @@ test("formatSitePromptTemplates lists all Website Improvement prompt templates",
   const json = JSON.parse(formatSitePromptTemplatesJson());
 
   assert.match(human, /Website Improvement prompt templates/);
-  assert.match(human, /1\. codex-repo-intake/);
-  assert.match(human, /2\. codex-implementation/);
+  assert.match(human, /1\. implementation-plan/);
+  assert.match(human, /3\. design-contract/);
+  assert.match(human, /5\. codex-implementation/);
   assert.match(human, /Task selectable: yes/);
   assert.match(human, /design-ai site <workspace\.json> --prompt codex-implementation --task <id-or-number>/);
 
   assert.deepEqual(Object.keys(json), ["count", "templates"]);
-  assert.equal(json.count, 8);
+  assert.equal(json.count, 11);
   assert.deepEqual(json.templates.map((template) => template.id), [
+    "implementation-plan",
+    "critique-loop",
+    "design-contract",
     "codex-repo-intake",
     "codex-implementation",
     "codex-visual-qa",
@@ -275,6 +279,8 @@ test("formatSitePromptTemplates lists all Website Improvement prompt templates",
     "claude-copy-ux",
     "handoff-report",
   ]);
-  assert.equal(json.templates[1].taskSelectable, true);
-  assert.equal(json.templates[1].agent, "codex");
+  assert.equal(json.templates[0].taskSelectable, true);
+  assert.equal(json.templates[0].agent, "codex-or-claude");
+  assert.equal(json.templates[4].taskSelectable, true);
+  assert.equal(json.templates[4].agent, "codex");
 });

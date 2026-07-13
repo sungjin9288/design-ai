@@ -1,5 +1,7 @@
 // Prompt and handoff report builders for Website Improvement workspaces.
 
+import { buildArtifact } from "./artifact.mjs";
+import { DESIGN_AI_HOME, SYMLINK_PREFIX } from "./paths.mjs";
 import { normalizeImplementationEvidence } from "./site-evidence.mjs";
 import { SITE_PROMPT_TEMPLATE_IDS, SITE_PROMPT_TEMPLATES } from "./site-content.mjs";
 import { AUDIT_CATEGORIES, MCP_ITEMS, PRIORITY_OPTIONS, categoryById } from "./site-options.mjs";
@@ -101,6 +103,33 @@ export function resolveSitePromptTask(workspace, selector = "") {
   throw new Error(`Unknown refactor task: ${trimmed}. Use one of: ${ids || "no tasks available"}`);
 }
 
+function siteArtifactBrief(workspace, mode, task) {
+  const siteName = workspace.siteProfile.name;
+  const taskText = task
+    ? `${task.title}: ${task.problem}`
+    : "Establish the first verified website improvement task from the current audit evidence";
+
+  if (mode === "design-contract") {
+    const brandNotes = workspace.siteProfile.brandNotes || "Brand rules are not yet documented";
+    return `Create an agent-readable DESIGN.md for ${siteName}. ${brandNotes}`;
+  }
+  if (mode === "critique-loop") {
+    return `Review, revise, and re-verify ${siteName} for this website improvement task: ${taskText}`;
+  }
+  return `Plan the implementation of this ${siteName} website improvement task: ${taskText}`;
+}
+
+export function buildSiteArtifact(workspace, mode, { taskSelector = "" } = {}) {
+  const task = resolveSitePromptTask(workspace, taskSelector);
+  return buildArtifact({
+    mode,
+    brief: siteArtifactBrief(workspace, mode, task),
+    sourceRoot: DESIGN_AI_HOME,
+    prefix: SYMLINK_PREFIX,
+    routeId: "website-improvement",
+  });
+}
+
 export function buildSitePrompt(workspace, templateId, { taskSelector = "" } = {}) {
   const profile = profileBlock(workspace);
   const audit = auditBlock(workspace);
@@ -118,6 +147,9 @@ export function buildSitePrompt(workspace, templateId, { taskSelector = "" } = {
   ].join("\n");
 
   const map = {
+    "implementation-plan": [buildSiteArtifact(workspace, "implementation-plan", { taskSelector }).markdown],
+    "critique-loop": [buildSiteArtifact(workspace, "critique-loop", { taskSelector }).markdown],
+    "design-contract": [buildSiteArtifact(workspace, "design-contract", { taskSelector }).markdown],
     "codex-repo-intake": [
       "# Codex repo intake prompt",
       profile,

@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 776 — Shared design artifact operation parity (implemented, unreleased)
+
+Turns implementation planning, critique iteration, and agent-readable design contracts into one portable, read-only artifact contract across every agent-facing surface.
+
+### Delivered
+- [x] Added `design-ai artifact` with explicit `implementation-plan`, `critique-loop`, and `design-contract` modes, route-aware source files, four-step workflows, output sections, approval boundaries, verification checklists, JSON output, and opt-in local `--out` writes.
+- [x] Added SDK `artifact()` and MCP `design_ai_artifact` adapters over the same core operation; both are read-only and preserve the canonical return shape.
+- [x] Added the three modes to Website Console Prompt Generator and the portable workflow graph, with server/standalone parity tests for mode IDs and contract headings.
+- [x] Updated the capability identity contract to 16 MCP tools and 10 SDK exports while keeping exactly three opt-in learning-profile write tools.
+- [x] Added installed-bin and one-shot `npm exec` packed-tarball smoke coverage for the new artifact command.
+
+### Verification target
+- [x] Focused CLI/SDK/MCP/Website Console parity tests passed, including shared mode, contract-shape, help, dispatch, and standalone Console checks.
+- [x] All 8 strict audits and the documentation build/check passed.
+- [x] `npm run release:check` passed with 643 tests, 661 packaged files, and installed-bin plus one-shot `npm exec` artifact smoke coverage.
+
+### Boundary
+- The operation generates planning artifacts only. Target-repo edits, dependency changes, migrations, commits, pushes, deployments, and external-system writes remain explicit approval gates.
+- No runtime dependency, model inference, screenshot automation, or public slash command was added.
+
 ## Phase 775 — Web/app interface craft review (implemented, unreleased)
 
 Converts the Emil Kowalski design-engineering reference scan into an evidence-grounded design-ai workflow. The implementation extracts review taxonomy rather than copying upstream voice, code, or brand material.
@@ -60,7 +80,7 @@ Establishes the verified boundary for the larger refactor while correcting relea
 - [ ] Merge, tag, and publish require explicit maintainer approval.
 - [ ] Decide whether Playwright becomes a maintained development dependency before adding automated screenshot regression; visual baselines require a stable, versioned execution environment.
 - [ ] Extend the handoff into an optional linked-code-folder/live-preview loop while preserving the current approval boundary and target-repo ownership.
-- [ ] Unify implementation-plan artifacts across CLI, SDK, MCP, and Website Console, then add critique-loop and agent-readable `DESIGN.md` operation parity.
+- [x] Completed in Phase 776: unified implementation-plan artifacts across CLI, SDK, MCP, and Website Console, then added critique-loop and agent-readable `DESIGN.md` operation parity.
 
 ## Phase 773 — Agentic development routing loop (implemented, unreleased)
 

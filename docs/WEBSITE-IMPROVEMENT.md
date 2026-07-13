@@ -15,7 +15,7 @@ For the first real company-site pilot, complete the [Company Website Intake Temp
 - Classifies MCP readiness as `required`, `optional`, `unused`, or `unavailable`.
 - Converts audit findings into starter refactor tasks with impact, effort, priority, MCP recommendations, Codex prompts, verification steps, and risks.
 - Renders a local Workflow Graph with workspace, profile, audit, MCP, task, prompt, handoff, bundle, and target-repo nodes plus deterministic edge rows.
-- Generates prompts for Codex implementation work, Claude design review, competitor research, copy critique, visual QA, deployment verification, and final handoff.
+- Generates the shared `implementation-plan`, `critique-loop`, and agent-readable `DESIGN.md` artifacts, plus prompts for Codex implementation work, Claude design review, competitor research, copy critique, visual QA, deployment verification, and final handoff.
 - Tracks executed work, verification results, remaining risks, and next actions after target-repo implementation.
 - Imports `design-ai site <bundle-dir> --bundle-handoff --json` output as an Operator Runbook in the Report tab, including runbook metadata source pills, source-bundle provenance/detail review, copy-ready source-bundle source markers, source-bundle artifact-specific action labels, revalidation gate JSON action labels, source-bundle revalidation metadata badges, badge rows, warnings, Markdown gates, source/diagnostic-context-preserving gate-only JSON copy/export/import, focused provenance import source refresh, exported compact source markers, Markdown source markers, source-aware empty runbook Markdown, provenance-only notice source markers, JSON gate reason metadata, focused source-bundle JSON import, provenance-only review state and Markdown markers, guarded copy-ready strict source commands, source-bundle Markdown/JSON copy/export, task/command provenance chips, stage metrics, resettable action/evidence row filters, status indexes, evidence progress, copy-ready stage rows, row-level Markdown copy/export and line copy, guarded filtered-row Markdown copy/export, full Markdown export, and guarded next-line copy actions.
 - Drafts a Markdown handoff report that includes before/after status, implementation evidence, verification evidence, and follow-up work.
@@ -27,6 +27,8 @@ For the first real company-site pilot, complete the [Company Website Intake Temp
 The console does not crawl pages, run Lighthouse, run axe, capture screenshots, call external AI APIs, connect directly to MCP tools, or modify target website repos. It stores state in browser `localStorage` and supports JSON export/import so the same workspace can be moved later to a server-backed store.
 
 Actual code changes happen in the target website repository. Use the generated Codex prompts there, then paste verification evidence back into the handoff report.
+
+The three shared artifact modes use the same `design-ai-artifact` schema as CLI `design-ai artifact`, SDK `artifact()`, and MCP `design_ai_artifact`. Website Console adds site profile, audit, MCP, and refactor-task context while preserving the same source-of-truth, workflow, approval, and verification headings.
 
 ## MVP Workflow
 
@@ -74,6 +76,9 @@ design-ai site --init --name "Company marketing site" --live-url https://example
 design-ai site --init --name "Company marketing site" --live-url https://example.com --repo-url https://github.com/acme/site --next-actions --out website-next-actions.md
 design-ai site --init --name "Company marketing site" --live-url https://example.com --repo-url https://github.com/acme/site --bundle --out website-handoff-bundle
 design-ai site --sample --out website-workspace.json
+design-ai site website-workspace.json --prompt implementation-plan --task 1 --out implementation-plan.md
+design-ai site website-workspace.json --prompt critique-loop --task 1 --out critique-loop.md
+design-ai site website-workspace.json --prompt design-contract --out DESIGN.md
 design-ai site website-workspace.json --tasks --out website-workspace.tasks.json
 design-ai site website-workspace.json --json
 design-ai site website-workspace.json --mcp-check --strict --json

@@ -76,6 +76,26 @@ export const MCP_TOOLS = [
     },
   },
   {
+    name: "design_ai_artifact",
+    title: "Build a design artifact plan",
+    description: "Build a portable implementation plan, critique loop, or agent-readable DESIGN.md contract. Read-only: it does not write files, mutate a repository, or contact an external service.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        brief: { type: "string", minLength: 1, description: "Task brief." },
+        mode: {
+          type: "string",
+          enum: ["implementation-plan", "critique-loop", "design-contract"],
+          description: "Artifact operation to plan.",
+        },
+        routeId: optionalString("Optional forced route id."),
+        json: optionalBoolean("Return the machine-readable artifact contract instead of Markdown."),
+      },
+      required: ["brief", "mode"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "design_ai_pack",
     title: "Generate prompt plus bounded context",
     description: "Generate a prompt pack with relevant design-ai context files. Read-only unless withLearning is true, which records local usage metadata. Supports opt-in recall augmentation via withRecall, which enriches the output with brief-relevant shipped corpus knowledge.",
@@ -364,6 +384,13 @@ export function buildCliInvocation(toolName, input = {}) {
     maybePush(args, "--learning-limit", input.learningLimit);
     maybeBool(args, "--with-recall", input.withRecall);
     maybePush(args, "--recall-limit", input.recallLimit);
+    maybeBool(args, "--json", input.json);
+    return { args, stdin };
+  }
+
+  if (toolName === "design_ai_artifact") {
+    args.push("artifact", assertString(input.mode, "mode"), assertString(input.brief, "brief"));
+    maybePush(args, "--route", input.routeId);
     maybeBool(args, "--json", input.json);
     return { args, stdin };
   }
@@ -670,7 +697,7 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
         name: "design-ai",
         version: readPackageVersion(),
       },
-      instructions: "Use design-ai MCP tools for local, deterministic design expertise: route briefs, generate prompts/packs, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, validate Website Improvement MCP readiness, and prepare approval-gated target-repo handoffs. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
+      instructions: "Use design-ai MCP tools for local, deterministic design expertise: route briefs, generate prompts/packs, build implementation/critique/DESIGN.md artifacts, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, validate Website Improvement MCP readiness, and prepare approval-gated target-repo handoffs. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
     });
   }
 

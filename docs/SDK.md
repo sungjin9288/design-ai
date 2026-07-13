@@ -1,12 +1,12 @@
 # Agent SDK reference
 
-> Status: shipped (Phase A + Phase B) — 8 read-only verbs plus the opt-in `learn.*` local-write namespace, semver-stable surface
+> Status: shipped (Phase A + Phase B) — 9 read-only verbs plus the opt-in `learn.*` local-write namespace, semver-stable surface
 
 `@design-ai/cli/sdk` lets an external Node.js program — an agent runtime, a build script, a custom tool — use design-ai's deterministic design capabilities as importable functions, without shelling out to the CLI or spawning the MCP server. It is a thin, curated adapter over the same `cli/lib` functions the CLI and MCP server already call, so a capability that ships in the CLI is instantly available to an SDK consumer.
 
 See [`AGENT-SDK.md`](AGENT-SDK.md) for the full design rationale, phased plan, and open questions. This page is the public reference for the shipped Phase A (read-only) and Phase B (local-write) surface.
 
-MCP parity: the SDK's `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to the MCP tools `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
+MCP parity: SDK `artifact()` maps to `design_ai_artifact`; `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
 
 ## Install and import
 
@@ -17,7 +17,7 @@ npm install @design-ai/cli
 ```
 
 ```js
-import { route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
+import { artifact, route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
 ```
 
 Only the `./sdk` subpath is exported — `import "@design-ai/cli"` (the bare package root) is intentionally not exported, so importing the SDK is always an explicit `@design-ai/cli/sdk` import. `cli/lib/*` is internal and unstable; do not import it directly.
@@ -79,6 +79,24 @@ prompt(brief: string, opts?: {
 - `recallLimit` (1-20) — limit recalled corpus files; requires `withRecall`.
 
 Returns a `PromptPlan` object (`brief`, `version`, `route`, `slashCommand`, `referenceExamples`, `filesToRead`, `checklist`, `qualityCommand`, `prompt`, plus `learningContext`/`recall` when requested) — the same shape as `design-ai prompt --json`, minus `learningUsage` (Phase A never writes it).
+
+### `artifact(brief, opts)`
+
+Build one portable, read-only artifact contract shared by CLI, SDK, MCP, and Website Console.
+
+```js
+artifact(brief: string, opts: {
+  mode: "implementation-plan" | "critique-loop" | "design-contract",
+  routeId?: string,
+}): DesignArtifact
+```
+
+- `implementation-plan` turns a brief into a source-grounded implementation sequence with explicit approval and verification boundaries.
+- `critique-loop` defines an observe → diagnose → revise → re-observe cycle with one top recommendation and preserved evidence.
+- `design-contract` defines an agent-readable `DESIGN.md` structure covering product intent, foundations, components, motion, accessibility, responsive behavior, anti-patterns, and ownership.
+- `routeId` can force a known route; otherwise the shared router selects one.
+
+The return shape is the same as `design-ai artifact <mode> <brief> --json`: mode, route, source files, four workflow steps, output sections, `pending-human-approval`, verification command/checklist, and rendered Markdown. The function never writes `outputFile`; only an explicit CLI `--out` writes a local artifact.
 
 ### `pack(brief, opts)`
 
@@ -167,13 +185,13 @@ version(): { cli: string, corpus: string }
 
 - Additive changes (new optional fields, new opt-in options) are minor version bumps.
 - Signature or return-shape changes are major version bumps.
-- The 8 read-only function exports (`route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) plus the frozen `learn` namespace object (`learn.remember`, `learn.feedback`, `learn.captureFromCheck`) and their return-shape key sets are pinned by an SDK contract test (`cli/sdk/index.test.mjs`) — this is the semver anchor. If a name or a top-level key drifts unintentionally, that test fails.
+- The 9 read-only function exports (`artifact`, `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) plus the frozen `learn` namespace object (`learn.remember`, `learn.feedback`, `learn.captureFromCheck`) and their return-shape key sets are pinned by an SDK contract test (`cli/sdk/index.test.mjs`) — this is the semver anchor. If a name or a top-level key drifts unintentionally, that test fails.
 - `cli/lib/*` remains internal and unstable. Only `@design-ai/cli/sdk` is a supported import path.
 - Determinism: the same inputs always produce the same outputs, with no randomness or time-dependence added by the adapter layer.
 
 ## Phase B — local writes
 
-Phase A (above) is read-only by design: the 8 verbs never write a file. Phase B adds a single namespace export, `learn`, grouping the three explicit, opt-in **LOCAL-WRITE** verbs. This is the only place the SDK writes files — every Phase A verb stays read-only and unchanged.
+The primary SDK surface is read-only by design: the 9 verbs never write a file. Phase B adds a single namespace export, `learn`, grouping the three explicit, opt-in **LOCAL-WRITE** verbs. This is the only place the SDK writes files — every other verb stays read-only.
 
 ```js
 import { learn } from "@design-ai/cli/sdk";
@@ -183,7 +201,7 @@ learn.feedback(text, opts?)                // opts: { outcome?: string, category
 learn.captureFromCheck(artifact, opts?)    // opts: { routeId?: string }
 ```
 
-**Write boundary rationale:** an SDK consumer should never be surprised by a file write. Phase A's 8 verbs are safe to call from any context — a build script, a read path, a CI check — with zero side effects. `learn.*` is the deliberate, narrow exception: three verbs, one destination, no ambiguity about what gets written or where.
+**Write boundary rationale:** an SDK consumer should never be surprised by a file write. The 9 read-only verbs are safe to call from any context — a build script, a read path, a CI check — with zero side effects. `learn.*` is the deliberate, narrow exception: three verbs, one destination, no ambiguity about what gets written or where.
 
 All three verbs write **only** the local learning profile — `DESIGN_AI_LEARNING_FILE` if set, otherwise the CLI's `defaultLearningFile()` default path — and never touch the network. There is no `filePath` option and no `now`/timestamp option on any of them: target a specific profile the same way the CLI does, by setting the `DESIGN_AI_LEARNING_FILE` environment variable before calling. The underlying library functions supply their own defaults (the env var and `new Date()`).
 

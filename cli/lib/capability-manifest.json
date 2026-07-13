@@ -79,6 +79,7 @@
     "tools": [
       "design_ai_route",
       "design_ai_prompt",
+      "design_ai_artifact",
       "design_ai_pack",
       "design_ai_search",
       "design_ai_show",
@@ -101,6 +102,7 @@
   },
   "sdk": {
     "exports": [
+      "artifact",
       "check",
       "learn",
       "pack",

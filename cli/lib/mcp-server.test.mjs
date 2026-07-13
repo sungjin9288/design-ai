@@ -64,6 +64,7 @@ test("MCP tool list exposes design-ai read-only workflow tools", async () => {
     MCP_TOOLS.map((tool) => tool.name),
   );
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_route"));
+  assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_artifact"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_mcp_check"));
 });
 
@@ -234,6 +235,18 @@ test("MCP optional object params reject malformed containers", async () => {
 
 test("buildCliInvocation maps subprocess-backed MCP tool args to existing CLI commands", () => {
   assert.deepEqual(
+    buildCliInvocation("design_ai_artifact", {
+      brief: "Plan a settings refactor",
+      mode: "implementation-plan",
+      routeId: "flow-design",
+      json: true,
+    }),
+    {
+      args: ["artifact", "implementation-plan", "Plan a settings refactor", "--route", "flow-design", "--json"],
+      stdin: "",
+    },
+  );
+  assert.deepEqual(
     buildCliInvocation("design_ai_check", { artifact: "# Spec\n\nKeyboard reachable.", routeId: "component-spec" }),
     {
       args: ["check", "--stdin", "--route", "component-spec", "--json"],
@@ -244,6 +257,16 @@ test("buildCliInvocation maps subprocess-backed MCP tool args to existing CLI co
     () => buildCliInvocation("design_ai_route", { brief: "Spec a Button" }),
     /Unknown MCP tool/,
   );
+});
+
+test("design_ai_artifact exposes a closed mode enum", () => {
+  const tool = MCP_TOOLS.find((item) => item.name === "design_ai_artifact");
+  assert.deepEqual(tool.inputSchema.properties.mode.enum, [
+    "implementation-plan",
+    "critique-loop",
+    "design-contract",
+  ]);
+  assert.deepEqual(tool.inputSchema.required, ["brief", "mode"]);
 });
 
 test("design_ai_route uses the shared route operation without spawning the CLI", async () => {

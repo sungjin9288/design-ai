@@ -5,7 +5,7 @@
 // MCP server call. Each verb validates its inputs, resolves the package root
 // the same way the CLI does, and returns a plain JSON-serializable object —
 // the same shape the CLI's --json mode emits. No network calls, no runtime
-// dependencies. The 8 Phase A verbs below perform no file writes: no
+// dependencies. The read-only verbs below perform no file writes: no
 // learning-usage sidecar writes, even from prompt/pack's withLearning option.
 //
 // Phase B adds a single `learn` namespace grouping the three explicit,
@@ -17,9 +17,10 @@
 // Import path: `@design-ai/cli/sdk` (see the "exports" map in package.json).
 // `cli/lib/*` stays internal and unstable; this barrel is the only supported
 // public surface. Do not import `cli/lib/*.mjs` directly from outside this
-// package — only the 8 named function exports plus the `learn` namespace
+// package — only the named function exports plus the `learn` namespace
 // below are covered by the semver stability contract described in docs/SDK.md.
 
+export { artifact } from "./artifact-adapter.mjs";
 export { check } from "./check-adapter.mjs";
 export { learn } from "./learn-adapter.mjs";
 export { pack } from "./pack-adapter.mjs";

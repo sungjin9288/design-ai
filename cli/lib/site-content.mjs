@@ -301,6 +301,9 @@ design-ai site website-handoff-bundle --bundle-handoff --strict --out target-rep
 `;
 
 export const SITE_PROMPT_TEMPLATE_IDS = [
+  "implementation-plan",
+  "critique-loop",
+  "design-contract",
   "codex-repo-intake",
   "codex-implementation",
   "codex-visual-qa",
@@ -326,6 +329,30 @@ export const SITE_BUNDLE_FILES = [
 export const SITE_BUNDLE_CHECKSUM_FILES = SITE_BUNDLE_FILES.filter((filePath) => filePath !== "summary.json");
 
 export const SITE_PROMPT_TEMPLATES = [
+  {
+    id: "implementation-plan",
+    label: "Implementation plan",
+    agent: "codex-or-claude",
+    output: "Portable implementation plan",
+    description: "Plan one website improvement task with source, approval, and verification evidence.",
+    taskSelectable: true,
+  },
+  {
+    id: "critique-loop",
+    label: "Critique loop",
+    agent: "codex-or-claude",
+    output: "Observed critique and revision loop",
+    description: "Review, revise, and re-observe one website decision without losing the evidence trail.",
+    taskSelectable: true,
+  },
+  {
+    id: "design-contract",
+    label: "Agent-readable DESIGN.md",
+    agent: "codex-or-claude",
+    output: "DESIGN.md contract",
+    description: "Create the canonical brand, component, motion, accessibility, and responsive contract for agents.",
+    taskSelectable: false,
+  },
   {
     id: "codex-repo-intake",
     label: "Codex repo intake",

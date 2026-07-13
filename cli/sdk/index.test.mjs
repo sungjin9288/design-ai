@@ -1,4 +1,4 @@
-// SDK contract test: pins the 8 read-only function verbs, plus the `learn`
+// SDK contract test: pins the read-only function verbs, plus the `learn`
 // namespace object (Phase B) and its 3 write verbs. This is the semver
 // anchor described in docs/AGENT-SDK.md — if names or top-level keys drift,
 // this test must fail.
@@ -21,7 +21,7 @@ const EXPECTED_LEARN_VERB_NAMES = [...CAPABILITY_MANIFEST.sdk.learnMethods].sort
 
 const BRIEF = "Spec a Button component API with variants, props, and keyboard accessibility";
 
-test("SDK exports exactly the 8 Phase A read-only function verbs", () => {
+test("SDK exports exactly the manifest-declared read-only function verbs", () => {
   const exportedNames = Object.keys(sdk).sort();
   assert.deepEqual(exportedNames, [...EXPECTED_FUNCTION_EXPORT_NAMES, "learn"].sort());
   for (const name of EXPECTED_FUNCTION_EXPORT_NAMES) {
@@ -148,6 +148,29 @@ test("prompt() return-shape keys are pinned (Phase A: no learningUsage)", () => 
     "version",
   ].sort());
   assert.equal(Object.hasOwn(result, "learningUsage"), false);
+});
+
+test("artifact() return-shape keys and read-only boundary are pinned", () => {
+  const result = sdk.artifact(BRIEF, {
+    mode: "implementation-plan",
+    routeId: "component-spec",
+  });
+  assert.deepEqual(Object.keys(result), [
+    "kind",
+    "schemaVersion",
+    "mode",
+    "title",
+    "brief",
+    "route",
+    "outputFile",
+    "sourceFiles",
+    "workflow",
+    "outputSections",
+    "approval",
+    "verification",
+    "markdown",
+  ]);
+  assert.equal(result.approval.status, "pending-human-approval");
 });
 
 test("pack() return-shape keys are pinned (Phase A: no learningUsage)", () => {

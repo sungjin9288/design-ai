@@ -39,11 +39,11 @@ test("buildSiteWorkflowGraph exports a deterministic portable workflow graph", (
   assert.equal(graph.kind, "website-improvement-workflow-graph");
   assert.equal(graph.status, "pass");
   assert.equal(graph.externalCalls, false);
-  assert.equal(graph.summary.nodeCount, 35);
-  assert.equal(graph.summary.edgeCount, 67);
+  assert.equal(graph.summary.nodeCount, 38);
+  assert.equal(graph.summary.edgeCount, 73);
   assert.equal(graph.summary.taskCount, 3);
   assert.equal(graph.summary.generatedTaskCount, 2);
-  assert.equal(graph.summary.promptTemplateCount, 8);
+  assert.equal(graph.summary.promptTemplateCount, 11);
   assert.deepEqual(graph.nodes.map((node) => node.id).slice(0, 4), [
     "workspace:intake",
     "profile:sample-korean-saas",
@@ -63,8 +63,9 @@ test("buildSiteWorkflowGraph exports a deterministic portable workflow graph", (
   ]);
 
   assert.match(markdown, /# Website improvement workflow graph: Korean SaaS marketing site/);
-  assert.match(markdown, /Nodes: 35/);
-  assert.match(markdown, /Edges: 67/);
+  assert.match(markdown, /Nodes: 38/);
+  assert.match(markdown, /Edges: 73/);
+  assert.match(markdown, /Prompt templates: 11/);
   assert.match(markdown, /No external MCP calls are made/);
 });
 

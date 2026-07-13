@@ -52,6 +52,7 @@ from smoke_assertions import (
     EXPECTED_UNKNOWN_SEARCH_DIR,
     assert_audit_json,
     assert_audit_strict_quiet_output,
+    assert_artifact_json,
     assert_check_artifact_json_component_spec,
     assert_check_all_routes_issues_only_output,
     assert_check_examples_json_component_spec,
@@ -8008,6 +8009,24 @@ def assert_prompt_smoke(
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
     assert_prompt_json_component_spec(
+        read_forced_json_output_file(output_path, context=context, cmd=cmd),
+        context=context,
+        cmd=cmd,
+    )
+
+
+def assert_artifact_smoke(
+    cmd: list[str],
+    output_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    seed_force_overwrite_target(output_path, context=context, cmd=cmd)
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_output_write_success(result.stdout, context=context, cmd=cmd, expected_path=str(output_path))
+    assert_artifact_json(
         read_forced_json_output_file(output_path, context=context, cmd=cmd),
         context=context,
         cmd=cmd,
@@ -21320,6 +21339,24 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke installed bin route eval",
         )
         installed_prompt_json = tmp_root / "installed-prompt.json"
+        installed_artifact_json = tmp_root / "installed-artifact.json"
+        assert_artifact_smoke(
+            [
+                str(bin_path),
+                "artifact",
+                "design-contract",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--json",
+                "--out",
+                str(installed_artifact_json),
+                "--force",
+            ],
+            installed_artifact_json,
+            env=smoke_env,
+            context="package smoke installed bin design artifact",
+        )
         assert_prompt_smoke(
             [
                 str(bin_path),
@@ -22745,6 +22782,25 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke npm exec route eval",
         )
         npx_prompt_json = npx_root / "npx-prompt.json"
+        npx_artifact_json = npx_root / "npx-artifact.json"
+        assert_artifact_smoke(
+            npm_exec_cmd(
+                tarball,
+                "artifact",
+                "design-contract",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--json",
+                "--out",
+                str(npx_artifact_json),
+                "--force",
+            ),
+            npx_artifact_json,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec design artifact",
+        )
         assert_prompt_smoke(
             npm_exec_cmd(
                 tarball,

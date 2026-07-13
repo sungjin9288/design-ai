@@ -185,6 +185,7 @@ EXPECTED_HELP_TOPICS = (
     "pack",
     "check",
     "audit",
+    "artifact",
     "doctor",
     "examples",
     "learn",
@@ -231,6 +232,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "pack": "design-ai pack <brief|--from-file file|--stdin|--eval-template|--eval> [--route id] [--with-learning] [--learning-category kind] [--learning-limit N] [--with-recall] [--recall-limit N] [--max-bytes N]",
     "check": "design-ai check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--learn]",
     "audit": "design-ai audit [--strict] [--quiet] [--json]",
+    "artifact": "design-ai artifact <implementation-plan|critique-loop|design-contract> <brief> [--route id] [--json] [--out file]",
     "doctor": "design-ai doctor [--strict] [--json] [--fix]",
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
@@ -270,6 +272,11 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
     ),
     "check": ("Usage:", "design-ai check <artifact.md>", "design-ai check --examples --all-routes", "--learn"),
     "audit": ("Usage:", "design-ai audit [--strict] [--quiet] [--json]"),
+    "artifact": (
+        "Usage:",
+        "design-ai artifact <mode> <brief> [--route id] [--json] [--out file] [--force]",
+        "implementation-plan, critique-loop, design-contract",
+    ),
     "doctor": ("Usage:", "design-ai doctor [--strict] [--json] [--fix]"),
     "examples": ("Usage:", "design-ai examples [query] [--route id] [--limit N] [--json]"),
     "learn": (
@@ -688,6 +695,7 @@ EXPECTED_FUNCTIONAL_ALIAS_SMOKES = (
 EXPECTED_ROUTE_CATALOG_IDS = tuple(EXPECTED_CAPABILITIES["routes"])
 EXPECTED_PROMPT_SLASH_COMMAND = "/design-component-spec"
 EXPECTED_PROMPT_QUALITY_COMMAND = "design-ai check output.md --route component-spec --strict"
+EXPECTED_ARTIFACT_QUALITY_COMMAND = "design-ai check DESIGN.md --route component-spec --strict"
 EXPECTED_PROMPT_PLAYBOOK = "skills/component-spec-writer/PLAYBOOK.md"
 EXPECTED_PROMPT_A11Y_AGENT = "agents/a11y-reviewer.md"
 EXPECTED_ROUTE_AGENTS = (
@@ -1181,6 +1189,9 @@ EXPECTED_SITE_PROMPT_TEMPLATE_KEYS = [
     "taskSelectable",
 ]
 EXPECTED_SITE_PROMPT_TEMPLATE_IDS = [
+    "implementation-plan",
+    "critique-loop",
+    "design-contract",
     "codex-repo-intake",
     "codex-implementation",
     "codex-visual-qa",
@@ -4014,6 +4025,68 @@ def assert_prompt_json_component_spec(raw: str, *, context: str, cmd: list[str])
     assert_prompt_payload_component_spec(payload, context=context, payload_name="prompt JSON")
 
 
+def assert_artifact_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse artifact JSON after {context}") from error
+
+    expected_keys = [
+        "kind",
+        "schemaVersion",
+        "mode",
+        "title",
+        "brief",
+        "route",
+        "outputFile",
+        "sourceFiles",
+        "workflow",
+        "outputSections",
+        "approval",
+        "verification",
+        "markdown",
+    ]
+    payload = assert_smoke_json_keys(
+        payload,
+        expected_keys,
+        label="top-level",
+        context=context,
+        command_label="artifact JSON",
+    )
+    if payload.get("kind") != "design-ai-artifact" or payload.get("schemaVersion") != 1:
+        raise SystemExit(f"artifact JSON after {context} kind or schema version changed")
+    if payload.get("mode") != "design-contract" or payload.get("outputFile") != "DESIGN.md":
+        raise SystemExit(f"artifact JSON after {context} mode or output file changed")
+    if payload.get("brief") != EXPECTED_ROUTE_BRIEF:
+        raise SystemExit(f"artifact JSON after {context} brief differs from expected brief")
+
+    route = payload.get("route")
+    if not isinstance(route, dict) or route.get("id") != EXPECTED_ROUTE_ID:
+        raise SystemExit(f"artifact JSON after {context} route differs from expected route")
+    source_files = payload.get("sourceFiles")
+    if not isinstance(source_files, list) or "knowledge/PRINCIPLES.md" not in source_files:
+        raise SystemExit(f"artifact JSON after {context} source of truth is incomplete")
+    workflow = payload.get("workflow")
+    if not isinstance(workflow, list) or len(workflow) != 4:
+        raise SystemExit(f"artifact JSON after {context} workflow must contain four steps")
+    approval = payload.get("approval")
+    if not isinstance(approval, dict) or approval.get("status") != "pending-human-approval":
+        raise SystemExit(f"artifact JSON after {context} approval boundary changed")
+    verification = payload.get("verification")
+    if not isinstance(verification, dict) or verification.get("command") != EXPECTED_ARTIFACT_QUALITY_COMMAND:
+        raise SystemExit(f"artifact JSON after {context} verification command changed")
+    markdown = payload.get("markdown")
+    if not isinstance(markdown, str):
+        raise SystemExit(f"artifact JSON after {context} markdown is missing")
+    assert_contains_fragments(
+        markdown,
+        ("## Artifact contract", "## Source of truth", "## Approval boundary", "## Verification"),
+        context=context,
+        label="artifact markdown",
+    )
+
+
 def assert_prompt_markdown_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     if raw.lstrip().startswith("{"):
@@ -5442,6 +5515,30 @@ Implement the smallest safe fix. After editing, run the target repo's most relev
 def passing_site_prompt_templates_json() -> str:
     templates = [
         {
+            "id": "implementation-plan",
+            "label": "Implementation plan",
+            "agent": "codex-or-claude",
+            "output": "Portable implementation plan",
+            "description": "Plan one website improvement task with source, approval, and verification evidence.",
+            "taskSelectable": True,
+        },
+        {
+            "id": "critique-loop",
+            "label": "Critique loop",
+            "agent": "codex-or-claude",
+            "output": "Observed critique and revision loop",
+            "description": "Review, revise, and re-observe one website decision without losing the evidence trail.",
+            "taskSelectable": True,
+        },
+        {
+            "id": "design-contract",
+            "label": "Agent-readable DESIGN.md",
+            "agent": "codex-or-claude",
+            "output": "DESIGN.md contract",
+            "description": "Create the canonical brand, component, motion, accessibility, and responsive contract for agents.",
+            "taskSelectable": False,
+        },
+        {
             "id": "codex-repo-intake",
             "label": "Codex repo intake",
             "agent": "codex",
@@ -5914,6 +6011,9 @@ def passing_site_workflow_graph_json() -> str:
         ("task-content-quality", "Resolve Content Quality finding", "content-quality", ["figma", "research", "cms"]),
     ]
     prompts = [
+        ("implementation-plan", "Implementation plan"),
+        ("critique-loop", "Critique loop"),
+        ("design-contract", "Agent-readable DESIGN.md"),
         ("codex-repo-intake", "Codex repo intake"),
         ("codex-implementation", "Codex implementation"),
         ("codex-visual-qa", "Codex visual QA"),
@@ -6030,7 +6130,7 @@ def passing_site_workflow_graph_json() -> str:
                 "taskCount": 3,
                 "generatedTaskCount": 2,
                 "requiredMcpCount": 3,
-                "promptTemplateCount": 8,
+                "promptTemplateCount": 11,
             },
             "nodes": nodes,
             "edges": edges,
@@ -7778,12 +7878,12 @@ def assert_site_prompt_templates_json(raw: str, *, context: str, cmd: list[str])
         context=context,
         command_label="site prompt templates JSON",
     )
-    if payload.get("count") != 8:
-        raise SystemExit(f"site prompt templates JSON after {context} expected eight templates")
+    if payload.get("count") != 11:
+        raise SystemExit(f"site prompt templates JSON after {context} expected eleven templates")
 
     templates = payload.get("templates")
-    if not isinstance(templates, list) or len(templates) != 8:
-        raise SystemExit(f"site prompt templates JSON after {context} templates must contain eight entries")
+    if not isinstance(templates, list) or len(templates) != 11:
+        raise SystemExit(f"site prompt templates JSON after {context} templates must contain eleven entries")
     ids = []
     for template in templates:
         item = assert_smoke_json_keys(
@@ -7801,7 +7901,7 @@ def assert_site_prompt_templates_json(raw: str, *, context: str, cmd: list[str])
 
     if ids != EXPECTED_SITE_PROMPT_TEMPLATE_IDS:
         raise SystemExit(f"site prompt templates JSON after {context} template ids changed")
-    implementation = templates[1]
+    implementation = templates[4]
     if implementation.get("id") != "codex-implementation" or implementation.get("taskSelectable") is not True:
         raise SystemExit(f"site prompt templates JSON after {context} codex-implementation must remain task selectable")
     if implementation.get("agent") != "codex":
@@ -8271,13 +8371,13 @@ def assert_site_workflow_graph_json(raw: str, *, context: str, cmd: list[str]) -
         "status": "pass",
         "workspaceStatus": "pass",
         "mcpStatus": "pass",
-        "nodeCount": 35,
-        "edgeCount": 67,
+        "nodeCount": 38,
+        "edgeCount": 73,
         "auditCategoryCount": 9,
         "taskCount": 3,
         "generatedTaskCount": 2,
         "requiredMcpCount": 3,
-        "promptTemplateCount": 8,
+        "promptTemplateCount": 11,
     }
     for key, expected in expected_summary.items():
         if summary.get(key) != expected:
@@ -12672,7 +12772,7 @@ def run_self_test() -> None:
         scope="smoke assertions",
     )
     stale_site_prompt_templates_payload = json.loads(passing_site_prompt_templates_json())
-    stale_site_prompt_templates_payload["templates"][1]["taskSelectable"] = False
+    stale_site_prompt_templates_payload["templates"][4]["taskSelectable"] = False
     expect_self_test_failure(
         lambda: assert_site_prompt_templates_json(
             json.dumps(stale_site_prompt_templates_payload),

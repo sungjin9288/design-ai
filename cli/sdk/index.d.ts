@@ -167,6 +167,42 @@ export interface PromptPlan {
   recall?: PromptRecall;
 }
 
+// ── artifact ─────────────────────────────────────────────────────────────
+
+export type ArtifactMode = "implementation-plan" | "critique-loop" | "design-contract";
+
+export interface ArtifactWorkflowStep {
+  title: string;
+  purpose: string;
+  evidence: string;
+}
+
+export interface ArtifactApproval {
+  status: "pending-human-approval";
+  requiresApproval: string[];
+}
+
+export interface ArtifactVerification {
+  command: string;
+  checklist: string[];
+}
+
+export interface DesignArtifact {
+  kind: "design-ai-artifact";
+  schemaVersion: 1;
+  mode: ArtifactMode;
+  title: string;
+  brief: string;
+  route: RouteResult;
+  outputFile: string;
+  sourceFiles: string[];
+  workflow: ArtifactWorkflowStep[];
+  outputSections: string[];
+  approval: ArtifactApproval;
+  verification: ArtifactVerification;
+  markdown: string;
+}
+
 export interface PackSummary {
   totalFiles: number;
   includedFiles: number;
@@ -324,7 +360,17 @@ export interface CheckOptions {
   strict?: boolean;
 }
 
-// ── The eight Phase A verbs ─────────────────────────────────────────────────
+export interface ArtifactOptions {
+  /** Artifact operation to plan. */
+  mode: ArtifactMode;
+  /** Force a specific route id instead of scoring the brief. */
+  routeId?: string;
+}
+
+// ── Read-only SDK verbs ───────────────────────────────────────────────────
+
+/** Build a portable implementation, critique, or DESIGN.md artifact plan. */
+export function artifact(brief: string, opts: ArtifactOptions): DesignArtifact;
 
 /** Recommend the best route(s), commands, skills, and knowledge for a brief. */
 export function route(brief: string, opts?: RouteOptions): RouteResult[];
