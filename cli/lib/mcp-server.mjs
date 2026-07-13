@@ -226,6 +226,21 @@ export const MCP_TOOLS = [
     },
   },
   {
+    name: "design_ai_site_linked_preview",
+    title: "Inspect Website Improvement linked preview readiness",
+    description: "Read root metadata from a linked local website folder and return an operator-controlled preview loop. Read-only: does not start a process, call an external service, scan source files, or mutate the target repository.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        workspaceJson: { type: "string", minLength: 2, description: "Website Improvement workspace JSON with an absolute siteProfile.localPath." },
+        strict: optionalBoolean("Exit non-zero on warning/failure readiness."),
+        json: optionalBoolean("Return machine-readable JSON instead of Markdown. Defaults to true."),
+      },
+      required: ["workspaceJson"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "design_ai_site_bundle_handoff",
     title: "Prepare a verified Website Improvement target-repo handoff",
     description: "Validate a local Website Improvement handoff bundle and return a task-scoped Codex/Claude implementation prompt with a required human approval gate. Read-only: no external calls or target-repo mutation.",
@@ -463,6 +478,14 @@ export function buildCliInvocation(toolName, input = {}) {
     maybeBool(args, "--probes", input.probes);
     maybeBool(args, "--strict", input.strict);
     maybeBool(args, "--json", input.json);
+    return { args, stdin };
+  }
+
+  if (toolName === "design_ai_site_linked_preview") {
+    args.push("site", "--stdin", "--linked-preview");
+    stdin = assertString(input.workspaceJson, "workspaceJson");
+    maybeBool(args, "--strict", input.strict);
+    if (input.json !== false) args.push("--json");
     return { args, stdin };
   }
 

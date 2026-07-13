@@ -2,7 +2,7 @@
 
 Use this guide when you want Claude Code or Codex to call design-ai as an MCP server instead of asking the agent to read files manually.
 
-The server is local, stdio-based, and deterministic. The v5.0.0 source candidate exposes 16 tools, including the shared design artifact operation, recall, a read-only Website Improvement bundle handoff, and exactly three opt-in local learning-write tools. Published v4.65.0 remains at 14 tools. The server wraps existing `design-ai` CLI workflows such as route selection, prompt generation, corpus search, artifact checks, and Website Improvement planning.
+The server is local, stdio-based, and deterministic. The v5.0.0 source candidate exposes 17 tools, including the shared design artifact operation, recall, a read-only Website Improvement bundle handoff, a read-only linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v4.65.0 remains at 14 tools. The server wraps existing `design-ai` CLI workflows such as route selection, prompt generation, corpus search, artifact checks, and Website Improvement planning.
 
 ## What the server exposes
 
@@ -19,6 +19,7 @@ The server is local, stdio-based, and deterministic. The v5.0.0 source candidate
 | `design_ai_check` | Check generated Markdown artifacts for grounding, accessibility, responsive notes, and unresolved markers. | Read-only |
 | `design_ai_site_mcp_check` | Validate Website Improvement MCP readiness from workspace JSON. | Read-only |
 | `design_ai_site_mcp_plan` | Generate a Website Improvement MCP action plan. | Read-only |
+| `design_ai_site_linked_preview` | Inspect root metadata for the workspace's absolute local path and return an operator-controlled preview loop. | Read-only; no process start, URL probe, source scan, or target-repo mutation |
 | `design_ai_site_bundle_handoff` | Verify a local Website Improvement bundle and return an approval-gated target-repo implementation prompt for an optional task selector. | Read-only; no external calls or target-repo mutation |
 | `design_ai_learn_remember` | Record a local learning-profile preference for prompt personalization. | Writes only the local learning profile, opt-in |
 | `design_ai_learn_feedback` | Record keep/improve/avoid feedback as a local learning-profile entry. | Writes only the local learning profile, opt-in |

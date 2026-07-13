@@ -1,5 +1,24 @@
 # Roadmap
 
+## Phase 777 — Linked-code preview readiness loop (implemented, unreleased)
+
+Adds the optional code-folder/preview step without turning design-ai into a target-repository runner. The operation reports what can be started, while the operator remains responsible for starting, verifying, and recording the preview.
+
+### Delivered
+- [x] Added `design-ai site <workspace.json> --linked-preview` with JSON/human output, strict status handling, output-file support, absolute-path and symlink guards, root-only project metadata inspection, framework/package-manager detection, and existing manual start-command discovery.
+- [x] Added read-only MCP `design_ai_site_linked_preview`; the canonical source inventory is now 17 MCP tools and 10 SDK exports. The SDK stays unchanged because this operation owns a local-project filesystem boundary.
+- [x] Added Website Console import, readiness metrics, copy-ready start/refresh commands, stage display, JSON export/clear actions, and handoff Markdown that keeps configured URL, process state, browser probe state, and recorded evidence separate.
+- [x] Added focused unit/CLI/MCP/Console tests and installed-bin plus one-shot `npm exec` packed-tarball smoke fixtures.
+
+### Boundary
+- The operation reads only root `package.json`, a supported lockfile, and root `index.html` existence. It does not install, start, probe, crawl, screenshot, scan source files, or mutate the target repository.
+- A passing report means metadata is ready for an operator-controlled preview start. It does not mean the page passed browser, responsive, accessibility, performance, or deployment verification.
+- Target-repo edits, dependency changes, migrations, commits, pushes, deployments, and external writes remain explicit approval gates.
+
+### Verification target
+- [x] Focused linked-preview, CLI argument/help/run, MCP inventory/invocation, capability manifest, and Website Console contract tests pass.
+- [x] `npm run release:check` passed with 650 tests, 8 strict audits, 662 packaged files, and installed-bin plus one-shot `npm exec` linked-preview smoke coverage.
+
 ## Phase 776 — Shared design artifact operation parity (implemented, unreleased)
 
 Turns implementation planning, critique iteration, and agent-readable design contracts into one portable, read-only artifact contract across every agent-facing surface.
@@ -79,7 +98,7 @@ Establishes the verified boundary for the larger refactor while correcting relea
 ### What's still ahead
 - [ ] Merge, tag, and publish require explicit maintainer approval.
 - [ ] Decide whether Playwright becomes a maintained development dependency before adding automated screenshot regression; visual baselines require a stable, versioned execution environment.
-- [ ] Extend the handoff into an optional linked-code-folder/live-preview loop while preserving the current approval boundary and target-repo ownership.
+- [x] Completed in Phase 777: added a root-metadata-only linked-code-folder preview readiness loop while preserving the approval boundary and target-repo ownership.
 - [x] Completed in Phase 776: unified implementation-plan artifacts across CLI, SDK, MCP, and Website Console, then added critique-loop and agent-readable `DESIGN.md` operation parity.
 
 ## Phase 773 — Agentic development routing loop (implemented, unreleased)

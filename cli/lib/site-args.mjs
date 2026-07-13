@@ -44,6 +44,7 @@ export const SITE_OPTIONS = [
   "--prompt-list",
   "--mcp-check",
   "--mcp-plan",
+  "--linked-preview",
   "--graph",
   "--probes",
   "--prompt",
@@ -101,6 +102,7 @@ export function parseSiteArgs(args) {
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
+    linkedPreview: false,
     graph: false,
     probes: false,
     promptTemplate: "",
@@ -226,6 +228,8 @@ export function parseSiteArgs(args) {
       out.mcpCheck = true;
     } else if (arg === "--mcp-plan") {
       out.mcpPlan = true;
+    } else if (arg === "--linked-preview") {
+      out.linkedPreview = true;
     } else if (arg === "--graph") {
       out.graph = true;
     } else if (arg === "--probes") {
@@ -309,7 +313,7 @@ export function parseSiteArgs(args) {
   if (out.languageProvided && !out.intakeTemplate) {
     throw new Error("Use --language only with --intake-template");
   }
-  if (out.intakeTemplate && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.probes || out.report || out.prompts || out.promptTemplate || out.strict || out.yes)) {
+  if (out.intakeTemplate && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.linkedPreview || out.graph || out.probes || out.report || out.prompts || out.promptTemplate || out.strict || out.yes)) {
     throw new Error("Use --intake-template only with --language, --json, --out, or --force");
   }
   if (out.init && !out.initProfile.name.trim()) {
@@ -323,13 +327,13 @@ export function parseSiteArgs(args) {
   ) {
     throw new Error("--init requires --live-url, --repo-url, or --local-path");
   }
-  if (out.init && (out.sample || out.tasks || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate)) {
+  if (out.init && (out.sample || out.tasks || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.linkedPreview || out.graph || out.report || out.prompts || out.promptTemplate)) {
     throw new Error("Use --init without --sample, --tasks, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --prompt-list, --mcp-check, --mcp-plan, --graph, --report, --prompts, or --prompt");
   }
   if (out.init && out.strict && !(out.nextActions || out.bundle)) {
     throw new Error("Use --init --strict only with --next-actions or --bundle");
   }
-  if (out.fromIntake && (out.intakeTemplate || out.sample || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate || out.yes)) {
+  if (out.fromIntake && (out.intakeTemplate || out.sample || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.promptList || out.mcpCheck || out.mcpPlan || out.linkedPreview || out.graph || out.report || out.prompts || out.promptTemplate || out.yes)) {
     throw new Error("Use --from-intake only with --json, --next-actions, --tasks, --bundle, --out, --strict, or --force");
   }
   if (out.fromIntake && out.strict && !(out.nextActions || out.tasks || out.bundle)) {
@@ -341,10 +345,10 @@ export function parseSiteArgs(args) {
   if (out.promptList && sources.length > 0) {
     throw new Error("Use --prompt-list without a workspace JSON file path or --stdin");
   }
-  if (out.sample && (out.report || out.prompts || out.promptTemplate || out.nextActions || out.graph)) {
+  if (out.sample && (out.report || out.prompts || out.promptTemplate || out.nextActions || out.linkedPreview || out.graph)) {
     throw new Error("Use --sample without --report, --prompts, --prompt, --next-actions, or --graph");
   }
-  if (out.promptList && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.mcpCheck || out.mcpPlan || out.graph || out.report || out.prompts || out.promptTemplate || out.strict)) {
+  if (out.promptList && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.mcpCheck || out.mcpPlan || out.linkedPreview || out.graph || out.report || out.prompts || out.promptTemplate || out.strict)) {
     throw new Error("Use --prompt-list without --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --mcp-check, --mcp-plan, --graph, --report, --prompts, --prompt, or --strict");
   }
   if (out.mcpCheck && (out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.graph || out.report || out.prompts || out.promptTemplate)) {
@@ -422,15 +426,15 @@ export function parseSiteArgs(args) {
   if (out.bundle && !out.outPath) {
     throw new Error("--bundle requires --out directory");
   }
-  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.nextActions ? "--next-actions" : "", out.mcpCheck ? "--mcp-check" : "", out.mcpPlan ? "--mcp-plan" : "", out.graph ? "--graph" : "", out.bundle ? "--bundle" : "", out.bundleCheck ? "--bundle-check" : "", out.bundleCompareTarget ? "--bundle-compare" : "", out.bundleHandoff ? "--bundle-handoff" : "", out.bundleRepair ? "--bundle-repair" : ""].filter(Boolean);
+  const outputModes = [out.report ? "--report" : "", out.prompts ? "--prompts" : "", out.promptTemplate ? "--prompt" : "", out.nextActions ? "--next-actions" : "", out.mcpCheck ? "--mcp-check" : "", out.mcpPlan ? "--mcp-plan" : "", out.linkedPreview ? "--linked-preview" : "", out.graph ? "--graph" : "", out.bundle ? "--bundle" : "", out.bundleCheck ? "--bundle-check" : "", out.bundleCompareTarget ? "--bundle-compare" : "", out.bundleHandoff ? "--bundle-handoff" : "", out.bundleRepair ? "--bundle-repair" : ""].filter(Boolean);
   if (outputModes.length > 1) {
-    throw new Error("Use only one output mode: --report, --prompts, --prompt, --next-actions, --mcp-check, --mcp-plan, --graph, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair");
+    throw new Error("Use only one output mode: --report, --prompts, --prompt, --next-actions, --mcp-check, --mcp-plan, --linked-preview, --graph, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair");
   }
   if (out.json && (out.report || out.prompts || out.promptTemplate)) {
-    throw new Error("--json is only supported for the site summary, --next-actions, --mcp-check, --mcp-plan, --graph, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair; use --out with --report, --prompts, or --prompt for Markdown artifacts");
+    throw new Error("--json is only supported for the site summary, --next-actions, --mcp-check, --mcp-plan, --linked-preview, --graph, --bundle-check, --bundle-compare, --bundle-handoff, or --bundle-repair; use --out with --report, --prompts, or --prompt for Markdown artifacts");
   }
-  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.init || out.fromIntake || out.intakeTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.graph)) {
-    throw new Error("--out requires --json, --report, --prompts, --prompt, --init, --from-intake, --intake-template, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --prompt-list, --mcp-check, --mcp-plan, or --graph");
+  if (out.outPath && !(out.json || out.report || out.prompts || out.promptTemplate || out.init || out.fromIntake || out.intakeTemplate || out.sample || out.tasks || out.bundle || out.bundleCheck || out.bundleCompareTarget || out.bundleHandoff || out.bundleRepair || out.nextActions || out.promptList || out.mcpCheck || out.mcpPlan || out.linkedPreview || out.graph)) {
+    throw new Error("--out requires --json, --report, --prompts, --prompt, --init, --from-intake, --intake-template, --sample, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --next-actions, --prompt-list, --mcp-check, --mcp-plan, --linked-preview, or --graph");
   }
 
   const { index, languageProvided, ...parsed } = out;

@@ -143,6 +143,7 @@ tarball and publishing another.
 - `npm run package:smoke` packed-tarball smoke for installed-bin plus one-shot `npm exec --package <tarball>` paths, covering:
   - `design-ai workspace --strict --json` workspace strict failure/success readiness checks plus workspace `--learning-usage` sidecar summaries and workspace `--learning-eval` checkpoint summaries with freshness metadata plus `design-ai workspace` workspace learning restore-backups readiness with restore rollback backup inventory
   - `design-ai site --stdin --json` Website Console export validation
+  - `design-ai site --stdin --linked-preview --strict --json` read-only linked-code preview readiness in installed-bin and one-shot paths, with process-not-started, URL-not-probed, and no-target-repo-mutation assertions
   - `design-ai site --stdin --next-actions --json --out file --force` Website Console next-action operator checklist output-file persistence
   - `design-ai site --stdin --next-actions --out file --force` Website Console next-action human checklist output-file persistence
   - `design-ai site --sample` Website Console sample workspace coverage

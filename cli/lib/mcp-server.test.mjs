@@ -66,6 +66,7 @@ test("MCP tool list exposes design-ai read-only workflow tools", async () => {
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_route"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_artifact"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_mcp_check"));
+  assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_linked_preview"));
 });
 
 test("MCP tool list has the exact ordered public inventory and three write tools", async () => {
@@ -338,6 +339,31 @@ test("buildCliInvocation maps approval-gated Website Improvement bundle handoff"
 
   const handoffTool = MCP_TOOLS.find((tool) => tool.name === "design_ai_site_bundle_handoff");
   assert.equal(Object.hasOwn(handoffTool.inputSchema.properties, "strict"), false);
+});
+
+test("buildCliInvocation maps read-only Website Improvement linked preview", () => {
+  const workspaceJson = JSON.stringify({ siteProfile: { localPath: "/tmp/site" } });
+  assert.deepEqual(
+    buildCliInvocation("design_ai_site_linked_preview", {
+      workspaceJson,
+      strict: true,
+    }),
+    {
+      args: ["site", "--stdin", "--linked-preview", "--strict", "--json"],
+      stdin: workspaceJson,
+    },
+  );
+
+  assert.deepEqual(
+    buildCliInvocation("design_ai_site_linked_preview", {
+      workspaceJson,
+      json: false,
+    }),
+    {
+      args: ["site", "--stdin", "--linked-preview"],
+      stdin: workspaceJson,
+    },
+  );
 });
 
 test("buildCliInvocation maps design_ai_prompt withRecall and recallLimit to CLI flags", () => {

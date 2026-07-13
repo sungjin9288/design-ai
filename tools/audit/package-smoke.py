@@ -1008,6 +1008,13 @@ def site_workspace_fixture_json() -> str:
     )
 
 
+def site_linked_preview_fixture_json(local_path: Path) -> str:
+    payload = json.loads(site_workspace_fixture_json())
+    payload["siteProfile"]["localPath"] = str(local_path)
+    payload["siteProfile"]["liveUrl"] = "http://localhost:4173"
+    return json.dumps(payload)
+
+
 def site_workspace_evidence_fixture_json() -> str:
     payload = json.loads(site_workspace_fixture_json())
     payload["implementationEvidence"] = {
@@ -1750,6 +1757,44 @@ def assert_site_mcp_check_json_smoke(
         env=env,
     )
     assert_site_mcp_check_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_site_linked_preview_json_smoke(
+    cmd: list[str],
+    linked_site_root: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    linked_site_root.mkdir(parents=True, exist_ok=True)
+    (linked_site_root / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'\n", encoding="utf-8")
+    (linked_site_root / "package.json").write_text(
+        json.dumps({
+            "scripts": {"dev": "vite", "build": "vite build"},
+            "devDependencies": {"vite": "7.0.0"},
+        }),
+        encoding="utf-8",
+    )
+    result = run_plain_with_input(
+        cmd,
+        input_text=site_linked_preview_fixture_json(linked_site_root),
+        cwd=cwd,
+        env=env,
+    )
+    payload = json.loads(result.stdout)
+    if (
+        payload.get("kind") != "website-improvement-linked-preview"
+        or payload.get("status") != "pass"
+        or payload.get("linkedCode", {}).get("framework") != "Vite"
+        or payload.get("linkedCode", {}).get("packageManager") != "pnpm"
+        or payload.get("linkedCode", {}).get("startCommand") != "pnpm run dev"
+        or payload.get("preview", {}).get("processStatus") != "not-started"
+        or payload.get("preview", {}).get("probeStatus") != "not-run"
+        or payload.get("boundaries", {}).get("targetRepoMutation") is not False
+        or payload.get("boundaries", {}).get("startsPreviewProcess") is not False
+    ):
+        raise SystemExit(f"site linked preview after {context} changed: {payload!r}")
 
 
 def assert_site_mcp_check_probes_json_smoke(
@@ -20477,6 +20522,13 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site JSON",
         )
+        assert_site_linked_preview_json_smoke(
+            [str(bin_path), "site", "--stdin", "--linked-preview", "--strict", "--json"],
+            install_root / "linked-preview-site",
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin site linked preview JSON",
+        )
         assert_site_next_actions_json_smoke(
             [str(bin_path), "site", "--stdin", "--next-actions", "--json"],
             cwd=install_root,
@@ -21919,6 +21971,13 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site JSON",
+        )
+        assert_site_linked_preview_json_smoke(
+            npm_exec_cmd(tarball, "site", "--stdin", "--linked-preview", "--strict", "--json"),
+            npx_root / "linked-preview-site",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec site linked preview JSON",
         )
         assert_site_next_actions_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--next-actions", "--json"),

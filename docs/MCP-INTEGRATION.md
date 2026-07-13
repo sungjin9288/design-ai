@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the v5.0.0 source candidate exposes 16 tools, including the shared read-only artifact operation, a read-only Website Improvement bundle handoff, and exactly three opt-in local learning-write tools. Published v4.65.0 remains at 14 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the v5.0.0 source candidate exposes 17 tools, including the shared read-only artifact operation, a read-only Website Improvement bundle handoff, a read-only linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v4.65.0 remains at 14 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -46,6 +46,10 @@ The v5.0.0 source candidate adds `design_ai_site_bundle_handoff`. It verifies a 
 Strict verification is mandatory for this MCP tool and cannot be disabled by callers.
 
 The consuming Codex or Claude task must first inspect the target repository read-only, present the exact scope and verification plan, and stop for explicit approval. Implementation begins only after that approval; any broader scope, dependency, migration, deploy, commit, push, or external write requires a new approval.
+
+### Linked-code preview readiness
+
+`design_ai_site_linked_preview` accepts Website Improvement workspace JSON with an absolute `siteProfile.localPath`. It reads only root `package.json`, a supported lockfile, and whether `index.html` exists, then reports the detected framework, package manager, existing start command, and five manual stages. It does not install dependencies, start a server, probe the configured URL, inspect application source files, or modify the target repository. A `pass` result means metadata is ready for a manual start; it is not browser verification.
 
 ## Supported MCPs
 

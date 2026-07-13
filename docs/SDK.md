@@ -8,6 +8,8 @@ See [`AGENT-SDK.md`](AGENT-SDK.md) for the full design rationale, phased plan, a
 
 MCP parity: SDK `artifact()` maps to `design_ai_artifact`; `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
 
+Filesystem boundary: Website Improvement linked-preview inspection remains a CLI/MCP operation (`design-ai site --linked-preview`, `design_ai_site_linked_preview`) rather than an SDK export. It reads an operator-selected local project path and returns process-start guidance, while the SDK stays a curated capability adapter with 10 exports and no general local-project filesystem surface.
+
 ## Install and import
 
 The SDK ships inside the `@design-ai/cli` package (no separate install):

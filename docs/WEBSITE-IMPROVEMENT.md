@@ -17,6 +17,7 @@ For the first real company-site pilot, complete the [Company Website Intake Temp
 - Renders a local Workflow Graph with workspace, profile, audit, MCP, task, prompt, handoff, bundle, and target-repo nodes plus deterministic edge rows.
 - Generates the shared `implementation-plan`, `critique-loop`, and agent-readable `DESIGN.md` artifacts, plus prompts for Codex implementation work, Claude design review, competitor research, copy critique, visual QA, deployment verification, and final handoff.
 - Tracks executed work, verification results, remaining risks, and next actions after target-repo implementation.
+- Imports a `website-improvement-linked-preview` JSON report that shows the linked local path, detected framework/package manager, existing manual start command, and explicit not-started/not-probed/not-recorded runtime state.
 - Imports `design-ai site <bundle-dir> --bundle-handoff --json` output as an Operator Runbook in the Report tab, including runbook metadata source pills, source-bundle provenance/detail review, copy-ready source-bundle source markers, source-bundle artifact-specific action labels, revalidation gate JSON action labels, source-bundle revalidation metadata badges, badge rows, warnings, Markdown gates, source/diagnostic-context-preserving gate-only JSON copy/export/import, focused provenance import source refresh, exported compact source markers, Markdown source markers, source-aware empty runbook Markdown, provenance-only notice source markers, JSON gate reason metadata, focused source-bundle JSON import, provenance-only review state and Markdown markers, guarded copy-ready strict source commands, source-bundle Markdown/JSON copy/export, task/command provenance chips, stage metrics, resettable action/evidence row filters, status indexes, evidence progress, copy-ready stage rows, row-level Markdown copy/export and line copy, guarded filtered-row Markdown copy/export, full Markdown export, and guarded next-line copy actions.
 - Drafts a Markdown handoff report that includes before/after status, implementation evidence, verification evidence, and follow-up work.
 - Preserves handoff evidence when exported JSON is processed by `design-ai site --report`, `--tasks`, or `--bundle`.
@@ -24,7 +25,7 @@ For the first real company-site pilot, complete the [Company Website Intake Temp
 
 ## Boundaries
 
-The console does not crawl pages, run Lighthouse, run axe, capture screenshots, call external AI APIs, connect directly to MCP tools, or modify target website repos. It stores state in browser `localStorage` and supports JSON export/import so the same workspace can be moved later to a server-backed store.
+The console does not crawl pages, run Lighthouse, run axe, capture screenshots, call external AI APIs, connect directly to MCP tools, read local project folders from the browser, start preview processes, or modify target website repos. It stores state in browser `localStorage` and supports JSON export/import so the same workspace can be moved later to a server-backed store.
 
 Actual code changes happen in the target website repository. Use the generated Codex prompts there, then paste verification evidence back into the handoff report.
 
@@ -38,9 +39,11 @@ The three shared artifact modes use the same `design-ai-artifact` schema as CLI 
 4. Review the Workflow Graph to confirm audit, MCP, task, prompt, and handoff dependencies.
 5. Generate starter refactor tasks from findings.
 6. Copy a Codex or Claude prompt and run it in the right tool.
-7. After generating a bundle handoff JSON, import it back into the console to review the Operator Runbook before moving into the target repo.
-8. Record executed work, verification results, remaining risks, and next actions in the Handoff Report tab.
-9. Export the handoff report after implementation and verification.
+7. Generate `--linked-preview --json` from a workspace with an absolute local path and import it into the console.
+8. Start the detected preview command manually after confirming the target repository, then run browser, responsive, accessibility, and runtime checks.
+9. After generating a bundle handoff JSON, import it back into the console to review the Operator Runbook before moving into the target repo.
+10. Record executed work, verification results, remaining risks, and next actions in the Handoff Report tab.
+11. Export the handoff report after implementation and verification.
 
 ## Homepage Build And Refactor Workflow
 
@@ -49,11 +52,14 @@ Homepage implementation is supported as an approval-gated target-repo workflow, 
 1. Capture the homepage profile, findings, target viewports, and selected implementation task.
 2. Generate a bundle and pass `--bundle-check --strict`.
 3. Call `design_ai_site_bundle_handoff` from Codex or Claude, or run the equivalent local `--bundle-handoff --strict --json` command.
-4. Inspect the target repository read-only and present the exact files, scope, risks, and target-repo verification commands.
-5. Stop until the user explicitly approves the selected task and repository.
-6. Implement using the target repo's existing components, tokens, state patterns, and styling conventions.
-7. Verify real browser behavior at desktop, tablet, and mobile viewports, including keyboard/focus, contrast, screen-reader semantics, runtime errors, lint, tests, and build as applicable.
-8. Request approval again before adding dependencies, widening scope, migrating data, deploying, committing, pushing, or performing another external write.
+4. Run `design-ai site <workspace.json> --linked-preview --strict --json --out linked-preview.json` or call `design_ai_site_linked_preview`, then import the report into the Console.
+5. Inspect the target repository read-only and present the exact files, scope, risks, preview command, and target-repo verification commands.
+6. Stop until the user explicitly approves the selected task and repository.
+7. Implement using the target repo's existing components, tokens, state patterns, and styling conventions.
+8. Start the preview command manually. The linked-preview operation itself never starts a process or probes a URL.
+9. Verify real browser behavior at desktop, tablet, and mobile viewports, including keyboard/focus, contrast, screen-reader semantics, runtime errors, lint, tests, and build as applicable.
+10. Record browser and command evidence in the target repo and Console; a configured URL alone is never treated as verification.
+11. Request approval again before adding dependencies, widening scope, migrating data, deploying, committing, pushing, or performing another external write.
 
 The handoff MCP tool remains local and read-only. It transports the verified bundle contract and a pending approval state; it does not mutate the target repository.
 
@@ -84,6 +90,7 @@ design-ai site website-workspace.json --json
 design-ai site website-workspace.json --mcp-check --strict --json
 design-ai site website-workspace.json --mcp-check --probes --json
 design-ai site website-workspace.json --mcp-plan --out mcp-action-plan.md
+design-ai site website-workspace.json --linked-preview --strict --json --out linked-preview.json
 design-ai site website-workspace.json --next-actions --json
 design-ai site website-workspace.json --next-actions --out website-next-actions.md
 design-ai site website-workspace.json --graph --json --out website-workflow-graph.json
@@ -99,6 +106,8 @@ design-ai site website-workspace.json --prompt codex-implementation --out codex-
 design-ai site website-workspace.json --prompt codex-implementation --task task-accessibility --out task-accessibility.md
 cat website-workspace.json | design-ai site --stdin --strict --json
 ```
+
+`--linked-preview` requires an absolute `siteProfile.localPath`. It reads only root `package.json`, a supported root lockfile, and whether root `index.html` exists. It detects an existing `dev`, `preview`, or `start` script, or suggests Python's static server for a root HTML entry. The report never installs a dependency, recursively scans source files, starts the command, probes the URL, or changes the linked repository. Import the JSON into Website Console to keep metadata readiness separate from runtime verification evidence.
 
 For a greenfield homepage, the target repo or local path is sufficient before the first preview exists:
 

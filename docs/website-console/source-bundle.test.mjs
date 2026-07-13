@@ -160,3 +160,14 @@ test("Website Console uses deterministic fallback task ids", () => {
   assert.match(appSource, /id: String\(item\.id \|\| "task-" \+ \(index \+ 1\)\)/);
   assert.doesNotMatch(appSource, /task-" \+ Date\.now\(\) \+ "-" \+ index/);
 });
+
+test("Website Console imports and labels linked preview readiness without claiming runtime verification", () => {
+  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+
+  assert.match(appSource, /website-improvement-linked-preview/);
+  assert.match(appSource, /Import workspace\/runbook\/preview JSON/);
+  assert.match(appSource, /No process started by design-ai/);
+  assert.match(appSource, /A configured URL is not browser verification/);
+  assert.match(appSource, /Linked preview readiness JSON imported\. Report tab opened\./);
+  assert.match(appSource, /no process start, external call, source scan, or target-repo mutation/);
+});

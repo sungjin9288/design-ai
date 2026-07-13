@@ -40,6 +40,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
+    linkedPreview: false,
     graph: false,
     probes: false,
     promptTemplate: "",
@@ -88,6 +89,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
     promptList: false,
     mcpCheck: false,
     mcpPlan: false,
+    linkedPreview: false,
     graph: false,
     probes: false,
     promptTemplate: "",
@@ -121,6 +123,7 @@ test("parseSiteArgs supports file, stdin, strict, json, report, prompts, and out
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--json"]).mcpCheck, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-plan"]).mcpPlan, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-plan", "--json"]).json, true);
+  assert.equal(parseSiteArgs(["workspace.json", "--linked-preview", "--json"]).linkedPreview, true);
   assert.equal(parseSiteArgs(["workspace.json", "--mcp-check", "--probes", "--json"]).probes, true);
   assert.equal(parseSiteArgs(["workspace.json", "--next-actions", "--json"]).nextActions, true);
   assert.equal(parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--next-actions", "--json"]).nextActions, true);
@@ -217,6 +220,7 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--viewport", "watch"]), /--viewport must be one of/);
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--sample"]), /Use --init without --sample/);
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--mcp-check"]), /Use --init without --sample/);
+  assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--local-path", "/tmp/site", "--linked-preview"]), /Use --init without --sample/);
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--strict"]), /Use --init --strict only with --next-actions or --bundle/);
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--bundle"]), /--bundle requires --out directory/);
   assert.throws(() => parseSiteArgs(["--init", "--name", "Company", "--live-url", "https://example.com", "--bundle", "--json", "--out", "bundle"]), /--json is not supported with --bundle/);
@@ -300,6 +304,7 @@ test("parseSiteArgs rejects invalid combinations and unknown options", () => {
   assert.throws(() => parseSiteArgs(["workspace.json", "--report", "--prompts"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--prompts", "--prompt", "codex-implementation"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--mcp-check", "--mcp-plan"]), /only one output mode/);
+  assert.throws(() => parseSiteArgs(["workspace.json", "--linked-preview", "--mcp-plan"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--next-actions", "--graph"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--graph", "--report"]), /only one output mode/);
   assert.throws(() => parseSiteArgs(["workspace.json", "--probes"]), /Use --probes only with --mcp-check or --mcp-plan/);

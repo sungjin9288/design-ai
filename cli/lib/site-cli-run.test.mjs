@@ -24,10 +24,14 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const promptList = path.join(dir, "out", "prompt-templates.json");
     const mcpCheck = path.join(dir, "out", "mcp-check.json");
     const mcpPlan = path.join(dir, "out", "mcp-action-plan.md");
+    const linkedPreview = path.join(dir, "out", "linked-preview.json");
     const nextActions = path.join(dir, "out", "next-actions.json");
     const nextActionsHuman = path.join(dir, "out", "next-actions.md");
     const workflowGraph = path.join(dir, "out", "website-workflow-graph.json");
-    writeFileSync(file, JSON.stringify(createSampleSiteWorkspace()), "utf8");
+    const workspace = createSampleSiteWorkspace();
+    workspace.siteProfile.localPath = dir;
+    writeFileSync(path.join(dir, "package.json"), JSON.stringify({ scripts: { dev: "vite" }, devDependencies: { vite: "7.0.0" } }), "utf8");
+    writeFileSync(file, JSON.stringify(workspace), "utf8");
 
     const jsonOutput = await captureConsole(() => runSite([file, "--json"]));
     const payload = JSON.parse(jsonOutput.stdout);
@@ -62,6 +66,14 @@ test("runSite prints JSON and writes report/prompt artifacts", async () => {
     const mcpPlanOutput = await captureConsole(() => runSite([file, "--mcp-plan", "--out", mcpPlan]));
     assert.match(mcpPlanOutput.stdout, /Wrote /);
     assert.match(readFileSync(mcpPlan, "utf8"), /Website improvement MCP action plan/);
+
+    const linkedPreviewOutput = await captureConsole(() => runSite([file, "--linked-preview", "--json", "--out", linkedPreview]));
+    assert.match(linkedPreviewOutput.stdout, /Wrote /);
+    const linkedPreviewPayload = JSON.parse(readFileSync(linkedPreview, "utf8"));
+    assert.equal(linkedPreviewPayload.kind, "website-improvement-linked-preview");
+    assert.equal(linkedPreviewPayload.status, "pass");
+    assert.equal(linkedPreviewPayload.linkedCode.framework, "Vite");
+    assert.equal(linkedPreviewPayload.preview.processStatus, "not-started");
 
     const nextActionsHumanOutput = await captureConsole(() => runSite([file, "--next-actions"]));
     assert.match(nextActionsHumanOutput.stdout, /Website Improvement next actions/);
