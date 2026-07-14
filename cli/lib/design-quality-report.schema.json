@@ -1,0 +1,270 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-ai.dev/contracts/design-quality-report.v1.schema.json",
+  "title": "Design AI quality report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "kind",
+    "schemaVersion",
+    "generatedAt",
+    "subject",
+    "context",
+    "boundary",
+    "sources",
+    "lenses",
+    "findings",
+    "summary",
+    "approval"
+  ],
+  "properties": {
+    "kind": { "const": "design-ai-quality-report" },
+    "schemaVersion": { "const": 1 },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "subject": { "$ref": "#/$defs/subject" },
+    "context": { "$ref": "#/$defs/context" },
+    "boundary": { "$ref": "#/$defs/boundary" },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/evidence" }
+    },
+    "lenses": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "items": { "$ref": "#/$defs/lens" },
+      "allOf": [
+        { "contains": { "properties": { "id": { "const": "purpose-frequency" } } }, "minContains": 1, "maxContains": 1 },
+        { "contains": { "properties": { "id": { "const": "response" } } }, "minContains": 1, "maxContains": 1 },
+        { "contains": { "properties": { "id": { "const": "spatial-continuity" } } }, "minContains": 1, "maxContains": 1 },
+        { "contains": { "properties": { "id": { "const": "interruptibility" } } }, "minContains": 1, "maxContains": 1 },
+        { "contains": { "properties": { "id": { "const": "timing-cohesion" } } }, "minContains": 1, "maxContains": 1 },
+        { "contains": { "properties": { "id": { "const": "performance" } } }, "minContains": 1, "maxContains": 1 },
+        { "contains": { "properties": { "id": { "const": "accessibility" } } }, "minContains": 1, "maxContains": 1 },
+        { "contains": { "properties": { "id": { "const": "responsive-resilience" } } }, "minContains": 1, "maxContains": 1 }
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    },
+    "summary": { "$ref": "#/$defs/summary" },
+    "approval": { "$ref": "#/$defs/approval" }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "qualityStatus": {
+      "enum": ["pass", "warning", "fail", "unverified"]
+    },
+    "lensId": {
+      "enum": [
+        "purpose-frequency",
+        "response",
+        "spatial-continuity",
+        "interruptibility",
+        "timing-cohesion",
+        "performance",
+        "accessibility",
+        "responsive-resilience"
+      ]
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "source"],
+      "properties": {
+        "name": { "$ref": "#/$defs/nonEmptyString" },
+        "type": {
+          "enum": ["artifact", "component", "flow", "page", "application"]
+        },
+        "source": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["brief", "routeId", "locale", "viewports"],
+      "properties": {
+        "brief": { "$ref": "#/$defs/nonEmptyString" },
+        "routeId": { "$ref": "#/$defs/nonEmptyString" },
+        "locale": { "$ref": "#/$defs/nonEmptyString" },
+        "viewports": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "targetRepoMutation",
+        "externalWrites",
+        "localEvidenceWrites",
+        "localEvidencePath",
+        "notes"
+      ],
+      "properties": {
+        "mode": { "enum": ["read-only", "local-evidence-write"] },
+        "targetRepoMutation": { "const": false },
+        "externalWrites": { "const": false },
+        "localEvidenceWrites": { "type": "boolean" },
+        "localEvidencePath": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/nonEmptyString" }
+          ]
+        },
+        "notes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "mode": { "const": "read-only" } } },
+          "then": {
+            "properties": {
+              "localEvidenceWrites": { "const": false },
+              "localEvidencePath": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "mode": { "const": "local-evidence-write" } } },
+          "then": {
+            "properties": {
+              "localEvidenceWrites": { "const": true },
+              "localEvidencePath": { "$ref": "#/$defs/nonEmptyString" }
+            }
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "reference", "observation"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "brief",
+            "code",
+            "runtime",
+            "screenshot",
+            "accessibility",
+            "manual",
+            "design-contract"
+          ]
+        },
+        "reference": { "$ref": "#/$defs/nonEmptyString" },
+        "observation": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "lens": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "summary", "evidence"],
+      "properties": {
+        "id": { "$ref": "#/$defs/lensId" },
+        "status": { "$ref": "#/$defs/qualityStatus" },
+        "summary": { "$ref": "#/$defs/nonEmptyString" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/evidence" }
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "lens",
+        "severity",
+        "status",
+        "title",
+        "location",
+        "before",
+        "after",
+        "why",
+        "evidence",
+        "verification"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/nonEmptyString" },
+        "lens": { "$ref": "#/$defs/lensId" },
+        "severity": { "enum": ["p0", "p1", "p2", "p3"] },
+        "status": { "enum": ["confirmed", "unverified"] },
+        "title": { "$ref": "#/$defs/nonEmptyString" },
+        "location": { "$ref": "#/$defs/nonEmptyString" },
+        "before": { "$ref": "#/$defs/nonEmptyString" },
+        "after": { "$ref": "#/$defs/nonEmptyString" },
+        "why": { "$ref": "#/$defs/nonEmptyString" },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/evidence" }
+        },
+        "verification": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "confirmedFindings",
+        "unverifiedFindings",
+        "blockingFindings",
+        "nextAction"
+      ],
+      "properties": {
+        "status": { "$ref": "#/$defs/qualityStatus" },
+        "confirmedFindings": { "type": "integer", "minimum": 0 },
+        "unverifiedFindings": { "type": "integer", "minimum": 0 },
+        "blockingFindings": { "type": "integer", "minimum": 0 },
+        "nextAction": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "requiredBefore"],
+      "properties": {
+        "status": { "enum": ["not-required", "pending", "approved"] },
+        "requiredBefore": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "not-required" } } },
+          "then": { "properties": { "requiredBefore": { "maxItems": 0 } } }
+        },
+        {
+          "if": { "properties": { "status": { "const": "pending" } } },
+          "then": { "properties": { "requiredBefore": { "minItems": 1 } } }
+        }
+      ]
+    }
+  }
+}

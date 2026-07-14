@@ -115,6 +115,8 @@ The public product surface and its internal implementation have separate owners:
 | Route catalog | `cli/lib/route-catalog.mjs` | Stable route definitions and route ID validation |
 | Route operation | `cli/lib/route-operation.mjs` | Shared read-only route payload assembly for CLI, SDK, and MCP |
 | Route engine | `cli/lib/route.mjs` | Scoring, parsing, reference enrichment, and evaluation |
+| Design quality contract | `cli/lib/design-quality-report.schema.json` | Versioned evidence, finding, status, permission, and approval shape |
+| Design quality validation | `cli/lib/design-quality-contract.mjs` | Dependency-free report validation and derived-summary consistency |
 | Website Console source bundle | `docs/website-console/source-bundle.js` | Provenance and revalidation data contract without DOM access |
 | Website Console UI | `docs/website-console/app.js` | DOM, storage, graph, copy, and Markdown rendering |
 | Python capability audit | `tools/audit/capability_manifest.py` | Package-independent validation of the canonical identity contract |
@@ -122,6 +124,12 @@ The public product surface and its internal implementation have separate owners:
 The manifest protects names and counts; it does not dispatch runtime behavior. Each
 runtime owner keeps an explicit implementation so a metadata change cannot silently
 change execution.
+
+The design quality contract is another pure boundary. It does not inspect a target
+repository, start a browser, or mutate a file. Future CLI, SDK, MCP, Console, and
+browser adapters must produce the same report shape and pass the same validator.
+Runtime owners may collect different evidence, but they cannot weaken `unverified`
+status or the report's permission boundary.
 
 ## Artifact ownership
 

@@ -1,0 +1,198 @@
+{
+  "kind": "design-ai-quality-report",
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-14T00:00:00.000Z",
+  "subject": {
+    "name": "Korean fintech account settings benchmark",
+    "type": "flow",
+    "source": "examples/benchmarks/korean-fintech-settings/source.html"
+  },
+  "context": {
+    "brief": "Review a Korean fintech account settings flow before implementation handoff.",
+    "routeId": "design-engineering-review",
+    "locale": "ko-KR",
+    "viewports": ["mobile", "desktop"]
+  },
+  "boundary": {
+    "mode": "read-only",
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "localEvidenceWrites": false,
+    "localEvidencePath": null,
+    "notes": [
+      "The source is a synthetic benchmark fixture.",
+      "No browser session was available for this baseline report."
+    ]
+  },
+  "sources": [
+    {
+      "kind": "code",
+      "reference": "examples/benchmarks/korean-fintech-settings/source.html",
+      "observation": "Static HTML fixture inspected without executing scripts or changing files."
+    },
+    {
+      "kind": "brief",
+      "reference": "quality-report.json#context.brief",
+      "observation": "The brief requires Korean fintech and implementation-handoff coverage."
+    }
+  ],
+  "lenses": [
+    {
+      "id": "purpose-frequency",
+      "status": "pass",
+      "summary": "The page exposes one focused account-maintenance task.",
+      "evidence": [
+        {
+          "kind": "code",
+          "reference": "source.html:9-17",
+          "observation": "The main region contains one settings heading, one field, and one save action."
+        }
+      ]
+    },
+    {
+      "id": "response",
+      "status": "unverified",
+      "summary": "Activation feedback cannot be confirmed from static HTML.",
+      "evidence": [
+        {
+          "kind": "code",
+          "reference": "source.html:16",
+          "observation": "The fixture defines a button but no runtime state or handler."
+        }
+      ]
+    },
+    {
+      "id": "spatial-continuity",
+      "status": "pass",
+      "summary": "No overlay, navigation, or spatial transition exists in the fixture.",
+      "evidence": [
+        {
+          "kind": "code",
+          "reference": "source.html:8-18",
+          "observation": "The fixture is a single static main region."
+        }
+      ]
+    },
+    {
+      "id": "interruptibility",
+      "status": "unverified",
+      "summary": "Repeated submission and cancellation behavior require runtime evidence.",
+      "evidence": [
+        {
+          "kind": "code",
+          "reference": "source.html:16",
+          "observation": "Static markup cannot prove rapid-repeat or in-flight cancellation behavior."
+        }
+      ]
+    },
+    {
+      "id": "timing-cohesion",
+      "status": "unverified",
+      "summary": "No motion implementation is present to inspect.",
+      "evidence": [
+        {
+          "kind": "code",
+          "reference": "source.html",
+          "observation": "The fixture has no stylesheet, animation, or transition."
+        }
+      ]
+    },
+    {
+      "id": "performance",
+      "status": "unverified",
+      "summary": "Static markup cannot establish responsiveness under realistic interaction or content.",
+      "evidence": [
+        {
+          "kind": "code",
+          "reference": "source.html",
+          "observation": "The fixture has no executable workload from which runtime responsiveness can be measured."
+        }
+      ]
+    },
+    {
+      "id": "accessibility",
+      "status": "fail",
+      "summary": "The phone input has no programmatically associated label.",
+      "evidence": [
+        {
+          "kind": "code",
+          "reference": "source.html:12-14",
+          "observation": "Visible field text is a span and the input has no label, aria-label, or aria-labelledby."
+        }
+      ]
+    },
+    {
+      "id": "responsive-resilience",
+      "status": "unverified",
+      "summary": "Viewport behavior and Korean label wrapping require browser evidence.",
+      "evidence": [
+        {
+          "kind": "code",
+          "reference": "source.html:5",
+          "observation": "A viewport meta tag exists, but static inspection cannot prove layout resilience."
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "missing-associated-label",
+      "lens": "accessibility",
+      "severity": "p1",
+      "status": "confirmed",
+      "title": "Associate the phone field label with its input",
+      "location": "examples/benchmarks/korean-fintech-settings/source.html:12",
+      "before": "The visible phone label is a span next to an unlabeled input.",
+      "after": "Use a label element whose for value matches the input id.",
+      "why": "Screen-reader users need a programmatic name for the field.",
+      "evidence": [
+        {
+          "kind": "code",
+          "reference": "source.html:12-14",
+          "observation": "No label association or accessible-name attribute is present."
+        }
+      ],
+      "verification": [
+        "Inspect the accessibility tree and confirm the input name is 휴대폰 번호.",
+        "Tab to the field and confirm the visible focus indicator remains present."
+      ]
+    },
+    {
+      "id": "runtime-interaction-proof-missing",
+      "lens": "interruptibility",
+      "severity": "p2",
+      "status": "unverified",
+      "title": "Record repeated-submit and cancellation behavior",
+      "location": "runtime: save action",
+      "before": "No runtime session was available, so in-flight behavior is unknown.",
+      "after": "Exercise the save action five times rapidly and attempt cancellation during the request.",
+      "why": "Static code cannot establish whether repeated input queues, locks, or preserves current state.",
+      "evidence": [
+        {
+          "kind": "manual",
+          "reference": "quality-report.json#boundary.notes",
+          "observation": "The baseline explicitly records that no browser session was available."
+        }
+      ],
+      "verification": [
+        "Run the approved browser verification profile against mobile and desktop viewports.",
+        "Record rapid-repeat, cancellation, keyboard, and reduced-motion observations."
+      ]
+    }
+  ],
+  "summary": {
+    "status": "fail",
+    "confirmedFindings": 1,
+    "unverifiedFindings": 1,
+    "blockingFindings": 0,
+    "nextAction": "Fix the accessible-name failure, then collect the missing runtime evidence."
+  },
+  "approval": {
+    "status": "pending",
+    "requiredBefore": [
+      "editing the target repository",
+      "starting a browser verification process",
+      "creating a commit or external handoff"
+    ]
+  }
+}

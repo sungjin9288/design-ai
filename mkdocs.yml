@@ -173,6 +173,9 @@ nav:
   - Quickstart: docs/QUICKSTART.md
   - Distribution: docs/DISTRIBUTION.md
   - Architecture: docs/ARCHITECTURE.md
+  - Design Quality:
+      - Product specialization plan: docs/PRODUCT-SPECIALIZATION-PLAN.md
+      - Quality contract: docs/DESIGN-QUALITY-CONTRACT.md
   - Agent Development: docs/AGENT-DEVELOPMENT.md
   - Agent SDK:
       - Reference: docs/SDK.md

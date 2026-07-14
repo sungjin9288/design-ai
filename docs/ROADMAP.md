@@ -1,5 +1,25 @@
 # Roadmap
 
+## Phase 778 - Evidence-backed design quality contract (implemented, unreleased)
+
+Establishes the shared quality-report contract for design review before adding a
+new entry command, repository inspector, or browser runner.
+
+### Delivered
+- [x] Added a versioned JSON Schema and dependency-free Node validator for subject, context, permission boundary, evidence, eight quality lenses, findings, summary, and approval gates.
+- [x] Added a Korean fintech settings benchmark that separates a confirmed accessibility failure from runtime behavior that static inspection cannot verify.
+- [x] Documented the product specialization path from one start flow through read-only inspection, optional browser evidence, Korean product packs, and benchmark-backed adoption proof.
+- [x] Added package-content guards for the schema, validator, benchmark, and public contract documentation.
+
+### Boundary
+- The contract validates reports only. It does not inspect a target repository, start a browser, install dependencies, edit files, publish, deploy, or write to an external system.
+- Report summaries are derived from lens and finding state. No numeric quality score is introduced.
+- Browser and accessibility production dependencies remain a separate approval decision for Phase P3.
+
+### Verification target
+- [x] Focused contract and benchmark tests pass.
+- [x] `npm run release:check` passed with 656 tests, 8 strict audits, 668 packaged files, a warning-free documentation build, and installed-bin plus one-shot `npm exec` smoke coverage.
+
 ## Phase 777 — Linked-code preview readiness loop (implemented, unreleased)
 
 Adds the optional code-folder/preview step without turning design-ai into a target-repository runner. The operation reports what can be started, while the operator remains responsible for starting, verifying, and recording the preview.
