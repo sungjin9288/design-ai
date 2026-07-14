@@ -7,6 +7,7 @@ import { runStatus } from "../commands/status.mjs";
 import { runList } from "../commands/list.mjs";
 import { runAudit } from "../commands/audit.mjs";
 import { runArtifact } from "../commands/artifact.mjs";
+import { runStart } from "../commands/start.mjs";
 import { runCheck } from "../commands/check.mjs";
 import { runDoctor } from "../commands/doctor.mjs";
 import { runExamples } from "../commands/examples.mjs";
@@ -41,6 +42,7 @@ const commands = {
   audit: runAudit,
   a: runAudit,
   artifact: runArtifact,
+  start: runStart,
   check: runCheck,
   lint: runCheck,
   doctor: runDoctor,
@@ -88,6 +90,7 @@ export const CANONICAL_COMMANDS = [
   "check",
   "audit",
   "artifact",
+  "start",
   "doctor",
   "examples",
   "learn",

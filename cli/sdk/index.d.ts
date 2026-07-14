@@ -1,7 +1,7 @@
 // Type declarations for the design-ai Agent SDK — Phase A (read-only).
 // Hand-written, zero-build: no TypeScript toolchain is required to produce or
 // ship these. They mirror the runtime shapes exercised by cli/sdk/index.test.mjs
-// (the semver anchor). The eight exported names and their return-shape top-level
+// (the semver anchor). The eleven exported names and their return-shape top-level
 // keys are the stable, semver-covered surface; deeper nested shapes follow the
 // same JSON the CLI's `--json` mode emits.
 //
@@ -203,6 +203,75 @@ export interface DesignArtifact {
   markdown: string;
 }
 
+// ── start ────────────────────────────────────────────────────────────────
+
+export interface StartOptions {
+  routeId?: string;
+  siteName?: string;
+  repoUrl?: string;
+  localPath?: string;
+  url?: string;
+  screenshots?: string[];
+  locale?: string;
+  viewports?: string[];
+}
+
+export interface StartContext {
+  siteName: string;
+  repoUrl: string;
+  localPath: string;
+  url: string;
+  screenshots: string[];
+  locale: string;
+  viewports: string[];
+}
+
+export interface StartReference {
+  kind: "repository-url" | "local-path" | "page-url" | "screenshot";
+  reference: string;
+  status: "declared-not-read";
+}
+
+export interface StartPathway {
+  id: "website-improvement" | "design-review" | "implementation-plan";
+  status: "needs-input" | "ready" | "playbook-ready";
+  reason: string;
+  missingInputs: string[];
+  commandArgs: string[];
+  command: string;
+}
+
+export interface StartPayload {
+  kind: "design-ai-start";
+  schemaVersion: 1;
+  brief: string;
+  context: StartContext;
+  route: Pick<RouteResult, "id" | "label" | "confidence" | "matchedKeywords">;
+  designContract: DesignArtifact;
+  review: {
+    status: "playbook-ready-not-run";
+    routeId: string;
+    executed: false;
+    sourceFiles: string[];
+  };
+  pathway: StartPathway;
+  effects: {
+    performed: {
+      reads: Array<{ kind: "design-ai-corpus"; reference: string }>;
+      localWrites: never[];
+      targetRepoMutations: never[];
+      externalActions: never[];
+    };
+    intended: {
+      reads: StartReference[];
+      localWrites: Array<{ reference: string; status: "not-performed" }>;
+      targetRepoMutations: never[];
+      externalActions: Array<{ action: "inspect-reference"; reference: string; status: "not-performed" }>;
+    };
+    approvalRequiredBefore: string[];
+  };
+}
+
 export interface PackSummary {
   totalFiles: number;
   includedFiles: number;
@@ -371,6 +440,9 @@ export interface ArtifactOptions {
 
 /** Build a portable implementation, critique, or DESIGN.md artifact plan. */
 export function artifact(brief: string, opts: ArtifactOptions): DesignArtifact;
+
+/** Build one read-only route, design contract, review playbook, and next-step plan. */
+export function start(brief: string, opts?: StartOptions): StartPayload;
 
 /** Recommend the best route(s), commands, skills, and knowledge for a brief. */
 export function route(brief: string, opts?: RouteOptions): RouteResult[];

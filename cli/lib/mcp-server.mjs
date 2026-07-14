@@ -5,10 +5,12 @@ import { createInterface } from "node:readline";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { DESIGN_AI_HOME, PACKAGE_ROOT } from "./paths.mjs";
+import { DESIGN_AI_HOME, PACKAGE_ROOT, SYMLINK_PREFIX } from "./paths.mjs";
 import { LEARNING_CATEGORIES, LEARNING_FEEDBACK_OUTCOMES } from "./learn-args.mjs";
 import { formatRouteJson } from "./route.mjs";
 import { buildRoutePayload } from "./route-operation.mjs";
+import { buildStartPayload } from "./start-operation.mjs";
+import { formatStartJson } from "./start.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
 const LEARNING_WRITE_BOUNDARY = "Writes ONLY the local learning profile (DESIGN_AI_LEARNING_FILE or its default), and only when explicitly called.";
@@ -50,6 +52,27 @@ export const MCP_TOOLS = [
         brief: { type: "string", minLength: 1, description: "Task brief to route." },
         limit: optionalInteger({ description: "Maximum route recommendations, 1-10.", minimum: 1, maximum: 10 }),
         explain: optionalBoolean("Include route scoring and reference coverage details."),
+      },
+      required: ["brief"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_start",
+    title: "Start a design task",
+    description: "Build one read-only route, DESIGN.md contract, review playbook, and next-step plan. Declared repositories, URLs, and screenshots are not inspected or fetched.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        brief: { type: "string", minLength: 1, description: "Task brief." },
+        routeId: optionalString("Optional forced route id."),
+        siteName: optionalString("Optional site name for Website Improvement workspace planning."),
+        repoUrl: optionalString("Declared repository URL. It is not fetched."),
+        localPath: optionalString("Declared absolute local repository path. It is not read."),
+        url: optionalString("Declared page URL. It is not opened."),
+        screenshots: { type: "array", items: { type: "string", minLength: 1 }, description: "Declared screenshot paths or URLs. They are not opened." },
+        locale: optionalString("Optional locale such as ko-KR."),
+        viewports: { type: "array", items: { type: "string", minLength: 1 }, description: "Optional viewport names." },
       },
       required: ["brief"],
       additionalProperties: false,
@@ -567,6 +590,28 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
     };
   }
 
+  if (name === "design_ai_start") {
+    const payload = buildStartPayload({
+      brief: input.brief,
+      sourceRoot: DESIGN_AI_HOME,
+      prefix: SYMLINK_PREFIX,
+      routeId: input.routeId,
+      context: {
+        siteName: input.siteName,
+        repoUrl: input.repoUrl,
+        localPath: input.localPath,
+        url: input.url,
+        screenshots: input.screenshots,
+        locale: input.locale,
+        viewports: input.viewports,
+      },
+    });
+    return {
+      content: [{ type: "text", text: truncateText(formatStartJson(payload)) }],
+      isError: false,
+    };
+  }
+
   const invocation = buildCliInvocation(name, input || {});
   const result = await runCli(invocation.args, { stdin: invocation.stdin });
   const text = [
@@ -720,7 +765,7 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
         name: "design-ai",
         version: readPackageVersion(),
       },
-      instructions: "Use design-ai MCP tools for local, deterministic design expertise: route briefs, generate prompts/packs, build implementation/critique/DESIGN.md artifacts, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, validate Website Improvement MCP readiness, and prepare approval-gated target-repo handoffs. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
+      instructions: "Use design-ai MCP tools for local, deterministic design expertise: start from one read-only route/design-contract plan, route briefs, generate prompts/packs, build implementation/critique/DESIGN.md artifacts, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, validate Website Improvement MCP readiness, and prepare approval-gated target-repo handoffs. design_ai_start records declared repositories, pages, and screenshots without inspecting them or executing its next command. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
     });
   }
 

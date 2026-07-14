@@ -28,4 +28,5 @@ export { prompt } from "./prompt-adapter.mjs";
 export { recall } from "./recall-adapter.mjs";
 export { route, routes } from "./route-adapter.mjs";
 export { search } from "./search-adapter.mjs";
+export { start } from "./start-adapter.mjs";
 export { version } from "./version-adapter.mjs";

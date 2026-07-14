@@ -26,6 +26,56 @@
     };
   }
 
+  function extractStartPlanPayload(value) {
+    if (!value || typeof value !== "object") return null;
+    if (value.kind !== "design-ai-start" || value.schemaVersion !== 1) return null;
+    if (!value.brief || !value.route || !value.route.id) return null;
+    if (!value.designContract || value.designContract.kind !== "design-ai-artifact") return null;
+    if (value.designContract.schemaVersion !== 1 || value.designContract.mode !== "design-contract") return null;
+    if (!value.designContract.route || value.designContract.route.id !== value.route.id) return null;
+    if (!value.review || value.review.status !== "playbook-ready-not-run" || value.review.executed !== false) return null;
+    if (!value.pathway || !nonEmptyString(value.pathway.command)) return null;
+
+    var performed = value.effects && value.effects.performed;
+    if (!performed || !validCorpusReads(performed.reads)) return null;
+    if (!emptyArray(performed.localWrites)) return null;
+    if (!emptyArray(performed.targetRepoMutations)) return null;
+    if (!emptyArray(performed.externalActions)) return null;
+
+    var intended = value.effects && value.effects.intended;
+    if (!intended || !Array.isArray(intended.reads)) return null;
+    if (!Array.isArray(intended.localWrites)) return null;
+    if (!Array.isArray(intended.targetRepoMutations)) return null;
+    if (!Array.isArray(intended.externalActions)) return null;
+    if (!Array.isArray(value.effects.approvalRequiredBefore)) return null;
+    return value;
+  }
+
+  function nonEmptyString(value) {
+    return typeof value === "string" && value.trim().length > 0;
+  }
+
+  function validCorpusReads(reads) {
+    return Array.isArray(reads) && reads.every(function (read) {
+      return read && read.kind === "design-ai-corpus" && nonEmptyString(read.reference);
+    });
+  }
+
+  function emptyArray(value) {
+    return Array.isArray(value) && value.length === 0;
+  }
+
+  function normalizeStartPlan(value) {
+    var plan = extractStartPlanPayload(value);
+    return plan ? JSON.parse(JSON.stringify(plan)) : null;
+  }
+
+  function buildStartPlanJson(value) {
+    var plan = normalizeStartPlan(value);
+    if (!plan) throw new Error("Invalid design-ai start plan");
+    return JSON.stringify(plan, null, 2);
+  }
+
   function extractSourceBundleProvenancePayload(value) {
     if (!value || typeof value !== "object") return null;
     if (value.type === "website-improvement-source-bundle-provenance") return value.sourceBundle;
@@ -126,6 +176,9 @@
   }
 
   global.DesignAiWebsiteConsoleSourceBundle = Object.freeze({
+    normalizeStartPlan: normalizeStartPlan,
+    extractStartPlanPayload: extractStartPlanPayload,
+    buildStartPlanJson: buildStartPlanJson,
     normalizeRunbookSourceBundle: normalizeRunbookSourceBundle,
     extractSourceBundleProvenancePayload: extractSourceBundleProvenancePayload,
     extractSourceBundleRevalidationGatePayload: extractSourceBundleRevalidationGatePayload,

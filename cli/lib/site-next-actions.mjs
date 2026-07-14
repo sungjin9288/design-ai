@@ -24,26 +24,33 @@ function quoteCliValue(value) {
   return `'${text.replaceAll("'", "'\"'\"'")}'`;
 }
 
-function buildSiteInitCommand(profile, outPath = "website-workspace.json") {
+export function buildSiteInitArgs(profile, outPath = "website-workspace.json") {
   const args = [
-    "design-ai site --init",
+    "site",
+    "--init",
     "--name",
-    quoteCliValue(profile.name),
+    String(profile.name || ""),
   ];
-  if (profile.liveUrl) args.push("--live-url", quoteCliValue(profile.liveUrl));
-  if (profile.repoUrl) args.push("--repo-url", quoteCliValue(profile.repoUrl));
-  if (profile.localPath) args.push("--local-path", quoteCliValue(profile.localPath));
-  if (profile.figmaUrl) args.push("--figma-url", quoteCliValue(profile.figmaUrl));
-  if (profile.brandNotes) args.push("--brand-notes", quoteCliValue(profile.brandNotes));
-  if (profile.deployProvider && profile.deployProvider !== "none") args.push("--deploy", quoteCliValue(profile.deployProvider));
-  if (profile.sentryProject) args.push("--sentry", quoteCliValue(profile.sentryProject));
-  if (profile.cms && profile.cms !== "none") args.push("--cms", quoteCliValue(profile.cms));
-  if (profile.database && profile.database !== "none") args.push("--database", quoteCliValue(profile.database));
-  for (const page of profile.pages) args.push("--page", quoteCliValue(page));
-  for (const flow of profile.userFlows) args.push("--flow", quoteCliValue(flow));
-  for (const viewport of profile.viewports) args.push("--viewport", quoteCliValue(viewport));
-  args.push("--out", quoteCliValue(outPath));
-  return args.join(" ");
+  if (profile.liveUrl) args.push("--live-url", String(profile.liveUrl));
+  if (profile.repoUrl) args.push("--repo-url", String(profile.repoUrl));
+  if (profile.localPath) args.push("--local-path", String(profile.localPath));
+  if (profile.figmaUrl) args.push("--figma-url", String(profile.figmaUrl));
+  if (profile.brandNotes) args.push("--brand-notes", String(profile.brandNotes));
+  if (profile.deployProvider && profile.deployProvider !== "none") args.push("--deploy", String(profile.deployProvider));
+  if (profile.sentryProject) args.push("--sentry", String(profile.sentryProject));
+  if (profile.cms && profile.cms !== "none") args.push("--cms", String(profile.cms));
+  if (profile.database && profile.database !== "none") args.push("--database", String(profile.database));
+  for (const page of profile.pages) args.push("--page", String(page));
+  for (const flow of profile.userFlows) args.push("--flow", String(flow));
+  for (const viewport of profile.viewports) args.push("--viewport", String(viewport));
+  args.push("--out", String(outPath));
+  return args;
+}
+
+export function buildSiteInitCommand(profile, outPath = "website-workspace.json") {
+  return ["design-ai", ...buildSiteInitArgs(profile, outPath)]
+    .map(quoteCliValue)
+    .join(" ");
 }
 
 export function buildSiteNextActionsReport(workspace, summary = {}) {

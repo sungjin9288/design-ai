@@ -87,7 +87,9 @@ design-ai status      설치된 항목 보기; `design-ai status --json`으로 m
 design-ai list [kind] 카탈로그 보기 (skills | commands | agents); --json으로 machine-readable manifest entry 출력
 design-ai route brief command, skill, knowledge file 추천; --from-file/--stdin/--list/--limit N/--explain/--json 지원
 design-ai routes      prompt/pack --route에 사용할 route id 목록 보기
+design-ai start brief 읽기 전용 route, design contract, 실행하지 않은 review 상태, 다음 command, effect boundary 생성; 선언한 repo/page/screenshot context는 읽지 않음
 design-ai prompt brief 바로 사용할 수 있는 agent prompt 생성; --out file/--from-file/--stdin/--json/--route id 지원
+design-ai artifact mode implementation plan, critique loop, DESIGN.md contract 생성; 명시적인 --out만 local file을 씀
 design-ai pack brief summary/warning이 포함된 prompt + 제한된 context file bundle 생성; --out file/--from-file/--stdin/--max-bytes N/--json/--route id 지원
 design-ai learn      local learning preference 관리; --init으로 preview-first starter profile bootstrap을 하고, list/export에서 --query로 matching profile을 확인하고, --backup --json은 전체 portable profile backup, --redact --json / --redact --from-file / --redact --stdin은 공유용 redacted backup을 만들며, --verify / --diff로 portable profile 이동 전 상태를 확인하고, --restore는 preview-first 전체 profile 교체와 automatic rollback backup 및 선택형 --backup-file path를 제공하고, --restore-backups는 rollback backup inventory를 읽기 전용으로 보여주며, --restore-backups --prune --keep N은 오래된 rollback backup cleanup을 preview-first로 처리하고, --curate는 duplicate/sensitive entry를 archive-first 방식으로 정리하며, --propose-skills는 반복 check capture 기반 skill delta proposal을 preview-only로 출력하고 조절 가능한 --min-evidence proposal threshold, 선택형 --strict proposal readiness gate, `--report --out skill-proposals.md` Markdown review artifact, read-only `--review-file` decision join, read-only `--apply-plan` accepted proposal manual apply plan, `--review-template --out skill-proposals.review.json` JSON decision scaffold, `--patch --out skill-proposals.patch` unified diff handoff를 지원하며, --out file과 --force로 안전한 artifact 저장을 지원하며, --import는 확인된 profile merge를 수행
 design-ai check file  생성된 Markdown artifact 품질 검사; --examples/--route id/--all-routes/--issues-only/--stdin/--strict/--learn/--yes/--learning-file path/--json 지원
@@ -101,6 +103,11 @@ design-ai doctor      설치 및 runtime 상태 진단; `design-ai doctor --stri
 design-ai version     CLI + 플러그인 버전; `design-ai version --json`으로 machine-readable version metadata 출력
 design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 topic catalog 출력
 ```
+
+현재 source package smoke는 설치된 tarball bin과 one-shot `npm exec` 양쪽에서
+`design-ai start ... --json`을 실행해요. 공개 후 registry smoke도 같은 검증을
+반복하며, embedded design contract와 performed local write, target mutation,
+external action이 모두 비어 있는지 확인해요.
 
 환경 변수로 오버라이드:
 

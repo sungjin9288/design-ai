@@ -4,9 +4,13 @@
   var STORAGE_KEY = "design-ai.website-console.v1";
   var ACTIVE_TAB_KEY = "design-ai.website-console.active-tab";
   var SELECTED_TEMPLATE_KEY = "design-ai.website-console.prompt-template";
+  var START_PLAN_KEY = "design-ai.website-console.start-plan";
 
   var sourceBundleApi = window.DesignAiWebsiteConsoleSourceBundle;
   var sourceBundleFunctionNames = [
+    "normalizeStartPlan",
+    "extractStartPlanPayload",
+    "buildStartPlanJson",
     "normalizeRunbookSourceBundle",
     "extractSourceBundleProvenancePayload",
     "extractSourceBundleRevalidationGatePayload",
@@ -26,6 +30,9 @@
     }
     throw new Error("Website Console source-bundle contract failed to load all required functions.");
   }
+  var normalizeStartPlan = sourceBundleApi.normalizeStartPlan;
+  var extractStartPlanPayload = sourceBundleApi.extractStartPlanPayload;
+  var buildStartPlanJson = sourceBundleApi.buildStartPlanJson;
   var normalizeRunbookSourceBundle = sourceBundleApi.normalizeRunbookSourceBundle;
   var extractSourceBundleProvenancePayload = sourceBundleApi.extractSourceBundleProvenancePayload;
   var extractSourceBundleRevalidationGatePayload = sourceBundleApi.extractSourceBundleRevalidationGatePayload;
@@ -115,6 +122,7 @@
   var effortOptions = ["high", "medium", "low"];
 
   var tabs = [
+    ["start", "Start"],
     ["profile", "Site Profile"],
     ["audit", "Audit Checklist"],
     ["mcp", "MCP Matrix"],
@@ -140,7 +148,8 @@
 
   var appState = {
     workspace: loadWorkspace(),
-    activeTab: localStorage.getItem(ACTIVE_TAB_KEY) || "profile",
+    startPlan: loadStartPlan(),
+    activeTab: loadActiveTab(),
     selectedTemplate: localStorage.getItem(SELECTED_TEMPLATE_KEY) || "codex-repo-intake",
     runbookActionFilter: "all",
     runbookEvidenceFilter: "all",
@@ -557,6 +566,28 @@
     }
   }
 
+  function loadStartPlan() {
+    try {
+      var stored = localStorage.getItem(START_PLAN_KEY);
+      return stored ? normalizeStartPlan(JSON.parse(stored)) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveStartPlan() {
+    if (appState.startPlan) {
+      localStorage.setItem(START_PLAN_KEY, buildStartPlanJson(appState.startPlan));
+    } else {
+      localStorage.removeItem(START_PLAN_KEY);
+    }
+  }
+
+  function loadActiveTab() {
+    var stored = localStorage.getItem(ACTIVE_TAB_KEY);
+    return tabs.some(function (tab) { return tab[0] === stored; }) ? stored : "start";
+  }
+
   function saveWorkspace() {
     appState.workspace.updatedAt = new Date().toISOString();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(appState.workspace, null, 2));
@@ -667,12 +698,7 @@
       tabs.map(function (tab) {
         var id = tab[0];
         var label = tab[1];
-        var count = id === "audit" ? metrics.done + "/" + auditCategories.length
-          : id === "tasks" ? String(metrics.tasks)
-            : id === "mcp" ? String(metrics.requiredMcp)
-              : id === "graph" ? String(metrics.graphNodes)
-                : id === "report" && (metrics.evidence || metrics.runbookStages) ? String(metrics.evidence || metrics.runbookStages)
-                  : "";
+        var count = sidebarCount(id, metrics);
         return [
           "<li>",
           "<button type=\"button\" class=\"nav-button\" data-nav=\"" + escapeAttr(id) + "\" aria-current=\"" + (appState.activeTab === id ? "page" : "false") + "\">",
@@ -685,7 +711,7 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\">Import workspace/runbook/preview JSON</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import start, workspace, runbook, or preview JSON\">Import JSON</button>",
       "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
@@ -694,26 +720,57 @@
     ].join("");
   }
 
+  function sidebarCount(id, metrics) {
+    if (id === "start") return appState.startPlan ? "1" : "";
+    if (id === "audit") return metrics.done + "/" + auditCategories.length;
+    if (id === "tasks") return String(metrics.tasks);
+    if (id === "mcp") return String(metrics.requiredMcp);
+    if (id === "graph") return String(metrics.graphNodes);
+    if (id === "report" && (metrics.evidence || metrics.runbookStages)) {
+      return String(metrics.evidence || metrics.runbookStages);
+    }
+    return "";
+  }
+
   function renderTopbar(metrics) {
     var profile = appState.workspace.siteProfile;
+    var isStart = appState.activeTab === "start";
+    var startDescription = appState.startPlan
+      ? "Review the imported route, design contract, declared context, and next safe command. No declared reference has been inspected."
+      : "Generate a read-only start JSON in the CLI, then import it here to review the route, contract, and execution boundary.";
+    var description = isStart
+      ? startDescription
+      : profile.name + " is tracked locally. Use this app to prepare website improvement work before switching into the target repo.";
+    var metadata = isStart
+      ? renderStartMetadata()
+      : badge(appState.workspace.version === 1 ? "done" : "blocked")
+        + "<span class=\"badge badge--optional\">Updated " + escapeHtml(formatDate(appState.workspace.updatedAt)) + "</span>";
     return [
       "<section class=\"topbar\" aria-label=\"Workspace summary\">",
       "<div>",
       "<h2>" + escapeHtml(tabs.find(function (tab) { return tab[0] === appState.activeTab; })[1]) + "</h2>",
-      "<p>" + escapeHtml(profile.name) + " is tracked locally. Use this app to prepare website improvement work before switching into the target repo.</p>",
+      "<p>" + escapeHtml(description) + "</p>",
       "</div>",
       "<div class=\"topbar__meta\">",
-      badge(appState.workspace.version === 1 ? "done" : "blocked"),
-      "<span class=\"badge badge--optional\">Updated " + escapeHtml(formatDate(appState.workspace.updatedAt)) + "</span>",
+      metadata,
       "</div>",
       "</section>",
+      isStart ? "" : [
       "<section class=\"summary-strip\" aria-label=\"Workspace metrics\">",
       metric("Pages", metrics.pages, "Priority URLs tracked"),
       metric("Audit done", metrics.done + "/" + auditCategories.length, metrics.blocked + " blocked"),
       metric("Tasks", metrics.tasks, "Refactor plan items"),
       metric("Required MCP", metrics.requiredMcp, "Connections to prepare"),
       "</section>",
+      ].join(""),
     ].join("");
+  }
+
+  function renderStartMetadata() {
+    var statusClass = appState.startPlan ? "pass" : "optional";
+    var statusLabel = appState.startPlan ? "Plan ready" : "Awaiting JSON";
+    return "<span class=\"badge badge--" + statusClass + "\">" + statusLabel + "</span>"
+      + "<span class=\"badge badge--optional\">Browser-local state</span>";
   }
 
   function metric(label, value, note) {
@@ -740,6 +797,7 @@
   }
 
   function renderActivePanel() {
+    if (appState.activeTab === "start") return renderStart();
     if (appState.activeTab === "profile") return renderProfile();
     if (appState.activeTab === "audit") return renderAudit();
     if (appState.activeTab === "mcp") return renderMcp();
@@ -747,6 +805,58 @@
     if (appState.activeTab === "tasks") return renderTasks();
     if (appState.activeTab === "prompts") return renderPrompts();
     return renderReport();
+  }
+
+  function renderStart() {
+    var plan = appState.startPlan;
+    if (!plan) {
+      var example = "design-ai start \"Improve the Korean fintech account settings flow\" --local-path /absolute/path/to/repo --locale ko-KR --viewport mobile --viewport desktop --json";
+      return panel("Start with one brief", "Create one route, one design contract, and one explicit next step before any target work begins.", [
+        "<div class=\"notice\">The command reads the design-ai corpus only. Declared repositories, URLs, and screenshots remain uninspected until a later approved step.</div>",
+        "<pre class=\"report-preview start-command\"><code>" + escapeHtml(example) + "</code></pre>",
+        "<div class=\"button-row start-actions start-actions--compact\"><button type=\"button\" class=\"button button--primary\" data-action=\"copy-start-example\">Copy start command</button></div>",
+        "<div class=\"graph-boundaries\" aria-label=\"Start command boundaries\"><span class=\"pill\">Read-only planning</span><span class=\"pill\">No repository scan</span><span class=\"pill\">No browser request</span><span class=\"pill\">No target mutation</span></div>",
+      ].join(""));
+    }
+
+    var route = plan.route || {};
+    var review = plan.review || {};
+    var pathway = plan.pathway || {};
+    var effects = plan.effects || {};
+    var performed = effects.performed || {};
+    var intended = effects.intended || {};
+    var references = Array.isArray(intended.reads) ? intended.reads : [];
+    var approvals = Array.isArray(effects.approvalRequiredBefore) ? effects.approvalRequiredBefore : [];
+    var contract = plan.designContract || {};
+    return panel("Start plan", "Review the selected route and execution boundary before copying the next command.", [
+      "<div class=\"evidence-summary\" aria-label=\"Start plan summary\">",
+      metric("Route", route.label || route.id || "unknown", route.confidence || "not recorded"),
+      metric("Review", review.executed ? "executed" : "not run", review.status || "not recorded"),
+      metric("Next step", pathway.status || "not recorded", pathway.id || "no pathway"),
+      metric("Declared refs", references.length, "0 inspected by start"),
+      "</div>",
+      "<div class=\"graph-boundaries\" aria-label=\"Start plan boundaries\"><span class=\"badge badge--pass\">Read-only start</span><span class=\"pill\">" + escapeHtml(String((performed.reads || []).length)) + " corpus files read</span><span class=\"pill\">0 local writes</span><span class=\"pill\">0 target mutations</span><span class=\"pill\">0 external actions</span></div>",
+      "<div class=\"grid-2 start-details\">",
+      "<div><h4>Brief</h4><p>" + escapeHtml(plan.brief) + "</p><h4>Next command</h4><pre class=\"report-preview start-command\"><code>" + escapeHtml(pathway.command || "No command available") + "</code></pre></div>",
+      "<div><h4>Declared references</h4>" + renderStartReferences(references) + "<h4>Approval gates</h4>" + renderStartList(approvals, "No additional approval gates recorded.") + "</div>",
+      "</div>",
+      "<div class=\"button-row start-actions\"><button type=\"button\" class=\"button button--primary\" data-action=\"copy-start-command\">Copy next command</button><button type=\"button\" class=\"button\" data-action=\"copy-start-contract\">Copy design contract</button><button type=\"button\" class=\"button\" data-action=\"download-start-plan\">Export start JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-start-plan\">Clear start plan</button></div>",
+      contract.markdown ? "<details class=\"start-contract\"><summary>Review design contract</summary><pre class=\"report-preview\">" + escapeHtml(contract.markdown) + "</pre></details>" : "",
+    ].join(""));
+  }
+
+  function renderStartReferences(references) {
+    if (!references.length) return "<div class=\"empty-state empty-state--compact\">No repository, URL, or screenshot was declared.</div>";
+    return "<ul class=\"start-list\">" + references.map(function (item) {
+      return "<li><strong>" + escapeHtml(item.kind || "reference") + ":</strong> <code>" + escapeHtml(item.reference || "") + "</code><span class=\"pill\">" + escapeHtml(item.status || "declared-not-read") + "</span></li>";
+    }).join("") + "</ul>";
+  }
+
+  function renderStartList(items, emptyMessage) {
+    if (!items.length) return "<div class=\"empty-state empty-state--compact\">" + escapeHtml(emptyMessage) + "</div>";
+    return "<ul class=\"start-list\">" + items.map(function (item) {
+      return "<li>" + escapeHtml(item) + "</li>";
+    }).join("") + "</ul>";
   }
 
   function renderProfile() {
@@ -1053,7 +1163,7 @@
       "<button type=\"button\" class=\"button button--primary\" data-action=\"copy-prompt\">Copy prompt</button>",
       "<button type=\"button\" class=\"button\" data-action=\"download-prompt\">Export .md</button>",
       "</div>",
-      "<textarea class=\"output-box\" readonly data-output=\"prompt\">" + escapeHtml(promptText) + "</textarea>",
+      "<textarea class=\"output-box\" readonly data-output=\"prompt\" aria-label=\"Generated prompt\">" + escapeHtml(promptText) + "</textarea>",
       "</div>",
       "</div>",
     ].join(""));
@@ -2405,7 +2515,22 @@
 
     var action = button.dataset.action;
     if (!action) return;
-    if (action === "export-workspace") {
+    if (action === "copy-start-example") {
+      copyText("design-ai start \"Improve the Korean fintech account settings flow\" --local-path /absolute/path/to/repo --locale ko-KR --viewport mobile --viewport desktop --json", "Start command copied.");
+    } else if (action === "copy-start-command") {
+      copyText(appState.startPlan && appState.startPlan.pathway.command || "", "Next command copied.");
+    } else if (action === "copy-start-contract") {
+      copyText(appState.startPlan && appState.startPlan.designContract.markdown || "", "Design contract copied.");
+    } else if (action === "download-start-plan") {
+      if (appState.startPlan) {
+        downloadFile("design-ai-start.json", buildStartPlanJson(appState.startPlan), "application/json");
+        setMessage("Start JSON exported.");
+      }
+    } else if (action === "clear-start-plan") {
+      appState.startPlan = null;
+      saveStartPlan();
+      setMessage("Start plan cleared.");
+    } else if (action === "export-workspace") {
       downloadFile("design-ai-website-workspace.json", JSON.stringify(appState.workspace, null, 2), "application/json");
       setMessage("Workspace JSON exported.");
     } else if (action === "import-click") {
@@ -2588,6 +2713,15 @@
     reader.onload = function () {
       try {
         var parsed = JSON.parse(String(reader.result || ""));
+        var importedStartPlan = normalizeStartPlan(extractStartPlanPayload(parsed));
+        if (importedStartPlan) {
+          appState.startPlan = importedStartPlan;
+          appState.activeTab = "start";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveStartPlan();
+          setMessage("Read-only start JSON imported. Start tab opened.");
+          return;
+        }
         var importedLinkedPreview = normalizeLinkedPreview(parsed);
         if (importedLinkedPreview && !parsed.siteProfile) {
           appState.workspace.linkedPreview = importedLinkedPreview;
@@ -2646,7 +2780,7 @@
         saveWorkspace();
         setMessage("Workspace JSON imported.");
       } catch (error) {
-        setMessage("Import failed. Use a valid Website Improvement workspace, runbook, or linked preview JSON file.");
+        setMessage("Import failed. Use a valid start, Website Improvement workspace, runbook, or linked preview JSON file.");
       }
     };
     reader.readAsText(file);

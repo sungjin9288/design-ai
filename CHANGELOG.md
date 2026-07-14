@@ -8,13 +8,20 @@ User-facing release notes for design-ai. Versions follow semver.
 - Added the versioned `design-ai-quality-report` v1 schema and a dependency-free validator that requires all eight interface-quality lenses, concrete evidence, derived summary counts, and explicit permission boundaries.
 - Added a Korean fintech settings benchmark with one confirmed accessibility finding and clearly marked runtime evidence gaps.
 - Added a product specialization plan that sequences one start flow, a read-only quality engine, optional browser verification, Korean product packs, Website Console review, and benchmark-backed adoption proof.
+- Added `design-ai start`, SDK `start()`, and MCP `design_ai_start` over one shared operation that returns a route, existing design contract, unexecuted review state, next command, and explicit performed/intended effect boundary.
+- Added a Website Console Start tab that validates and persists the canonical start JSON, displays declared references without claiming inspection, copies the next command and design contract, and exports the unchanged payload.
 
 ### Changed
 - The architecture and package-content audit now treat the quality schema, validator, benchmark, and contract documentation as release-owned artifacts.
+- The current source capability contract grows from 17 to 18 MCP tools and from 10 to 11 SDK exports while retaining exactly three opt-in learning-profile write tools.
+- Packed-tarball and public-registry smoke now require the start payload to preserve an embedded design contract and empty performed local-write, target-mutation, and external-action arrays.
 
 ### Verified
 - Focused design quality contract tests cover the canonical fixture, mutation boundaries, required evidence and lenses, and derived summary consistency.
 - `npm run release:check` passed with 656 tests, 8 strict audits, 668 packaged files, a warning-free documentation build, and installed-bin plus one-shot `npm exec` smoke coverage.
+- `npm run release:check` passed for the P1 source candidate with 669 tests, all 8 strict audits, 672 packaged files, a warning-free documentation build, and installed-bin plus one-shot `npm exec` start smoke coverage.
+- Browser verification passed at 1440px and 390px with no horizontal overflow, 44px minimum visible button targets, working skip-link focus transfer, and zero console warnings or errors.
+- Pull request #35 passed audits and size budget, package integrity, documentation policy, and CLI plus VS Code library unit-test checks.
 
 ## v5.0.0 — Refactor foundation and release-integrity guards (2026-07)
 

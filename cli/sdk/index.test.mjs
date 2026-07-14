@@ -173,6 +173,31 @@ test("artifact() return-shape keys and read-only boundary are pinned", () => {
   assert.equal(result.approval.status, "pending-human-approval");
 });
 
+test("start() return-shape keys and read-only boundary are pinned", () => {
+  const result = sdk.start(BRIEF, {
+    routeId: "component-spec",
+    locale: "en-US",
+    viewports: ["mobile", "desktop"],
+  });
+  assert.deepEqual(Object.keys(result), [
+    "kind",
+    "schemaVersion",
+    "brief",
+    "context",
+    "route",
+    "designContract",
+    "review",
+    "pathway",
+    "effects",
+  ]);
+  assert.equal(result.kind, "design-ai-start");
+  assert.equal(result.designContract.route.id, result.route.id);
+  assert.equal(result.review.executed, false);
+  assert.deepEqual(result.effects.performed.localWrites, []);
+  assert.deepEqual(result.effects.performed.targetRepoMutations, []);
+  assert.deepEqual(result.effects.performed.externalActions, []);
+});
+
 test("pack() return-shape keys are pinned (Phase A: no learningUsage)", () => {
   const result = sdk.pack(BRIEF, { maxBytes: 20000 });
   assert.deepEqual(Object.keys(result).sort(), [

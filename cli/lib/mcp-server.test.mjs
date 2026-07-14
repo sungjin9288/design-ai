@@ -64,6 +64,7 @@ test("MCP tool list exposes design-ai read-only workflow tools", async () => {
     MCP_TOOLS.map((tool) => tool.name),
   );
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_route"));
+  assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_start"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_artifact"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_mcp_check"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_linked_preview"));
@@ -287,6 +288,32 @@ test("design_ai_route uses the shared route operation without spawning the CLI",
   assert.equal(payload.brief, "Spec a Button component API");
   assert.equal(payload.routes[0].id, "component-spec");
   assert.ok(payload.routes[0].explanation);
+});
+
+test("design_ai_start uses the shared start operation without spawning the CLI", async () => {
+  let runCliCalled = false;
+  const result = await callMcpTool(
+    "design_ai_start",
+    {
+      brief: "Review a Korean settings flow",
+      routeId: "design-engineering-review",
+      url: "https://example.com/settings",
+      locale: "ko-KR",
+      viewports: ["mobile"],
+    },
+    async () => {
+      runCliCalled = true;
+      return { code: 0, stdout: "unexpected", stderr: "" };
+    },
+  );
+
+  const payload = JSON.parse(result.content[0].text);
+  assert.equal(runCliCalled, false);
+  assert.equal(result.isError, false);
+  assert.equal(payload.kind, "design-ai-start");
+  assert.equal(payload.route.id, "design-engineering-review");
+  assert.equal(payload.designContract.route.id, payload.route.id);
+  assert.deepEqual(payload.effects.performed.externalActions, []);
 });
 
 test("buildCliInvocation maps design_ai_search ranked to the --ranked CLI flag", () => {

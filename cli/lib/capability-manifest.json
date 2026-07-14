@@ -78,6 +78,7 @@
   "mcp": {
     "tools": [
       "design_ai_route",
+      "design_ai_start",
       "design_ai_prompt",
       "design_ai_artifact",
       "design_ai_pack",
@@ -112,6 +113,7 @@
       "route",
       "routes",
       "search",
+      "start",
       "version"
     ],
     "learnMethods": [
