@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 19 tools, including the shared read-only start flow, supplied-HTML quality inspection, artifact operations, a Website Improvement bundle handoff, linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 20 tools, including the shared read-only start flow, supplied-HTML quality inspection, Korean product review packs, artifact operations, a Website Improvement bundle handoff, linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -52,6 +52,10 @@ accessibility-tree, and rendered responsive behavior remain `unverified` until a
 approved runtime supplies evidence.
 If the serialized report exceeds the MCP response limit, the tool returns a valid
 `design-ai-mcp-error` JSON object instead of truncating and corrupting the report.
+
+`design_ai_review_pack` lists or reads the five shipped Korean review contracts.
+Pass one returned id as `reviewPack` to `design_ai_inspect_html`. Packs are never
+selected from locale alone; browser and scenario criteria remain `unverified`.
 
 ### Approval-gated website implementation handoff
 

@@ -91,6 +91,7 @@
     "README.ko.md",
     ".claude-plugin/",
     "knowledge/",
+    "product-packs/",
     "examples/",
     "skills/",
     "agents/",

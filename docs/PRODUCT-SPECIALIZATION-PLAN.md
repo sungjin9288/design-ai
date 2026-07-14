@@ -167,6 +167,24 @@ and game review packs. Make Website Console the place where a human can inspect 
 contract, evidence, approval boundary, and implementation handoff without reading
 raw JSON.
 
+Implemented in the current source:
+
+- Five versioned `ko-KR` review packs share one validated contract, carry an
+  immutable revision for report reproducibility, and remain explicitly opt-in
+  through CLI `--review-pack`, SDK `reviewPack()` /
+  `inspectHtml({ reviewPack })`, and MCP `design_ai_review_pack` /
+  `design_ai_inspect_html`.
+- Three high-confidence HTML rules cover phone-field semantics, password-manager
+  intent, and preselected marketing consent. Wrapping, density, payment,
+  probability, interaction, and assistive-technology criteria stay `unverified`
+  until browser or scenario evidence is attached.
+- Each pack owns a mobile and desktop benchmark, expected finding ids, criterion-
+  level false-positive notes, knowledge references, and a read-only boundary.
+- Website Console validates quality and browser contracts separately, preserves
+  the exact imported JSON bytes for export, checks sidecar SHA-256 linkage when
+  both artifacts are present, and shows missing viewport coverage without merging
+  or upgrading evidence.
+
 Exit criteria:
 
 - Each pack has a benchmark, expected findings, false-positive notes, and mobile

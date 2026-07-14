@@ -785,7 +785,7 @@ SDK_SMOKE_SCRIPT = """
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { check, inspectHtml, learn, pack, prompt, recall, route, routes, search, version } from "@design-ai/cli/sdk";
+import { check, inspectHtml, learn, pack, prompt, recall, reviewPack, route, routes, search, version } from "@design-ai/cli/sdk";
 
 const brief = "Spec a Button component API with variants, props, and keyboard accessibility";
 
@@ -834,6 +834,33 @@ if (quality.boundary.targetRepoMutation || quality.boundary.externalWrites) {
   throw new Error("inspectHtml() changed the read-only boundary");
 }
 
+const reviewPacks = reviewPack();
+if (reviewPacks.kind !== "design-ai-product-review-pack-list"
+  || !Array.isArray(reviewPacks.packs)
+  || reviewPacks.packs.length !== 5) {
+  throw new Error("reviewPack() list bad shape");
+}
+const fintechPack = reviewPack("korean-fintech");
+if (fintechPack.revision !== 1 || fintechPack.criteria.length < 4) {
+  throw new Error("reviewPack() did not load the packed fintech contract");
+}
+const packedQuality = inspectHtml(
+  `<html lang="ko"><head><meta name="viewport" content="width=device-width"></head><body><label for="phone">휴대폰 번호</label><input id="phone"></body></html>`,
+  {
+    sourceRef: "fintech-settings.html",
+    brief: "Review Korean fintech settings",
+    locale: "ko-KR",
+    viewports: ["mobile", "desktop"],
+    reviewPack: "korean-fintech",
+  },
+);
+if (!packedQuality.findings.some((finding) => finding.id === "product-pack:korean-fintech:korean-phone-input-semantics")) {
+  throw new Error("inspectHtml() did not apply the packed fintech review rules");
+}
+if (!packedQuality.sources.some((source) => source.reference === "product-packs/korean-fintech.json#revision-1")) {
+  throw new Error("inspectHtml() did not record the packed fintech revision");
+}
+
 // Phase B: learn.remember must write only DESIGN_AI_LEARNING_FILE.
 const smokeDir = mkdtempSync(path.join(tmpdir(), "design-ai-sdk-learn-smoke-"));
 const learningFile = path.join(smokeDir, "learning.json");
@@ -861,6 +888,26 @@ def assert_sdk_smoke(*, cwd: Path, env: dict[str, str], context: str) -> None:
         raise SystemExit(f"{context} failed (exit {result.returncode})")
     if "design-ai sdk smoke passed" not in result.stdout:
         raise SystemExit(f"{context}: expected success marker missing from output")
+
+
+def assert_review_pack_json_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: failed to parse review-pack JSON") from error
+    if payload.get("kind") != "design-ai-product-review-pack":
+        raise SystemExit(f"{context}: unexpected review-pack kind")
+    if payload.get("id") != "korean-fintech" or payload.get("revision") != 1:
+        raise SystemExit(f"{context}: packed fintech identity or revision drifted")
+    if not isinstance(payload.get("criteria"), list) or len(payload["criteria"]) < 4:
+        raise SystemExit(f"{context}: packed fintech criteria are missing")
 
 
 def assert_workspace_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -20586,6 +20633,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed Agent SDK (@design-ai/cli/sdk)",
+        )
+        assert_review_pack_json_smoke(
+            [str(bin_path), "review-pack", "korean-fintech", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin review-pack JSON",
         )
         assert_design_ai_mcp_protocol_smoke(
             [str(mcp_bin_path)],

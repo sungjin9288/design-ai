@@ -66,6 +66,7 @@ test("MCP tool list exposes design-ai read-only workflow tools", async () => {
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_route"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_start"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_inspect_html"));
+  assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_review_pack"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_artifact"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_mcp_check"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_linked_preview"));
@@ -341,6 +342,25 @@ test("design_ai_inspect_html uses the shared read-only inspector without spawnin
   assert.equal(payload.summary.confirmedFindings, 1);
   assert.equal(payload.summary.unverifiedFindings, 1);
   assert.equal(payload.boundary.targetRepoMutation, false);
+});
+
+test("design_ai_review_pack lists and reads shipped contracts without spawning the CLI", async () => {
+  let runCliCalled = false;
+  const listResult = await callMcpTool("design_ai_review_pack", {}, async () => {
+    runCliCalled = true;
+    return { code: 0, stdout: "unexpected", stderr: "" };
+  });
+  const packResult = await callMcpTool("design_ai_review_pack", { id: "korean-saas" }, async () => {
+    runCliCalled = true;
+    return { code: 0, stdout: "unexpected", stderr: "" };
+  });
+  const list = JSON.parse(listResult.content[0].text);
+  const pack = JSON.parse(packResult.content[0].text);
+
+  assert.equal(runCliCalled, false);
+  assert.equal(list.packs.length, 5);
+  assert.equal(pack.id, "korean-saas");
+  assert.equal(pack.boundary.targetRepoMutation, false);
 });
 
 test("design_ai_inspect_html returns valid structured JSON when its report exceeds the MCP limit", async () => {

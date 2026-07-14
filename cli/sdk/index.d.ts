@@ -273,6 +273,8 @@ export interface InspectHtmlOptions {
   locale?: string;
   viewports?: string[];
   generatedAt?: string;
+  /** Apply one shipped Korean product review pack by id. */
+  reviewPack?: string;
 }
 
 export interface DesignQualityReport {
@@ -300,6 +302,51 @@ export interface DesignQualityReport {
     nextAction: string;
   };
   approval: { status: "pending"; requiredBefore: string[] };
+}
+
+export interface ProductReviewPackSummary {
+  id: string;
+  revision: number;
+  name: string;
+  domain: "fintech" | "commerce" | "saas" | "content" | "game";
+  locale: "ko-KR";
+  summary: string;
+  criteriaCount: number;
+  benchmark: string;
+}
+
+export interface ProductReviewCriterion {
+  id: string;
+  lens: DesignQualityLensId;
+  mode: "static-html" | "browser-required" | "scenario-required";
+  severity: "p0" | "p1" | "p2" | "p3";
+  title: string;
+  question: string;
+  evidence: string;
+  verification: string[];
+  falsePositiveNotes: string[];
+}
+
+export interface ProductReviewPack {
+  kind: "design-ai-product-review-pack";
+  schemaVersion: 1;
+  revision: number;
+  id: string;
+  name: string;
+  domain: ProductReviewPackSummary["domain"];
+  locale: "ko-KR";
+  summary: string;
+  viewports: Array<{ name: "mobile" | "desktop"; width: number; height: number }>;
+  knowledge: string[];
+  criteria: ProductReviewCriterion[];
+  benchmark: { source: string; expectedFindingIds: string[]; falsePositiveNotes: string[] };
+  boundary: { mode: "read-only"; targetRepoMutation: false; externalWrites: false; notes: string[] };
+}
+
+export interface ProductReviewPackList {
+  kind: "design-ai-product-review-pack-list";
+  schemaVersion: 1;
+  packs: ProductReviewPackSummary[];
 }
 
 export interface StartReference {
@@ -522,6 +569,9 @@ export function start(brief: string, opts?: StartOptions): StartPayload;
 
 /** Inspect supplied HTML without reading paths, running scripts, or writing files. */
 export function inspectHtml(source: string, opts: InspectHtmlOptions): DesignQualityReport;
+
+/** Read one Korean product review pack, or list the available packs when id is omitted. */
+export function reviewPack(id?: string, opts?: Record<string, never>): ProductReviewPack | ProductReviewPackList;
 
 /** Recommend the best route(s), commands, skills, and knowledge for a brief. */
 export function route(brief: string, opts?: RouteOptions): RouteResult[];

@@ -15,6 +15,7 @@ test("inspect parser keeps one explicit source and repeatable viewport context",
       "--locale", "ko-KR",
       "--viewport", "mobile",
       "--viewport", "desktop",
+      "--review-pack", "korean-fintech",
       "--json",
     ]),
     {
@@ -23,6 +24,7 @@ test("inspect parser keeps one explicit source and repeatable viewport context",
       name: "Settings",
       locale: "ko-KR",
       viewports: ["mobile", "desktop"],
+      reviewPack: "korean-fintech",
       json: true,
       help: false,
     },
@@ -82,4 +84,23 @@ test("inspect accepts an absolute sibling file without treating system path alia
 test("inspect requires a brief and rejects extra positional arguments", () => {
   assert.throws(() => buildInspectReport(parseInspectArgs(["page.html"])), /requires --brief/);
   assert.throws(() => parseInspectArgs(["one.html", "two.html"]), /accepts one HTML source file/);
+});
+
+test("inspect applies one explicit product review pack without mutating the source", () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "design-ai-inspect-review-pack-"));
+  const file = path.join(dir, "page.html");
+  const source = `<html lang="ko-KR"><head><meta name="viewport" content="width=device-width"></head><body><label for="phone">휴대폰 번호</label><input id="phone" name="phone"></body></html>`;
+  writeFileSync(file, source);
+  try {
+    const parsed = parseInspectArgs([
+      "page.html", "--brief", "Review Korean finance", "--review-pack", "korean-fintech", "--json",
+    ]);
+    const report = buildInspectReport(parsed, dir);
+    assert.equal(report.findings.some((finding) => (
+      finding.id === "product-pack:korean-fintech:korean-phone-input-semantics"
+    )), true);
+    assert.equal(readFileSync(file, "utf8"), source);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

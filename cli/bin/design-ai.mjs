@@ -14,6 +14,7 @@
 //   routes               List available route ids
 //   start                Build one read-only route, design contract, review state, and next-step plan
 //   inspect              Build a read-only quality report from one explicit HTML file
+//   review-pack          List or print Korean product review packs
 //   verify-browser       Run an approved external browser adapter and record local evidence
 //   prompt               Generate a ready-to-use agent prompt from a brief
 //   pack                 Generate a prompt plus bounded context file contents

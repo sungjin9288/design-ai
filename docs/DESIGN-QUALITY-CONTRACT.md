@@ -79,6 +79,30 @@ segments. Filesystem-root aliases supplied by the operating system, such as
 macOS `/var`, remain readable. SDK `inspectHtml()` and MCP
 `design_ai_inspect_html` accept HTML content directly and never read a path.
 
+An explicit Korean product review pack can extend that same report without changing
+its v1 shape:
+
+```bash
+design-ai review-pack
+design-ai inspect page.html \
+  --brief "Review the Korean checkout flow" \
+  --review-pack korean-commerce \
+  --locale ko-KR \
+  --viewport mobile \
+  --viewport desktop \
+  --json
+```
+
+The five shipped ids are `korean-fintech`, `korean-commerce`, `korean-saas`,
+`korean-content`, and `korean-game`. A selected pack is recorded through an
+existing `design-contract` source entry with its immutable revision and namespaced
+finding ids. Locale never selects a pack implicitly. Phone input semantics,
+password autocomplete intent, and preselected marketing consent are the only extra
+static confirmations. Korean
+wrapping, density, payment disclosure, game probability disclosure, and runtime
+accessibility remain `unverified` until their declared browser or scenario
+evidence exists.
+
 The deterministic rules confirm only evidence visible in supplied markup:
 document language, supported active control names, button names, image `alt`
 declarations, and a mobile viewport declaration containing `width=device-width`
@@ -151,6 +175,12 @@ remain `unverified` because the runner does not sandbox the executable.
 
 The complete stdin/stdout and artifact contract is documented in
 [`BROWSER-VERIFICATION.md`](BROWSER-VERIFICATION.md).
+
+Website Console imports the quality report and browser sidecar as separate immutable
+contracts. It preserves the original JSON bytes, compares the quality bytes with the
+sidecar SHA-256 digest when Web Crypto is available, and reports missing viewport
+coverage. It never treats a sidecar as a merged report or changes an unverified lens
+because an unrelated probe passed.
 
 ## Finding rules
 

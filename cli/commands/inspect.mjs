@@ -7,13 +7,14 @@ import {
 } from "../lib/inspect.mjs";
 
 function printHelp() {
-  console.log("Usage:  design-ai inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--json]\n");
+  console.log("Usage:  design-ai inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--review-pack id] [--json]\n");
   console.log("Builds a canonical read-only design quality report from one explicit HTML file.\n");
   console.log("Options:");
   console.log("  --brief text       Required review brief");
   console.log("  --name name        Optional subject name; defaults to the file name");
   console.log("  --locale locale    Review locale. Default: en");
   console.log("  --viewport name    Declared viewport; repeat as needed. Defaults: mobile, desktop");
+  console.log("  --review-pack id   Apply one shipped Korean product review pack");
   console.log("  --json             Emit the canonical quality-report JSON");
   console.log("\nBoundary: reads only the selected HTML file; does not execute scripts, open a browser, follow links, write files, or mutate a target repository.");
 }

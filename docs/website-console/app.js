@@ -5,6 +5,8 @@
   var ACTIVE_TAB_KEY = "design-ai.website-console.active-tab";
   var SELECTED_TEMPLATE_KEY = "design-ai.website-console.prompt-template";
   var START_PLAN_KEY = "design-ai.website-console.start-plan";
+  var QUALITY_REPORT_KEY = "design-ai.website-console.quality-report";
+  var BROWSER_VERIFICATION_KEY = "design-ai.website-console.browser-verification";
 
   var sourceBundleApi = window.DesignAiWebsiteConsoleSourceBundle;
   var sourceBundleFunctionNames = [
@@ -18,6 +20,9 @@
     "buildSourceBundleRevalidationGate",
     "buildSourceBundleJson",
     "buildSourceBundleRevalidationGateJson",
+    "normalizeQualityReport",
+    "normalizeBrowserVerification",
+    "buildImportedArtifactJson",
   ];
   var sourceBundleReady = sourceBundleApi && sourceBundleFunctionNames.every(function (name) {
     return typeof sourceBundleApi[name] === "function";
@@ -40,6 +45,9 @@
   var buildSourceBundleRevalidationGate = sourceBundleApi.buildSourceBundleRevalidationGate;
   var buildSourceBundleJson = sourceBundleApi.buildSourceBundleJson;
   var buildSourceBundleRevalidationGateJson = sourceBundleApi.buildSourceBundleRevalidationGateJson;
+  var normalizeQualityReport = sourceBundleApi.normalizeQualityReport;
+  var normalizeBrowserVerification = sourceBundleApi.normalizeBrowserVerification;
+  var buildImportedArtifactJson = sourceBundleApi.buildImportedArtifactJson;
 
   var auditCategories = [
     {
@@ -123,6 +131,7 @@
 
   var tabs = [
     ["start", "Start"],
+    ["quality", "Quality Review"],
     ["profile", "Site Profile"],
     ["audit", "Audit Checklist"],
     ["mcp", "MCP Matrix"],
@@ -149,6 +158,9 @@
   var appState = {
     workspace: loadWorkspace(),
     startPlan: loadStartPlan(),
+    qualityReport: loadImportedArtifact(QUALITY_REPORT_KEY, normalizeQualityReport),
+    browserVerification: loadImportedArtifact(BROWSER_VERIFICATION_KEY, normalizeBrowserVerification),
+    qualityLink: { digestStatus: "not-checked", missingViewports: [] },
     activeTab: loadActiveTab(),
     selectedTemplate: localStorage.getItem(SELECTED_TEMPLATE_KEY) || "codex-repo-intake",
     runbookActionFilter: "all",
@@ -575,6 +587,38 @@
     }
   }
 
+  function loadImportedArtifact(key, normalize) {
+    try {
+      var rawJson = localStorage.getItem(key);
+      if (!rawJson) return null;
+      var value = normalize(JSON.parse(rawJson));
+      return value ? { value: value, rawJson: rawJson } : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveImportedArtifact(key, artifact) {
+    if (!artifact) {
+      localStorage.removeItem(key);
+      return;
+    }
+    localStorage.setItem(key, buildImportedArtifactJson(artifact.value, artifact.rawJson));
+  }
+
+  function importedArtifact(value, rawJson) {
+    return { value: value, rawJson: buildImportedArtifactJson(value, rawJson) };
+  }
+
+  function isWorkspacePayload(value) {
+    return Boolean(value)
+      && typeof value === "object"
+      && !Array.isArray(value)
+      && value.version === 1
+      && value.siteProfile
+      && typeof value.siteProfile === "object";
+  }
+
   function saveStartPlan() {
     if (appState.startPlan) {
       localStorage.setItem(START_PLAN_KEY, buildStartPlanJson(appState.startPlan));
@@ -711,7 +755,7 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import start, workspace, runbook, or preview JSON\">Import JSON</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
       "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
@@ -722,6 +766,10 @@
 
   function sidebarCount(id, metrics) {
     if (id === "start") return appState.startPlan ? "1" : "";
+    if (id === "quality") {
+      var artifactCount = (appState.qualityReport ? 1 : 0) + (appState.browserVerification ? 1 : 0);
+      return artifactCount ? String(artifactCount) : "";
+    }
     if (id === "audit") return metrics.done + "/" + auditCategories.length;
     if (id === "tasks") return String(metrics.tasks);
     if (id === "mcp") return String(metrics.requiredMcp);
@@ -735,16 +783,21 @@
   function renderTopbar(metrics) {
     var profile = appState.workspace.siteProfile;
     var isStart = appState.activeTab === "start";
+    var isQuality = appState.activeTab === "quality";
     var startDescription = appState.startPlan
       ? "Review the imported route, design contract, declared context, and next safe command. No declared reference has been inspected."
       : "Generate a read-only start JSON in the CLI, then import it here to review the route, contract, and execution boundary.";
     var description = isStart
       ? startDescription
-      : profile.name + " is tracked locally. Use this app to prepare website improvement work before switching into the target repo.";
+      : isQuality
+        ? "Inspect immutable quality and browser evidence separately. Missing runtime proof remains unverified."
+        : profile.name + " is tracked locally. Use this app to prepare website improvement work before switching into the target repo.";
     var metadata = isStart
       ? renderStartMetadata()
-      : badge(appState.workspace.version === 1 ? "done" : "blocked")
-        + "<span class=\"badge badge--optional\">Updated " + escapeHtml(formatDate(appState.workspace.updatedAt)) + "</span>";
+      : isQuality
+        ? "<span class=\"badge badge--optional\">Browser-local evidence</span><span class=\"badge badge--optional\">No semantic merge</span>"
+        : badge(appState.workspace.version === 1 ? "done" : "blocked")
+          + "<span class=\"badge badge--optional\">Updated " + escapeHtml(formatDate(appState.workspace.updatedAt)) + "</span>";
     return [
       "<section class=\"topbar\" aria-label=\"Workspace summary\">",
       "<div>",
@@ -755,7 +808,7 @@
       metadata,
       "</div>",
       "</section>",
-      isStart ? "" : [
+      isStart || isQuality ? "" : [
       "<section class=\"summary-strip\" aria-label=\"Workspace metrics\">",
       metric("Pages", metrics.pages, "Priority URLs tracked"),
       metric("Audit done", metrics.done + "/" + auditCategories.length, metrics.blocked + " blocked"),
@@ -798,6 +851,7 @@
 
   function renderActivePanel() {
     if (appState.activeTab === "start") return renderStart();
+    if (appState.activeTab === "quality") return renderQualityReview();
     if (appState.activeTab === "profile") return renderProfile();
     if (appState.activeTab === "audit") return renderAudit();
     if (appState.activeTab === "mcp") return renderMcp();
@@ -857,6 +911,144 @@
     return "<ul class=\"start-list\">" + items.map(function (item) {
       return "<li>" + escapeHtml(item) + "</li>";
     }).join("") + "</ul>";
+  }
+
+  function qualityStatusBadge(status) {
+    var tone = status === "warning" ? "warn" : status === "unverified" ? "optional" : status;
+    return "<span class=\"badge badge--" + escapeAttr(tone || "optional") + "\">" + escapeHtml(labelize(status || "unknown")) + "</span>";
+  }
+
+  function renderQualityReview() {
+    var qualityArtifact = appState.qualityReport;
+    var browserArtifact = appState.browserVerification;
+    if (!qualityArtifact && !browserArtifact) {
+      return panel("Import review evidence", "Import canonical quality-report JSON and optional browser-verification JSON without changing either contract.", [
+        "<pre class=\"report-preview start-command\"><code>design-ai inspect page.html --brief \"Review Korean product flow\" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json</code></pre>",
+        "<div class=\"graph-boundaries\" aria-label=\"Quality review boundaries\"><span class=\"pill\">Raw JSON preserved</span><span class=\"pill\">No semantic merge</span><span class=\"pill\">No browser run</span><span class=\"pill\">No target mutation</span></div>",
+      ].join(""));
+    }
+
+    return [
+      qualityArtifact
+        ? renderQualityReportArtifact(qualityArtifact.value)
+        : panel("Quality report", "The browser sidecar cannot replace its source quality report.", "<div class=\"empty-state\">Import the exact source quality-report JSON to verify the sidecar digest and declared viewport coverage.</div>"),
+      browserArtifact
+        ? renderBrowserVerificationArtifact(browserArtifact.value)
+        : panel("Browser verification", "Runtime evidence remains separate and optional.", "<div class=\"empty-state\">No browser-verification JSON imported. Static and runtime-unknown findings remain unchanged.</div>"),
+      "<div class=\"button-row\">",
+      qualityArtifact
+        ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-quality-report\">Export original quality JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-quality-report\">Clear quality report</button>"
+        : "",
+      browserArtifact
+        ? "<button type=\"button\" class=\"button\" data-action=\"download-browser-verification\">Export original browser JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-browser-verification\">Clear browser evidence</button>"
+        : "",
+      "</div>",
+    ].join("");
+  }
+
+  function renderQualityReportArtifact(report) {
+    var packSources = report.sources.filter(function (source) {
+      return source && source.kind === "design-contract" && /^product-packs\//.test(source.reference || "");
+    });
+    var approvals = report.approval && Array.isArray(report.approval.requiredBefore)
+      ? report.approval.requiredBefore
+      : [];
+    return panel("Quality report", "Canonical static findings and unresolved evidence from the imported source contract.", [
+      "<div class=\"evidence-summary\" aria-label=\"Quality report summary\">",
+      metric("Status", report.summary.status, report.summary.nextAction),
+      metric("Confirmed", report.summary.confirmedFindings, "Supported static evidence"),
+      metric("Unverified", report.summary.unverifiedFindings, "Runtime or scenario evidence needed"),
+      metric(
+        "Review pack",
+        packSources.length
+          ? packSources[0].reference.replace(/^product-packs\//, "").replace(/\.json#revision-/, " r")
+          : "none",
+        "Opt-in only",
+      ),
+      "</div>",
+      "<div class=\"graph-boundaries\" aria-label=\"Quality report boundary\">" + qualityStatusBadge(report.summary.status) + "<span class=\"pill\">" + escapeHtml(report.boundary.mode) + "</span><span class=\"pill\">No target mutation</span><span class=\"pill\">No external write</span></div>",
+      "<h4>Findings</h4>",
+      renderQualityFindings(report.findings),
+      "<h4>Approval gates</h4>",
+      renderStartList(approvals, "No approval gates recorded."),
+    ].join(""));
+  }
+
+  function renderQualityFindings(findings) {
+    if (!findings.length) return "<div class=\"empty-state empty-state--compact\">No findings recorded.</div>";
+    return "<div class=\"quality-findings\">" + findings.map(function (finding) {
+      return [
+        "<details class=\"quality-finding\">",
+        "<summary><span>" + escapeHtml(finding.severity.toUpperCase() + " " + finding.title) + "</span>" + qualityStatusBadge(finding.status) + "</summary>",
+        "<dl><dt>Lens</dt><dd>" + escapeHtml(finding.lens) + "</dd><dt>Location</dt><dd><code>" + escapeHtml(finding.location) + "</code></dd><dt>Current evidence</dt><dd>" + escapeHtml(finding.before) + "</dd><dt>Expected state</dt><dd>" + escapeHtml(finding.after) + "</dd><dt>Why</dt><dd>" + escapeHtml(finding.why) + "</dd></dl>",
+        "<h5>Verification</h5>" + renderStartList(finding.verification || [], "No verification steps recorded."),
+        "</details>",
+      ].join("");
+    }).join("") + "</div>";
+  }
+
+  function renderBrowserVerificationArtifact(report) {
+    var link = appState.qualityLink;
+    var viewportNote = link.missingViewports.length
+      ? "Missing: " + link.missingViewports.join(", ")
+      : "Declared quality viewports covered";
+    return panel("Browser verification", "Approved local evidence sidecar. It remains independent from the quality report.", [
+      "<div class=\"evidence-summary\" aria-label=\"Browser verification summary\">",
+      metric("Status", report.summary.status, report.summary.nextAction),
+      metric("Passed", report.summary.passed, "Probe results"),
+      metric("Failed", report.summary.failed, "Probe results"),
+      metric("Unverified", report.summary.unverified, "Probe results"),
+      "</div>",
+      "<div class=\"graph-boundaries\" aria-label=\"Browser verification linkage\">" + qualityStatusBadge(report.summary.status) + "<span class=\"pill\">Digest " + escapeHtml(link.digestStatus) + "</span><span class=\"pill\">" + escapeHtml(viewportNote) + "</span><span class=\"pill\">Approved: " + escapeHtml(report.approval.reference) + "</span></div>",
+      "<div class=\"notice\">The sidecar does not resolve purpose-frequency or spatial-continuity by itself. Unmapped and missing-viewport evidence remains unverified.</div>",
+      "<h4>Runtime probes</h4>",
+      renderBrowserProbes(report.probes),
+    ].join(""));
+  }
+
+  function renderBrowserProbes(probes) {
+    if (!probes.length) return "<div class=\"empty-state empty-state--compact\">No runtime probes recorded.</div>";
+    return "<ul class=\"start-list\">" + probes.map(function (probe) {
+      return "<li><strong>" + escapeHtml(probe.check + " / " + probe.viewport) + ":</strong> " + escapeHtml(probe.observation) + qualityStatusBadge(probe.status) + "</li>";
+    }).join("") + "</ul>";
+  }
+
+  function bytesToHex(bytes) {
+    return Array.from(new Uint8Array(bytes)).map(function (byte) {
+      return byte.toString(16).padStart(2, "0");
+    }).join("");
+  }
+
+  function refreshQualityLink() {
+    var qualityArtifact = appState.qualityReport;
+    var browserArtifact = appState.browserVerification;
+    var qualityViewports = qualityArtifact ? qualityArtifact.value.context.viewports : [];
+    var browserViewports = browserArtifact ? browserArtifact.value.viewports.map(function (viewport) {
+      return viewport.name;
+    }) : [];
+    appState.qualityLink.missingViewports = qualityViewports.filter(function (viewport) {
+      return browserViewports.indexOf(viewport) === -1;
+    });
+
+    if (!qualityArtifact || !browserArtifact) {
+      appState.qualityLink.digestStatus = "not-checked";
+      render();
+      return Promise.resolve();
+    }
+    if (!window.crypto || !window.crypto.subtle || typeof TextEncoder === "undefined") {
+      appState.qualityLink.digestStatus = "unavailable";
+      render();
+      return Promise.resolve();
+    }
+    return window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(qualityArtifact.rawJson)).then(function (digest) {
+      appState.qualityLink.digestStatus = bytesToHex(digest) === browserArtifact.value.sourceReport.sha256
+        ? "matched"
+        : "mismatch";
+      render();
+    }).catch(function () {
+      appState.qualityLink.digestStatus = "unavailable";
+      render();
+    });
   }
 
   function renderProfile() {
@@ -2530,6 +2722,26 @@
       appState.startPlan = null;
       saveStartPlan();
       setMessage("Start plan cleared.");
+    } else if (action === "download-quality-report") {
+      if (appState.qualityReport) {
+        downloadFile("design-ai-quality-report.json", appState.qualityReport.rawJson, "application/json");
+        setMessage("Original quality-report JSON exported without reformatting.");
+      }
+    } else if (action === "clear-quality-report") {
+      appState.qualityReport = null;
+      saveImportedArtifact(QUALITY_REPORT_KEY, null);
+      refreshQualityLink();
+      setMessage("Quality report cleared.");
+    } else if (action === "download-browser-verification") {
+      if (appState.browserVerification) {
+        downloadFile("design-ai-browser-verification.json", appState.browserVerification.rawJson, "application/json");
+        setMessage("Original browser-verification JSON exported without reformatting.");
+      }
+    } else if (action === "clear-browser-verification") {
+      appState.browserVerification = null;
+      saveImportedArtifact(BROWSER_VERIFICATION_KEY, null);
+      refreshQualityLink();
+      setMessage("Browser verification cleared.");
     } else if (action === "export-workspace") {
       downloadFile("design-ai-website-workspace.json", JSON.stringify(appState.workspace, null, 2), "application/json");
       setMessage("Workspace JSON exported.");
@@ -2712,7 +2924,28 @@
     var reader = new FileReader();
     reader.onload = function () {
       try {
-        var parsed = JSON.parse(String(reader.result || ""));
+        var rawJson = String(reader.result || "");
+        var parsed = JSON.parse(rawJson);
+        var importedQualityReport = normalizeQualityReport(parsed);
+        if (importedQualityReport) {
+          appState.qualityReport = importedArtifact(importedQualityReport, rawJson);
+          appState.activeTab = "quality";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveImportedArtifact(QUALITY_REPORT_KEY, appState.qualityReport);
+          refreshQualityLink();
+          setMessage("Canonical quality-report JSON imported. Original bytes preserved.");
+          return;
+        }
+        var importedBrowserVerification = normalizeBrowserVerification(parsed);
+        if (importedBrowserVerification) {
+          appState.browserVerification = importedArtifact(importedBrowserVerification, rawJson);
+          appState.activeTab = "quality";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveImportedArtifact(BROWSER_VERIFICATION_KEY, appState.browserVerification);
+          refreshQualityLink();
+          setMessage("Canonical browser-verification JSON imported as a separate sidecar.");
+          return;
+        }
         var importedStartPlan = normalizeStartPlan(extractStartPlanPayload(parsed));
         if (importedStartPlan) {
           appState.startPlan = importedStartPlan;
@@ -2774,13 +3007,16 @@
           setMessage("Source bundle provenance JSON imported. Report tab opened.");
           return;
         }
+        if (!isWorkspacePayload(parsed)) {
+          throw new Error("Unknown JSON contract");
+        }
         appState.workspace = normalizeWorkspace(parsed);
         appState.runbookActionFilter = "all";
         appState.runbookEvidenceFilter = "all";
         saveWorkspace();
         setMessage("Workspace JSON imported.");
       } catch (error) {
-        setMessage("Import failed. Use a valid start, Website Improvement workspace, runbook, or linked preview JSON file.");
+        setMessage("Import failed. Use a canonical quality, browser, start, Website Improvement workspace, runbook, or linked preview JSON file.");
       }
     };
     reader.readAsText(file);
@@ -2798,4 +3034,5 @@
   document.addEventListener("click", handleClick);
 
   render();
+  refreshQualityLink();
 }());

@@ -188,6 +188,7 @@ EXPECTED_HELP_TOPICS = (
     "artifact",
     "start",
     "inspect",
+    "review-pack",
     "verify-browser",
     "doctor",
     "examples",
@@ -237,7 +238,8 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "audit": "design-ai audit [--strict] [--quiet] [--json]",
     "artifact": "design-ai artifact <implementation-plan|critique-loop|design-contract> <brief> [--route id] [--json] [--out file]",
     "start": "design-ai start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]",
-    "inspect": "design-ai inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--json]",
+    "inspect": "design-ai inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--review-pack id] [--json]",
+    "review-pack": "design-ai review-pack [id] [--json]",
     "verify-browser": "design-ai verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]",
     "doctor": "design-ai doctor [--strict] [--json] [--fix]",
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
@@ -292,7 +294,13 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "inspect": (
         "Usage:",
         "design-ai inspect <source.html> --brief text",
+        "--review-pack id",
         "reads only the selected HTML file",
+    ),
+    "review-pack": (
+        "Usage:",
+        "design-ai review-pack [id] [--json]",
+        "reads shipped pack definitions only",
     ),
     "verify-browser": (
         "Usage:",

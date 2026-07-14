@@ -31,6 +31,8 @@ design-ai doctor
 design-ai route "audit a Figma signup flow for Korean fintech" --explain
 design-ai routes
 design-ai prompt "audit a Figma signup flow for Korean fintech"
+design-ai review-pack korean-fintech
+design-ai inspect page.html --brief "한국 핀테크 설정 검토" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json
 design-ai pack "audit a Figma signup flow for Korean fintech" --max-bytes 80000
 design-ai prompt --from-file product-brief.md --route design-review --out prompt.md
 cat product-brief.md | design-ai pack --stdin --out prompt-pack.md

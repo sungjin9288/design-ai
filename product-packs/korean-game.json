@@ -1,0 +1,95 @@
+{
+  "kind": "design-ai-product-review-pack",
+  "schemaVersion": 1,
+  "revision": 1,
+  "id": "korean-game",
+  "name": "Korean game product review",
+  "domain": "game",
+  "locale": "ko-KR",
+  "summary": "Reviews Korean game account, store, probability, HUD density, and accessibility flows without treating static source as regulatory proof.",
+  "viewports": [
+    { "name": "mobile", "width": 390, "height": 844 },
+    { "name": "desktop", "width": 1440, "height": 900 }
+  ],
+  "knowledge": [
+    "knowledge/game-ui/korean-gaming-conventions.md",
+    "knowledge/game-ui/game-accessibility.md",
+    "knowledge/game-ui/hud-design.md",
+    "knowledge/i18n/korean-payments.md",
+    "knowledge/i18n/korean-typography.md"
+  ],
+  "criteria": [
+    {
+      "id": "korean-auth-autocomplete",
+      "lens": "accessibility",
+      "mode": "static-html",
+      "severity": "p1",
+      "title": "Declare game account password intent",
+      "question": "Can password managers distinguish sign-in credentials from password creation?",
+      "evidence": "Inspect password inputs for current-password or new-password autocomplete tokens.",
+      "verification": ["Exercise launcher or web sign-in, signup, and password reset with a platform password manager."],
+      "falsePositiveNotes": ["Platform-native or passwordless authentication without web password inputs is outside this rule."]
+    },
+    {
+      "id": "korean-marketing-consent-default",
+      "lens": "accessibility",
+      "mode": "static-html",
+      "severity": "p1",
+      "title": "Keep game promotions opt-in",
+      "question": "Are promotional messages separate from account and gameplay terms and off by default?",
+      "evidence": "Inspect checked checkboxes whose associated label mentions marketing, advertising, or promotional messages.",
+      "verification": ["Open account creation in a fresh session and confirm promotional consent is separate and unchecked."],
+      "falsePositiveNotes": ["Do not treat a returning player's saved communication preference as a new opt-in default."]
+    },
+    {
+      "id": "korean-probability-disclosure",
+      "lens": "response",
+      "mode": "scenario-required",
+      "severity": "p1",
+      "title": "Expose item probabilities before purchase",
+      "question": "Can players reach current probability disclosures before committing currency, and do the disclosed items match the purchase pool?",
+      "evidence": "Capture the store entry, probability disclosure, purchase confirmation, and effective-date or version context.",
+      "verification": ["Compare every purchasable random-item pool with its visible disclosure and localized labels."],
+      "falsePositiveNotes": ["The presence of the word 확률 alone does not prove that values are current, complete, or tied to the selected pool."]
+    },
+    {
+      "id": "korean-game-hud-density",
+      "lens": "responsive-resilience",
+      "mode": "browser-required",
+      "severity": "p2",
+      "title": "Keep dense Korean HUD information readable",
+      "question": "Do Korean labels, combat feedback, cooldowns, currency, and alerts remain legible without covering critical play space?",
+      "evidence": "Capture representative combat, menu, store, and notification states at both declared viewports and supported aspect ratios.",
+      "verification": ["Check text scaling, safe areas, color-independent status, input mode, focus, and longest localized strings."],
+      "falsePositiveNotes": ["High information density can be genre-appropriate when priority, customization, and accessibility settings remain clear."]
+    },
+    {
+      "id": "korean-accessibility-runtime",
+      "lens": "accessibility",
+      "mode": "browser-required",
+      "severity": "p1",
+      "title": "Prove account, menu, and store access",
+      "question": "Can players with visual, hearing, motor, and cognitive needs complete account, menu, purchase, and recovery flows?",
+      "evidence": "Attach remapping, subtitle, color, focus, screen-reader or narration, motion, and error-recovery evidence appropriate to the platform.",
+      "verification": ["Run the approved platform and browser verification profiles across supported input modes."],
+      "falsePositiveNotes": ["Web accessibility evidence does not prove in-engine menu, controller, subtitle, or HUD accessibility."]
+    }
+  ],
+  "benchmark": {
+    "source": "examples/benchmarks/korean-product-packs/korean-game/source.html",
+    "expectedFindingIds": [
+      "product-pack:korean-game:korean-auth-autocomplete",
+      "product-pack:korean-game:korean-marketing-consent-default",
+      "product-pack:korean-game:korean-probability-disclosure",
+      "product-pack:korean-game:korean-game-hud-density",
+      "product-pack:korean-game:korean-accessibility-runtime"
+    ],
+    "falsePositiveNotes": ["The fixture intentionally omits password autocomplete and preselects marketing consent; compliant account forms must not emit those confirmed findings."]
+  },
+  "boundary": {
+    "mode": "read-only",
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "notes": ["The pack reviews supplied evidence only. It does not certify regulatory compliance, launch a game client, or perform purchases."]
+  }
+}

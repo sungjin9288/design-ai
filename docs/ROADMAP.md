@@ -35,7 +35,7 @@ report without executing the page or changing the selected file.
 - [x] Added one dependency-free static analyzer for document language, supported control and button names, image alternatives, and the mobile viewport contract.
 - [x] Added SDK `inspectHtml()` and MCP `design_ai_inspect_html`; both inspect supplied strings and call the same pure operation as the CLI adapter.
 - [x] Preserved all eight quality lenses, concrete locations, Before/After/Why, evidence, verification steps, and separate confirmed/unverified counts.
-- [x] Expanded the source capability contract to 19 MCP tools and 12 SDK exports, while retaining exactly three opt-in learning-profile write tools.
+- [x] Expanded the source capability contract to 20 MCP tools and 13 SDK exports, while retaining exactly three opt-in learning-profile write tools.
 - [x] Added installed-bin, one-shot `npm exec`, and post-publish registry smoke contracts that assert the selected source bytes remain unchanged.
 
 ### Boundary

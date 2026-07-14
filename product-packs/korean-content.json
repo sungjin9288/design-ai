@@ -1,0 +1,95 @@
+{
+  "kind": "design-ai-product-review-pack",
+  "schemaVersion": 1,
+  "revision": 1,
+  "id": "korean-content",
+  "name": "Korean content product review",
+  "domain": "content",
+  "locale": "ko-KR",
+  "summary": "Reviews Korean reading and media products for account semantics, optional consent, Hangul readability, responsive copy, and accessible playback or reading.",
+  "viewports": [
+    { "name": "mobile", "width": 390, "height": 844 },
+    { "name": "desktop", "width": 1440, "height": 900 }
+  ],
+  "knowledge": [
+    "knowledge/i18n/korean-typography.md",
+    "knowledge/i18n/korean-product-conventions.md",
+    "knowledge/patterns/document-typography.md",
+    "knowledge/patterns/list-and-feed.md",
+    "knowledge/video/in-product-video.md"
+  ],
+  "criteria": [
+    {
+      "id": "korean-auth-autocomplete",
+      "lens": "accessibility",
+      "mode": "static-html",
+      "severity": "p1",
+      "title": "Declare content account password intent",
+      "question": "Can password managers distinguish sign-in credentials from password creation?",
+      "evidence": "Inspect password inputs for current-password or new-password autocomplete tokens.",
+      "verification": ["Exercise sign-in, signup, and password reset with a platform password manager."],
+      "falsePositiveNotes": ["Passwordless or social-only account flows without password inputs are outside this rule."]
+    },
+    {
+      "id": "korean-marketing-consent-default",
+      "lens": "accessibility",
+      "mode": "static-html",
+      "severity": "p1",
+      "title": "Keep content promotions opt-in",
+      "question": "Are promotional messages separate from account terms and off by default?",
+      "evidence": "Inspect checked checkboxes whose associated label mentions marketing, advertising, or promotional messages.",
+      "verification": ["Open signup in a fresh session and confirm promotional consent is separate and unchecked."],
+      "falsePositiveNotes": ["Do not treat an existing newsletter preference summary as a new opt-in default."]
+    },
+    {
+      "id": "korean-content-readability",
+      "lens": "responsive-resilience",
+      "mode": "browser-required",
+      "severity": "p2",
+      "title": "Protect Hangul reading rhythm",
+      "question": "Do body size, line-height, measure, paragraph spacing, and font fallback support sustained Korean reading?",
+      "evidence": "Capture representative long-form pages at mobile and desktop widths with text scaling and fallback fonts.",
+      "verification": ["Check body line-height, line length, paragraph rhythm, glyph clipping, zoom, and dark-mode contrast."],
+      "falsePositiveNotes": ["Compact captions and metadata can use tighter leading than long-form body text when glyphs remain unclipped."]
+    },
+    {
+      "id": "korean-responsive-copy-wrap",
+      "lens": "responsive-resilience",
+      "mode": "browser-required",
+      "severity": "p2",
+      "title": "Keep Korean titles and controls intact across widths",
+      "question": "Do long titles, creator names, subtitles, captions, and action labels wrap or truncate without covering controls?",
+      "evidence": "Capture longest production-like Korean strings in feeds, detail pages, and players at both declared viewports.",
+      "verification": ["Check title cards, metadata rows, caption controls, text scaling, and Korean IME search."],
+      "falsePositiveNotes": ["Editorial cards may intentionally clamp titles when the full title is available on focus, hover, or the detail page."]
+    },
+    {
+      "id": "korean-accessibility-runtime",
+      "lens": "accessibility",
+      "mode": "browser-required",
+      "severity": "p1",
+      "title": "Prove reading and playback with assistive technology",
+      "question": "Can keyboard and screen-reader users discover, read or play, pause, navigate, and recover without losing position?",
+      "evidence": "Attach keyboard order, accessibility-tree, caption, contrast, focus, and saved-position evidence.",
+      "verification": ["Run the approved browser verification profile at mobile and desktop viewports."],
+      "falsePositiveNotes": ["Static control names do not prove media-key behavior, caption synchronization, or saved reading position."]
+    }
+  ],
+  "benchmark": {
+    "source": "examples/benchmarks/korean-product-packs/korean-content/source.html",
+    "expectedFindingIds": [
+      "product-pack:korean-content:korean-auth-autocomplete",
+      "product-pack:korean-content:korean-marketing-consent-default",
+      "product-pack:korean-content:korean-content-readability",
+      "product-pack:korean-content:korean-responsive-copy-wrap",
+      "product-pack:korean-content:korean-accessibility-runtime"
+    ],
+    "falsePositiveNotes": ["The fixture intentionally omits password autocomplete and preselects marketing consent; corrected account forms must not emit those confirmed findings."]
+  },
+  "boundary": {
+    "mode": "read-only",
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "notes": ["The pack reviews supplied evidence only. It does not fetch protected content, play media, or change reading history."]
+  }
+}

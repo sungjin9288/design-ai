@@ -222,6 +222,17 @@ test("inspectHtml() return-shape keys and evidence boundary are pinned", () => {
   assert.equal(result.boundary.targetRepoMutation, false);
 });
 
+test("reviewPack() exposes the shipped read-only Korean review registry", () => {
+  const list = sdk.reviewPack();
+  const pack = sdk.reviewPack("korean-commerce");
+  assert.deepEqual(Object.keys(list), ["kind", "schemaVersion", "packs"]);
+  assert.equal(list.packs.length, 5);
+  assert.equal(pack.kind, "design-ai-product-review-pack");
+  assert.equal(pack.revision, 1);
+  assert.equal(pack.boundary.mode, "read-only");
+  assert.equal(pack.boundary.targetRepoMutation, false);
+});
+
 test("pack() return-shape keys are pinned (Phase A: no learningUsage)", () => {
   const result = sdk.pack(BRIEF, { maxBytes: 20000 });
   assert.deepEqual(Object.keys(result).sort(), [
