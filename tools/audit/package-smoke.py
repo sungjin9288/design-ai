@@ -69,6 +69,7 @@ from smoke_assertions import (
     assert_index_build_json,
     assert_index_status_json,
     assert_index_verify_json,
+    assert_inspect_json,
     assert_install_doctor_lifecycle_output,
     assert_install_output,
     assert_list_catalog_output,
@@ -784,7 +785,7 @@ SDK_SMOKE_SCRIPT = """
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { check, learn, pack, prompt, recall, route, routes, search, version } from "@design-ai/cli/sdk";
+import { check, inspectHtml, learn, pack, prompt, recall, route, routes, search, version } from "@design-ai/cli/sdk";
 
 const brief = "Spec a Button component API with variants, props, and keyboard accessibility";
 
@@ -820,6 +821,18 @@ const ck = check(
   { routeId: "component-spec" },
 );
 if (typeof ck.status !== "string") throw new Error("check() bad shape");
+
+const quality = inspectHtml(
+  `<html lang="ko"><head><meta name="viewport" content="width=device-width"></head><body><input name="phone"></body></html>`,
+  { sourceRef: "settings.html", brief: "Review Korean settings", locale: "ko-KR", viewports: ["mobile"] },
+);
+if (quality.kind !== "design-ai-quality-report") throw new Error("inspectHtml() bad shape");
+if (quality.summary.confirmedFindings !== 1 || quality.summary.unverifiedFindings !== 1) {
+  throw new Error("inspectHtml() lost confirmed/unverified separation");
+}
+if (quality.boundary.targetRepoMutation || quality.boundary.externalWrites) {
+  throw new Error("inspectHtml() changed the read-only boundary");
+}
 
 // Phase B: learn.remember must write only DESIGN_AI_LEARNING_FILE.
 const smokeDir = mkdtempSync(path.join(tmpdir(), "design-ai-sdk-learn-smoke-"));
@@ -8088,6 +8101,33 @@ def assert_start_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_start_json(result.stdout, context=context, cmd=cmd)
+
+
+def write_inspect_fixture(file_path: Path) -> None:
+    file_path.write_text(
+        """<!doctype html>
+<html lang="ko">
+  <head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+  <body><span>휴대폰 번호</span><input name="phone"><button>저장</button></body>
+</html>
+""",
+        encoding="utf-8",
+    )
+
+
+def assert_inspect_smoke(
+    cmd: list[str],
+    source_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    before = source_path.read_bytes()
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_inspect_json(result.stdout, context=context, cmd=cmd)
+    if source_path.read_bytes() != before:
+        raise SystemExit(f"{context}: inspect changed the selected source file")
 
 
 def assert_prompt_stdout_smoke(
@@ -21424,6 +21464,25 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin start plan",
         )
+        installed_inspect_source = tmp_root / "installed-inspect-source.html"
+        write_inspect_fixture(installed_inspect_source)
+        assert_inspect_smoke(
+            [
+                str(bin_path),
+                "inspect",
+                str(installed_inspect_source),
+                "--brief",
+                "Review a Korean settings flow",
+                "--locale",
+                "ko-KR",
+                "--viewport",
+                "mobile",
+                "--json",
+            ],
+            installed_inspect_source,
+            env=smoke_env,
+            context="package smoke installed bin HTML inspection",
+        )
         installed_prompt_json = tmp_root / "installed-prompt.json"
         installed_artifact_json = tmp_root / "installed-artifact.json"
         assert_artifact_smoke(
@@ -22896,6 +22955,26 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec start plan",
+        )
+        npx_inspect_source = npx_root / "npx-inspect-source.html"
+        write_inspect_fixture(npx_inspect_source)
+        assert_inspect_smoke(
+            npm_exec_cmd(
+                tarball,
+                "inspect",
+                str(npx_inspect_source),
+                "--brief",
+                "Review a Korean settings flow",
+                "--locale",
+                "ko-KR",
+                "--viewport",
+                "mobile",
+                "--json",
+            ),
+            npx_inspect_source,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec HTML inspection",
         )
         npx_prompt_json = npx_root / "npx-prompt.json"
         npx_artifact_json = npx_root / "npx-artifact.json"

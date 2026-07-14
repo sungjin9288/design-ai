@@ -198,6 +198,30 @@ test("start() return-shape keys and read-only boundary are pinned", () => {
   assert.deepEqual(result.effects.performed.externalActions, []);
 });
 
+test("inspectHtml() return-shape keys and evidence boundary are pinned", () => {
+  const result = sdk.inspectHtml(
+    `<html lang="en"><head><meta name="viewport" content="width=device-width"></head><body><button>Save</button></body></html>`,
+    { sourceRef: "settings.html", brief: "Review settings" },
+  );
+  assert.deepEqual(Object.keys(result), [
+    "kind",
+    "schemaVersion",
+    "generatedAt",
+    "subject",
+    "context",
+    "boundary",
+    "sources",
+    "lenses",
+    "findings",
+    "summary",
+    "approval",
+  ]);
+  assert.equal(result.kind, "design-ai-quality-report");
+  assert.equal(result.summary.confirmedFindings, 0);
+  assert.equal(result.summary.unverifiedFindings, 1);
+  assert.equal(result.boundary.targetRepoMutation, false);
+});
+
 test("pack() return-shape keys are pinned (Phase A: no learningUsage)", () => {
   const result = sdk.pack(BRIEF, { maxBytes: 20000 });
   assert.deepEqual(Object.keys(result).sort(), [

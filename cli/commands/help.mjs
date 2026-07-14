@@ -8,6 +8,7 @@ import { suggestNearest } from "../lib/suggest.mjs";
 import { runAudit } from "./audit.mjs";
 import { runArtifact } from "./artifact.mjs";
 import { runStart } from "./start.mjs";
+import { runInspect } from "./inspect.mjs";
 import { runCheck } from "./check.mjs";
 import { runDoctor } from "./doctor.mjs";
 import { runExamples } from "./examples.mjs";
@@ -45,6 +46,7 @@ export const HELP_COMMANDS = [
   { topic: "audit", usage: "audit [--strict] [--quiet] [--json]", description: "Run repository quality checks" },
   { topic: "artifact", usage: "artifact <implementation-plan|critique-loop|design-contract> <brief> [--route id] [--json] [--out file]", description: "Build a portable read-only design artifact plan" },
   { topic: "start", usage: "start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]", description: "Build one read-only route, design contract, review, and next-step plan" },
+  { topic: "inspect", usage: "inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--json]", description: "Build a read-only design quality report from explicit HTML" },
   { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
   { topic: "learn", usage: "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]", description: "Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization" },
@@ -94,6 +96,7 @@ const HELP_RUNNERS = {
   audit: () => runAudit(["--help"]),
   artifact: () => runArtifact(["--help"]),
   start: () => runStart(["--help"]),
+  inspect: () => runInspect(["--help"]),
   doctor: () => runDoctor(["--help"]),
   examples: () => runExamples(["--help"]),
   learn: () => runLearn(["--help"]),
@@ -225,6 +228,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai prompt "improve homepage conversion" --route website-improvement`);
   console.log(`  ${dim("$")} design-ai prompt "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai artifact implementation-plan "refactor account settings"`);
+  console.log(`  ${dim("$")} design-ai inspect page.html --brief "review account settings" --locale ko-KR --json`);
   console.log(`  ${dim("$")} design-ai pack "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai check output.md --route component-spec --strict`);
   console.log(`  ${dim("$")} design-ai check output.md --learn --yes`);

@@ -77,8 +77,9 @@
   },
   "mcp": {
     "tools": [
-      "design_ai_route",
-      "design_ai_start",
+    "design_ai_route",
+    "design_ai_start",
+    "design_ai_inspect_html",
       "design_ai_prompt",
       "design_ai_artifact",
       "design_ai_pack",
@@ -104,8 +105,9 @@
   },
   "sdk": {
     "exports": [
-      "artifact",
-      "check",
+    "artifact",
+    "check",
+    "inspectHtml",
       "learn",
       "pack",
       "prompt",

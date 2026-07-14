@@ -32,9 +32,9 @@ test("canonical capability manifest keeps the frozen public counts", () => {
   assert.equal(manifest.install.skills.length, 21);
   assert.equal(manifest.install.commands.length, 16);
   assert.equal(manifest.install.agents.length, 4);
-  assert.equal(manifest.mcp.tools.length, 18);
+  assert.equal(manifest.mcp.tools.length, 19);
   assert.equal(manifest.mcp.learningProfileWriteTools.length, 3);
-  assert.equal(manifest.sdk.exports.length, 11);
+  assert.equal(manifest.sdk.exports.length, 12);
   assert.equal(manifest.sdk.learnMethods.length, 3);
 });
 

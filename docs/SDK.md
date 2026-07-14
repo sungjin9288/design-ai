@@ -1,14 +1,14 @@
 # Agent SDK reference
 
-> Status: current source candidate — 10 read-only verbs plus the opt-in `learn.*` local-write namespace; published v5.0.0 has 9 read-only verbs
+> Status: current source candidate — 11 read-only verbs plus the opt-in `learn.*` local-write namespace; published v5.0.0 has 9 read-only verbs
 
 `@design-ai/cli/sdk` lets an external Node.js program — an agent runtime, a build script, a custom tool — use design-ai's deterministic design capabilities as importable functions, without shelling out to the CLI or spawning the MCP server. It is a thin, curated adapter over the same `cli/lib` functions the CLI and MCP server already call, so a capability that ships in the CLI is instantly available to an SDK consumer.
 
 See [`AGENT-SDK.md`](AGENT-SDK.md) for the full design rationale, phased plan, and open questions. This page is the public reference for the shipped Phase A (read-only) and Phase B (local-write) surface.
 
-MCP parity: SDK `start()` and `artifact()` map to `design_ai_start` and `design_ai_artifact`; `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
+MCP parity: SDK `start()`, `inspectHtml()`, and `artifact()` map to `design_ai_start`, `design_ai_inspect_html`, and `design_ai_artifact`; `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
 
-Filesystem boundary: Website Improvement linked-preview inspection remains a CLI/MCP operation (`design-ai site --linked-preview`, `design_ai_site_linked_preview`) rather than an SDK export. SDK `start()` may declare a local path, repository URL, page URL, or screenshot reference, but it does not read or fetch them. The SDK therefore stays a curated capability adapter with 11 current-source exports and no general local-project filesystem surface.
+Filesystem boundary: Website Improvement linked-preview inspection remains a CLI/MCP operation (`design-ai site --linked-preview`, `design_ai_site_linked_preview`) rather than an SDK export. SDK `start()` may declare references without reading them, while `inspectHtml()` accepts source text and a display reference instead of a path. The SDK therefore stays a curated capability adapter with 12 current-source exports and no general local-project filesystem surface.
 
 ## Install and import
 
@@ -19,7 +19,7 @@ npm install @design-ai/cli
 ```
 
 ```js
-import { artifact, start, route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
+import { artifact, start, inspectHtml, route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
 ```
 
 Only the `./sdk` subpath is exported — `import "@design-ai/cli"` (the bare package root) is intentionally not exported, so importing the SDK is always an explicit `@design-ai/cli/sdk` import. `cli/lib/*` is internal and unstable; do not import it directly.
@@ -42,7 +42,7 @@ Every verb below is a pure, read-only adapter:
 - It resolves the package root the same way the CLI does.
 - It calls the corresponding `cli/lib` function and returns a plain JSON-serializable object — the same shape the CLI's `--json` mode emits.
 - It performs no file writes, no network calls, and no learning-usage sidecar writes. This is a deliberate difference from the CLI: `prompt`/`pack`'s `withLearning` option in the SDK only **reads** the local learning profile to build context — it never records a usage event, unlike the CLI's `--with-learning` flag. There is no SDK equivalent of `check --learn` (capture) in Phase A.
-- Given the same inputs, it returns the same outputs (determinism), matching the CLI.
+- Semantic results are deterministic. Timestamped reports expose `generatedAt`; callers that need byte-stable output provide that value explicitly.
 
 ## Verbs
 
@@ -69,6 +69,32 @@ The return value matches `design-ai start ... --json` and MCP
 local writes, target-repository mutations, and external actions remain empty.
 Declared references appear under `effects.intended` with a not-performed state.
 The function does not inspect those references or execute `pathway.command`.
+
+### `inspectHtml(source, opts)`
+
+Inspect supplied HTML with deterministic static rules and return the canonical
+`design-ai-quality-report` v1 contract.
+
+```js
+inspectHtml(source: string, opts: {
+  sourceRef: string,
+  brief: string,
+  name?: string,
+  locale?: string,
+  viewports?: string[],
+  generatedAt?: string,
+}): DesignQualityReport
+```
+
+The current rule set checks document language, supported form-control names,
+button names, image `alt` declarations, and the mobile viewport contract. It
+does not execute scripts, open a browser, resolve linked resources, read a path,
+or write a file. Response, interruption, motion, performance, keyboard,
+accessibility-tree, and rendered responsive behavior remain `unverified` until
+runtime evidence is collected. Every confirmed finding includes a concrete
+source location, Before, After, Why, evidence, and verification steps.
+`generatedAt` defaults to the current UTC time. Supply a normalized UTC value when
+fixtures, caches, or signatures require byte-equivalent reports.
 
 ### `route(brief, opts)`
 
@@ -211,13 +237,13 @@ version(): { cli: string, corpus: string }
 
 - Additive changes (new optional fields, new opt-in options) are minor version bumps.
 - Signature or return-shape changes are major version bumps.
-- The 10 current-source read-only function exports (`artifact`, `start`, `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) plus the frozen `learn` namespace object (`learn.remember`, `learn.feedback`, `learn.captureFromCheck`) and their return-shape key sets are pinned by an SDK contract test (`cli/sdk/index.test.mjs`) — this is the semver anchor. If a name or a top-level key drifts unintentionally, that test fails.
+- The 11 current-source read-only function exports (`artifact`, `start`, `inspectHtml`, `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) plus the frozen `learn` namespace object (`learn.remember`, `learn.feedback`, `learn.captureFromCheck`) and their return-shape key sets are pinned by an SDK contract test (`cli/sdk/index.test.mjs`) — this is the semver anchor. If a name or a top-level key drifts unintentionally, that test fails.
 - `cli/lib/*` remains internal and unstable. Only `@design-ai/cli/sdk` is a supported import path.
-- Determinism: the same inputs always produce the same outputs, with no randomness or time-dependence added by the adapter layer.
+- Determinism: semantic results contain no randomness. Timestamped reports are byte-stable when the caller supplies `generatedAt`.
 
 ## Phase B — local writes
 
-The primary SDK surface is read-only by design: the 10 current-source verbs never write a file. Phase B adds a single namespace export, `learn`, grouping the three explicit, opt-in **LOCAL-WRITE** verbs. This is the only place the SDK writes files — every other verb stays read-only.
+The primary SDK surface is read-only by design: the 11 current-source verbs never write a file. Phase B adds a single namespace export, `learn`, grouping the three explicit, opt-in **LOCAL-WRITE** verbs. This is the only place the SDK writes files — every other verb stays read-only.
 
 ```js
 import { learn } from "@design-ai/cli/sdk";
@@ -227,7 +253,7 @@ learn.feedback(text, opts?)                // opts: { outcome?: string, category
 learn.captureFromCheck(artifact, opts?)    // opts: { routeId?: string }
 ```
 
-**Write boundary rationale:** an SDK consumer should never be surprised by a file write. The 10 current-source read-only verbs are safe to call from any context — a build script, a read path, a CI check — with zero side effects. `learn.*` is the deliberate, narrow exception: three verbs, one destination, no ambiguity about what gets written or where.
+**Write boundary rationale:** an SDK consumer should never be surprised by a file write. The 11 current-source read-only verbs are safe to call from any context — a build script, a read path, a CI check — with zero side effects. `learn.*` is the deliberate, narrow exception: three verbs, one destination, no ambiguity about what gets written or where.
 
 All three verbs write **only** the local learning profile — `DESIGN_AI_LEARNING_FILE` if set, otherwise the CLI's `defaultLearningFile()` default path — and never touch the network. There is no `filePath` option and no `now`/timestamp option on any of them: target a specific profile the same way the CLI does, by setting the `DESIGN_AI_LEARNING_FILE` environment variable before calling. The underlying library functions supply their own defaults (the env var and `new Date()`).
 

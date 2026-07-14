@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 780 (unreleased)** — Added a dependency-free, read-only static HTML quality engine across CLI, SDK, and MCP, preserving concrete evidence, runtime uncertainty, file immutability, and packed/public smoke boundaries; the full release gate passes with 694 tests, 8 strict audits, 676 packaged files, warning-free docs, and installed-bin plus one-shot smoke coverage.
 - **Phase 779 (unreleased)** — Added one shared read-only start flow across CLI, SDK, MCP, and Website Console, with declared-context non-inspection, performed/intended effect boundaries, browser verification, and packed-package smoke coverage.
 - **Phase 778 (unreleased)** — Added the evidence-backed design quality report schema, dependency-free validator, Korean fintech benchmark, specialization plan, package guards, and contract documentation without adding target-repository mutation or external writes.
 - **Phase 661 (unreleased)** — Improved Website Console revalidation gate JSON action labels.

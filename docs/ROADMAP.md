@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 780 - Read-only static HTML quality engine (implemented, unreleased)
+
+Turns one explicit HTML source into the canonical evidence-backed quality
+report without executing the page or changing the selected file.
+
+### Delivered
+- [x] Added `design-ai inspect <source.html> --brief text` with explicit file selection, regular-file and 1 MB guards, symlink rejection, Markdown output, and canonical JSON output.
+- [x] Added one dependency-free static analyzer for document language, supported control and button names, image alternatives, and the mobile viewport contract.
+- [x] Added SDK `inspectHtml()` and MCP `design_ai_inspect_html`; both inspect supplied strings and call the same pure operation as the CLI adapter.
+- [x] Preserved all eight quality lenses, concrete locations, Before/After/Why, evidence, verification steps, and separate confirmed/unverified counts.
+- [x] Expanded the source capability contract to 19 MCP tools and 12 SDK exports, while retaining exactly three opt-in learning-profile write tools.
+- [x] Added installed-bin, one-shot `npm exec`, and post-publish registry smoke contracts that assert the selected source bytes remain unchanged.
+
+### Boundary
+- The CLI reads one operator-selected `.html` or `.htm` file. It does not follow symbolic links, recursively scan a repository, resolve linked resources, execute scripts, open a browser, or write evidence.
+- SDK and MCP receive source text and a display reference; neither reads a target path.
+- Static success does not become a passing runtime claim. Interaction, interruption, motion, performance, keyboard, accessibility-tree, and rendered responsive behavior remain `unverified`.
+- Target-repository mutation, browser verification, publication, and deployment remain explicit approval gates.
+
+### Verification target
+- [x] Focused contract, analyzer, CLI, SDK, MCP, help, dispatch, and capability-manifest tests pass.
+- [x] `npm run release:check` passed with 694 tests, 8 strict audits, 676 packaged files, warning-free docs, and installed-bin plus one-shot `npm exec` smoke coverage.
+- [x] Pull request #36 passed audits and size budget, package integrity, documentation policy, and CLI plus VS Code library unit-test checks in GitHub Actions run `29319044947`.
+
 ## Phase 779 - One read-only start flow (implemented, unreleased)
 
 Turns a brief and optional declared product context into one portable planning
