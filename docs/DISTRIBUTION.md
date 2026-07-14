@@ -81,7 +81,9 @@ design-ai status      Show what's installed; use `design-ai status --json` for m
 design-ai list [kind] List catalog (skills | commands | agents); add --json for machine-readable manifest entries
 design-ai route brief Recommend commands, skills, and knowledge files; supports --from-file/--stdin/--list/--limit N/--explain/--json
 design-ai routes      List available route ids for prompt/pack --route
+design-ai start brief Build one read-only route, design contract, unexecuted review state, next command, and effect boundary; declared repo/page/screenshot context is not inspected
 design-ai prompt brief Generate a ready-to-use agent prompt; add --out file, --from-file, --stdin, --json, or --route id
+design-ai artifact mode Build an implementation plan, critique loop, or DESIGN.md contract; only explicit --out writes a local file
 design-ai pack brief Generate a prompt plus bounded context files with summary/warnings; add --out file, --from-file, --stdin, --max-bytes N, --json, or --route id
 design-ai learn      Manage local learning preferences; use --init for preview-first starter profile bootstrap, --query with list/export for matching profile inspection, --backup --json for a full portable profile backup, --redact --json / --redact --from-file / --redact --stdin for redacted shareable backups, --verify / --diff before moving portable profiles, --restore for preview-first full-profile replacement with automatic rollback backup and optional --backup-file path, --restore-backups for read-only rollback backup inventory, --restore-backups --prune --keep N for preview-first older rollback backup cleanup, --curate for archive-first duplicate/sensitive entry maintenance, --propose-skills for preview-only skill delta proposals from repeated check captures with adjustable --min-evidence proposal thresholds, optional --strict proposal readiness gating, `--report --out skill-proposals.md` Markdown review artifacts, read-only `--review-file` decision joins, read-only `--apply-plan` accepted proposal manual apply plans, `--review-template --out skill-proposals.review.json` JSON decision scaffolds, and `--patch --out skill-proposals.patch` unified diff handoffs, --out file plus --force for safe artifact writes, and --import for confirmed profile merges
 design-ai check file  Check generated Markdown artifact quality; add --examples, --route id, --all-routes, --issues-only, --stdin, --strict, --learn, --yes, --learning-file path, or --json
@@ -95,6 +97,11 @@ design-ai doctor      Diagnose install and runtime health; use `design-ai doctor
 design-ai version     CLI + plugin versions; use `design-ai version --json` for machine-readable version metadata
 design-ai help [cmd|--json] Show top-level or command-specific help; --json emits a topic catalog
 ```
+
+The current source package smoke runs `design-ai start ... --json` through both the
+installed tarball bin and one-shot `npm exec`. Public registry smoke repeats the
+same assertion after release. The check requires the embedded design contract and
+an empty performed local-write, target-mutation, and external-action boundary.
 
 Environment overrides:
 

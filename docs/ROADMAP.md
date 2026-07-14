@@ -1,5 +1,29 @@
 # Roadmap
 
+## Phase 779 - One read-only start flow (implemented, unreleased)
+
+Turns a brief and optional declared product context into one portable planning
+contract without reading the target product or duplicating existing operations.
+
+### Delivered
+- [x] Added `design-ai start` with inline, file, and stdin briefs plus optional route, site, repository, page, screenshot, locale, and viewport context.
+- [x] Added a shared operation used directly by CLI, SDK `start()`, and MCP `design_ai_start`, preserving exact JSON parity without subprocess-only recomputation.
+- [x] Reused the existing design-contract artifact and Website Improvement init command builder instead of creating parallel route, artifact, or site logic.
+- [x] Added Website Console Start import, local persistence, review, command/contract copy, JSON export, clear actions, and mobile 44px action targets.
+- [x] Added package-content guards and installed-bin, one-shot `npm exec`, and post-publish registry smoke assertions for the read-only start boundary.
+
+### Boundary
+- Declared repository URLs, absolute local paths, page URLs, and screenshots are recorded but not read, fetched, opened, or validated by `start`.
+- The review playbook is marked `playbook-ready-not-run`; no code or runtime review is claimed.
+- `effects.performed` allows design-ai corpus reads only. Local writes, target-repository mutations, and external actions remain empty.
+- Website Console validates this boundary before importing and never executes the returned next command.
+
+### Verification target
+- [x] Unit, CLI, SDK, MCP, capability-manifest, Website Console, and shared smoke assertion tests pass.
+- [x] `npm run release:check` passed with 669 tests, 8 strict audits, 672 packaged files, warning-free docs, and installed-bin plus one-shot `npm exec` smoke coverage.
+- [x] Browser verification passed at 1440px and 390px with zero horizontal overflow or console warnings/errors, visible skip-link focus, and 44px minimum visible button targets.
+- [x] Pull request #35 passed audits and size budget, package integrity, documentation policy, and CLI plus VS Code library unit-test checks in GitHub Actions run `29310833155`.
+
 ## Phase 778 - Evidence-backed design quality contract (implemented, unreleased)
 
 Establishes the shared quality-report contract for design review before adding a

@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the v5.0.0 source candidate exposes 17 tools, including the shared read-only artifact operation, a read-only Website Improvement bundle handoff, a read-only linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v4.65.0 remains at 14 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 18 tools, including the shared read-only start and artifact operations, a read-only Website Improvement bundle handoff, a read-only linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -31,6 +31,16 @@ This turns design-ai from "a document generator" into "an agent that operates on
 ### Shared design artifact operation
 
 `design_ai_artifact` exposes the same three read-only modes as `design-ai artifact` and SDK `artifact()`: `implementation-plan`, `critique-loop`, and `design-contract`. The response carries the selected route, source files, workflow, output sections, approval boundary, verification checklist, and rendered Markdown. It never writes the declared output file or changes a target repository.
+
+### Shared start operation
+
+`design_ai_start` maps to CLI `design-ai start` and SDK `start()`. It accepts one
+brief plus optional site name, repository URL, absolute local path, page URL,
+screenshot references, locale, and viewports. It chooses one route, embeds the
+existing design-contract artifact, marks the review playbook as not run, and
+returns one next command. Declared references are not read or fetched. The
+performed effect boundary always contains no local writes, target-repository
+mutations, or external actions.
 
 ### Approval-gated website implementation handoff
 

@@ -145,7 +145,7 @@ a:focus-visible {
 
 .nav-button {
   width: 100%;
-  min-height: 40px;
+  min-height: 44px;
   border: 0;
   border-radius: 6px;
   background: transparent;
@@ -335,7 +335,7 @@ a:focus-visible {
 .field select,
 .field textarea {
   width: 100%;
-  min-height: 40px;
+  min-height: 44px;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: white;
@@ -369,7 +369,7 @@ a:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 40px;
+  min-height: 44px;
   padding: 8px 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -786,7 +786,7 @@ td input {
 }
 
 .button {
-  min-height: 40px;
+  min-height: 44px;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: var(--surface);
@@ -845,7 +845,7 @@ td input {
 }
 
 .template-button {
-  min-height: 40px;
+  min-height: 44px;
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
@@ -893,6 +893,70 @@ td input {
   padding: 28px 16px;
   color: var(--text-muted);
   text-align: center;
+}
+
+.empty-state--compact {
+  padding: 12px 0;
+  text-align: left;
+}
+
+.start-details {
+  margin-top: 16px;
+}
+
+.start-details h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.start-details h4:not(:first-child) {
+  margin-top: 20px;
+}
+
+.start-details p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.start-command {
+  margin: 0;
+  min-height: 0;
+}
+
+.start-actions {
+  margin-top: 16px;
+}
+
+.start-actions--compact {
+  margin-top: 12px;
+}
+
+.start-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.start-list li {
+  overflow-wrap: anywhere;
+}
+
+.start-list .pill {
+  margin-left: 8px;
+}
+
+.start-contract {
+  margin-top: 16px;
+}
+
+.start-contract summary {
+  cursor: pointer;
+  font-weight: 750;
+}
+
+.start-contract .report-preview {
+  margin-top: 12px;
 }
 
 .notice {
@@ -956,8 +1020,17 @@ td input {
 }
 
 @media (max-width: 600px) {
+  .button,
+  .nav-button {
+    min-height: 44px;
+  }
+
   .nav-list {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nav-count {
+    display: none;
   }
 
   .task-row {

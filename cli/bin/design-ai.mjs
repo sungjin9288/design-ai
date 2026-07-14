@@ -12,6 +12,7 @@
 //   show                 Print a corpus file or line range
 //   route                Recommend and explain commands, skills, and knowledge for a brief
 //   routes               List available route ids
+//   start                Build one read-only route, design contract, review state, and next-step plan
 //   prompt               Generate a ready-to-use agent prompt from a brief
 //   pack                 Generate a prompt plus bounded context file contents
 //   audit                Run repository quality checks

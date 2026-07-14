@@ -86,6 +86,8 @@ Exit criteria:
 
 ### P1 - One start flow
 
+Status: implemented in the current source, pending release.
+
 Create `design-ai start` as the primary entry point over existing route, artifact,
 site, and review operations. It should collect the minimum context once and return
 the next safe action without duplicating those operations.
@@ -97,6 +99,11 @@ Exit criteria:
 - CLI, SDK, MCP, and Website Console expose the same design-contract payload.
 - Dry-run output names every intended read, local write, target mutation, and
   external action before execution.
+
+The implementation is read-only rather than a simulated executor. CLI, SDK, and
+MCP call the same operation directly, while Website Console validates, stores,
+displays, and exports that canonical JSON without rerouting the brief or inspecting
+declared references.
 
 ### P2 - Quality engine
 

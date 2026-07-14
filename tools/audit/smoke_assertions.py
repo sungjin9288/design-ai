@@ -186,6 +186,7 @@ EXPECTED_HELP_TOPICS = (
     "check",
     "audit",
     "artifact",
+    "start",
     "doctor",
     "examples",
     "learn",
@@ -233,6 +234,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "check": "design-ai check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--learn]",
     "audit": "design-ai audit [--strict] [--quiet] [--json]",
     "artifact": "design-ai artifact <implementation-plan|critique-loop|design-contract> <brief> [--route id] [--json] [--out file]",
+    "start": "design-ai start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]",
     "doctor": "design-ai doctor [--strict] [--json] [--fix]",
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
@@ -276,6 +278,12 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "Usage:",
         "design-ai artifact <mode> <brief> [--route id] [--json] [--out file] [--force]",
         "implementation-plan, critique-loop, design-contract",
+    ),
+    "start": (
+        "Usage:",
+        "design-ai start <brief> [context options] [--route id] [--json]",
+        "Declare a repository URL without fetching it",
+        "Declare a page URL without opening it",
     ),
     "doctor": ("Usage:", "design-ai doctor [--strict] [--json] [--fix]"),
     "examples": ("Usage:", "design-ai examples [query] [--route id] [--limit N] [--json]"),
@@ -446,6 +454,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "--route website-improvement",
     "pack <brief|--from-file file|--stdin|--eval-template|--eval>",
     "check <artifact.md|--stdin|--examples>",
+    "start <brief|--from-file file|--stdin>",
     "examples [query]",
     "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
     "workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
@@ -4087,6 +4096,73 @@ def assert_artifact_json(raw: str, *, context: str, cmd: list[str]) -> None:
     )
 
 
+def assert_start_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse start JSON after {context}") from error
+
+    assert_smoke_json_keys(
+        payload,
+        ["kind", "schemaVersion", "brief", "context", "route", "designContract", "review", "pathway", "effects"],
+        label="top-level",
+        context=context,
+        command_label="start JSON",
+    )
+    if payload.get("kind") != "design-ai-start" or payload.get("schemaVersion") != 1:
+        raise SystemExit(f"start JSON after {context} kind or schema version changed")
+    if payload.get("brief") != EXPECTED_ROUTE_BRIEF:
+        raise SystemExit(f"start JSON after {context} brief differs from expected brief")
+    route = payload.get("route")
+    contract = payload.get("designContract")
+    if not isinstance(route, dict) or route.get("id") != EXPECTED_ROUTE_ID:
+        raise SystemExit(f"start JSON after {context} route differs from expected route")
+    if not isinstance(contract, dict) or contract.get("kind") != "design-ai-artifact":
+        raise SystemExit(f"start JSON after {context} design contract is missing")
+    if not isinstance(contract.get("route"), dict) or contract["route"].get("id") != route.get("id"):
+        raise SystemExit(f"start JSON after {context} route and design contract drifted")
+    review = payload.get("review")
+    if not isinstance(review, dict) or review.get("executed") is not False:
+        raise SystemExit(f"start JSON after {context} review must remain unexecuted")
+    pathway = payload.get("pathway")
+    if not isinstance(pathway, dict) or not isinstance(pathway.get("command"), str) or not pathway["command"]:
+        raise SystemExit(f"start JSON after {context} next command is missing")
+    effects = payload.get("effects")
+    performed = effects.get("performed") if isinstance(effects, dict) else None
+    if not isinstance(performed, dict) or not isinstance(performed.get("reads"), list):
+        raise SystemExit(f"start JSON after {context} performed read evidence is missing")
+    for key in ("localWrites", "targetRepoMutations", "externalActions"):
+        if performed.get(key) != []:
+            raise SystemExit(f"start JSON after {context} performed {key} must remain empty")
+
+
+def passing_start_json() -> str:
+    return json.dumps({
+        "kind": "design-ai-start",
+        "schemaVersion": 1,
+        "brief": EXPECTED_ROUTE_BRIEF,
+        "context": {},
+        "route": {"id": EXPECTED_ROUTE_ID},
+        "designContract": {
+            "kind": "design-ai-artifact",
+            "route": {"id": EXPECTED_ROUTE_ID},
+        },
+        "review": {"status": "playbook-ready-not-run", "executed": False},
+        "pathway": {"status": "playbook-ready", "command": "design-ai artifact implementation-plan"},
+        "effects": {
+            "performed": {
+                "reads": [{"kind": "design-ai-corpus", "reference": "AGENTS.md"}],
+                "localWrites": [],
+                "targetRepoMutations": [],
+                "externalActions": [],
+            },
+            "intended": {"reads": [], "localWrites": [], "targetRepoMutations": [], "externalActions": []},
+            "approvalRequiredBefore": [],
+        },
+    })
+
+
 def assert_prompt_markdown_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     if raw.lstrip().startswith("{"):
@@ -4767,6 +4843,8 @@ def passing_main_help_output() -> str:
         "    Generate prompt plus bounded context and prompt-pack eval checkpoints",
         "  check <artifact.md|--stdin|--examples> [--route id|--all-routes] [--learn]",
         "    Check generated Markdown artifact quality; add --issues-only or --learn",
+        "  start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]",
+        "    Build one read-only route, design contract, review, and next-step plan",
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",
         "  learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
         "    Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization",
@@ -8980,6 +9058,15 @@ def run_self_test() -> None:
     parse_error_message = f"failed to parse doctor JSON after {context}"
 
     assert_no_ansi("plain output", cmd)
+    start_cmd = ["design-ai", "start", EXPECTED_ROUTE_BRIEF, "--json"]
+    assert_start_json(passing_start_json(), context=context, cmd=start_cmd)
+    unsafe_start = json.loads(passing_start_json())
+    unsafe_start["effects"]["performed"]["targetRepoMutations"] = ["unexpected"]
+    expect_self_test_failure(
+        lambda: assert_start_json(json.dumps(unsafe_start), context=context, cmd=start_cmd),
+        expected="performed targetRepoMutations must remain empty",
+        scope="smoke assertions",
+    )
     if build_plugin_inventory_summary({
         "skills": [{"name": "a"}, {"name": "b"}],
         "commands": [{"name": "c"}],

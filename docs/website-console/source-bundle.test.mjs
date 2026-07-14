@@ -22,6 +22,9 @@ const api = loadApi();
 test("source-bundle classic script exposes the focused frozen API", () => {
   assert.equal(Object.isFrozen(api), true);
   assert.deepEqual(Object.keys(api), [
+    "normalizeStartPlan",
+    "extractStartPlanPayload",
+    "buildStartPlanJson",
     "normalizeRunbookSourceBundle",
     "extractSourceBundleProvenancePayload",
     "extractSourceBundleRevalidationGatePayload",
@@ -30,6 +33,56 @@ test("source-bundle classic script exposes the focused frozen API", () => {
     "buildSourceBundleJson",
     "buildSourceBundleRevalidationGateJson",
   ]);
+});
+
+test("start plan contract accepts read-only payloads and rejects forged execution", () => {
+  const plan = {
+    kind: "design-ai-start",
+    schemaVersion: 1,
+    brief: "Improve account settings",
+    route: { id: "flow-design", label: "Feature flow design" },
+    designContract: {
+      kind: "design-ai-artifact",
+      schemaVersion: 1,
+      mode: "design-contract",
+      route: { id: "flow-design" },
+      markdown: "# Contract",
+    },
+    review: { status: "playbook-ready-not-run", executed: false },
+    pathway: { status: "playbook-ready", command: "design-ai artifact implementation-plan" },
+    effects: {
+      performed: { reads: [], localWrites: [], targetRepoMutations: [], externalActions: [] },
+      intended: { reads: [], localWrites: [], targetRepoMutations: [], externalActions: [] },
+      approvalRequiredBefore: [],
+    },
+  };
+
+  assert.deepEqual(api.extractStartPlanPayload(plan), plan);
+  assert.notEqual(api.normalizeStartPlan(plan), plan);
+  assert.deepEqual(JSON.parse(api.buildStartPlanJson(plan)), plan);
+  assert.equal(api.extractStartPlanPayload({ ...plan, review: { executed: true } }), null);
+  assert.equal(api.extractStartPlanPayload({ ...plan, pathway: { command: "" } }), null);
+  assert.equal(api.extractStartPlanPayload({
+    ...plan,
+    effects: { ...plan.effects, intended: { reads: [] } },
+  }), null);
+  assert.equal(api.extractStartPlanPayload({
+    ...plan,
+    effects: {
+      ...plan.effects,
+      performed: {
+        ...plan.effects.performed,
+        reads: [{ kind: "target-repository", reference: "/tmp/app" }],
+      },
+    },
+  }), null);
+  assert.equal(api.extractStartPlanPayload({
+    ...plan,
+    effects: {
+      ...plan.effects,
+      performed: { ...plan.effects.performed, targetRepoMutations: ["unexpected"] },
+    },
+  }), null);
 });
 
 test("source-bundle normalization preserves the provenance contract", () => {
@@ -165,9 +218,20 @@ test("Website Console imports and labels linked preview readiness without claimi
   const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
 
   assert.match(appSource, /website-improvement-linked-preview/);
-  assert.match(appSource, /Import workspace\/runbook\/preview JSON/);
+  assert.match(appSource, /Import start, workspace, runbook, or preview JSON/);
   assert.match(appSource, /No process started by design-ai/);
   assert.match(appSource, /A configured URL is not browser verification/);
   assert.match(appSource, /Linked preview readiness JSON imported\. Report tab opened\./);
   assert.match(appSource, /no process start, external call, source scan, or target-repo mutation/);
+});
+
+test("Website Console imports start JSON without claiming reference inspection or execution", () => {
+  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+
+  assert.match(appSource, /Read-only start JSON imported\. Start tab opened\./);
+  assert.match(appSource, /0 inspected by start/);
+  assert.match(appSource, /No repository scan/);
+  assert.match(appSource, /No browser request/);
+  assert.match(appSource, /No target mutation/);
+  assert.doesNotMatch(appSource, /data-action="execute-start/);
 });

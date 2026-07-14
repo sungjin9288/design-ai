@@ -114,6 +114,7 @@ from smoke_assertions import (
     assert_site_sample_json,
     assert_site_tasks_json,
     assert_status_json,
+    assert_start_json,
     assert_search_dir_value_failure,
     assert_update_dry_run_json,
     assert_update_dry_run_output,
@@ -4060,6 +4061,17 @@ def assert_route_stdin_smoke(
     assert_route_json_component_spec(result.stdout, context=context, cmd=cmd)
 
 
+def assert_start_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_start_json(result.stdout, context=context, cmd=cmd)
+
+
 def assert_audit_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_audit_strict_quiet_output(result.stdout, context=context, cmd=cmd)
@@ -6048,6 +6060,29 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec route stdin",
+        )
+        assert_start_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "start",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--local-path",
+                str(npx_root / "declared-target-repo"),
+                "--url",
+                "https://example.com/component",
+                "--screenshot",
+                str(npx_root / "declared-screen.png"),
+                "--locale",
+                "ko-KR",
+                "--viewport",
+                "mobile",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec start plan",
         )
         prompt_json = npx_root / "prompt.json"
         assert_prompt_smoke(

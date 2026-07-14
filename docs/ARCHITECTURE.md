@@ -114,6 +114,7 @@ The public product surface and its internal implementation have separate owners:
 | Plugin inventory | `.claude-plugin/plugin.json` | Installed Claude assets and package metadata |
 | Route catalog | `cli/lib/route-catalog.mjs` | Stable route definitions and route ID validation |
 | Route operation | `cli/lib/route-operation.mjs` | Shared read-only route payload assembly for CLI, SDK, and MCP |
+| Start operation | `cli/lib/start-operation.mjs` | Shared route, design-contract, review-state, next-step, and effect-boundary assembly for CLI, SDK, MCP, and Console |
 | Route engine | `cli/lib/route.mjs` | Scoring, parsing, reference enrichment, and evaluation |
 | Design quality contract | `cli/lib/design-quality-report.schema.json` | Versioned evidence, finding, status, permission, and approval shape |
 | Design quality validation | `cli/lib/design-quality-contract.mjs` | Dependency-free report validation and derived-summary consistency |
@@ -130,6 +131,12 @@ repository, start a browser, or mutate a file. Future CLI, SDK, MCP, Console, an
 browser adapters must produce the same report shape and pass the same validator.
 Runtime owners may collect different evidence, but they cannot weaken `unverified`
 status or the report's permission boundary.
+
+The start operation is also pure. It reads the design-ai corpus needed to choose a
+route and build the existing design contract, but it does not open declared local
+paths, fetch repository or page URLs, inspect screenshots, write files, or execute
+the returned next command. Website Console accepts only start payloads that retain
+that zero-write, zero-target-mutation, zero-external-action performed boundary.
 
 ## Artifact ownership
 

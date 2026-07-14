@@ -128,6 +128,7 @@ from smoke_assertions import (
     assert_site_sample_json,
     assert_site_tasks_json,
     assert_search_dir_value_failure,
+    assert_start_json,
     assert_update_dry_run_json,
     assert_update_dry_run_output,
     assert_unknown_command_failure,
@@ -8076,6 +8077,17 @@ def assert_artifact_smoke(
         context=context,
         cmd=cmd,
     )
+
+
+def assert_start_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_start_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_prompt_stdout_smoke(
@@ -21390,6 +21402,28 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin route eval",
         )
+        assert_start_smoke(
+            [
+                str(bin_path),
+                "start",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--local-path",
+                str(tmp_root / "declared-target-repo"),
+                "--url",
+                "https://example.com/component",
+                "--screenshot",
+                str(tmp_root / "declared-screen.png"),
+                "--locale",
+                "ko-KR",
+                "--viewport",
+                "mobile",
+                "--json",
+            ],
+            env=smoke_env,
+            context="package smoke installed bin start plan",
+        )
         installed_prompt_json = tmp_root / "installed-prompt.json"
         installed_artifact_json = tmp_root / "installed-artifact.json"
         assert_artifact_smoke(
@@ -22839,6 +22873,29 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec route eval",
+        )
+        assert_start_smoke(
+            npm_exec_cmd(
+                tarball,
+                "start",
+                EXPECTED_ROUTE_BRIEF,
+                "--route",
+                EXPECTED_ROUTE_ID,
+                "--local-path",
+                str(npx_root / "declared-target-repo"),
+                "--url",
+                "https://example.com/component",
+                "--screenshot",
+                str(npx_root / "declared-screen.png"),
+                "--locale",
+                "ko-KR",
+                "--viewport",
+                "mobile",
+                "--json",
+            ),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec start plan",
         )
         npx_prompt_json = npx_root / "npx-prompt.json"
         npx_artifact_json = npx_root / "npx-artifact.json"
