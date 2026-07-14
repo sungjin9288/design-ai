@@ -5,6 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 778 (unreleased)** — Added the evidence-backed design quality report schema, dependency-free validator, Korean fintech benchmark, specialization plan, package guards, and contract documentation without adding target-repository mutation or external writes.
 - **Phase 661 (unreleased)** — Improved Website Console revalidation gate JSON action labels.
 - **Phase 660 (unreleased)** — Improved Website Console Source Bundle artifact action labels.
 - **Phase 659 (unreleased)** — Added Website Console Source Bundle source copy action.

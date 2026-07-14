@@ -2,6 +2,20 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## Unreleased
+
+### Added
+- Added the versioned `design-ai-quality-report` v1 schema and a dependency-free validator that requires all eight interface-quality lenses, concrete evidence, derived summary counts, and explicit permission boundaries.
+- Added a Korean fintech settings benchmark with one confirmed accessibility finding and clearly marked runtime evidence gaps.
+- Added a product specialization plan that sequences one start flow, a read-only quality engine, optional browser verification, Korean product packs, Website Console review, and benchmark-backed adoption proof.
+
+### Changed
+- The architecture and package-content audit now treat the quality schema, validator, benchmark, and contract documentation as release-owned artifacts.
+
+### Verified
+- Focused design quality contract tests cover the canonical fixture, mutation boundaries, required evidence and lenses, and derived summary consistency.
+- `npm run release:check` passed with 656 tests, 8 strict audits, 668 packaged files, a warning-free documentation build, and installed-bin plus one-shot `npm exec` smoke coverage.
+
 ## v5.0.0 — Refactor foundation and release-integrity guards (2026-07)
 
 Prepares the codebase for the planned structural refactor without changing the CLI, SDK, or MCP public names. Token extraction is now clearly separated as clone-only maintainer tooling, while the distributed agent surface contains only commands that work from the package.
