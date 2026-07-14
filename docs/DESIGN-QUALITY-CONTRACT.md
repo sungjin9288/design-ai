@@ -98,6 +98,60 @@ design-ai inspect page.html \
   --json
 ```
 
+## Browser verification sidecar
+
+`design-ai verify-browser` is the optional runtime step after static inspection.
+It does not change the canonical quality report. Instead, it reads that report,
+runs one user-supplied adapter, and writes a separate
+`design-ai-browser-verification` artifact under
+`~/.design-ai/evidence/browser/`.
+
+```bash
+design-ai inspect page.html \
+  --brief "Review account settings before implementation" \
+  --json > /tmp/account-settings-quality.json
+
+design-ai verify-browser /tmp/account-settings-quality.json \
+  --url http://127.0.0.1:4173/settings \
+  --target-root /absolute/path/to/account-settings \
+  --adapter node \
+  --adapter-arg /absolute/path/to/browser-adapter.mjs \
+  --approval-ref "human: account settings browser run approved" \
+  --yes \
+  --json
+```
+
+The runner accepts loopback URLs only. It neither installs a browser nor adds a
+browser dependency to the package. The adapter receives a JSON request on stdin
+and returns tool metadata plus one probe for each requested check and viewport.
+The seven checks are responsive layout, keyboard operation, accessibility,
+reduced motion, loading, error handling, and repeated action.
+
+Every normalized probe records URL through the parent run, viewport, observation
+time, tool, observation, and at least one local artifact path. Responsive probes
+need screenshot evidence and accessibility probes need accessibility output before
+they can pass. Missing adapters, missing probes, invalid JSON, incomplete artifacts,
+and timeouts remain `unverified`. An adapter-reported failure remains `fail` only
+when its timestamp and supporting artifact satisfy the same evidence contract.
+Nothing is promoted to a pass by absence of evidence.
+
+Each non-passing probe creates a sidecar finding. That finding links its artifacts
+and any related unverified finding IDs from the source quality report. The sidecar
+also records the source report SHA-256 digest, approval reference, target root,
+adapter name and version, and local evidence directory. The source report digest
+is checked again after execution; a mismatch is recorded as a boundary violation
+and the run is rejected. Mutation restored before adapter exit remains unverified.
+
+The adapter is external executable code and currently runs on macOS or Linux. Design AI starts it from the dedicated
+evidence directory with a minimal environment, but the operator must still trust
+that executable separately. Design AI compares the source-report digest after exit and confines
+its own files to the evidence directory. It records the adapter's exact network-policy
+attestation separately; target-repository mutation and external writes by the adapter
+remain `unverified` because the runner does not sandbox the executable.
+
+The complete stdin/stdout and artifact contract is documented in
+[`BROWSER-VERIFICATION.md`](BROWSER-VERIFICATION.md).
+
 ## Finding rules
 
 Every finding includes:
