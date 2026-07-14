@@ -79,7 +79,7 @@ jobs:
 
       - name: Publish to npm
         if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
-        run: npm publish dist/*.tgz --provenance --access public
+        run: npm publish ./dist/*.tgz --provenance --access public
 
       - name: Smoke-test published npm package
         if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}

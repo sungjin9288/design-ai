@@ -29,7 +29,7 @@ DOCS_WORKFLOW = ROOT / ".github" / "workflows" / "docs.yml"
 AUDIT_WORKFLOW = ROOT / ".github" / "workflows" / "audit.yml"
 PUBLISH_WORKFLOW = ROOT / ".github" / "workflows" / "publish.yml"
 DOCS_WORKFLOW_POLICY_COMMAND = "python3 -B tools/audit/local-ci.py --docs-only"
-PUBLISH_WORKFLOW_COMMAND = "npm publish dist/*.tgz --provenance --access public"
+PUBLISH_WORKFLOW_COMMAND = "npm publish ./dist/*.tgz --provenance --access public"
 PUBLISH_TRUSTED_NPM_SETUP_COMMAND = "npm install --global npm@11.18.0"
 AUDIT_WORKFLOW_REQUIRED_COMMANDS = (
     "python3 tools/audit/run-all.py --strict",
@@ -649,7 +649,7 @@ def run_self_test() -> int:
         )
         assert_condition(
             publish_workflow_policy_errors(
-                passing_publish_workflow.replace(" dist/*.tgz", "")
+                passing_publish_workflow.replace(" ./dist/*.tgz", "")
             ) != [],
             "publish workflow fixture should reject repacking the repository directory",
         )
