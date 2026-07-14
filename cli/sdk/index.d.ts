@@ -1,7 +1,7 @@
 // Type declarations for the design-ai Agent SDK — Phase A (read-only).
 // Hand-written, zero-build: no TypeScript toolchain is required to produce or
 // ship these. They mirror the runtime shapes exercised by cli/sdk/index.test.mjs
-// (the semver anchor). The eleven exported names and their return-shape top-level
+// (the semver anchor). The twelve exported names and their return-shape top-level
 // keys are the stable, semver-covered surface; deeper nested shapes follow the
 // same JSON the CLI's `--json` mode emits.
 //
@@ -226,6 +226,82 @@ export interface StartContext {
   viewports: string[];
 }
 
+// ── design quality inspection ───────────────────────────────────────────
+
+export type DesignQualityStatus = "pass" | "warning" | "fail" | "unverified";
+export type DesignQualityLensId =
+  | "purpose-frequency"
+  | "response"
+  | "spatial-continuity"
+  | "interruptibility"
+  | "timing-cohesion"
+  | "performance"
+  | "accessibility"
+  | "responsive-resilience";
+
+export interface DesignQualityEvidence {
+  kind: "brief" | "code" | "runtime" | "screenshot" | "accessibility" | "manual" | "design-contract";
+  reference: string;
+  observation: string;
+}
+
+export interface DesignQualityLens {
+  id: DesignQualityLensId;
+  status: DesignQualityStatus;
+  summary: string;
+  evidence: DesignQualityEvidence[];
+}
+
+export interface DesignQualityFinding {
+  id: string;
+  lens: DesignQualityLensId;
+  severity: "p0" | "p1" | "p2" | "p3";
+  status: "confirmed" | "unverified";
+  title: string;
+  location: string;
+  before: string;
+  after: string;
+  why: string;
+  evidence: DesignQualityEvidence[];
+  verification: string[];
+}
+
+export interface InspectHtmlOptions {
+  sourceRef: string;
+  brief: string;
+  name?: string;
+  locale?: string;
+  viewports?: string[];
+  generatedAt?: string;
+}
+
+export interface DesignQualityReport {
+  kind: "design-ai-quality-report";
+  schemaVersion: 1;
+  generatedAt: string;
+  subject: { name: string; type: "page"; source: string };
+  context: { brief: string; routeId: "design-engineering-review"; locale: string; viewports: string[] };
+  boundary: {
+    mode: "read-only";
+    targetRepoMutation: false;
+    externalWrites: false;
+    localEvidenceWrites: false;
+    localEvidencePath: null;
+    notes: string[];
+  };
+  sources: DesignQualityEvidence[];
+  lenses: DesignQualityLens[];
+  findings: DesignQualityFinding[];
+  summary: {
+    status: DesignQualityStatus;
+    confirmedFindings: number;
+    unverifiedFindings: number;
+    blockingFindings: number;
+    nextAction: string;
+  };
+  approval: { status: "pending"; requiredBefore: string[] };
+}
+
 export interface StartReference {
   kind: "repository-url" | "local-path" | "page-url" | "screenshot";
   reference: string;
@@ -443,6 +519,9 @@ export function artifact(brief: string, opts: ArtifactOptions): DesignArtifact;
 
 /** Build one read-only route, design contract, review playbook, and next-step plan. */
 export function start(brief: string, opts?: StartOptions): StartPayload;
+
+/** Inspect supplied HTML without reading paths, running scripts, or writing files. */
+export function inspectHtml(source: string, opts: InspectHtmlOptions): DesignQualityReport;
 
 /** Recommend the best route(s), commands, skills, and knowledge for a brief. */
 export function route(brief: string, opts?: RouteOptions): RouteResult[];

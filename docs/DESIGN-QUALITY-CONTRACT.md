@@ -70,6 +70,34 @@ Code can confirm static structure. It cannot prove focus order, animation feel,
 network behavior, responsive wrapping, or repeated-action handling. Those behaviors
 remain `unverified` until runtime evidence exists.
 
+## Static HTML inspector
+
+`design-ai inspect <source.html> --brief text --json` is the first producer of
+this contract. The CLI reads one explicit regular `.html` or `.htm` file up to
+1 MB and rejects symbolic links in the selected path or its user-controlled path
+segments. Filesystem-root aliases supplied by the operating system, such as
+macOS `/var`, remain readable. SDK `inspectHtml()` and MCP
+`design_ai_inspect_html` accept HTML content directly and never read a path.
+
+The deterministic rules confirm only evidence visible in supplied markup:
+document language, supported active control names, button names, image `alt`
+declarations, and a mobile viewport declaration containing `width=device-width`
+when mobile coverage is requested. Template, `noscript`, and `inert` content plus
+tags written inside HTML raw-text controls are not treated as active elements;
+SVG title text remains available to the accessible-name check. A passing static rule is not
+promoted to a passing lens. Keyboard,
+accessibility-tree, interaction, motion, performance, and rendered responsive
+behavior remain `unverified` until a runtime produces evidence.
+
+```bash
+design-ai inspect page.html \
+  --brief "Review account settings before implementation" \
+  --locale ko-KR \
+  --viewport mobile \
+  --viewport desktop \
+  --json
+```
+
 ## Finding rules
 
 Every finding includes:

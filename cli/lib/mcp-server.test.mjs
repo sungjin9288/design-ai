@@ -65,6 +65,7 @@ test("MCP tool list exposes design-ai read-only workflow tools", async () => {
   );
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_route"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_start"));
+  assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_inspect_html"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_artifact"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_mcp_check"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_linked_preview"));
@@ -314,6 +315,48 @@ test("design_ai_start uses the shared start operation without spawning the CLI",
   assert.equal(payload.route.id, "design-engineering-review");
   assert.equal(payload.designContract.route.id, payload.route.id);
   assert.deepEqual(payload.effects.performed.externalActions, []);
+});
+
+test("design_ai_inspect_html uses the shared read-only inspector without spawning the CLI", async () => {
+  let runCliCalled = false;
+  const result = await callMcpTool(
+    "design_ai_inspect_html",
+    {
+      source: `<html lang="ko"><head><meta name="viewport" content="width=device-width"></head><body><input name="phone"></body></html>`,
+      sourceRef: "settings.html",
+      brief: "Review a Korean settings flow",
+      locale: "ko-KR",
+      viewports: ["mobile", "desktop"],
+    },
+    async () => {
+      runCliCalled = true;
+      return { code: 0, stdout: "unexpected", stderr: "" };
+    },
+  );
+
+  const payload = JSON.parse(result.content[0].text);
+  assert.equal(runCliCalled, false);
+  assert.equal(result.isError, false);
+  assert.equal(payload.kind, "design-ai-quality-report");
+  assert.equal(payload.summary.confirmedFindings, 1);
+  assert.equal(payload.summary.unverifiedFindings, 1);
+  assert.equal(payload.boundary.targetRepoMutation, false);
+});
+
+test("design_ai_inspect_html returns valid structured JSON when its report exceeds the MCP limit", async () => {
+  const controls = Array.from({ length: 225 }, () => "<input>").join("");
+  const result = await callMcpTool("design_ai_inspect_html", {
+    source: `<html lang="en"><head><meta name="viewport" content="width=device-width"></head><body>${controls}</body></html>`,
+    sourceRef: "large-form.html",
+    brief: "Review a large form",
+    generatedAt: "2026-07-14T00:00:00.000Z",
+  });
+  const payload = JSON.parse(result.content[0].text);
+
+  assert.equal(result.isError, true);
+  assert.equal(payload.kind, "design-ai-mcp-error");
+  assert.equal(payload.code, "OUTPUT_TOO_LARGE");
+  assert.ok(payload.actualBytes > payload.limitBytes);
 });
 
 test("buildCliInvocation maps design_ai_search ranked to the --ranked CLI flag", () => {

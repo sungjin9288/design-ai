@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 18 tools, including the shared read-only start and artifact operations, a read-only Website Improvement bundle handoff, a read-only linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 19 tools, including the shared read-only start flow, supplied-HTML quality inspection, artifact operations, a Website Improvement bundle handoff, linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -41,6 +41,17 @@ existing design-contract artifact, marks the review playbook as not run, and
 returns one next command. Declared references are not read or fetched. The
 performed effect boundary always contains no local writes, target-repository
 mutations, or external actions.
+
+### Shared static HTML inspection
+
+`design_ai_inspect_html` maps to CLI `design-ai inspect` and SDK `inspectHtml()`.
+MCP and SDK receive HTML source text plus a display reference; they do not read a
+target path. The operation confirms only supported static markup evidence and
+returns all eight quality lenses. Interaction, motion, performance, keyboard,
+accessibility-tree, and rendered responsive behavior remain `unverified` until an
+approved runtime supplies evidence.
+If the serialized report exceeds the MCP response limit, the tool returns a valid
+`design-ai-mcp-error` JSON object instead of truncating and corrupting the report.
 
 ### Approval-gated website implementation handoff
 

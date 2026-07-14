@@ -66,6 +66,7 @@ from smoke_assertions import (
     assert_index_build_json,
     assert_index_status_json,
     assert_index_verify_json,
+    assert_inspect_json,
     assert_install_doctor_lifecycle_output,
     assert_list_catalog_output,
     assert_list_catalog_json,
@@ -4072,6 +4073,33 @@ def assert_start_smoke(
     assert_start_json(result.stdout, context=context, cmd=cmd)
 
 
+def write_inspect_fixture(file_path: Path) -> None:
+    file_path.write_text(
+        """<!doctype html>
+<html lang="ko">
+  <head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
+  <body><span>휴대폰 번호</span><input name="phone"><button>저장</button></body>
+</html>
+""",
+        encoding="utf-8",
+    )
+
+
+def assert_inspect_smoke(
+    cmd: list[str],
+    source_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    before = source_path.read_bytes()
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_inspect_json(result.stdout, context=context, cmd=cmd)
+    if source_path.read_bytes() != before:
+        raise SystemExit(f"{context}: inspect changed the selected source file")
+
+
 def assert_audit_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_audit_strict_quiet_output(result.stdout, context=context, cmd=cmd)
@@ -6083,6 +6111,26 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec start plan",
+        )
+        inspect_source = npx_root / "inspect-source.html"
+        write_inspect_fixture(inspect_source)
+        assert_inspect_smoke(
+            npm_exec_cmd(
+                package_spec,
+                "inspect",
+                str(inspect_source),
+                "--brief",
+                "Review a Korean settings flow",
+                "--locale",
+                "ko-KR",
+                "--viewport",
+                "mobile",
+                "--json",
+            ),
+            inspect_source,
+            cwd=npx_root,
+            env=env,
+            context="registry smoke npm exec HTML inspection",
         )
         prompt_json = npx_root / "prompt.json"
         assert_prompt_smoke(

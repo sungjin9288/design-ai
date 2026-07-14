@@ -11,6 +11,7 @@ import { formatRouteJson } from "./route.mjs";
 import { buildRoutePayload } from "./route-operation.mjs";
 import { buildStartPayload } from "./start-operation.mjs";
 import { formatStartJson } from "./start.mjs";
+import { inspectHtml } from "./design-quality-inspector.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
 const LEARNING_WRITE_BOUNDARY = "Writes ONLY the local learning profile (DESIGN_AI_LEARNING_FILE or its default), and only when explicitly called.";
@@ -75,6 +76,25 @@ export const MCP_TOOLS = [
         viewports: { type: "array", items: { type: "string", minLength: 1 }, description: "Optional viewport names." },
       },
       required: ["brief"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_inspect_html",
+    title: "Inspect supplied HTML",
+    description: "Build a canonical design quality report from supplied HTML. Read-only: does not read paths, run scripts, open a browser, write files, or mutate a repository.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        source: { type: "string", minLength: 1, description: "HTML source content to inspect." },
+        sourceRef: { type: "string", minLength: 1, description: "Human-readable source reference used in evidence locations." },
+        brief: { type: "string", minLength: 1, description: "Review brief." },
+        name: optionalString("Optional subject name."),
+        locale: optionalString("Optional review locale. Default: en."),
+        viewports: { type: "array", items: { type: "string", minLength: 1 }, description: "Declared viewport names. Defaults to mobile and desktop." },
+        generatedAt: optionalString("Optional normalized UTC timestamp for byte-stable output."),
+      },
+      required: ["source", "sourceRef", "brief"],
       additionalProperties: false,
     },
   },
@@ -410,6 +430,23 @@ function truncateText(text) {
   return `${truncated}\n\n[design-ai MCP output truncated at ${MAX_TOOL_OUTPUT_BYTES} bytes from ${bytes} bytes]`;
 }
 
+function jsonToolResult(payload) {
+  const text = JSON.stringify(payload, null, 2);
+  const bytes = Buffer.byteLength(text, "utf8");
+  if (bytes <= MAX_TOOL_OUTPUT_BYTES) {
+    return { content: [{ type: "text", text }], isError: false };
+  }
+
+  const error = {
+    kind: "design-ai-mcp-error",
+    code: "OUTPUT_TOO_LARGE",
+    message: "The inspection report exceeds the MCP output limit. Narrow the supplied HTML and inspect smaller sections.",
+    limitBytes: MAX_TOOL_OUTPUT_BYTES,
+    actualBytes: bytes,
+  };
+  return { content: [{ type: "text", text: JSON.stringify(error, null, 2) }], isError: true };
+}
+
 export function buildCliInvocation(toolName, input = {}) {
   const args = [];
   let stdin = "";
@@ -612,6 +649,18 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
     };
   }
 
+  if (name === "design_ai_inspect_html") {
+    const payload = inspectHtml(input.source, {
+      sourceRef: input.sourceRef,
+      brief: input.brief,
+      name: input.name,
+      locale: input.locale,
+      viewports: input.viewports,
+      generatedAt: input.generatedAt,
+    });
+    return jsonToolResult(payload);
+  }
+
   const invocation = buildCliInvocation(name, input || {});
   const result = await runCli(invocation.args, { stdin: invocation.stdin });
   const text = [
@@ -765,7 +814,7 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
         name: "design-ai",
         version: readPackageVersion(),
       },
-      instructions: "Use design-ai MCP tools for local, deterministic design expertise: start from one read-only route/design-contract plan, route briefs, generate prompts/packs, build implementation/critique/DESIGN.md artifacts, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, validate Website Improvement MCP readiness, and prepare approval-gated target-repo handoffs. design_ai_start records declared repositories, pages, and screenshots without inspecting them or executing its next command. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
+      instructions: "Use design-ai MCP tools for local, deterministic design expertise: start from one read-only route/design-contract plan, inspect supplied HTML into an evidence-backed quality report, route briefs, generate prompts/packs, build implementation/critique/DESIGN.md artifacts, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, validate Website Improvement MCP readiness, and prepare approval-gated target-repo handoffs. design_ai_start records declared repositories, pages, and screenshots without inspecting them or executing its next command. design_ai_inspect_html reads only the supplied string and leaves unobserved runtime behavior unverified. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
     });
   }
 

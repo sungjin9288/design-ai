@@ -187,6 +187,7 @@ EXPECTED_HELP_TOPICS = (
     "audit",
     "artifact",
     "start",
+    "inspect",
     "doctor",
     "examples",
     "learn",
@@ -235,6 +236,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "audit": "design-ai audit [--strict] [--quiet] [--json]",
     "artifact": "design-ai artifact <implementation-plan|critique-loop|design-contract> <brief> [--route id] [--json] [--out file]",
     "start": "design-ai start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]",
+    "inspect": "design-ai inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--json]",
     "doctor": "design-ai doctor [--strict] [--json] [--fix]",
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
@@ -284,6 +286,11 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai start <brief> [context options] [--route id] [--json]",
         "Declare a repository URL without fetching it",
         "Declare a page URL without opening it",
+    ),
+    "inspect": (
+        "Usage:",
+        "design-ai inspect <source.html> --brief text",
+        "reads only the selected HTML file",
     ),
     "doctor": ("Usage:", "design-ai doctor [--strict] [--json] [--fix]"),
     "examples": ("Usage:", "design-ai examples [query] [--route id] [--limit N] [--json]"),
@@ -4161,6 +4168,68 @@ def passing_start_json() -> str:
             "approvalRequiredBefore": [],
         },
     })
+
+
+def assert_inspect_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse inspect JSON after {context}") from error
+
+    assert_smoke_json_keys(
+        payload,
+        ["kind", "schemaVersion", "generatedAt", "subject", "context", "boundary", "sources", "lenses", "findings", "summary", "approval"],
+        label="top-level",
+        context=context,
+        command_label="inspect JSON",
+    )
+    if payload.get("kind") != "design-ai-quality-report" or payload.get("schemaVersion") != 1:
+        raise SystemExit(f"inspect JSON after {context} kind or schema version changed")
+
+    boundary = payload.get("boundary")
+    if not (
+        isinstance(boundary, dict)
+        and boundary.get("mode") == "read-only"
+        and boundary.get("targetRepoMutation") is False
+        and boundary.get("externalWrites") is False
+        and boundary.get("localEvidenceWrites") is False
+    ):
+        raise SystemExit(f"inspect JSON after {context} changed the read-only boundary")
+
+    summary = payload.get("summary")
+    if not (
+        isinstance(summary, dict)
+        and summary.get("status") == "fail"
+        and summary.get("confirmedFindings") == 1
+        and summary.get("unverifiedFindings") == 1
+    ):
+        raise SystemExit(f"inspect JSON after {context} lost the confirmed/unverified benchmark split")
+
+    findings = payload.get("findings")
+    if not (
+        isinstance(findings, list)
+        and len(findings) == 2
+        and findings[0].get("status") == "confirmed"
+        and findings[0].get("lens") == "accessibility"
+        and findings[1].get("status") == "unverified"
+    ):
+        raise SystemExit(f"inspect JSON after {context} findings changed")
+
+    expected_lenses = [
+        "purpose-frequency",
+        "response",
+        "spatial-continuity",
+        "interruptibility",
+        "timing-cohesion",
+        "performance",
+        "accessibility",
+        "responsive-resilience",
+    ]
+    lenses = payload.get("lenses")
+    lens_ids = [item.get("id") for item in lenses] if isinstance(lenses, list) else []
+    if lens_ids != expected_lenses:
+        raise SystemExit(f"inspect JSON after {context} lens inventory changed")
 
 
 def assert_prompt_markdown_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:

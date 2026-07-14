@@ -107,6 +107,8 @@ declared references.
 
 ### P2 - Quality engine
 
+Status: implemented in the current source, pending release.
+
 Build a read-only inspector that maps repository and artifact evidence into the
 quality report. Keep static checks deterministic. Use design knowledge to explain
 the finding and its consequence, not to invent observations.
@@ -117,6 +119,13 @@ Exit criteria:
 - Every finding has Before, After, Why, evidence, and verification fields.
 - Confirmed and unverified findings never collapse into one count.
 - A target repository remains unchanged during inspection.
+
+The first implementation is deliberately narrow. CLI inspection reads one
+explicit regular HTML file, while SDK and MCP accept source text. Supported
+static rules cover document language, accessible names, image alternatives,
+and the mobile viewport contract. Every behavior that needs rendering or
+interaction remains `unverified`; linked resources and scripts are not followed
+or executed.
 
 ### P3 - Browser verification runner
 

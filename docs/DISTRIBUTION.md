@@ -82,6 +82,7 @@ design-ai list [kind] List catalog (skills | commands | agents); add --json for 
 design-ai route brief Recommend commands, skills, and knowledge files; supports --from-file/--stdin/--list/--limit N/--explain/--json
 design-ai routes      List available route ids for prompt/pack --route
 design-ai start brief Build one read-only route, design contract, unexecuted review state, next command, and effect boundary; declared repo/page/screenshot context is not inspected
+design-ai inspect file Build the canonical quality report from one explicit HTML file; static findings keep source locations and runtime behavior stays unverified
 design-ai prompt brief Generate a ready-to-use agent prompt; add --out file, --from-file, --stdin, --json, or --route id
 design-ai artifact mode Build an implementation plan, critique loop, or DESIGN.md contract; only explicit --out writes a local file
 design-ai pack brief Generate a prompt plus bounded context files with summary/warnings; add --out file, --from-file, --stdin, --max-bytes N, --json, or --route id
@@ -98,10 +99,12 @@ design-ai version     CLI + plugin versions; use `design-ai version --json` for 
 design-ai help [cmd|--json] Show top-level or command-specific help; --json emits a topic catalog
 ```
 
-The current source package smoke runs `design-ai start ... --json` through both the
-installed tarball bin and one-shot `npm exec`. Public registry smoke repeats the
-same assertion after release. The check requires the embedded design contract and
-an empty performed local-write, target-mutation, and external-action boundary.
+The current source package smoke runs `design-ai start ... --json` and
+`design-ai inspect ... --json` through both the installed tarball bin and one-shot
+`npm exec`. Public registry smoke repeats the same assertions after release. The
+checks require the embedded design contract, the quality report's confirmed and
+unverified split, unchanged source bytes, and empty target-mutation/external-write
+boundaries.
 
 Environment overrides:
 

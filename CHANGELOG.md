@@ -5,6 +5,8 @@ User-facing release notes for design-ai. Versions follow semver.
 ## Unreleased
 
 ### Added
+- Added `design-ai inspect <source.html> --brief text`, SDK `inspectHtml()`, and MCP `design_ai_inspect_html` over one dependency-free operation that returns the canonical eight-lens quality report.
+- Added deterministic static checks for document language, supported interactive-control names, image alternatives, and the mobile viewport contract, with concrete source locations and complete Before/After/Why evidence.
 - Added the versioned `design-ai-quality-report` v1 schema and a dependency-free validator that requires all eight interface-quality lenses, concrete evidence, derived summary counts, and explicit permission boundaries.
 - Added a Korean fintech settings benchmark with one confirmed accessibility finding and clearly marked runtime evidence gaps.
 - Added a product specialization plan that sequences one start flow, a read-only quality engine, optional browser verification, Korean product packs, Website Console review, and benchmark-backed adoption proof.
@@ -12,11 +14,16 @@ User-facing release notes for design-ai. Versions follow semver.
 - Added a Website Console Start tab that validates and persists the canonical start JSON, displays declared references without claiming inspection, copies the next command and design contract, and exports the unchanged payload.
 
 ### Changed
+- The current source capability contract grows from 18 to 19 MCP tools and from 11 to 12 SDK exports while retaining exactly three opt-in learning-profile write tools.
+- CLI inspection reads one explicit regular HTML file up to 1 MB and rejects symbolic links; SDK and MCP inspect supplied strings. None executes scripts, opens a browser, resolves linked resources, writes files, or mutates a target repository.
+- Static inspection preserves original source lines, ignores template, `noscript`, `inert`, and HTML raw-text markup, retains SVG title names, excludes hidden descendant text from button names, requires an effective device-width viewport, and returns structured MCP overflow errors instead of malformed truncated JSON.
 - The architecture and package-content audit now treat the quality schema, validator, benchmark, and contract documentation as release-owned artifacts.
 - The current source capability contract grows from 17 to 18 MCP tools and from 10 to 11 SDK exports while retaining exactly three opt-in learning-profile write tools.
 - Packed-tarball and public-registry smoke now require the start payload to preserve an embedded design contract and empty performed local-write, target-mutation, and external-action arrays.
 
 ### Verified
+- `npm run release:check` passed for the P2 read-only quality engine with 694 tests, 8 strict audits, 676 packaged files, a warning-free documentation build, and installed-bin plus one-shot `npm exec` smoke coverage.
+- Focused quality-engine, CLI, SDK, MCP, help, dispatch, and capability contract tests pass, including benchmark reproduction and unchanged-source assertions.
 - Focused design quality contract tests cover the canonical fixture, mutation boundaries, required evidence and lenses, and derived summary consistency.
 - `npm run release:check` passed with 656 tests, 8 strict audits, 668 packaged files, a warning-free documentation build, and installed-bin plus one-shot `npm exec` smoke coverage.
 - `npm run release:check` passed for the P1 source candidate with 669 tests, all 8 strict audits, 672 packaged files, a warning-free documentation build, and installed-bin plus one-shot `npm exec` start smoke coverage.
