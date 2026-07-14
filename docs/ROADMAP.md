@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 781 - Approval-gated browser verification runner (implemented, unreleased)
+
+Adds runtime evidence without weakening the read-only static inspector or adding a
+browser dependency to the core package.
+
+### Delivered
+- [x] Added `design-ai verify-browser` as a CLI-only operation over one canonical P2 quality report, one loopback preview URL, one target root, one user-supplied adapter, and one explicit approval reference.
+- [x] Added a versioned `design-ai-browser-verification` sidecar contract for run metadata, boundary, viewports, seven required probe categories, artifact-linked findings, and a derived summary.
+- [x] Required responsive passes to include screenshots and accessibility passes to include accessibility output; missing adapters, probes, JSON, and artifacts remain `unverified`.
+- [x] Linked non-passing runtime probes to related unverified source-report finding IDs and compared the source-report digest after adapter exit.
+- [x] Added focused parser, approval, loopback, adapter-failure, pass/fail normalization, source digest, and boundary-violation tests plus package-content guards.
+
+### Boundary
+- The runner starts only with `--yes` and a non-empty `--approval-ref` and confines its own writes to `~/.design-ai/evidence/browser/`.
+- It accepts loopback URLs only, runs the adapter from the evidence directory with a minimal environment, and does not install browser or accessibility packages.
+- A post-run P2 report digest mismatch creates a boundary-violation artifact and rejects the run. Mutation restored before adapter exit remains `unverified`.
+- SDK and MCP inventories stay unchanged. Browser process execution remains an explicit CLI boundary, and the user-supplied adapter must be trusted separately.
+- The sidecar distinguishes runner checks from adapter attestations. Post-run source-report digest match and evidence location are verified; restored intermediate source mutation, adapter target-repository mutation, and external writes remain `unverified`.
+- Adapter execution currently requires macOS or Linux so timeout handling can terminate the full POSIX process group.
+
+### Verification target
+- [x] Focused browser contract, runner, CLI parser, help, dispatch, package-content, and shared smoke assertion tests pass.
+- [x] `npm run release:check` passed with 706 tests, 8 strict audits, 682 packaged files, warning-free docs, and functional browser verification smoke through installed-bin plus one-shot `npm exec` paths.
+- [ ] Pull-request CI evidence will be recorded before merge.
+
 ## Phase 780 - Read-only static HTML quality engine (implemented, unreleased)
 
 Turns one explicit HTML source into the canonical evidence-backed quality

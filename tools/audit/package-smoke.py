@@ -8115,19 +8115,118 @@ def write_inspect_fixture(file_path: Path) -> None:
     )
 
 
+def write_browser_adapter(file_path: Path) -> None:
+    file_path.write_text(
+        r'''#!/usr/bin/env node
+let input = "";
+for await (const chunk of process.stdin) input += chunk;
+const request = JSON.parse(input);
+const { writeFileSync } = await import("node:fs");
+const pixel = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==",
+  "base64",
+);
+const probes = [];
+for (const viewport of request.viewports) {
+  for (const check of request.checks) {
+    const kind = check === "responsive" ? "screenshot" : check === "accessibility" ? "accessibility" : "trace";
+    const file = `${check}-${viewport.name}.${kind === "screenshot" ? "png" : kind === "accessibility" ? "json" : "txt"}`;
+    const contents = kind === "screenshot"
+      ? pixel
+      : kind === "accessibility"
+        ? JSON.stringify({ role: "document", viewport: viewport.name })
+        : `${check} passed at ${viewport.name}\n`;
+    writeFileSync(file, contents);
+    probes.push({
+      check,
+      viewport: viewport.name,
+      status: "pass",
+      observedAt: new Date().toISOString(),
+      observation: `${check} passed at ${viewport.name}`,
+      artifacts: [{ kind, path: file }],
+    });
+  }
+}
+process.stdout.write(JSON.stringify({
+  kind: "design-ai-browser-probe-result",
+  schemaVersion: 1,
+  tool: { name: "package-smoke-adapter", version: "1.0.0" },
+  policy: {
+    allowedOrigin: request.networkPolicy.allowedOrigin,
+    allowedMethods: request.networkPolicy.allowedMethods,
+    crossOrigin: "blocked",
+    webSockets: "blocked",
+    downloads: "blocked",
+  },
+  probes,
+}));
+''',
+        encoding="utf-8",
+    )
+    file_path.chmod(0o755)
+
+
 def assert_inspect_smoke(
     cmd: list[str],
     source_path: Path,
     *,
+    report_path: Path | None = None,
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
-) -> None:
+) -> str:
     before = source_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_inspect_json(result.stdout, context=context, cmd=cmd)
     if source_path.read_bytes() != before:
         raise SystemExit(f"{context}: inspect changed the selected source file")
+    if report_path is not None:
+        report_path.write_text(result.stdout, encoding="utf-8")
+    return result.stdout
+
+
+def assert_browser_verification_smoke(
+    cmd: list[str],
+    source_report: Path,
+    target_root: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    source_before = source_report.read_bytes()
+    target_before = sorted(path.relative_to(target_root) for path in target_root.rglob("*"))
+    result = run_plain(cmd, cwd=cwd, env=env)
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"{context}: browser verification output is not JSON: {error}") from error
+    if payload.get("kind") != "design-ai-browser-verification" or payload.get("schemaVersion") != 1:
+        raise SystemExit(f"{context}: browser verification contract identity changed")
+    summary = payload.get("summary")
+    if not isinstance(summary, dict) or summary.get("status") != "pass":
+        raise SystemExit(f"{context}: browser verification did not pass")
+    if (summary.get("passed"), summary.get("failed"), summary.get("unverified")) != (14, 0, 0):
+        raise SystemExit(f"{context}: browser verification probe counts changed")
+    boundary = payload.get("boundary")
+    attestation = boundary.get("adapterAttestation") if isinstance(boundary, dict) else None
+    if not isinstance(attestation, dict) or attestation.get("networkPolicy") != "attested":
+        raise SystemExit(f"{context}: browser adapter network-policy attestation missing")
+    if attestation.get("targetRepoMutation") != "unverified" or attestation.get("externalWrites") != "unverified":
+        raise SystemExit(f"{context}: browser adapter write boundaries must remain unverified")
+    source_contract = payload.get("sourceReport")
+    if not isinstance(source_contract, dict) or source_contract.get("postRunDigestMatch") is not True:
+        raise SystemExit(f"{context}: browser source-report post-run digest match missing")
+    if boundary.get("sourceReportDigestMatchedAfterRun") is not True:
+        raise SystemExit(f"{context}: browser boundary post-run digest match missing")
+    evidence_path = Path(str(boundary.get("localEvidencePath", "")))
+    if not (evidence_path / "browser-verification.json").is_file():
+        raise SystemExit(f"{context}: normalized browser verification sidecar missing")
+    if source_report.read_bytes() != source_before:
+        raise SystemExit(f"{context}: browser verification changed the source report")
+    target_after = sorted(path.relative_to(target_root) for path in target_root.rglob("*"))
+    if target_after != target_before:
+        raise SystemExit(f"{context}: browser verification changed the target root")
 
 
 def assert_prompt_stdout_smoke(
@@ -20414,8 +20513,10 @@ def smoke_tarball(tarball: Path) -> None:
         npx_workspace_learning_eval = tmp_root / "npx-workspace-learning-eval.json"
         npx_workspace_auto_profile = tmp_root / "npx-workspace-auto" / "learning.json"
         npx_workspace_auto_eval = tmp_root / "npx-workspace-auto" / "learning-eval.json"
+        browser_adapter = tmp_root / "browser-adapter.mjs"
         install_root.mkdir()
         npx_root.mkdir()
+        write_browser_adapter(browser_adapter)
         prepare_workspace_strict_repo(installed_workspace_strict_root)
         prepare_workspace_strict_repo(npx_workspace_strict_root)
         write_workspace_learning_eval_fixture(
@@ -21465,6 +21566,7 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke installed bin start plan",
         )
         installed_inspect_source = tmp_root / "installed-inspect-source.html"
+        installed_quality_report = tmp_root / "installed-quality-report.json"
         write_inspect_fixture(installed_inspect_source)
         assert_inspect_smoke(
             [
@@ -21480,8 +21582,36 @@ def smoke_tarball(tarball: Path) -> None:
                 "--json",
             ],
             installed_inspect_source,
+            report_path=installed_quality_report,
             env=smoke_env,
             context="package smoke installed bin HTML inspection",
+        )
+        installed_browser_target = tmp_root / "installed-browser-target"
+        installed_browser_home = tmp_root / "installed-browser-home"
+        installed_browser_target.mkdir()
+        installed_browser_home.mkdir()
+        installed_browser_env = smoke_env.copy()
+        installed_browser_env["HOME"] = str(installed_browser_home)
+        assert_browser_verification_smoke(
+            [
+                str(bin_path),
+                "verify-browser",
+                str(installed_quality_report),
+                "--url",
+                "http://127.0.0.1:4173/settings",
+                "--target-root",
+                str(installed_browser_target),
+                "--adapter",
+                str(browser_adapter),
+                "--approval-ref",
+                "package-smoke: installed browser run",
+                "--yes",
+                "--json",
+            ],
+            installed_quality_report,
+            installed_browser_target,
+            env=installed_browser_env,
+            context="package smoke installed bin browser verification",
         )
         installed_prompt_json = tmp_root / "installed-prompt.json"
         installed_artifact_json = tmp_root / "installed-artifact.json"
@@ -22957,6 +23087,7 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke npm exec start plan",
         )
         npx_inspect_source = npx_root / "npx-inspect-source.html"
+        npx_quality_report = npx_root / "npx-quality-report.json"
         write_inspect_fixture(npx_inspect_source)
         assert_inspect_smoke(
             npm_exec_cmd(
@@ -22972,9 +23103,38 @@ def smoke_tarball(tarball: Path) -> None:
                 "--json",
             ),
             npx_inspect_source,
+            report_path=npx_quality_report,
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec HTML inspection",
+        )
+        npx_browser_target = tmp_root / "npx-browser-target"
+        npx_browser_home = tmp_root / "npx-browser-home"
+        npx_browser_target.mkdir()
+        npx_browser_home.mkdir()
+        npx_browser_env = npx_env.copy()
+        npx_browser_env["HOME"] = str(npx_browser_home)
+        assert_browser_verification_smoke(
+            npm_exec_cmd(
+                tarball,
+                "verify-browser",
+                str(npx_quality_report),
+                "--url",
+                "http://127.0.0.1:4173/settings",
+                "--target-root",
+                str(npx_browser_target),
+                "--adapter",
+                str(browser_adapter),
+                "--approval-ref",
+                "package-smoke: npm exec browser run",
+                "--yes",
+                "--json",
+            ),
+            npx_quality_report,
+            npx_browser_target,
+            cwd=npx_root,
+            env=npx_browser_env,
+            context="package smoke npm exec browser verification",
         )
         npx_prompt_json = npx_root / "npx-prompt.json"
         npx_artifact_json = npx_root / "npx-artifact.json"

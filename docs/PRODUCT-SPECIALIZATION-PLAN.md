@@ -129,6 +129,8 @@ or executed.
 
 ### P3 - Browser verification runner
 
+Status: implemented in the current source, pending release.
+
 Add an optional runner for responsive, keyboard, accessibility, reduced-motion,
 loading, error, and repeated-action checks. Keep it separate from the pure report
 contract so the core package remains usable without browser dependencies.
@@ -136,12 +138,27 @@ contract so the core package remains usable without browser dependencies.
 Adding a browser or accessibility production dependency requires a separate review
 and approval before implementation.
 
+The implementation keeps that dependency boundary intact. `design-ai
+verify-browser` runs only after `--yes` and a named `--approval-ref`, accepts a
+loopback preview, reads one canonical P2 report, and invokes a user-supplied
+adapter. Its separate sidecar contract records normalized probe evidence under
+`~/.design-ai/evidence/browser/`; it does not rewrite the static report or promote
+missing evidence to pass.
+
 Exit criteria:
 
 - Every run records URL, viewport, time, tool, observation, and artifact path.
-- A failed or unavailable probe produces `fail` or `unverified`, never a false pass.
+- A failed probe with valid run-time evidence produces `fail`; unavailable or invalid
+  evidence produces `unverified`, never a false pass.
 - Screenshots and accessibility output are linked to the findings they support.
-- The runner does not deploy, install into, or edit the target repository.
+- Design AI's own writes stay outside the target repository; adapter target and
+  external writes remain explicitly `unverified` because the executable is not sandboxed.
+
+All four exit criteria are enforced by the sidecar validator and focused runner
+tests. Responsive passes require complete 8-bit RGB/RGBA PNG structure, accessibility passes
+require JSON content, timestamps must fall inside the run interval, and timeout
+handling terminates the adapter process group. A post-run source-report digest
+mismatch is rejected; mutation restored before adapter exit remains `unverified`.
 
 ### P4 - Korean product packs and Website Console
 

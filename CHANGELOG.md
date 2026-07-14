@@ -5,6 +5,8 @@ User-facing release notes for design-ai. Versions follow semver.
 ## Unreleased
 
 ### Added
+- Added approval-gated `design-ai verify-browser` as a CLI-only sidecar runner for responsive, keyboard, accessibility, reduced-motion, loading, error, and repeated-action evidence over a canonical static quality report.
+- Added exact adapter network-policy attestation, post-run source-report digest comparison, POSIX process-group timeout termination, complete screenshot/accessibility artifact checks, run-interval timestamps, and explicit `unverified` boundaries for restored intermediate source mutation, adapter target-repository writes, and external writes.
 - Added `design-ai inspect <source.html> --brief text`, SDK `inspectHtml()`, and MCP `design_ai_inspect_html` over one dependency-free operation that returns the canonical eight-lens quality report.
 - Added deterministic static checks for document language, supported interactive-control names, image alternatives, and the mobile viewport contract, with concrete source locations and complete Before/After/Why evidence.
 - Added the versioned `design-ai-quality-report` v1 schema and a dependency-free validator that requires all eight interface-quality lenses, concrete evidence, derived summary counts, and explicit permission boundaries.
@@ -22,6 +24,7 @@ User-facing release notes for design-ai. Versions follow semver.
 - Packed-tarball and public-registry smoke now require the start payload to preserve an embedded design contract and empty performed local-write, target-mutation, and external-action arrays.
 
 ### Verified
+- `npm run release:check` passed for the approval-gated browser verification runner with 706 tests, 8 strict audits, 682 packaged files, a warning-free documentation build, and functional browser sidecar smoke through installed-bin plus one-shot `npm exec` paths.
 - `npm run release:check` passed for the P2 read-only quality engine with 694 tests, 8 strict audits, 676 packaged files, a warning-free documentation build, and installed-bin plus one-shot `npm exec` smoke coverage.
 - Focused quality-engine, CLI, SDK, MCP, help, dispatch, and capability contract tests pass, including benchmark reproduction and unchanged-source assertions.
 - Focused design quality contract tests cover the canonical fixture, mutation boundaries, required evidence and lenses, and derived summary consistency.
