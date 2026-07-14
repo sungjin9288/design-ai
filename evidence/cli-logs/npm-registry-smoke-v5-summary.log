@@ -1,0 +1,22 @@
+Design AI public registry smoke evidence
+Checked: 2026-07-14 Asia/Seoul
+Command: npm run registry:smoke
+Package: @design-ai/cli@5.0.0
+
+Observed public package contract:
+- CLI version: 5.0.0
+- Skills installed: 21/21
+- Agents installed: 4/4
+- Slash commands installed: 16/16
+- Doctor summary: 16 pass, 0 warnings, 0 failures
+- MCP entrypoint and 17-tool contract exercised by the registry smoke suite
+- Installed-bin and one-shot npm exec paths exercised by the registry smoke suite
+- Install, doctor, status, and uninstall lifecycle completed
+
+Final result:
+Registry smoke passed: @design-ai/cli@5.0.0
+
+The full command output contained 30,951 lines and was retained in the local
+temporary artifact `/tmp/design-ai-registry-smoke-v5.log` for this verification
+session. This committed summary keeps the release evidence reviewable without
+replacing the historical v4.56 raw log or adding a second megabyte-scale log.

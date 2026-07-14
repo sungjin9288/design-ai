@@ -1,43 +1,42 @@
 # External Publication Status
 
-> Checked: 2026-07-07
-> Scope: npm registry, GitHub Pages, Homebrew tap, VS Code Marketplace, Claude/Codex MCP
+> Checked: 2026-07-14
+> Scope: npm registry, GitHub Release, GitHub Pages, Homebrew tap, VS Code Marketplace, Claude/Codex MCP
 
 ## Summary
 
-npm is publicly published at `@design-ai/cli@4.65.0` (npm dist-tag `latest` = `4.65.0`); publish run from tag `v4.65.0` succeeded with provenance and all pre-publish gates green. This release ships MCP ↔ SDK parity: `design_ai_recall` (read-only combined corpus+learning recall) plus the opt-in learning-write tool set (`design_ai_learn_remember`/`feedback`/`capture`) mirroring the SDK `learn.*` boundary — the MCP server grows from 10 to 14 tools, with the write tools clearly bounded to the local learning profile and never enabled implicitly. The live `npm run registry:smoke` passes cleanly against published `@design-ai/cli@4.65.0` ("Registry smoke passed"), covering the retrieval surfaces (index/ranked/embeddings/recall) and route enrichment. GitHub Release `v4.65.0` is published, and the Homebrew tap formula points at the `v4.65.0` release source tarball with a verified SHA-256. The VS Code extension `sungjin.design-ai-vscode` remains published at `0.4.1`. GitHub Pages docs are publicly reachable.
+`@design-ai/cli@5.0.0` is publicly available and npm `latest` points to `5.0.0`. GitHub Actions run `29302950960` published the package through npm Trusted Publishing, attached SLSA provenance, and completed the public registry smoke. A separate local `npm run registry:smoke` also passed against the published package. GitHub Release `v5.0.0` is public, and the Homebrew formula targets the same tag. The release exposes 21 skills, 16 public commands, 4 review agents, 17 MCP tools, and 10 SDK exports. GitHub Pages remains public, and `sungjin.design-ai-vscode@0.4.1` remains available on the VS Code Marketplace.
 
 ## Results
 
 | Surface | Checked target | Result | Evidence |
 |---|---|---|---|
-| npm registry | `@design-ai/cli` | Published latest is `4.65.0` (tag `v4.65.0`, provenance). Pre-publish packed-tarball smoke (incl. SDK import + `learn.remember` write) and live `npm run registry:smoke` both pass for `@design-ai/cli@4.65.0`. | `npm view @design-ai/cli version` → `4.65.0`; live registry smoke "Registry smoke passed" |
-| GitHub Pages | `https://sungjin9288.github.io/design-ai/` | Published and reachable: HTTP `200`, design-ai MkDocs page rendered | `evidence/cli-logs/github-pages-status.log` |
-| Homebrew tap | `Formula/design-ai.rb` | Formula pinned to `v4.65.0` release source tarball with SHA-256 `f06903131d39857253d628aaf71407e3a84119a4c08c5ecaa8c3ac5d7ddef48f` (recomputed from the published tag tarball) | `Formula/design-ai.rb` |
-| VS Code Marketplace | `sungjin.design-ai-vscode` | Published: run `28431571256` published `v0.4.1`, and the Marketplace Gallery API returned visible version `0.4.1` on 2026-07-02. | `evidence/cli-logs/vscode-marketplace-status.log`, `evidence/cli-logs/vscode-marketplace-secret-status.log`, `evidence/cli-logs/vscode-extension-vsce-package.log`, `evidence/cli-logs/vscode-publish-workflow-status.log` |
-| GitHub Release | `v4.65.0` | Published for tag `v4.65.0` at commit `fcae406` | `gh release view v4.65.0` |
-| MCP server | `@design-ai/cli@4.65.0` / local clone | Public npm `design-ai-mcp` responds to initialize and tools/list with 14 tools; local Codex and Claude Code both report `design-ai` MCP as configured and connected. | `evidence/cli-logs/npm-registry-smoke.log`, `evidence/cli-logs/design-ai-mcp-client-status.log` |
+| npm registry | `@design-ai/cli@5.0.0` | Published as `latest` at `2026-07-14T03:23:14.040Z`; SLSA provenance is present; workflow and local live registry smoke passed. | Publish run `29302950960`; npm attestation predicate `https://slsa.dev/provenance/v1`; Sigstore log index `2166685545`; `evidence/cli-logs/npm-registry-smoke-v5-summary.log` |
+| GitHub Release | `v5.0.0` | Published, not draft or prerelease, for tag commit `b352302eb1775296a493cf9fd68a7164fd905bf7`; asset `design-ai-cli-5.0.0.tgz` is 2,351,328 bytes with digest `sha256:e2053e29797ef3b07d83cd84b87c731b7a68af3b0d0b1797a933dbb8612b19f4`. | `gh release view v5.0.0`; [release page](https://github.com/sungjin9288/design-ai/releases/tag/v5.0.0) |
+| Homebrew tap | `Formula/design-ai.rb` | Formula targets `v5.0.0` with source SHA-256 `710b458eee34b9813b0e96c355271e33e0cd25d1561002229c1c19858c689ae9`; `brew style`, temporary-tap install, and `brew test` passed. | `Formula/design-ai.rb`; PR `#31` verification |
+| GitHub Pages | `https://sungjin9288.github.io/design-ai/` | Public docs deployment remains active; the post-merge Docs workflow for the publish-path fix passed. | Docs run `29302935114`; [public docs](https://sungjin9288.github.io/design-ai/) |
+| VS Code Marketplace | `sungjin.design-ai-vscode` | Published version remains `0.4.1`; no extension release was part of v5.0.0. | `evidence/cli-logs/vscode-marketplace-status.log`; `evidence/cli-logs/vscode-publish-workflow-status.log` |
+| MCP server | `@design-ai/cli@5.0.0` / local clone | Public registry smoke validates the `design-ai-mcp` entrypoint and 17-tool contract. Existing local evidence records both Codex and Claude Code connections to the clone-backed server. | Publish run `29302950960`; local registry smoke; `evidence/cli-logs/design-ai-mcp-client-status.log` |
 
 ## Interpretation
 
-- The repository is locally release-ready based on `npm run release:check`.
-- GitHub Pages docs can now be described as publicly deployed.
-- Public npm install can now be described as published and smoke-tested at `4.65.0`.
-- Homebrew tap install can now be described as pinned to the `v4.65.0` release tarball; full tap audit/install/test remains a maintainer-side verification step because this Homebrew version rejects path-based `brew audit Formula/...` calls.
-- VS Code Marketplace can now be described as published and publicly reachable at version `0.4.1`.
-- Claude Code and Codex can now be described as locally connected to the clone-backed `design-ai` MCP server, while public npm users can verify the published `design-ai-mcp` entrypoint from a clean working directory.
+- v5.0.0 distribution is complete across npm, GitHub Release, and the Homebrew tap.
+- npm publication no longer depends on a long-lived repository token; the workflow uses OIDC Trusted Publishing, and the obsolete GitHub `NPM_TOKEN` repository secret was removed after the successful publish.
+- The public package and its MCP entrypoint have both workflow and independent local registry-smoke evidence.
+- GitHub Pages and the VS Code extension are separate published surfaces; the extension remains at `0.4.1`.
+- A public announcement is not implied by distribution completion and remains a maintainer decision.
 
 ## Recheck Commands
 
 ```bash
-npm view @design-ai/cli version name time.modified dist-tags --json
-curl -sS -L -o /tmp/design-ai-pages.html -w 'http_code=%{http_code}\nurl_effective=%{url_effective}\n' https://sungjin9288.github.io/design-ai/
-curl -sL https://github.com/sungjin9288/design-ai/archive/refs/tags/v4.65.0.tar.gz | shasum -a 256
+npm view @design-ai/cli@5.0.0 version dist-tags time dist.attestations --json
+npm run registry:smoke
+gh release view v5.0.0 --repo sungjin9288/design-ai --json tagName,isDraft,isPrerelease,publishedAt,url,assets
+gh run view 29302950960 --repo sungjin9288/design-ai --json status,conclusion,name,url,headSha,createdAt,updatedAt
+curl -sL https://github.com/sungjin9288/design-ai/archive/refs/tags/v5.0.0.tar.gz | shasum -a 256
 ruby -c Formula/design-ai.rb
 brew style Formula/design-ai.rb
-gh release view v4.65.0 --repo sungjin9288/design-ai --json tagName,isDraft,isPrerelease,publishedAt,name,url,assets
-gh run view 28569283984 --repo sungjin9288/design-ai --json status,conclusion,name,url,createdAt,updatedAt
-npm exec --yes --package=@design-ai/cli@4.65.0 -- design-ai-mcp
+npm exec --yes --package=@design-ai/cli@5.0.0 -- design-ai-mcp
 codex mcp get design-ai
 claude mcp list
 curl -sS -H 'Content-Type: application/json' \

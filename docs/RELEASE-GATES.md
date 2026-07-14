@@ -12,15 +12,14 @@ See `README.md` for the short version, [`docs/ROADMAP.md`](ROADMAP.md)
 for the full phase log, and [`docs/PRODUCT-READINESS.md`](PRODUCT-READINESS.md)
 for the current completion boundary.
 
-## Status detail (published v4.65.0; source v5.0.0 release candidate)
+## Status detail (published v5.0.0)
 
-Published **v4.65.0** remains the public baseline. The current source is the
-**v5.0.0 release candidate**. Public npm publish, provenance-backed GitHub
+Published **v5.0.0** is the public baseline. Public npm publish, provenance-backed GitHub
 Actions release, public registry smoke, Website Console MCP readiness, workspace
 learning restore/eval coverage, handoff bundle verification, and 90%+
 component coverage are complete.
 
-Core design consulting workflows are locally release-ready. The website
+Core design consulting workflows are released and locally verifiable. The website
 improvement control tower is available as a zero-dependency static Web App at
 [`docs/website-console/index.html`](website-console/index.html), plus a
 `website-improvement` route/skill/command for:
@@ -109,7 +108,7 @@ The corpus has been audited under CI checks since v1.7. It currently runs 8 audi
 
 All 8 pass on every commit to `main`.
 
-## Reproducible gate structure (v5.0.0 candidate)
+## Reproducible gate structure (v5.0.0)
 
 `npm run release:preflight` runs every non-publishing gate except packed-tarball
 execution smoke:
