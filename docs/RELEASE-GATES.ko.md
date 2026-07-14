@@ -1,10 +1,10 @@
-# 릴리스 게이트 상세 (v4.56.0)
+# 릴리스 게이트 상세 (v5.0.0)
 
 > `README.ko.md`의 상태·기여하기 요약을 뒷받침하는 전체 증빙 문구 모음이에요.
 > 영어판 전체 증빙은 [RELEASE-GATES.md](RELEASE-GATES.md)를 참고하세요.
 > 릴리스 정책 가드(`npm run release:metadata`)는 README.ko.md와 이 문서를 함께 검사해요.
 
-v5.0.0 source candidate의 packed-tarball smoke는 installed-bin과 one-shot `npm exec` 양쪽에서 `design-ai site --stdin --linked-preview --strict --json`을 실행해 linked root metadata, 기존 수동 start command, process 미실행, URL 미검증, target repo 미수정 경계를 확인해요.
+공개된 v5.0.0의 packed-tarball smoke와 registry smoke는 installed-bin과 one-shot `npm exec` 경로에서 `design-ai site --stdin --linked-preview --strict --json`을 실행해 linked root metadata, 기존 수동 start command, process 미실행, URL 미검증, target repo 미수정 경계를 확인해요.
 
 ## 상태 상세
 
