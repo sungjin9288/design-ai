@@ -1,0 +1,107 @@
+{
+  "kind": "design-ai-product-review-pack",
+  "schemaVersion": 1,
+  "revision": 1,
+  "id": "korean-fintech",
+  "name": "Korean fintech product review",
+  "domain": "fintech",
+  "locale": "ko-KR",
+  "summary": "Reviews Korean financial product flows for trusted input, identity, payment disclosure, consent, dense data, and accessible responsive behavior.",
+  "viewports": [
+    { "name": "mobile", "width": 390, "height": 844 },
+    { "name": "desktop", "width": 1440, "height": 900 }
+  ],
+  "knowledge": [
+    "knowledge/i18n/korean-product-conventions.md",
+    "knowledge/i18n/korean-payments.md",
+    "knowledge/i18n/korean-density-conventions.md",
+    "knowledge/i18n/korean-typography.md",
+    "knowledge/a11y/contrast.md"
+  ],
+  "criteria": [
+    {
+      "id": "korean-phone-input-semantics",
+      "lens": "accessibility",
+      "mode": "static-html",
+      "severity": "p1",
+      "title": "Give Korean phone fields native input semantics",
+      "question": "Can a mobile user enter and autofill a Korean phone number without changing keyboards or guessing the field purpose?",
+      "evidence": "Inspect phone-like inputs for type=tel and autocomplete=tel.",
+      "verification": ["Focus every phone field on mobile and confirm the numeric phone keypad and saved-number autofill are available."],
+      "falsePositiveNotes": ["Exclude search, account number, and one-time-code fields even when their placeholder contains digits."]
+    },
+    {
+      "id": "korean-auth-autocomplete",
+      "lens": "accessibility",
+      "mode": "static-html",
+      "severity": "p1",
+      "title": "Declare password autofill intent",
+      "question": "Can password managers distinguish sign-in credentials from a newly created password?",
+      "evidence": "Inspect password inputs for current-password or new-password autocomplete tokens.",
+      "verification": ["Exercise sign-in and password creation with a platform password manager."],
+      "falsePositiveNotes": ["A transaction PIN is not a web account password and may use a different secured input contract."]
+    },
+    {
+      "id": "korean-marketing-consent-default",
+      "lens": "accessibility",
+      "mode": "static-html",
+      "severity": "p1",
+      "title": "Keep optional marketing consent unchecked",
+      "question": "Is marketing consent separate from required terms and off by default?",
+      "evidence": "Inspect checked checkboxes whose associated label mentions marketing, advertising, or promotional messages.",
+      "verification": ["Load a fresh session and confirm optional marketing consent is unchecked and independently operable."],
+      "falsePositiveNotes": ["Do not classify a read-only consent receipt or previously saved account preference as a new opt-in default."]
+    },
+    {
+      "id": "korean-payment-disclosure",
+      "lens": "response",
+      "mode": "scenario-required",
+      "severity": "p1",
+      "title": "Show the full payment commitment before approval",
+      "question": "Before payment, can the user see amount, billing frequency, next charge date, cancellation terms, and the selected payment method?",
+      "evidence": "Capture the final confirmation state and the payment completion state with all monetary terms visible.",
+      "verification": ["Review one-time, subscription, failure, retry, and refund paths with Korean copy and amounts."],
+      "falsePositiveNotes": ["A one-time purchase does not need recurring billing fields, but still needs total amount and cancellation or refund terms."]
+    },
+    {
+      "id": "korean-dense-financial-data",
+      "lens": "responsive-resilience",
+      "mode": "browser-required",
+      "severity": "p2",
+      "title": "Keep dense financial data scannable",
+      "question": "Do aligned numerals, row density, hierarchy, focus, and touch targets remain legible at mobile and desktop widths?",
+      "evidence": "Capture account, transaction, and comparison surfaces at both declared viewports with overflow and keyboard focus visible.",
+      "verification": ["Check tabular numerals, 44px touch targets, visible focus, horizontal overflow, and Korean line-height."],
+      "falsePositiveNotes": ["Dense desktop tables may intentionally scroll horizontally on mobile when a card transformation would remove necessary comparison context."]
+    },
+    {
+      "id": "korean-accessibility-runtime",
+      "lens": "accessibility",
+      "mode": "browser-required",
+      "severity": "p1",
+      "title": "Prove the financial flow with assistive technology",
+      "question": "Can keyboard and screen-reader users complete identity, payment, error recovery, and confirmation without losing context?",
+      "evidence": "Attach keyboard order, accessibility-tree, error announcement, contrast, and focus-restoration evidence.",
+      "verification": ["Run the approved browser verification profile at mobile and desktop viewports."],
+      "falsePositiveNotes": ["Static accessible names do not prove modal focus management, live announcements, or vendor handoff recovery."]
+    }
+  ],
+  "benchmark": {
+    "source": "examples/benchmarks/korean-product-packs/korean-fintech/source.html",
+    "expectedFindingIds": [
+      "product-pack:korean-fintech:korean-phone-input-semantics",
+      "product-pack:korean-fintech:korean-auth-autocomplete",
+      "product-pack:korean-fintech:korean-marketing-consent-default",
+      "product-pack:korean-fintech:korean-payment-disclosure",
+      "product-pack:korean-fintech:korean-dense-financial-data",
+      "product-pack:korean-fintech:korean-accessibility-runtime"
+    ],
+    "falsePositiveNotes": ["The fixture intentionally contains three static defects; production examples with correct semantics must not emit those confirmed findings."]
+  },
+  "boundary": {
+    "mode": "read-only",
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "notes": ["The pack classifies supplied evidence only. It does not decide legal compliance or execute payment and identity providers."]
+  }
+}

@@ -5,6 +5,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 
+import { validateBrowserVerification } from "../../cli/lib/browser-verification-contract.mjs";
+import { validateDesignQualityReport } from "../../cli/lib/design-quality-contract.mjs";
+
 const CONSOLE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
 function loadApi() {
@@ -19,6 +22,62 @@ function loadApi() {
 
 const api = loadApi();
 
+function canonicalBrowserReport() {
+  const checks = [
+    "responsive", "keyboard", "accessibility", "reduced-motion", "loading", "error", "repeated-action",
+  ];
+  const probes = checks.map((check) => ({
+    id: `${check}:mobile`,
+    check,
+    status: "pass",
+    viewport: "mobile",
+    observedAt: "2026-07-14T00:00:30.000Z",
+    observation: `${check} passed at mobile`,
+    artifacts: [{
+      kind: check === "responsive" ? "screenshot" : check === "accessibility" ? "accessibility" : "trace",
+      path: `${check}-mobile.${check === "responsive" ? "png" : check === "accessibility" ? "json" : "txt"}`,
+    }],
+    findingIds: [],
+  }));
+  return {
+    kind: "design-ai-browser-verification",
+    schemaVersion: 1,
+    sourceReport: { path: "quality-report.json", sha256: "a".repeat(64), postRunDigestMatch: true },
+    approval: { status: "approved", reference: "operator approval" },
+    run: {
+      id: "run-1",
+      url: "http://127.0.0.1:4173",
+      startedAt: "2026-07-14T00:00:00.000Z",
+      completedAt: "2026-07-14T00:01:00.000Z",
+      tool: { name: "adapter", version: "1" },
+    },
+    boundary: {
+      mode: "local-evidence-write",
+      targetRoot: "/tmp/site",
+      requestedNetworkPolicy: {
+        allowedOrigin: "http://127.0.0.1:4173",
+        allowedMethods: ["GET", "HEAD"],
+        blockCrossOrigin: true,
+        blockWebSockets: true,
+        blockDownloads: true,
+      },
+      adapterAttestation: {
+        networkPolicy: "attested",
+        targetRepoMutation: "unverified",
+        externalWrites: "unverified",
+      },
+      sourceReportDigestMatchedAfterRun: true,
+      localEvidenceWrites: true,
+      localEvidencePath: ".design-ai/evidence/run-1",
+      notes: [],
+    },
+    viewports: [{ name: "mobile", width: 390, height: 844 }],
+    probes,
+    findings: [],
+    summary: { status: "pass", passed: 7, failed: 0, unverified: 0, nextAction: "Review the evidence." },
+  };
+}
+
 test("source-bundle classic script exposes the focused frozen API", () => {
   assert.equal(Object.isFrozen(api), true);
   assert.deepEqual(Object.keys(api), [
@@ -32,7 +91,70 @@ test("source-bundle classic script exposes the focused frozen API", () => {
     "buildSourceBundleRevalidationGate",
     "buildSourceBundleJson",
     "buildSourceBundleRevalidationGateJson",
+    "normalizeQualityReport",
+    "normalizeBrowserVerification",
+    "buildImportedArtifactJson",
   ]);
+});
+
+test("quality and browser contracts reject unknown shapes and preserve imported JSON bytes", () => {
+  const qualityPath = path.join(
+    CONSOLE_ROOT,
+    "..",
+    "..",
+    "examples",
+    "benchmarks",
+    "korean-fintech-settings",
+    "quality-report.json",
+  );
+  const rawQuality = readFileSync(qualityPath, "utf8");
+  const quality = JSON.parse(rawQuality);
+  const normalizedQuality = api.normalizeQualityReport(quality);
+
+  assert.notEqual(normalizedQuality, quality);
+  assert.equal(JSON.stringify(normalizedQuality), JSON.stringify(quality));
+  assert.equal(api.buildImportedArtifactJson(normalizedQuality, rawQuality), rawQuality);
+  assert.equal(api.normalizeQualityReport({ ...quality, kind: "unknown" }), null);
+  assert.equal(api.normalizeQualityReport({ ...quality, extra: true }), null);
+
+  const localEvidenceQuality = structuredClone(quality);
+  localEvidenceQuality.boundary = {
+    ...localEvidenceQuality.boundary,
+    mode: "local-evidence-write",
+    localEvidenceWrites: true,
+    localEvidencePath: ".design-ai/evidence/quality-report.json",
+  };
+  assert.strictEqual(validateDesignQualityReport(localEvidenceQuality), localEvidenceQuality);
+  assert.notEqual(api.normalizeQualityReport(localEvidenceQuality), null);
+
+  const browser = canonicalBrowserReport();
+  assert.strictEqual(validateBrowserVerification(browser), browser);
+  const normalizedBrowser = api.normalizeBrowserVerification(browser);
+  assert.equal(JSON.stringify(normalizedBrowser), JSON.stringify(browser));
+  assert.notEqual(normalizedBrowser, browser);
+  assert.equal(api.normalizeBrowserVerification({ ...browser, schemaVersion: 2 }), null);
+
+  const forgedReports = [
+    { ...browser, approval: { ...browser.approval, status: "pending" } },
+    { ...browser, probes: [], summary: { ...browser.summary, passed: 0 } },
+    {
+      ...browser,
+      boundary: {
+        ...browser.boundary,
+        requestedNetworkPolicy: { ...browser.boundary.requestedNetworkPolicy, blockCrossOrigin: false },
+      },
+    },
+    { ...browser, summary: { ...browser.summary, passed: 6 } },
+  ];
+  for (const unsafePath of ["\\root\\artifact.png", "\\\\server\\share\\artifact.png"]) {
+    const forged = structuredClone(browser);
+    forged.probes[0].artifacts[0].path = unsafePath;
+    forgedReports.push(forged);
+  }
+  for (const forged of forgedReports) {
+    assert.throws(() => validateBrowserVerification(forged));
+    assert.equal(api.normalizeBrowserVerification(forged), null);
+  }
 });
 
 test("start plan contract accepts read-only payloads and rejects forged execution", () => {
@@ -218,11 +340,23 @@ test("Website Console imports and labels linked preview readiness without claimi
   const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
 
   assert.match(appSource, /website-improvement-linked-preview/);
-  assert.match(appSource, /Import start, workspace, runbook, or preview JSON/);
+  assert.match(appSource, /Import quality, browser, start, workspace, runbook, or preview JSON/);
   assert.match(appSource, /No process started by design-ai/);
   assert.match(appSource, /A configured URL is not browser verification/);
   assert.match(appSource, /Linked preview readiness JSON imported\. Report tab opened\./);
   assert.match(appSource, /no process start, external call, source scan, or target-repo mutation/);
+});
+
+test("Website Console keeps quality and browser contracts separate and preserves raw exports", () => {
+  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+
+  assert.match(appSource, /Canonical quality-report JSON imported\. Original bytes preserved\./);
+  assert.match(appSource, /Canonical browser-verification JSON imported as a separate sidecar\./);
+  assert.match(appSource, /Export original quality JSON/);
+  assert.match(appSource, /Export original browser JSON/);
+  assert.match(appSource, /window\.crypto\.subtle\.digest\("SHA-256"/);
+  assert.match(appSource, /The sidecar does not resolve purpose-frequency or spatial-continuity by itself/);
+  assert.match(appSource, /if \(!isWorkspacePayload\(parsed\)\)/);
 });
 
 test("Website Console imports start JSON without claiming reference inspection or execution", () => {

@@ -1,0 +1,95 @@
+{
+  "kind": "design-ai-product-review-pack",
+  "schemaVersion": 1,
+  "revision": 1,
+  "id": "korean-saas",
+  "name": "Korean SaaS product review",
+  "domain": "saas",
+  "locale": "ko-KR",
+  "summary": "Reviews Korean B2B software for password-manager support, optional consent, operator density, Korean wrapping, and accessible repeated work.",
+  "viewports": [
+    { "name": "mobile", "width": 390, "height": 844 },
+    { "name": "desktop", "width": 1440, "height": 900 }
+  ],
+  "knowledge": [
+    "knowledge/i18n/korean-density-conventions.md",
+    "knowledge/i18n/korean-product-conventions.md",
+    "knowledge/i18n/korean-typography.md",
+    "knowledge/patterns/dashboard-composition.md",
+    "knowledge/patterns/settings-page.md"
+  ],
+  "criteria": [
+    {
+      "id": "korean-auth-autocomplete",
+      "lens": "accessibility",
+      "mode": "static-html",
+      "severity": "p1",
+      "title": "Declare enterprise password autofill intent",
+      "question": "Can password managers distinguish sign-in credentials from password creation?",
+      "evidence": "Inspect password inputs for current-password or new-password autocomplete tokens.",
+      "verification": ["Exercise sign-in, invited-user setup, and password reset with a platform password manager."],
+      "falsePositiveNotes": ["SSO-only screens without password inputs are outside this rule."]
+    },
+    {
+      "id": "korean-marketing-consent-default",
+      "lens": "accessibility",
+      "mode": "static-html",
+      "severity": "p1",
+      "title": "Keep product marketing consent optional",
+      "question": "Is promotional consent separate from account and service terms and off by default?",
+      "evidence": "Inspect checked checkboxes whose associated label mentions marketing, advertising, or promotional messages.",
+      "verification": ["Create a fresh account and confirm optional promotional consent is unchecked and independently operable."],
+      "falsePositiveNotes": ["Do not treat an administrator's existing organization policy summary as a new user opt-in."]
+    },
+    {
+      "id": "korean-b2b-density",
+      "lens": "responsive-resilience",
+      "mode": "browser-required",
+      "severity": "p2",
+      "title": "Fit Korean operator density to the task",
+      "question": "Do tables, forms, trees, and filters support efficient repeated work without shrinking text, focus, or targets below the accessibility floor?",
+      "evidence": "Capture primary dashboard, table, form, and settings workflows at both declared viewports and every supported density setting.",
+      "verification": ["Check row count per fold, tabular numerals, sticky headers, focus, keyboard order, overflow, and persisted density preference."],
+      "falsePositiveNotes": ["Korean B2B products may intentionally use cozy or compact density when hit areas and legibility remain intact."]
+    },
+    {
+      "id": "korean-responsive-copy-wrap",
+      "lens": "responsive-resilience",
+      "mode": "browser-required",
+      "severity": "p2",
+      "title": "Let Korean operational copy wrap without breaking controls",
+      "question": "Do long Korean labels, validation messages, table headers, and role names wrap or truncate with a recoverable full-text path?",
+      "evidence": "Capture longest production-like Korean strings at mobile and desktop widths with zoom and text scaling applied.",
+      "verification": ["Check 200% zoom, Korean IME composition, dynamic validation, table headers, buttons, and permission names."],
+      "falsePositiveNotes": ["Stable identifiers and compact numeric columns may remain single-line when full text is available elsewhere."]
+    },
+    {
+      "id": "korean-accessibility-runtime",
+      "lens": "accessibility",
+      "mode": "browser-required",
+      "severity": "p1",
+      "title": "Prove repeated operator workflows with assistive technology",
+      "question": "Can keyboard and screen-reader users filter, edit, save, recover, and repeat core work without losing state or focus?",
+      "evidence": "Attach keyboard order, accessibility-tree, state announcement, contrast, and repeated-action evidence.",
+      "verification": ["Run the approved browser verification profile at mobile and desktop viewports."],
+      "falsePositiveNotes": ["A passing component snapshot does not prove table navigation, focus restoration, or async save feedback."]
+    }
+  ],
+  "benchmark": {
+    "source": "examples/benchmarks/korean-product-packs/korean-saas/source.html",
+    "expectedFindingIds": [
+      "product-pack:korean-saas:korean-auth-autocomplete",
+      "product-pack:korean-saas:korean-marketing-consent-default",
+      "product-pack:korean-saas:korean-b2b-density",
+      "product-pack:korean-saas:korean-responsive-copy-wrap",
+      "product-pack:korean-saas:korean-accessibility-runtime"
+    ],
+    "falsePositiveNotes": ["The fixture intentionally omits password autocomplete and preselects marketing consent; compliant forms must not emit those confirmed findings."]
+  },
+  "boundary": {
+    "mode": "read-only",
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "notes": ["The pack reviews supplied evidence only. It does not read tenant data, change settings, or execute operator actions."]
+  }
+}

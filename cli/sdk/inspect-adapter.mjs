@@ -28,5 +28,6 @@ export function inspectHtml(source, opts = {}) {
     locale: optionalString(options.locale, "locale") || undefined,
     viewports: optionalStringList(options.viewports, "viewports"),
     generatedAt: optionalString(options.generatedAt, "generatedAt") || undefined,
+    reviewPack: optionalString(options.reviewPack, "reviewPack") || undefined,
   });
 }

@@ -1,4 +1,6 @@
 import { validateDesignQualityReport } from "./design-quality-contract.mjs";
+import { inspectProductReviewPack } from "./product-review-inspector.mjs";
+import { loadProductReviewPack } from "./product-review-pack.mjs";
 
 const VOID_ELEMENTS = new Set([
   "area", "base", "br", "col", "embed", "hr", "img", "input", "link",
@@ -394,6 +396,9 @@ export function inspectHtml(source, options = {}) {
   const locale = options.locale === undefined ? "en" : requiredText(options.locale, "locale");
   const viewports = uniqueTextList(options.viewports, "viewports", ["mobile", "desktop"]);
   const generatedAt = options.generatedAt === undefined ? new Date().toISOString() : requiredText(options.generatedAt, "generatedAt");
+  const reviewPack = options.reviewPack === undefined
+    ? null
+    : loadProductReviewPack(requiredText(options.reviewPack, "reviewPack"));
   const elements = parseHtmlElements(html);
 
   const elementsById = new Map(
@@ -436,6 +441,14 @@ export function inspectHtml(source, options = {}) {
   const hasViewport = Boolean(viewport && /(^|,)\s*width\s*=\s*device-width\s*(,|$)/i.test(viewport.attributes.content || ""));
   const mobileDeclared = viewports.some((viewport) => /mobile|phone|(^|\D)(320|360|375|390|412|414|430)(\D|$)/i.test(viewport));
   if (fullDocument && mobileDeclared && !hasViewport) findings.push(viewportFinding(sourceRef, viewport));
+  if (reviewPack) {
+    findings.push(...inspectProductReviewPack(reviewPack, {
+      sourceRef,
+      elements,
+      labelsByTarget,
+      elementsById,
+    }));
+  }
   findings.push(runtimeFinding(sourceRef));
 
   const accessibilityFindings = findings.filter((finding) => finding.lens === "accessibility" && finding.status === "confirmed");
@@ -460,7 +473,14 @@ export function inspectHtml(source, options = {}) {
         "No browser, script, stylesheet, linked resource, network request, or target file was executed or changed.",
       ],
     },
-    sources: [evidence(sourceRef, `Inspected ${html.length} characters of supplied HTML with deterministic static rules.`)],
+    sources: [
+      evidence(sourceRef, `Inspected ${html.length} characters of supplied HTML with deterministic static rules.`),
+      ...(reviewPack ? [{
+        kind: "design-contract",
+        reference: `product-packs/${reviewPack.id}.json#revision-${reviewPack.revision}`,
+        observation: `Applied ${reviewPack.id} revision ${reviewPack.revision}. Static HTML criteria may be confirmed; browser and scenario criteria remain unverified.`,
+      }] : []),
+    ],
     lenses: [
       lens("purpose-frequency", "unverified", "Task purpose and real usage frequency require product or runtime evidence.", sourceRef, "Static HTML does not establish user intent or frequency."),
       lens("response", "unverified", "Activation feedback and state transitions were not executed.", sourceRef, "The inspector does not run event handlers or network requests."),

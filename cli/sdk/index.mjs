@@ -23,6 +23,7 @@
 export { artifact } from "./artifact-adapter.mjs";
 export { check } from "./check-adapter.mjs";
 export { inspectHtml } from "./inspect-adapter.mjs";
+export { reviewPack } from "./review-pack-adapter.mjs";
 export { learn } from "./learn-adapter.mjs";
 export { pack } from "./pack-adapter.mjs";
 export { prompt } from "./prompt-adapter.mjs";

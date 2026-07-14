@@ -9,6 +9,7 @@ import { runAudit } from "./audit.mjs";
 import { runArtifact } from "./artifact.mjs";
 import { runStart } from "./start.mjs";
 import { runInspect } from "./inspect.mjs";
+import { runReviewPack } from "./review-pack.mjs";
 import { runVerifyBrowser } from "./verify-browser.mjs";
 import { runCheck } from "./check.mjs";
 import { runDoctor } from "./doctor.mjs";
@@ -47,7 +48,8 @@ export const HELP_COMMANDS = [
   { topic: "audit", usage: "audit [--strict] [--quiet] [--json]", description: "Run repository quality checks" },
   { topic: "artifact", usage: "artifact <implementation-plan|critique-loop|design-contract> <brief> [--route id] [--json] [--out file]", description: "Build a portable read-only design artifact plan" },
   { topic: "start", usage: "start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]", description: "Build one read-only route, design contract, review, and next-step plan" },
-  { topic: "inspect", usage: "inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--json]", description: "Build a read-only design quality report from explicit HTML" },
+  { topic: "inspect", usage: "inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--review-pack id] [--json]", description: "Build a read-only design quality report from explicit HTML" },
+  { topic: "review-pack", usage: "review-pack [id] [--json]", description: "List or print Korean product review packs" },
   { topic: "verify-browser", usage: "verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]", description: "Run an approved browser adapter and record normalized local evidence" },
   { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
@@ -99,6 +101,7 @@ const HELP_RUNNERS = {
   artifact: () => runArtifact(["--help"]),
   start: () => runStart(["--help"]),
   inspect: () => runInspect(["--help"]),
+  "review-pack": () => runReviewPack(["--help"]),
   "verify-browser": () => runVerifyBrowser(["--help"]),
   doctor: () => runDoctor(["--help"]),
   examples: () => runExamples(["--help"]),

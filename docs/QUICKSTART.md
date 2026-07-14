@@ -34,6 +34,8 @@ design-ai prompt "audit a Figma signup flow for Korean fintech"
 design-ai artifact implementation-plan "refactor the account settings flow" --out implementation-plan.md
 design-ai artifact critique-loop "revise the pricing page after design review" --out critique-loop.md
 design-ai artifact design-contract "Korean fintech dashboard design system" --out DESIGN.md
+design-ai review-pack korean-fintech
+design-ai inspect page.html --brief "Review Korean fintech settings" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json
 design-ai pack "audit a Figma signup flow for Korean fintech" --max-bytes 80000
 design-ai prompt --from-file product-brief.md --route design-review --out prompt.md
 cat product-brief.md | design-ai pack --stdin --out prompt-pack.md

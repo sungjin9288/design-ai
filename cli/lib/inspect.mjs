@@ -5,7 +5,7 @@ import { inspectHtml } from "./design-quality-inspector.mjs";
 import { unknownOptionMessage } from "./suggest.mjs";
 
 const MAX_SOURCE_BYTES = 1_000_000;
-const INSPECT_OPTIONS = ["-h", "--help", "--brief", "--name", "--locale", "--viewport", "--json"];
+const INSPECT_OPTIONS = ["-h", "--help", "--brief", "--name", "--locale", "--viewport", "--review-pack", "--json"];
 
 function containsPath(parentPath, childPath) {
   const relative = path.relative(parentPath, childPath);
@@ -29,19 +29,20 @@ function requiredOption(args, index, option) {
 }
 
 export function parseInspectArgs(args) {
-  const parsed = { sourcePath: "", brief: "", name: "", locale: "en", viewports: [], json: false, help: false };
+  const parsed = { sourcePath: "", brief: "", name: "", locale: "en", viewports: [], reviewPack: "", json: false, help: false };
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === "-h" || arg === "--help") parsed.help = true;
     else if (arg === "--json") parsed.json = true;
-    else if (["--brief", "--name", "--locale", "--viewport"].includes(arg)) {
+    else if (["--brief", "--name", "--locale", "--viewport", "--review-pack"].includes(arg)) {
       const value = requiredOption(args, index, arg);
       index += 1;
       if (arg === "--brief") parsed.brief = value;
       if (arg === "--name") parsed.name = value;
       if (arg === "--locale") parsed.locale = value;
       if (arg === "--viewport") parsed.viewports.push(value);
+      if (arg === "--review-pack") parsed.reviewPack = value;
     } else if (arg.startsWith("-")) {
       throw new Error(unknownOptionMessage("inspect", arg, INSPECT_OPTIONS));
     } else if (!parsed.sourcePath) {
@@ -98,6 +99,7 @@ export function buildInspectReport(parsed, cwd = process.cwd()) {
     name: parsed.name || undefined,
     locale: parsed.locale,
     viewports: parsed.viewports.length > 0 ? parsed.viewports : undefined,
+    reviewPack: parsed.reviewPack || undefined,
   });
 }
 

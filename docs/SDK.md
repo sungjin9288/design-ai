@@ -1,14 +1,14 @@
 # Agent SDK reference
 
-> Status: current source candidate — 11 read-only verbs plus the opt-in `learn.*` local-write namespace; published v5.0.0 has 9 read-only verbs
+> Status: current source candidate — 12 read-only verbs plus the opt-in `learn.*` local-write namespace; published v5.0.0 has 9 read-only verbs
 
 `@design-ai/cli/sdk` lets an external Node.js program — an agent runtime, a build script, a custom tool — use design-ai's deterministic design capabilities as importable functions, without shelling out to the CLI or spawning the MCP server. It is a thin, curated adapter over the same `cli/lib` functions the CLI and MCP server already call, so a capability that ships in the CLI is instantly available to an SDK consumer.
 
 See [`AGENT-SDK.md`](AGENT-SDK.md) for the full design rationale, phased plan, and open questions. This page is the public reference for the shipped Phase A (read-only) and Phase B (local-write) surface.
 
-MCP parity: SDK `start()`, `inspectHtml()`, and `artifact()` map to `design_ai_start`, `design_ai_inspect_html`, and `design_ai_artifact`; `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
+MCP parity: SDK `start()`, `inspectHtml()`, `reviewPack()`, and `artifact()` map to `design_ai_start`, `design_ai_inspect_html`, `design_ai_review_pack`, and `design_ai_artifact`; `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
 
-Filesystem boundary: Website Improvement linked-preview inspection remains a CLI/MCP operation (`design-ai site --linked-preview`, `design_ai_site_linked_preview`) rather than an SDK export. SDK `start()` may declare references without reading them, while `inspectHtml()` accepts source text and a display reference instead of a path. The SDK therefore stays a curated capability adapter with 12 current-source exports and no general local-project filesystem surface.
+Filesystem boundary: Website Improvement linked-preview inspection remains a CLI/MCP operation (`design-ai site --linked-preview`, `design_ai_site_linked_preview`) rather than an SDK export. SDK `start()` may declare references without reading them, while `inspectHtml()` accepts source text and a display reference instead of a path. `reviewPack()` reads shipped definitions only. The SDK therefore stays a curated capability adapter with 13 current-source exports and no general local-project filesystem surface.
 
 ## Install and import
 
@@ -19,7 +19,7 @@ npm install @design-ai/cli
 ```
 
 ```js
-import { artifact, start, inspectHtml, route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
+import { artifact, start, inspectHtml, reviewPack, route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
 ```
 
 Only the `./sdk` subpath is exported — `import "@design-ai/cli"` (the bare package root) is intentionally not exported, so importing the SDK is always an explicit `@design-ai/cli/sdk` import. `cli/lib/*` is internal and unstable; do not import it directly.
@@ -83,6 +83,7 @@ inspectHtml(source: string, opts: {
   locale?: string,
   viewports?: string[],
   generatedAt?: string,
+  reviewPack?: string,
 }): DesignQualityReport
 ```
 
@@ -95,6 +96,11 @@ runtime evidence is collected. Every confirmed finding includes a concrete
 source location, Before, After, Why, evidence, and verification steps.
 `generatedAt` defaults to the current UTC time. Supply a normalized UTC value when
 fixtures, caches, or signatures require byte-equivalent reports.
+
+Use `reviewPack()` to list the five shipped Korean product review ids, or
+`reviewPack("korean-fintech")` to read one versioned contract. Supplying that id
+as `inspectHtml(..., { reviewPack: "korean-fintech" })` adds its namespaced
+findings and design-contract source evidence. Locale alone never enables a pack.
 
 ### `route(brief, opts)`
 
@@ -237,7 +243,7 @@ version(): { cli: string, corpus: string }
 
 - Additive changes (new optional fields, new opt-in options) are minor version bumps.
 - Signature or return-shape changes are major version bumps.
-- The 11 current-source read-only function exports (`artifact`, `start`, `inspectHtml`, `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) plus the frozen `learn` namespace object (`learn.remember`, `learn.feedback`, `learn.captureFromCheck`) and their return-shape key sets are pinned by an SDK contract test (`cli/sdk/index.test.mjs`) — this is the semver anchor. If a name or a top-level key drifts unintentionally, that test fails.
+- The 12 current-source read-only function exports (`artifact`, `start`, `inspectHtml`, `reviewPack`, `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) plus the frozen `learn` namespace object (`learn.remember`, `learn.feedback`, `learn.captureFromCheck`) and their return-shape key sets are pinned by an SDK contract test (`cli/sdk/index.test.mjs`) — this is the semver anchor. If a name or a top-level key drifts unintentionally, that test fails.
 - `cli/lib/*` remains internal and unstable. Only `@design-ai/cli/sdk` is a supported import path.
 - Determinism: semantic results contain no randomness. Timestamped reports are byte-stable when the caller supplies `generatedAt`.
 

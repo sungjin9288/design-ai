@@ -3,7 +3,7 @@
 Current status: **v5.0.0 is published.** The release intentionally removes the former public `extract-tokens` command, preserves all remaining CLI/SDK/MCP identities, adds a read-only approval-gated Website Improvement bundle handoff, a read-only linked-code preview inspection, and a shared design artifact MCP tool (17 tools), adds SDK `artifact()` as the 10th export, and corrects dashboard knowledge and PR verification. Model training is not part of the shipped product.
 
 Current source status: **P3 approval-gated browser verification runner is implemented, pending release.**
-The source contract now has 19 MCP tools and 12 SDK exports. CLI `design-ai start`,
+The source contract now has 20 MCP tools and 13 SDK exports. CLI `design-ai start`,
 SDK `start()`, MCP `design_ai_start`, and Website Console share one canonical
 read-only start payload. CLI `design-ai inspect`, SDK `inspectHtml()`, and MCP
 `design_ai_inspect_html` share the canonical quality report. The inspector confirms

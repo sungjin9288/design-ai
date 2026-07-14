@@ -40,3 +40,20 @@ test("SDK inspectHtml supports a caller-owned timestamp for byte-stable reports"
 
   assert.equal(JSON.stringify(inspectHtml(SOURCE, options)), JSON.stringify(inspectHtml(SOURCE, options)));
 });
+
+test("SDK inspectHtml applies an explicit review pack without inferring one from locale", () => {
+  const withoutPack = inspectHtml(SOURCE, {
+    sourceRef: "settings.html",
+    brief: "Review Korean settings",
+    locale: "ko-KR",
+  });
+  const withPack = inspectHtml(SOURCE, {
+    sourceRef: "settings.html",
+    brief: "Review Korean settings",
+    locale: "ko-KR",
+    reviewPack: "korean-fintech",
+  });
+
+  assert.equal(withoutPack.findings.some((finding) => finding.id.startsWith("product-pack:")), false);
+  assert.equal(withPack.findings.some((finding) => finding.id.startsWith("product-pack:korean-fintech:")), true);
+});

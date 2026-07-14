@@ -1,0 +1,95 @@
+{
+  "kind": "design-ai-product-review-pack",
+  "schemaVersion": 1,
+  "revision": 1,
+  "id": "korean-commerce",
+  "name": "Korean commerce product review",
+  "domain": "commerce",
+  "locale": "ko-KR",
+  "summary": "Reviews Korean shopping and checkout flows for fast phone input, explicit consent, payment clarity, catalog density, and accessible recovery.",
+  "viewports": [
+    { "name": "mobile", "width": 390, "height": 844 },
+    { "name": "desktop", "width": 1440, "height": 900 }
+  ],
+  "knowledge": [
+    "knowledge/i18n/korean-product-conventions.md",
+    "knowledge/i18n/korean-payments.md",
+    "knowledge/i18n/korean-typography.md",
+    "knowledge/patterns/money-and-amount.md",
+    "knowledge/patterns/error-states.md"
+  ],
+  "criteria": [
+    {
+      "id": "korean-phone-input-semantics",
+      "lens": "accessibility",
+      "mode": "static-html",
+      "severity": "p1",
+      "title": "Give recipient phone fields native input semantics",
+      "question": "Can shoppers enter and autofill recipient phone numbers with the correct mobile keyboard?",
+      "evidence": "Inspect phone-like inputs for type=tel and autocomplete=tel.",
+      "verification": ["Test recipient and purchaser phone fields with mobile keyboard and autofill."],
+      "falsePositiveNotes": ["Exclude order numbers, tracking numbers, and one-time-code fields."]
+    },
+    {
+      "id": "korean-marketing-consent-default",
+      "lens": "accessibility",
+      "mode": "static-html",
+      "severity": "p1",
+      "title": "Keep promotional consent unchecked",
+      "question": "Are promotional messages separate from purchase terms and off by default?",
+      "evidence": "Inspect checked checkboxes whose associated label mentions marketing, advertising, or promotional messages.",
+      "verification": ["Open checkout in a fresh session and confirm promotional consent is optional, separate, and unchecked."],
+      "falsePositiveNotes": ["Do not treat an account preference summary as a new checkout opt-in."]
+    },
+    {
+      "id": "korean-checkout-disclosure",
+      "lens": "response",
+      "mode": "scenario-required",
+      "severity": "p1",
+      "title": "Make the checkout commitment explicit",
+      "question": "Can the shopper see item total, delivery fee, discounts, final amount, payment method, and cancellation terms before purchase?",
+      "evidence": "Capture the final checkout state and purchase confirmation with every amount and term visible.",
+      "verification": ["Review normal, sold-out, payment failure, retry, cancellation, and refund paths."],
+      "falsePositiveNotes": ["Optional business-only tax fields should not be required for consumer checkout."]
+    },
+    {
+      "id": "korean-commerce-density",
+      "lens": "responsive-resilience",
+      "mode": "browser-required",
+      "severity": "p2",
+      "title": "Preserve catalog and order density without hiding decisions",
+      "question": "Do price, discount, delivery, option, stock, and action information remain scannable at mobile and desktop widths?",
+      "evidence": "Capture product list, detail, cart, and order-history surfaces at both declared viewports.",
+      "verification": ["Check Korean wrapping, price alignment, sticky actions, overflow, focus, and 44px touch targets."],
+      "falsePositiveNotes": ["A dense catalog can be appropriate when hierarchy and touch targets remain clear."]
+    },
+    {
+      "id": "korean-accessibility-runtime",
+      "lens": "accessibility",
+      "mode": "browser-required",
+      "severity": "p1",
+      "title": "Prove checkout and recovery with assistive technology",
+      "question": "Can keyboard and screen-reader users select options, edit cart items, recover from errors, and confirm purchase?",
+      "evidence": "Attach keyboard order, accessibility-tree, error announcement, contrast, and focus-restoration evidence.",
+      "verification": ["Run the approved browser verification profile at mobile and desktop viewports."],
+      "falsePositiveNotes": ["Static labels do not prove dynamic price announcements or cart focus restoration."]
+    }
+  ],
+  "benchmark": {
+    "source": "examples/benchmarks/korean-product-packs/korean-commerce/source.html",
+    "expectedFindingIds": [
+      "product-pack:korean-commerce:korean-phone-input-semantics",
+      "product-pack:korean-commerce:korean-marketing-consent-default",
+      "product-pack:korean-commerce:korean-checkout-disclosure",
+      "product-pack:korean-commerce:korean-commerce-density",
+      "product-pack:korean-commerce:korean-accessibility-runtime"
+    ],
+    "falsePositiveNotes": ["The fixture intentionally preselects promotional consent and omits phone semantics; corrected controls must not emit either confirmed finding."]
+  },
+  "boundary": {
+    "mode": "read-only",
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "notes": ["The pack reviews supplied evidence only. It does not place orders, contact payment providers, or determine legal compliance."]
+  }
+}

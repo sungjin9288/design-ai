@@ -12,6 +12,7 @@ import { buildRoutePayload } from "./route-operation.mjs";
 import { buildStartPayload } from "./start-operation.mjs";
 import { formatStartJson } from "./start.mjs";
 import { inspectHtml } from "./design-quality-inspector.mjs";
+import { listProductReviewPacks, loadProductReviewPack } from "./product-review-pack.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
 const LEARNING_WRITE_BOUNDARY = "Writes ONLY the local learning profile (DESIGN_AI_LEARNING_FILE or its default), and only when explicitly called.";
@@ -93,8 +94,21 @@ export const MCP_TOOLS = [
         locale: optionalString("Optional review locale. Default: en."),
         viewports: { type: "array", items: { type: "string", minLength: 1 }, description: "Declared viewport names. Defaults to mobile and desktop." },
         generatedAt: optionalString("Optional normalized UTC timestamp for byte-stable output."),
+        reviewPack: optionalString("Optional shipped Korean product review pack id."),
       },
       required: ["source", "sourceRef", "brief"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_review_pack",
+    title: "Read a Korean product review pack",
+    description: "List or read the versioned Korean fintech, commerce, SaaS, content, and game review packs. Read-only.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: optionalString("Optional pack id. Omit to list available packs."),
+      },
       additionalProperties: false,
     },
   },
@@ -657,7 +671,15 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
       locale: input.locale,
       viewports: input.viewports,
       generatedAt: input.generatedAt,
+      reviewPack: input.reviewPack,
     });
+    return jsonToolResult(payload);
+  }
+
+  if (name === "design_ai_review_pack") {
+    const payload = input.id
+      ? loadProductReviewPack(input.id)
+      : { kind: "design-ai-product-review-pack-list", schemaVersion: 1, packs: listProductReviewPacks() };
     return jsonToolResult(payload);
   }
 
@@ -814,7 +836,7 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
         name: "design-ai",
         version: readPackageVersion(),
       },
-      instructions: "Use design-ai MCP tools for local, deterministic design expertise: start from one read-only route/design-contract plan, inspect supplied HTML into an evidence-backed quality report, route briefs, generate prompts/packs, build implementation/critique/DESIGN.md artifacts, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, validate Website Improvement MCP readiness, and prepare approval-gated target-repo handoffs. design_ai_start records declared repositories, pages, and screenshots without inspecting them or executing its next command. design_ai_inspect_html reads only the supplied string and leaves unobserved runtime behavior unverified. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
+      instructions: "Use design-ai MCP tools for local, deterministic design expertise: start from one read-only route/design-contract plan, inspect supplied HTML into an evidence-backed quality report, apply explicit Korean product review packs, route briefs, generate prompts/packs, build implementation/critique/DESIGN.md artifacts, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, validate Website Improvement MCP readiness, and prepare approval-gated target-repo handoffs. design_ai_start records declared repositories, pages, and screenshots without inspecting them or executing its next command. design_ai_inspect_html reads only the supplied string and leaves unobserved runtime behavior unverified. Product review packs are opt-in and never infer compliance from locale alone. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
     });
   }
 

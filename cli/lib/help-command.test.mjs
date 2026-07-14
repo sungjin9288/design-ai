@@ -51,7 +51,8 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /prompt <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--with-recall\] \[--recall-limit N\] \[--out file\]/);
   assert.match(output, /pack <brief\|--from-file file\|--stdin\|--eval-template\|--eval> \[--route id\] \[--with-learning\] \[--learning-category kind\] \[--learning-limit N\] \[--with-recall\] \[--recall-limit N\] \[--max-bytes N\]/);
   assert.match(output, /check <artifact\.md\|--stdin\|--examples> \[--route id\|--all-routes\] \[--learn\]/);
-  assert.match(output, /inspect <source\.html> --brief text \[--name name\] \[--locale locale\] \[--viewport name\] \[--json\]/);
+  assert.match(output, /inspect <source\.html> --brief text \[--name name\] \[--locale locale\] \[--viewport name\] \[--review-pack id\] \[--json\]/);
+  assert.match(output, /review-pack \[id\] \[--json\]/);
   assert.match(output, /verify-browser <quality-report\.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes \[--json\]/);
   assert.match(output, /examples \[query\] \[--route id\] \[--limit N\] \[--json\]/);
   assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--recall query\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals \[--strict\]\|--agent-backlog \[--strict\]\|--propose-skills \[--min-evidence N\] \[--review-file path\] \[--review-check\|--apply-plan\] \[--strict\]\|--eval-template\|--eval \[--strict\]\|--forget id\|--clear\] \[--json\|--report\|--patch\|--review-template\] \[--out file\]/);
@@ -116,7 +117,11 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "inspect").usage,
-    "design-ai inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--json]",
+    "design-ai inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--review-pack id] [--json]",
+  );
+  assert.equal(
+    catalog.topics.find((topic) => topic.topic === "review-pack").usage,
+    "design-ai review-pack [id] [--json]",
   );
   assert.equal(
     catalog.topics.find((topic) => topic.topic === "verify-browser").usage,
