@@ -70,6 +70,8 @@ from smoke_assertions import (
     assert_index_status_json,
     assert_index_verify_json,
     assert_inspect_json,
+    assert_implementation_scope_approval_json,
+    assert_implementation_scope_proposal_json,
     assert_specialization_benchmark_json,
     assert_install_doctor_lifecycle_output,
     assert_install_output,
@@ -792,8 +794,9 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
-  check, inspectHtml, learn, pack, prompt, recall, reviewHandoff, reviewHtml,
-  reviewPack, route, routes, search, version,
+  approveImplementationScope, check, inspectHtml, learn, pack, prompt,
+  proposeImplementationScope, recall, reviewHandoff, reviewHtml, reviewPack,
+  route, routes, search, version,
   verifyReviewHandoff,
 } from "@design-ai/cli/sdk";
 
@@ -925,6 +928,22 @@ if (receipt1.kind !== "design-ai-review-handoff-receipt"
   || receipt1.boundary.consumerIdentityVerified
   || receipt1.boundary.implementationStarted) {
   throw new Error("verifyReviewHandoff() exceeded its validation boundary");
+}
+if (typeof proposeImplementationScope !== "function"
+  || typeof approveImplementationScope !== "function") {
+  throw new Error("implementation-scope SDK exports are missing");
+}
+try {
+  approveImplementationScope("{}", {
+    proposalRef: "scope-proposal.json",
+    approver: "package-smoke-owner",
+    approvalRef: "package-smoke-confirmation",
+    approvedAt: "2026-07-15T12:00:00.000Z",
+    confirmed: false,
+  });
+  throw new Error("approveImplementationScope() accepted an unconfirmed decision");
+} catch (error) {
+  if (!String(error.message).includes("confirmed must be true")) throw error;
 }
 
 const reviewPacks = reviewPack();
@@ -8358,7 +8377,7 @@ def assert_target_repo_intake_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
-) -> None:
+) -> str:
     receipt_before = receipt_path.read_bytes()
     manifest_path = target_root / "package.json"
     manifest_before = manifest_path.read_bytes()
@@ -8391,6 +8410,123 @@ def assert_target_repo_intake_smoke(
     ).stdout
     if status_after != status_before:
         raise SystemExit(f"{context}: review-intake changed the target repository")
+    return result.stdout
+
+
+def assert_implementation_scope_proposal_smoke(
+    cmd: list[str],
+    intake_path: Path,
+    request_path: Path,
+    target_root: Path,
+    *,
+    consumer: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> str:
+    intake_before = intake_path.read_bytes()
+    request_before = request_path.read_bytes()
+    status_before = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_implementation_scope_proposal_json(
+        result.stdout,
+        intake_path,
+        request_path,
+        consumer=consumer,
+        context=context,
+        cmd=cmd,
+    )
+    if intake_path.read_bytes() != intake_before or request_path.read_bytes() != request_before:
+        raise SystemExit(f"{context}: review-scope changed an input artifact")
+    status_after = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout
+    if status_after != status_before:
+        raise SystemExit(f"{context}: review-scope changed the target repository")
+    return result.stdout
+
+
+def assert_implementation_scope_approval_smoke(
+    cmd: list[str],
+    proposal_path: Path,
+    target_root: Path,
+    *,
+    approver: str,
+    approval_ref: str,
+    approved_at: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> str:
+    proposal_before = proposal_path.read_bytes()
+    status_before = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_implementation_scope_approval_json(
+        result.stdout,
+        proposal_path,
+        approver=approver,
+        approval_ref=approval_ref,
+        approved_at=approved_at,
+        context=context,
+        cmd=cmd,
+    )
+    if proposal_path.read_bytes() != proposal_before:
+        raise SystemExit(f"{context}: review-scope-approve changed its source proposal")
+    status_after = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout
+    if status_after != status_before:
+        raise SystemExit(f"{context}: review-scope-approve changed the target repository")
+    return result.stdout
+
+
+def write_implementation_scope_request(file_path: Path) -> None:
+    file_path.write_text(
+        json.dumps(
+            {
+                "kind": "design-ai-implementation-scope-request",
+                "schemaVersion": 1,
+                "objective": "Clarify the settings save action without changing the architecture.",
+                "intendedBehavior": ["Keep the primary action clear and keyboard accessible."],
+                "files": {
+                    "inspect": ["src/settings/**/*.tsx", "src/settings/**/*.test.tsx"],
+                    "change": ["src/settings/**/*.tsx"],
+                    "generated": [],
+                },
+                "dependencies": [],
+                "migrations": [],
+                "externalWrites": [
+                    {"system": "GitHub", "action": "push branch", "destination": "acme/site"}
+                ],
+                "verificationCommands": ["npm test", "npm run build"],
+                "risks": ["The current label may be referenced by an existing test."],
+                "preExistingChanges": [],
+                "release": {"commit": True, "push": True, "deployment": False},
+            },
+            indent=2,
+        ) + "\n",
+        encoding="utf-8",
+    )
 
 
 def write_inspect_fixture(file_path: Path) -> None:
@@ -21927,7 +22063,7 @@ def smoke_tarball(tarball: Path) -> None:
         )
         installed_review_receipt = tmp_root / "installed-review-handoff-receipt.json"
         installed_review_receipt.write_text(installed_review_receipt_source, encoding="utf-8")
-        assert_target_repo_intake_smoke(
+        installed_intake_source = assert_target_repo_intake_smoke(
             [
                 str(bin_path),
                 "review-intake",
@@ -21943,6 +22079,52 @@ def smoke_tarball(tarball: Path) -> None:
             consumer="package-smoke-agent",
             env=smoke_env,
             context="package smoke installed bin target repo intake",
+        )
+        installed_target_intake = tmp_root / "installed-target-repo-intake.json"
+        installed_target_intake.write_text(installed_intake_source, encoding="utf-8")
+        installed_scope_request = tmp_root / "installed-implementation-scope-request.json"
+        write_implementation_scope_request(installed_scope_request)
+        installed_scope_source = assert_implementation_scope_proposal_smoke(
+            [
+                str(bin_path),
+                "review-scope",
+                str(installed_target_intake),
+                "--request",
+                str(installed_scope_request),
+                "--consumer",
+                "package-smoke-agent",
+                "--json",
+            ],
+            installed_target_intake,
+            installed_scope_request,
+            target_repo_intake_root,
+            consumer="package-smoke-agent",
+            env=smoke_env,
+            context="package smoke installed bin implementation scope proposal",
+        )
+        installed_scope_proposal = tmp_root / "installed-implementation-scope-proposal.json"
+        installed_scope_proposal.write_text(installed_scope_source, encoding="utf-8")
+        assert_implementation_scope_approval_smoke(
+            [
+                str(bin_path),
+                "review-scope-approve",
+                str(installed_scope_proposal),
+                "--approver",
+                "package-smoke-owner",
+                "--approval-ref",
+                "package-smoke-confirmation",
+                "--approved-at",
+                "2026-07-15T12:00:00.000Z",
+                "--yes",
+                "--json",
+            ],
+            installed_scope_proposal,
+            target_repo_intake_root,
+            approver="package-smoke-owner",
+            approval_ref="package-smoke-confirmation",
+            approved_at="2026-07-15T12:00:00.000Z",
+            env=smoke_env,
+            context="package smoke installed bin implementation scope approval",
         )
         assert_inspect_smoke(
             [
@@ -23529,7 +23711,7 @@ def smoke_tarball(tarball: Path) -> None:
         )
         npx_review_receipt = tmp_root / "npx-review-handoff-receipt.json"
         npx_review_receipt.write_text(npx_review_receipt_source, encoding="utf-8")
-        assert_target_repo_intake_smoke(
+        npx_intake_source = assert_target_repo_intake_smoke(
             npm_exec_cmd(
                 tarball,
                 "review-intake",
@@ -23546,6 +23728,54 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec target repo intake",
+        )
+        npx_target_intake = tmp_root / "npx-target-repo-intake.json"
+        npx_target_intake.write_text(npx_intake_source, encoding="utf-8")
+        npx_scope_request = tmp_root / "npx-implementation-scope-request.json"
+        write_implementation_scope_request(npx_scope_request)
+        npx_scope_source = assert_implementation_scope_proposal_smoke(
+            npm_exec_cmd(
+                tarball,
+                "review-scope",
+                str(npx_target_intake),
+                "--request",
+                str(npx_scope_request),
+                "--consumer",
+                "package-smoke-agent",
+                "--json",
+            ),
+            npx_target_intake,
+            npx_scope_request,
+            target_repo_intake_root,
+            consumer="package-smoke-agent",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec implementation scope proposal",
+        )
+        npx_scope_proposal = tmp_root / "npx-implementation-scope-proposal.json"
+        npx_scope_proposal.write_text(npx_scope_source, encoding="utf-8")
+        assert_implementation_scope_approval_smoke(
+            npm_exec_cmd(
+                tarball,
+                "review-scope-approve",
+                str(npx_scope_proposal),
+                "--approver",
+                "package-smoke-owner",
+                "--approval-ref",
+                "package-smoke-confirmation",
+                "--approved-at",
+                "2026-07-15T12:00:00.000Z",
+                "--yes",
+                "--json",
+            ),
+            npx_scope_proposal,
+            target_repo_intake_root,
+            approver="package-smoke-owner",
+            approval_ref="package-smoke-confirmation",
+            approved_at="2026-07-15T12:00:00.000Z",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec implementation scope approval",
         )
         assert_inspect_smoke(
             npm_exec_cmd(

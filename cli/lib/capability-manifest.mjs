@@ -9,9 +9,9 @@ const EXPECTED_COUNTS = {
   "install.skills": 21,
   "install.commands": 16,
   "install.agents": 4,
-  "mcp.tools": 24,
+  "mcp.tools": 26,
   "mcp.learningProfileWriteTools": 3,
-  "sdk.exports": 16,
+  "sdk.exports": 18,
   "sdk.learnMethods": 3,
 };
 

@@ -476,6 +476,178 @@ export interface ReviewHandoffReceipt {
   };
 }
 
+export interface ImplementationScopeRequest {
+  kind: "design-ai-implementation-scope-request";
+  schemaVersion: 1;
+  objective: string;
+  intendedBehavior: string[];
+  files: {
+    inspect: string[];
+    change: string[];
+    generated: string[];
+  };
+  dependencies: Array<{
+    name: string;
+    action: "add" | "remove" | "upgrade";
+    reason: string;
+  }>;
+  migrations: Array<{
+    name: string;
+    command: string;
+    affectsExternalState: boolean;
+  }>;
+  externalWrites: Array<{
+    system: string;
+    action: string;
+    destination: string;
+  }>;
+  verificationCommands: string[];
+  risks: string[];
+  preExistingChanges: Array<{
+    statusEntry: string;
+    owner: "user" | "unknown";
+    handling: "preserve" | "allow-overlap" | "block";
+  }>;
+  release: {
+    commit: boolean;
+    push: boolean;
+    deployment: boolean;
+  };
+}
+
+export type ImplementationScopeGateId =
+  | "source-inspection"
+  | "target-files"
+  | "pre-existing-changes"
+  | "dependency-changes"
+  | "migration-files"
+  | "generated-files"
+  | "external-writes"
+  | "commit"
+  | "push"
+  | "deployment";
+
+export interface ImplementationScopeGate {
+  id: ImplementationScopeGateId;
+  status: "not-required" | "pending" | "approved";
+  summary: string;
+}
+
+export interface ImplementationScopeProposal {
+  kind: "design-ai-implementation-scope-proposal";
+  schemaVersion: 1;
+  status: "approval-pending" | "blocked";
+  consumer: {
+    name: string;
+    intakeConsumerMatch: true;
+    identity: "self-declared";
+  };
+  intake: ReviewHandoffArtifact<unknown>;
+  request: ReviewHandoffArtifact<ImplementationScopeRequest>;
+  linkage: {
+    status: "pass";
+    intakeSha256: string;
+    requestSha256: string;
+    scopeDigest: string;
+  };
+  baseline: {
+    targetPath: string;
+    repositoryUrl: string;
+    branch: string;
+    head: string;
+    worktreeChanges: string[];
+  };
+  scope: Omit<ImplementationScopeRequest, "kind" | "schemaVersion" | "preExistingChanges">;
+  approvalGates: ImplementationScopeGate[];
+  issues: Array<{
+    level: "pass" | "warn" | "fail";
+    id: string;
+    message: string;
+  }>;
+  nextAction: {
+    id: "human-scope-approval-required";
+    status: "pending";
+    summary: string;
+    implementationAuthorized: false;
+  };
+  boundary: {
+    mode: "read-only";
+    localWrites: false;
+    targetRepoMutation: false;
+    externalWrites: false;
+    networkCalls: false;
+    applicationSourceRead: false;
+    scopeApproved: false;
+    implementationStarted: false;
+  };
+}
+
+export interface ImplementationScopeApproval {
+  kind: "design-ai-implementation-scope-approval";
+  schemaVersion: 1;
+  status: "approved-for-implementation";
+  proposal: ReviewHandoffArtifact<ImplementationScopeProposal>;
+  approver: {
+    name: string;
+    identity: "self-declared";
+    reference: string;
+    approvedAt: string;
+  };
+  decision: {
+    status: "approved";
+    proposalSha256: string;
+    scopeDigest: string;
+    authorizedGateIds: ImplementationScopeGateId[];
+    remainingGateIds: ImplementationScopeGateId[];
+  };
+  authorization: {
+    targetPath: string;
+    repositoryUrl: string;
+    branch: string;
+    head: string;
+    files: ImplementationScopeRequest["files"];
+    expiresOnDrift: true;
+  };
+  approvalGates: ImplementationScopeGate[];
+  nextAction: {
+    id: "implementation-evidence-required";
+    status: "ready";
+    summary: string;
+    implementationAuthorized: true;
+    approvalRequiredBefore: ImplementationScopeGateId[];
+  };
+  boundary: {
+    mode: "scope-approved";
+    localWrites: false;
+    targetRepoMutation: false;
+    externalWrites: false;
+    networkCalls: false;
+    applicationSourceRead: false;
+    scopeApproved: true;
+    implementationStarted: false;
+    sourceReadAuthorized: true;
+    targetMutationAuthorized: true;
+    externalWritesAuthorized: false;
+    commitAuthorized: false;
+    pushAuthorized: false;
+    deploymentAuthorized: false;
+  };
+}
+
+export interface ProposeImplementationScopeOptions {
+  intakeRef: string;
+  requestRef: string;
+  consumer: string;
+}
+
+export interface ApproveImplementationScopeOptions {
+  proposalRef: string;
+  approver: string;
+  approvalRef: string;
+  approvedAt: string;
+  confirmed: true;
+}
+
 export interface ProductReviewPackSummary {
   id: string;
   revision: number;
@@ -750,6 +922,19 @@ export function reviewHandoff(workflowSource: string, opts: ReviewHandoffOptions
 
 /** Validate exact handoff bytes and return a bounded consumer receipt. */
 export function verifyReviewHandoff(handoffSource: string, opts: VerifyReviewHandoffOptions): ReviewHandoffReceipt;
+
+/** Bind exact intake and request sources into an immutable, unapproved implementation proposal. */
+export function proposeImplementationScope(
+  intakeSource: string,
+  requestSource: string,
+  opts: ProposeImplementationScopeOptions,
+): ImplementationScopeProposal;
+
+/** Record explicit human approval for one exact proposal without performing implementation or release writes. */
+export function approveImplementationScope(
+  proposalSource: string,
+  opts: ApproveImplementationScopeOptions,
+): ImplementationScopeApproval;
 
 /** Read one Korean product review pack, or list the available packs when id is omitted. */
 export function reviewPack(id?: string, opts?: Record<string, never>): ProductReviewPack | ProductReviewPackList;

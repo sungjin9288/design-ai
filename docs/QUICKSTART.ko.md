@@ -36,6 +36,8 @@ design-ai review page.html --brief "한국 핀테크 설정 검토" --repo-url h
 design-ai review-handoff review-workflow.json --recipient implementation-agent --json
 design-ai review-handoff-verify review-handoff.json --consumer implementation-agent --json
 design-ai review-intake review-handoff-receipt.json --target-root /absolute/path/to/settings --consumer implementation-agent --json
+design-ai review-scope target-repo-intake.json --request implementation-scope-request.json --consumer implementation-agent --json
+design-ai review-scope-approve implementation-scope-proposal.json --approver "product owner" --approval-ref "approved in task" --approved-at "2026-07-15T12:00:00.000Z" --yes --json
 design-ai inspect page.html --brief "한국 핀테크 설정 검토" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json
 design-ai benchmark --strict
 design-ai pack "audit a Figma signup flow for Korean fintech" --max-bytes 80000

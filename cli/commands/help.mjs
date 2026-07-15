@@ -13,6 +13,8 @@ import { runReview } from "./review.mjs";
 import { runReviewHandoff } from "./review-handoff.mjs";
 import { runReviewHandoffVerify } from "./review-handoff-verify.mjs";
 import { runReviewIntake } from "./review-intake.mjs";
+import { runReviewScope } from "./review-scope.mjs";
+import { runReviewScopeApprove } from "./review-scope-approve.mjs";
 import { runReviewPack } from "./review-pack.mjs";
 import { runBenchmark } from "./benchmark.mjs";
 import { runVerifyBrowser } from "./verify-browser.mjs";
@@ -58,6 +60,8 @@ export const HELP_COMMANDS = [
   { topic: "review-handoff", usage: "review-handoff <review-workflow.json> --recipient name [--quality-report file --browser-verification file] [--json]", description: "Prepare a self-validating, undelivered review handoff" },
   { topic: "review-handoff-verify", usage: "review-handoff-verify <review-handoff.json> --consumer name [--json]", description: "Validate a handoff and emit a bounded consumer receipt" },
   { topic: "review-intake", usage: "review-intake <receipt.json> --target-root path --consumer name [--json]", description: "Inspect bounded target metadata before implementation scope approval" },
+  { topic: "review-scope", usage: "review-scope <target-intake.json> --request scope-request.json --consumer name [--json]", description: "Build an immutable implementation-scope proposal" },
+  { topic: "review-scope-approve", usage: "review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes [--json]", description: "Approve one exact implementation-scope proposal" },
   { topic: "review-pack", usage: "review-pack [id] [--json]", description: "List or print Korean product review packs" },
   { topic: "benchmark", usage: "benchmark [case-id] [--strict] [--json] | benchmark --list [--json]", description: "Run read-only product specialization regression proof" },
   { topic: "verify-browser", usage: "verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]", description: "Run an approved browser adapter and record normalized local evidence" },
@@ -115,6 +119,8 @@ const HELP_RUNNERS = {
   "review-handoff": () => runReviewHandoff(["--help"]),
   "review-handoff-verify": () => runReviewHandoffVerify(["--help"]),
   "review-intake": () => runReviewIntake(["--help"]),
+  "review-scope": () => runReviewScope(["--help"]),
+  "review-scope-approve": () => runReviewScopeApprove(["--help"]),
   "review-pack": () => runReviewPack(["--help"]),
   benchmark: () => runBenchmark(["--help"]),
   "verify-browser": () => runVerifyBrowser(["--help"]),

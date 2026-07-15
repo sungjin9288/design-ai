@@ -963,5 +963,7 @@
     targetRepoIntakeMatchesReceipt: targetRepoIntakeMatchesReceipt,
     normalizeBrowserVerification: normalizeBrowserVerification,
     buildImportedArtifactJson: buildImportedArtifactJson,
+    sha256Text: sha256Text,
+    utf8ByteLength: utf8ByteLength,
   });
 })(typeof window !== "undefined" ? window : globalThis);
