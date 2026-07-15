@@ -64,7 +64,7 @@ without reformatting. Clearing the receipt restores the original handoff view.
 
 ## Continue safely
 
-After validation, the consumer still needs to inspect the declared target
-repository, resolve every remaining approval, and start a separate implementation
-workflow. That later workflow owns code changes, tests, commits, pushes, and
-deployment evidence.
+After validation, run `design-ai review-intake` against the exact path declared in
+the receipt. See [Target repository intake](REVIEW-INTAKE.md). The later approved
+implementation workflow owns code changes, tests, commits, pushes, and deployment
+evidence.

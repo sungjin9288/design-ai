@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 787 - Target repository intake (implemented, unreleased)
+
+Grounds a validated review handoff in the exact local repository that would
+receive implementation, without reading application source or authorizing edits.
+
+### Delivered
+- [x] Added CLI `design-ai review-intake` and MCP `design_ai_review_intake` over one shared read-only operation.
+- [x] Added `design-ai-target-repo-intake` v1 with receipt digest linkage, declared and resolved target identity, bounded root project metadata, and local Git evidence.
+- [x] Required exact consumer and path matches before inspection; rejected symbolic links without running Git through them.
+- [x] Reported remote drift as blocked and existing worktree changes or detached HEAD as attention states without filtering target files.
+- [x] Added Website Console intake-first validation, rendering, exact JSON export, independent clear, and earlier-evidence restoration.
+- [x] Expanded the source capability contract to 24 MCP tools while keeping the SDK at 16 exports and retaining exactly three opt-in learning-profile write tools.
+- [x] Added help, Console, package-content, installed-bin, one-shot `npm exec`, and shared smoke coverage.
+
+### Boundary
+- CLI reads one explicit receipt file and the receipt-declared local target. MCP reads one explicit absolute receipt path and inspects the same declared target path, avoiding oversized receipt transfer through the tool call.
+- Inspection is limited to root `package.json`, supported lockfile and `index.html` existence, plus local Git metadata and status.
+- No application source is read. No preview, dependency install, network request, target mutation, implementation, commit, push, or deployment is performed.
+- SDK remains unchanged because repository filesystem access is not part of its curated source-string surface.
+
+### Verification target
+- [x] Focused contract, CLI, MCP, capability, Console, Git-boundary, help, and smoke self-tests pass.
+- [x] `npm run release:check` passes with 778 tests, 8 strict audits, 739 packaged files, a 0/0 documentation warning policy, and installed-bin plus one-shot target-intake smoke.
+- [x] Website Console intake import, exact JSON export, clear, and receipt restore pass at 1440px and 390px with matching SHA-256, 44px minimum visible button targets, no horizontal overflow, and no console warnings or errors.
+- [x] A fresh Codex process called `design_ai_review_intake` through the configured local MCP server and returned exact path and remote matches, read-only mode, and false mutation, application-source-read, and implementation flags.
+- [ ] Pull-request CI and merge evidence are pending.
+
 ## Phase 786 - Consumer validation receipt (implemented, unreleased)
 
 Lets the named receiving agent prove that it revalidated the exact handoff bytes

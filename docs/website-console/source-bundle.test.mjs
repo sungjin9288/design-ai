@@ -14,6 +14,7 @@ import { buildReviewHandoff } from "../../cli/lib/review-handoff.mjs";
 import { validateReviewHandoff } from "../../cli/lib/review-handoff-contract.mjs";
 import { verifyReviewHandoff } from "../../cli/lib/review-handoff-receipt.mjs";
 import { validateReviewHandoffReceipt } from "../../cli/lib/review-handoff-receipt-contract.mjs";
+import { validateTargetRepoIntake } from "../../cli/lib/target-repo-intake-contract.mjs";
 
 const CONSOLE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
@@ -127,6 +128,8 @@ test("source-bundle classic script exposes the focused frozen API", () => {
     "normalizeReviewWorkflow",
     "normalizeReviewHandoff",
     "normalizeReviewHandoffReceipt",
+    "normalizeTargetRepoIntake",
+    "targetRepoIntakeMatchesReceipt",
     "normalizeBrowserVerification",
     "buildImportedArtifactJson",
   ]);
@@ -382,6 +385,150 @@ test("review handoff receipt normalization preserves exact nested handoff proof"
   assert.equal(api.normalizeReviewHandoffReceipt(implementationClaim), null);
 });
 
+test("target repo intake normalization preserves bounded receipt and repository evidence", () => {
+  const workflow = buildReviewWorkflow(
+    "<!doctype html><html lang=\"ko\"><body><button>저장</button></body></html>",
+    {
+      brief: "한국어 계정 설정 화면을 검토한다",
+      sourceRef: "settings.html",
+      sourceRoot: PACKAGE_ROOT,
+      prefix: "design-",
+      siteName: "Acme settings",
+      repoUrl: "https://github.com/acme/site",
+      localPath: "/tmp/acme-site",
+      locale: "ko-KR",
+      viewports: ["mobile"],
+      generatedAt: "2026-07-15T00:00:00.000Z",
+    },
+  );
+  const handoff = buildReviewHandoff(JSON.stringify(workflow, null, 2), {
+    workflowRef: "review-workflow.json",
+    recipient: "codex",
+  });
+  const receipt = verifyReviewHandoff(JSON.stringify(handoff, null, 2), {
+    handoffRef: "review-handoff.json",
+    consumer: "codex",
+  });
+  const receiptSource = `${JSON.stringify(receipt, null, 2)}\n`;
+  const intake = {
+    kind: "design-ai-target-repo-intake",
+    schemaVersion: 1,
+    status: "ready-for-scope-review",
+    consumer: { name: "codex", receiptConsumerMatch: true, identity: "self-declared" },
+    receipt: {
+      reference: "review-handoff-receipt.json",
+      sha256: createHash("sha256").update(receiptSource).digest("hex"),
+      bytes: Buffer.byteLength(receiptSource, "utf8"),
+      kind: receipt.kind,
+      schemaVersion: receipt.schemaVersion,
+      status: receipt.status,
+      consumer: receipt.consumer.name,
+      handoffSha256: receipt.handoff.sha256,
+      reviewWorkflowSha256: receipt.handoff.value.artifacts.reviewWorkflow.sha256,
+      remainingApprovals: [...receipt.remainingApprovals],
+    },
+    target: {
+      declaredPath: "/tmp/acme-site",
+      resolvedPath: "/tmp/acme-site",
+      pathMatch: true,
+      declaredRepositoryUrl: "https://github.com/acme/site",
+      observedRepositoryUrl: "git@github.com:acme/site.git",
+      repositoryUrlMatch: true,
+    },
+    project: {
+      metadataStatus: "pass",
+      manifest: "package.json",
+      staticEntry: "",
+      packageManager: "pnpm",
+      framework: "Vite",
+      scripts: [{ name: "dev", run: "pnpm run dev" }],
+      startCommand: "pnpm run dev",
+    },
+    git: {
+      status: "pass",
+      repository: true,
+      root: "/tmp/acme-site",
+      targetWithinRepository: true,
+      branch: "main",
+      clean: true,
+      upstream: "origin/main",
+      ahead: 0,
+      behind: 0,
+      remote: "git@github.com:acme/site.git",
+      remoteMatch: true,
+      head: { hash: "abc123", subject: "feat: initial site" },
+      changes: { total: 0, entries: [], truncated: false },
+    },
+    inspection: {
+      scope: "root-metadata-and-git-state",
+      metadataFilesRead: ["package.json"],
+      metadataEntriesInspected: ["supported root lockfile", "index.html existence"],
+      applicationSourceFilesRead: [],
+      gitCommands: ["git rev-parse --is-inside-work-tree"],
+    },
+    issues: [
+      { level: "pass", id: "linked-project-ready", message: "Project metadata is ready." },
+      { level: "pass", id: "target-git-ready", message: "Git metadata is ready." },
+    ],
+    remainingApprovals: [...receipt.remainingApprovals],
+    nextAction: {
+      id: "implementation-scope-approval-required",
+      status: "pending",
+      summary: "Review scope before implementation.",
+      approvalRequiredBefore: [...new Set([...receipt.remainingApprovals, "implementation scope"])],
+      implementationAuthorized: false,
+    },
+    boundary: {
+      mode: "read-only",
+      localWrites: false,
+      targetRepoMutation: false,
+      externalWrites: false,
+      networkCalls: false,
+      previewStarted: false,
+      applicationSourceRead: false,
+      consumerIdentityVerified: false,
+      implementationStarted: false,
+    },
+  };
+
+  assert.strictEqual(validateTargetRepoIntake(intake), intake);
+  const normalized = api.normalizeTargetRepoIntake(intake);
+  assert.notEqual(normalized, intake);
+  assert.equal(JSON.stringify(normalized), JSON.stringify(intake));
+  assert.equal(api.targetRepoIntakeMatchesReceipt(intake, receiptSource), true);
+  assert.equal(api.targetRepoIntakeMatchesReceipt(intake, `${receiptSource}\n`), false);
+
+  const otherHandoff = buildReviewHandoff(JSON.stringify(workflow, null, 2), {
+    workflowRef: "review-workflow.json",
+    recipient: "claude",
+  });
+  const otherReceipt = verifyReviewHandoff(JSON.stringify(otherHandoff, null, 2), {
+    handoffRef: "review-handoff.json",
+    consumer: "claude",
+  });
+  assert.equal(
+    api.targetRepoIntakeMatchesReceipt(intake, `${JSON.stringify(otherReceipt, null, 2)}\n`),
+    false,
+  );
+
+  const remoteDrift = structuredClone(intake);
+  remoteDrift.target.observedRepositoryUrl = "https://github.com/acme/other";
+  assert.equal(api.normalizeTargetRepoIntake(remoteDrift), null);
+
+  const sourceClaim = structuredClone(intake);
+  sourceClaim.inspection.applicationSourceFilesRead = ["src/App.tsx"];
+  assert.equal(api.normalizeTargetRepoIntake(sourceClaim), null);
+
+  const relativeTarget = structuredClone(intake);
+  relativeTarget.target.declaredPath = "acme-site";
+  assert.equal(api.normalizeTargetRepoIntake(relativeTarget), null);
+
+  const forgedAggregateStatus = structuredClone(intake);
+  forgedAggregateStatus.git.repository = false;
+  forgedAggregateStatus.git.status = "fail";
+  assert.equal(api.normalizeTargetRepoIntake(forgedAggregateStatus), null);
+});
+
 test("source-bundle normalization preserves the provenance contract", () => {
   const normalized = api.normalizeRunbookSourceBundle({
     directory: "/tmp/bundle",
@@ -515,7 +662,7 @@ test("Website Console imports and labels linked preview readiness without claimi
   const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
 
   assert.match(appSource, /website-improvement-linked-preview/);
-  assert.match(appSource, /Import review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
+  assert.match(appSource, /Import target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
   assert.match(appSource, /No process started by design-ai/);
   assert.match(appSource, /A configured URL is not browser verification/);
   assert.match(appSource, /Linked preview readiness JSON imported\. Report tab opened\./);
@@ -576,6 +723,22 @@ test("Website Console imports consumer receipt first and preserves exact receipt
   assert.match(appSource, /Original review-handoff receipt JSON exported without reformatting\./);
   assert.match(appSource, /Clear validation receipt/);
   assert.match(appSource, /Validation receipt cleared\. Original review handoff restored\./);
+});
+
+test("Website Console imports target intake first and keeps implementation unauthorized", () => {
+  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+
+  assert.match(appSource, /design-ai\.website-console\.target-repo-intake/);
+  assert.match(appSource, /var importedTargetRepoIntake = normalizeTargetRepoIntake\(parsed\);/);
+  assert.match(appSource, /targetRepoIntakeMatchesReceipt\(importedTargetRepoIntake, appState\.reviewReceipt\.rawJson\)/);
+  assert.match(appSource, /Target repository intake does not match the imported receipt source/);
+  assert.ok(appSource.indexOf("var importedTargetRepoIntake = normalizeTargetRepoIntake(parsed);") < appSource.indexOf("var importedReviewReceipt = normalizeReviewHandoffReceipt(parsed);"));
+  assert.match(appSource, /Target Repository Intake/);
+  assert.match(appSource, /Application source, preview, network, and implementation remain untouched/);
+  assert.match(appSource, /Export original intake JSON/);
+  assert.match(appSource, /Original target-repository intake JSON exported without reformatting/);
+  assert.match(appSource, /Implementation unauthorized/);
+  assert.match(appSource, /Target repository intake cleared\. Earlier review evidence remains available\./);
 });
 
 test("Website Console imports start JSON without claiming reference inspection or execution", () => {

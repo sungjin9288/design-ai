@@ -17,6 +17,9 @@ The decision record scored this surface highest on leverage and learning synergy
 - No exposure of the entire `cli/lib` internal surface. The SDK is a curated, stable subset; `cli/lib/*` stays internal and free to refactor.
 - No new process model — the SDK runs in the caller's process, deterministic and synchronous where the underlying functions are.
 - No model inference or fine-tuning (unchanged product stance).
+- No general target-repository filesystem surface. Target repository intake stays
+  in the CLI and MCP adapters, where the declared path and read boundary are
+  explicit.
 
 ## The stable surface
 

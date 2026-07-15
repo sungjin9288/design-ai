@@ -198,6 +198,10 @@
     return typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
   }
 
+  function utf8ByteLength(value) {
+    return unescape(encodeURIComponent(value)).length;
+  }
+
   function sha256Text(input) {
     // Workflow import is synchronous, so linkage validation uses a small local
     // SHA-256 implementation instead of weakening the contract or adding a dependency.
@@ -454,6 +458,10 @@
     return !value.split(/[\\/]/).includes("..");
   }
 
+  function isAbsoluteLocalPath(value) {
+    return hasText(value) && /^(?:[\\/]|[A-Za-z]:[\\/])/.test(value);
+  }
+
   function isBrowserArtifact(value) {
     return exactKeys(value, ["kind", "path"])
       && ARTIFACT_KINDS.includes(value.kind)
@@ -586,7 +594,7 @@
       || !Number.isInteger(value.bytes)
       || value.bytes < 1
       || !hasText(value.source)) return null;
-    var sourceBytes = unescape(encodeURIComponent(value.source)).length;
+    var sourceBytes = utf8ByteLength(value.source);
     if (sourceBytes !== value.bytes || sha256Text(value.source) !== value.sha256) return null;
     var parsed;
     try {
@@ -744,6 +752,186 @@
     return clone(value);
   }
 
+  function normalizeRepositoryUrl(value) {
+    var text = String(value || "").trim();
+    if (!text) return "";
+    if (text.indexOf("git+") === 0) text = text.slice(4);
+    text = text.replace(/\.git$/, "");
+    var scp = text.match(/^git@github\.com:([^/]+\/[^/]+)$/);
+    if (scp) return "https://github.com/" + scp[1];
+    var ssh = text.match(/^ssh:\/\/git@github\.com\/([^/]+\/[^/]+)$/);
+    if (ssh) return "https://github.com/" + ssh[1];
+    var https = text.match(/^https?:\/\/github\.com\/([^/]+\/[^/]+)$/);
+    return https ? "https://github.com/" + https[1] : text;
+  }
+
+  function normalizeTargetRepoIntake(value) {
+    if (!exactKeys(value, [
+      "kind", "schemaVersion", "status", "consumer", "receipt", "target", "project",
+      "git", "inspection", "issues", "remainingApprovals", "nextAction", "boundary",
+    ]) || value.kind !== "design-ai-target-repo-intake" || value.schemaVersion !== 1) return null;
+
+    if (!exactKeys(value.receipt, [
+      "reference", "sha256", "bytes", "kind", "schemaVersion", "status", "consumer",
+      "handoffSha256", "reviewWorkflowSha256", "remainingApprovals",
+    ])
+      || !hasText(value.receipt.reference)
+      || !isDigest(value.receipt.sha256)
+      || !Number.isInteger(value.receipt.bytes)
+      || value.receipt.bytes < 1
+      || value.receipt.kind !== "design-ai-review-handoff-receipt"
+      || value.receipt.schemaVersion !== 1
+      || value.receipt.status !== "contract-validated"
+      || !hasText(value.receipt.consumer)
+      || !isDigest(value.receipt.handoffSha256)
+      || !isDigest(value.receipt.reviewWorkflowSha256)
+      || !isTextArray(value.receipt.remainingApprovals, true)) return null;
+    if (!exactKeys(value.consumer, ["name", "receiptConsumerMatch", "identity"])
+      || value.consumer.name !== value.receipt.consumer
+      || value.consumer.receiptConsumerMatch !== true
+      || value.consumer.identity !== "self-declared") return null;
+
+    if (!exactKeys(value.target, [
+      "declaredPath", "resolvedPath", "pathMatch", "declaredRepositoryUrl",
+      "observedRepositoryUrl", "repositoryUrlMatch",
+    ])
+      || !isAbsoluteLocalPath(value.target.declaredPath)
+      || typeof value.target.resolvedPath !== "string"
+      || (value.target.resolvedPath && !isAbsoluteLocalPath(value.target.resolvedPath))
+      || value.target.pathMatch !== true
+      || !hasText(value.target.declaredRepositoryUrl)
+      || typeof value.target.observedRepositoryUrl !== "string") return null;
+    var expectedRemoteMatch = normalizeRepositoryUrl(value.target.declaredRepositoryUrl)
+      === normalizeRepositoryUrl(value.target.observedRepositoryUrl);
+    if (value.target.repositoryUrlMatch !== expectedRemoteMatch) return null;
+
+    if (!exactKeys(value.project, [
+      "metadataStatus", "manifest", "staticEntry", "packageManager", "framework", "scripts",
+      "startCommand",
+    ])
+      || ["pass", "warn", "fail"].indexOf(value.project.metadataStatus) === -1
+      || typeof value.project.manifest !== "string"
+      || typeof value.project.staticEntry !== "string"
+      || typeof value.project.packageManager !== "string"
+      || typeof value.project.framework !== "string"
+      || typeof value.project.startCommand !== "string"
+      || !Array.isArray(value.project.scripts)
+      || !value.project.scripts.every(function (script) {
+        return exactKeys(script, ["name", "run"]) && hasText(script.name) && hasText(script.run);
+      })) return null;
+
+    if (!exactKeys(value.git, [
+      "status", "repository", "root", "targetWithinRepository", "branch", "clean", "upstream",
+      "ahead", "behind", "remote", "remoteMatch", "head", "changes",
+    ])
+      || ["pass", "warn", "fail"].indexOf(value.git.status) === -1
+      || typeof value.git.repository !== "boolean"
+      || typeof value.git.root !== "string"
+      || typeof value.git.targetWithinRepository !== "boolean"
+      || typeof value.git.branch !== "string"
+      || typeof value.git.clean !== "boolean"
+      || typeof value.git.upstream !== "string"
+      || !Number.isInteger(value.git.ahead)
+      || value.git.ahead < 0
+      || !Number.isInteger(value.git.behind)
+      || value.git.behind < 0
+      || typeof value.git.remote !== "string"
+      || value.git.remoteMatch !== value.target.repositoryUrlMatch) return null;
+    var expectedGitStatus = !value.git.repository
+      || !value.git.targetWithinRepository
+      || value.git.remoteMatch === false
+      ? "fail"
+      : !value.git.clean || !value.git.branch
+        ? "warn"
+        : "pass";
+    if (value.git.status !== expectedGitStatus) return null;
+    if (value.git.head !== null
+      && (!exactKeys(value.git.head, ["hash", "subject"])
+        || !hasText(value.git.head.hash)
+        || typeof value.git.head.subject !== "string")) return null;
+    if (!exactKeys(value.git.changes, ["total", "entries", "truncated"])
+      || !Number.isInteger(value.git.changes.total)
+      || value.git.changes.total < 0
+      || !isTextArray(value.git.changes.entries, true)
+      || typeof value.git.changes.truncated !== "boolean"
+      || value.git.changes.total < value.git.changes.entries.length
+      || value.git.changes.truncated !== (value.git.changes.total > value.git.changes.entries.length)) return null;
+
+    if (!exactKeys(value.inspection, [
+      "scope", "metadataFilesRead", "metadataEntriesInspected", "applicationSourceFilesRead",
+      "gitCommands",
+    ])
+      || value.inspection.scope !== "root-metadata-and-git-state"
+      || !isTextArray(value.inspection.metadataFilesRead, true)
+      || !isTextArray(value.inspection.metadataEntriesInspected, true)
+      || !emptyArray(value.inspection.applicationSourceFilesRead)
+      || !isTextArray(value.inspection.gitCommands, true)
+      || JSON.stringify(value.inspection.metadataFilesRead)
+        !== JSON.stringify(value.project.manifest ? [value.project.manifest] : [])) return null;
+
+    if (!Array.isArray(value.issues) || !value.issues.every(function (issue) {
+      return exactKeys(issue, ["level", "id", "message"])
+        && ["pass", "warn", "fail"].indexOf(issue.level) !== -1
+        && hasText(issue.id)
+        && hasText(issue.message);
+    })) return null;
+    var evidenceLevels = [value.project.metadataStatus, value.git.status].concat(
+      value.issues.map(function (issue) { return issue.level; }),
+    );
+    var expectedStatus = evidenceLevels.indexOf("fail") !== -1
+      ? "blocked"
+      : evidenceLevels.indexOf("warn") !== -1
+        ? "attention-required"
+        : "ready-for-scope-review";
+    if (value.status !== expectedStatus
+      || !isTextArray(value.remainingApprovals, true)
+      || JSON.stringify(value.remainingApprovals)
+        !== JSON.stringify(value.receipt.remainingApprovals)) return null;
+
+    var expectedApprovals = value.receipt.remainingApprovals.concat(["implementation scope"])
+      .filter(function (item, index, items) { return items.indexOf(item) === index; });
+    if (!exactKeys(value.nextAction, [
+      "id", "status", "summary", "approvalRequiredBefore", "implementationAuthorized",
+    ])
+      || value.nextAction.id !== "implementation-scope-approval-required"
+      || value.nextAction.status !== "pending"
+      || !hasText(value.nextAction.summary)
+      || JSON.stringify(value.nextAction.approvalRequiredBefore) !== JSON.stringify(expectedApprovals)
+      || value.nextAction.implementationAuthorized !== false) return null;
+    if (!exactKeys(value.boundary, [
+      "mode", "localWrites", "targetRepoMutation", "externalWrites", "networkCalls",
+      "previewStarted", "applicationSourceRead", "consumerIdentityVerified", "implementationStarted",
+    ])
+      || value.boundary.mode !== "read-only"
+      || value.boundary.localWrites !== false
+      || value.boundary.targetRepoMutation !== false
+      || value.boundary.externalWrites !== false
+      || value.boundary.networkCalls !== false
+      || value.boundary.previewStarted !== false
+      || value.boundary.applicationSourceRead !== false
+      || value.boundary.consumerIdentityVerified !== false
+      || value.boundary.implementationStarted !== false) return null;
+    return clone(value);
+  }
+
+  function targetRepoIntakeMatchesReceipt(intake, receiptSource) {
+    var normalizedIntake = normalizeTargetRepoIntake(intake);
+    var source = String(receiptSource || "");
+    if (!normalizedIntake || !source) return false;
+    try {
+      var receipt = normalizeReviewHandoffReceipt(JSON.parse(source));
+      return Boolean(receipt)
+        && normalizedIntake.receipt.sha256 === sha256Text(source)
+        && normalizedIntake.receipt.bytes === utf8ByteLength(source)
+        && normalizedIntake.receipt.consumer === receipt.consumer.name
+        && normalizedIntake.receipt.handoffSha256 === receipt.handoff.sha256
+        && normalizedIntake.receipt.reviewWorkflowSha256
+          === receipt.handoff.value.artifacts.reviewWorkflow.sha256;
+    } catch (error) {
+      return false;
+    }
+  }
+
   function buildImportedArtifactJson(value, rawJson) {
     var raw = String(rawJson || "");
     if (raw) {
@@ -771,6 +959,8 @@
     normalizeReviewWorkflow: normalizeReviewWorkflow,
     normalizeReviewHandoff: normalizeReviewHandoff,
     normalizeReviewHandoffReceipt: normalizeReviewHandoffReceipt,
+    normalizeTargetRepoIntake: normalizeTargetRepoIntake,
+    targetRepoIntakeMatchesReceipt: targetRepoIntakeMatchesReceipt,
     normalizeBrowserVerification: normalizeBrowserVerification,
     buildImportedArtifactJson: buildImportedArtifactJson,
   });

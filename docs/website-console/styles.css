@@ -261,6 +261,38 @@ a:focus-visible {
   margin-bottom: 16px;
 }
 
+.evidence-list {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+
+.evidence-list > div {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.35fr) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.evidence-list dt {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.evidence-list dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.evidence-list code {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
 .panel {
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -1118,6 +1150,11 @@ td input {
   }
 
   .quality-finding dl {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .evidence-list > div {
     grid-template-columns: 1fr;
     gap: 4px;
   }

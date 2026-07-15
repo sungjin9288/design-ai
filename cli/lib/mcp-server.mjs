@@ -15,6 +15,7 @@ import { inspectHtml } from "./design-quality-inspector.mjs";
 import { buildReviewWorkflow } from "./review-workflow.mjs";
 import { buildReviewHandoff } from "./review-handoff.mjs";
 import { verifyReviewHandoff } from "./review-handoff-receipt.mjs";
+import { buildTargetRepoIntakeFromFile } from "./target-repo-intake.mjs";
 import { listProductReviewPacks, loadProductReviewPack } from "./product-review-pack.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
@@ -23,6 +24,7 @@ const SERVER_INSTRUCTIONS = [
   "Use design_ai_review_html to compose one canonical plan and static review without running a browser or writing files.",
   "Use design_ai_review_handoff to prepare a self-validating, undelivered transfer for another agent.",
   "Use design_ai_verify_review_handoff to validate an exact transfer and emit a bounded consumer receipt.",
+  "Use design_ai_review_intake to inspect only the receipt-declared target root metadata and local Git state before scope approval.",
   "Use design_ai_start for a read-only route and design-contract plan; declared repositories, pages, and screenshots are not inspected and its next command is not executed.",
   "Use design_ai_inspect_html for a lower-level supplied-HTML quality report; unobserved runtime behavior remains unverified.",
   "Product review packs are explicit and never inferred from locale.",
@@ -196,6 +198,24 @@ export const MCP_TOOLS = [
         consumer: { type: "string", minLength: 1, description: "Receiving agent or role; must match the handoff recipient." },
       },
       required: ["handoffSource", "handoffRef", "consumer"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_review_intake",
+    title: "Inspect a review target repository",
+    description: [
+      "Validate a consumer receipt, then inspect bounded root project and local Git metadata at its declared target path.",
+      "Read-only local access: does not read application source, start a preview, use the network, mutate the target repository, or authorize implementation.",
+    ].join(" "),
+    inputSchema: {
+      type: "object",
+      properties: {
+        receiptPath: { type: "string", minLength: 1, description: "Absolute local path to the exact review-handoff receipt JSON." },
+        targetRoot: { type: "string", minLength: 1, description: "Absolute local target path declared by the receipt workflow." },
+        consumer: { type: "string", minLength: 1, description: "Consumer name; must match the validated receipt." },
+      },
+      required: ["receiptPath", "targetRoot", "consumer"],
       additionalProperties: false,
     },
   },
@@ -798,6 +818,18 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
   if (name === "design_ai_verify_review_handoff") {
     const payload = verifyReviewHandoff(input.handoffSource, {
       handoffRef: input.handoffRef,
+      consumer: input.consumer,
+    });
+    return jsonToolResult(payload);
+  }
+
+  if (name === "design_ai_review_intake") {
+    if (!path.isAbsolute(input.receiptPath)) {
+      throw new Error("receiptPath must be an absolute path");
+    }
+    const payload = buildTargetRepoIntakeFromFile({
+      receiptPath: input.receiptPath,
+      targetRoot: input.targetRoot,
       consumer: input.consumer,
     });
     return jsonToolResult(payload);
