@@ -222,6 +222,37 @@ test("inspectHtml() return-shape keys and evidence boundary are pinned", () => {
   assert.equal(result.boundary.targetRepoMutation, false);
 });
 
+test("reviewHtml() return-shape keys and linked read-only boundary are pinned", () => {
+  const result = sdk.reviewHtml(
+    "<!doctype html><html lang=\"ko\"><body><button>저장</button></body></html>",
+    {
+      sourceRef: "settings.html",
+      brief: "Review Korean settings",
+      locale: "ko-KR",
+      viewports: ["mobile", "desktop"],
+      generatedAt: "2026-07-15T00:00:00.000Z",
+    },
+  );
+
+  assert.deepEqual(Object.keys(result), [
+    "kind",
+    "schemaVersion",
+    "status",
+    "source",
+    "plan",
+    "report",
+    "linkage",
+    "stages",
+    "nextAction",
+    "boundary",
+  ]);
+  assert.equal(result.linkage.status, "pass");
+  assert.equal(result.boundary.mode, "read-only");
+  assert.equal(result.boundary.localWrites, false);
+  assert.equal(result.boundary.targetRepoMutation, false);
+  assert.equal(result.boundary.externalWrites, false);
+});
+
 test("reviewPack() exposes the shipped read-only Korean review registry", () => {
   const list = sdk.reviewPack();
   const pack = sdk.reviewPack("korean-commerce");

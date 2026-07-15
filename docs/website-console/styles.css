@@ -959,6 +959,28 @@ td input {
   margin-top: 12px;
 }
 
+.review-session {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding-left: 20px;
+}
+
+.review-session li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+
+.review-session__stage {
+  font-weight: 750;
+}
+
 .quality-findings {
   display: grid;
   gap: 8px;
@@ -1097,6 +1119,12 @@ td input {
 
   .quality-finding dl {
     grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .review-session li {
+    grid-template-columns: 1fr;
+    align-items: start;
     gap: 4px;
   }
 }

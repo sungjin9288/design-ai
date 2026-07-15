@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 784 - Canonical review workflow (implemented, unreleased)
+
+Turns one existing HTML artifact into a single linked review session instead of
+asking users and agents to carry context between separate planning and inspection
+commands.
+
+### Delivered
+- [x] Added CLI `design-ai review`, SDK `reviewHtml()`, and MCP `design_ai_review_html` over one shared operation.
+- [x] Preserved the nested `design-ai-start` and `design-ai-quality-report` contracts and linked them with exact source identity plus plan, design-contract, and report SHA-256 digests.
+- [x] Added the ordered plan, static-review, browser-verification, and implementation-handoff stages with one pending human decision.
+- [x] Added Website Console workflow import, original-byte export, nested artifact rendering, and a responsive semantic review timeline.
+- [x] Expanded the source capability contract to 21 MCP tools and 14 SDK exports while retaining exactly three opt-in learning-profile write tools.
+- [x] Added installed-bin, one-shot `npm exec`, SDK import, Console, help, package-content, and drift assertion coverage.
+
+### Boundary
+- The CLI reads one explicit regular HTML file. SDK and MCP receive source text.
+- The workflow runs no browser or script, writes no evidence, mutates no target repository, calls no external service, and records no learning signal.
+- Declared repository, URL, and screenshot references remain uninspected plan context.
+- Browser verification remains `not-run`; implementation remains `not-started` until their separate approval-gated workflows produce evidence.
+
+### Verification target
+- [x] Focused core, CLI, SDK, MCP, Console, help, and smoke assertion tests pass.
+- [x] `npm run release:check` passes with 749 tests, 8 strict audits, 722 packaged files, a 0/0 documentation warning policy, SDK import smoke, and installed-bin plus one-shot review smoke.
+- [ ] Pull-request CI evidence will be recorded before merge.
+
 ## Phase 783 - Product specialization benchmark and adoption proof (implemented, unreleased)
 
 Turns the specialization thesis into a repeatable local regression suite without
@@ -82,7 +107,7 @@ report without executing the page or changing the selected file.
 - [x] Added one dependency-free static analyzer for document language, supported control and button names, image alternatives, and the mobile viewport contract.
 - [x] Added SDK `inspectHtml()` and MCP `design_ai_inspect_html`; both inspect supplied strings and call the same pure operation as the CLI adapter.
 - [x] Preserved all eight quality lenses, concrete locations, Before/After/Why, evidence, verification steps, and separate confirmed/unverified counts.
-- [x] Expanded the source capability contract to 20 MCP tools and 13 SDK exports, while retaining exactly three opt-in learning-profile write tools.
+- [x] Expanded the source capability contract to 20 MCP tools and 13 SDK exports at the P2 boundary, while retaining exactly three opt-in learning-profile write tools.
 - [x] Added installed-bin, one-shot `npm exec`, and post-publish registry smoke contracts that assert the selected source bytes remain unchanged.
 
 ### Boundary

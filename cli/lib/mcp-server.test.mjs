@@ -66,6 +66,7 @@ test("MCP tool list exposes design-ai read-only workflow tools", async () => {
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_route"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_start"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_inspect_html"));
+  assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_review_html"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_review_pack"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_artifact"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_site_mcp_check"));
@@ -342,6 +343,32 @@ test("design_ai_inspect_html uses the shared read-only inspector without spawnin
   assert.equal(payload.summary.confirmedFindings, 1);
   assert.equal(payload.summary.unverifiedFindings, 1);
   assert.equal(payload.boundary.targetRepoMutation, false);
+});
+
+test("design_ai_review_html composes the shared workflow without spawning the CLI", async () => {
+  let runCliCalled = false;
+  const result = await callMcpTool(
+    "design_ai_review_html",
+    {
+      source: "<!doctype html><html lang=\"ko\"><body><button>저장</button></body></html>",
+      sourceRef: "settings.html",
+      brief: "Review Korean settings",
+      locale: "ko-KR",
+      viewports: ["mobile", "desktop"],
+      generatedAt: "2026-07-15T00:00:00.000Z",
+    },
+    async () => {
+      runCliCalled = true;
+      return { code: 0, stdout: "unexpected", stderr: "" };
+    },
+  );
+
+  const payload = JSON.parse(result.content[0].text);
+  assert.equal(runCliCalled, false);
+  assert.equal(result.isError, false);
+  assert.equal(payload.kind, "design-ai-review-workflow");
+  assert.equal(payload.linkage.status, "pass");
+  assert.equal(payload.boundary.localWrites, false);
 });
 
 test("design_ai_review_pack lists and reads shipped contracts without spawning the CLI", async () => {

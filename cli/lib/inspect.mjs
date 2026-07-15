@@ -86,7 +86,9 @@ export function readInspectSource(sourcePath, cwd = process.cwd()) {
 
   return {
     source: readFileSync(resolvedPath, "utf8"),
-    sourceRef: path.isAbsolute(sourcePath) ? resolvedPath : path.normalize(sourcePath).replaceAll(path.sep, "/"),
+    sourceRef: path.isAbsolute(sourcePath)
+      ? realpathSync(resolvedPath)
+      : path.normalize(sourcePath).replaceAll(path.sep, "/"),
   };
 }
 

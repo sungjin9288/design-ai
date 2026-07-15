@@ -187,6 +187,138 @@
     return JSON.parse(JSON.stringify(value));
   }
 
+  var REVIEW_WORKFLOW_STAGES = [
+    { id: "plan", status: "complete", artifactKind: "design-ai-start" },
+    { id: "static-review", status: "complete", artifactKind: "design-ai-quality-report" },
+    { id: "browser-verification", status: "not-run", artifactKind: null },
+    { id: "implementation-handoff", status: "not-started", artifactKind: null },
+  ];
+
+  function isDigest(value) {
+    return typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
+  }
+
+  function reviewWorkflowDigest(value) {
+    // Workflow import is synchronous, so linkage validation uses a small local
+    // SHA-256 implementation instead of weakening the contract or adding a dependency.
+    var input = JSON.stringify(value);
+    var ascii = unescape(encodeURIComponent(input));
+    var words = [];
+    var hash = [
+      1779033703, 3144134277, 1013904242, 2773480762,
+      1359893119, 2600822924, 528734635, 1541459225,
+    ];
+    var constants = [];
+    var isComposite = {};
+    var candidate = 2;
+
+    for (var primeCount = 0; primeCount < 64; candidate += 1) {
+      if (!isComposite[candidate]) {
+        for (var multiple = candidate * candidate; multiple < 313; multiple += candidate) isComposite[multiple] = true;
+        constants[primeCount] = (Math.pow(candidate, 1 / 3) % 1 * 0x100000000) | 0;
+        primeCount += 1;
+      }
+    }
+
+    var bitLength = ascii.length * 8;
+    for (var index = 0; index < ascii.length; index += 1) {
+      words[index >> 2] |= ascii.charCodeAt(index) << ((3 - index) % 4) * 8;
+    }
+    words[bitLength >> 5] |= 0x80 << (24 - bitLength % 32);
+    words[((bitLength + 64 >> 9) << 4) + 15] = bitLength;
+
+    for (var block = 0; block < words.length; block += 16) {
+      var schedule = words.slice(block, block + 16);
+      var working = hash.slice(0);
+      for (var round = 0; round < 64; round += 1) {
+        var word = round < 16 ? schedule[round] : (
+          ((schedule[round - 15] >>> 7) | (schedule[round - 15] << 25))
+          ^ ((schedule[round - 15] >>> 18) | (schedule[round - 15] << 14))
+          ^ (schedule[round - 15] >>> 3)
+        ) + schedule[round - 7] + (
+          ((schedule[round - 2] >>> 17) | (schedule[round - 2] << 15))
+          ^ ((schedule[round - 2] >>> 19) | (schedule[round - 2] << 13))
+          ^ (schedule[round - 2] >>> 10)
+        ) + schedule[round - 16];
+        schedule[round] = word | 0;
+        var sigma1 = ((working[4] >>> 6) | (working[4] << 26))
+          ^ ((working[4] >>> 11) | (working[4] << 21))
+          ^ ((working[4] >>> 25) | (working[4] << 7));
+        var choice = (working[4] & working[5]) ^ (~working[4] & working[6]);
+        var temp1 = (working[7] + sigma1 + choice + constants[round] + schedule[round]) | 0;
+        var sigma0 = ((working[0] >>> 2) | (working[0] << 30))
+          ^ ((working[0] >>> 13) | (working[0] << 19))
+          ^ ((working[0] >>> 22) | (working[0] << 10));
+        var majority = (working[0] & working[1]) ^ (working[0] & working[2]) ^ (working[1] & working[2]);
+        var temp2 = (sigma0 + majority) | 0;
+        working = [(temp1 + temp2) | 0, working[0], working[1], working[2], (working[3] + temp1) | 0, working[4], working[5], working[6]];
+      }
+      for (var hashIndex = 0; hashIndex < 8; hashIndex += 1) hash[hashIndex] = (hash[hashIndex] + working[hashIndex]) | 0;
+    }
+
+    return hash.map(function (part) {
+      return ("00000000" + (part >>> 0).toString(16)).slice(-8);
+    }).join("");
+  }
+
+  function hasCanonicalReviewStages(stages) {
+    return Array.isArray(stages) && stages.length === REVIEW_WORKFLOW_STAGES.length
+      && stages.every(function (stage, index) {
+        var expected = REVIEW_WORKFLOW_STAGES[index];
+        return exactKeys(stage, ["id", "status", "artifactKind"])
+          && stage.id === expected.id
+          && stage.status === expected.status
+          && stage.artifactKind === expected.artifactKind;
+      });
+  }
+
+  function normalizeReviewWorkflow(value) {
+    if (!exactKeys(value, [
+      "kind", "schemaVersion", "status", "source", "plan", "report", "linkage", "stages", "nextAction", "boundary",
+    ])) return null;
+    if (value.kind !== "design-ai-review-workflow" || value.schemaVersion !== 1 || value.status !== "static-review-complete") return null;
+    if (!exactKeys(value.source, ["reference", "sha256", "bytes"])
+      || !hasText(value.source.reference)
+      || !isDigest(value.source.sha256)
+      || !Number.isInteger(value.source.bytes)
+      || value.source.bytes < 1) return null;
+
+    var plan = normalizeStartPlan(value.plan);
+    var report = normalizeQualityReport(value.report);
+    if (!plan || !report || plan.route.id !== "design-review" || report.context.routeId !== "design-engineering-review") return null;
+
+    if (!exactKeys(value.linkage, [
+      "status", "briefMatch", "localeMatch", "viewportMatch", "sourceReferenceMatch", "planSha256", "designContractSha256", "reportSha256",
+    ]) || value.linkage.status !== "pass") return null;
+    var linkageFlags = ["briefMatch", "localeMatch", "viewportMatch", "sourceReferenceMatch"];
+    for (var linkageIndex = 0; linkageIndex < linkageFlags.length; linkageIndex += 1) {
+      if (value.linkage[linkageFlags[linkageIndex]] !== true) return null;
+    }
+    if (![value.linkage.planSha256, value.linkage.designContractSha256, value.linkage.reportSha256].every(isDigest)) return null;
+    if (plan.brief !== report.context.brief
+      || plan.context.locale !== report.context.locale
+      || JSON.stringify(plan.context.viewports) !== JSON.stringify(report.context.viewports)
+      || value.source.reference !== report.subject.source
+      || !report.sources[0]
+      || report.sources[0].reference !== value.source.reference
+      || value.linkage.planSha256 !== reviewWorkflowDigest(value.plan)
+      || value.linkage.designContractSha256 !== reviewWorkflowDigest(value.plan.designContract)
+      || value.linkage.reportSha256 !== reviewWorkflowDigest(value.report)) return null;
+
+    if (!hasCanonicalReviewStages(value.stages)) return null;
+    if (!exactKeys(value.nextAction, ["id", "status", "summary", "approvalRequiredBefore"])
+      || value.nextAction.id !== "human-review-required"
+      || value.nextAction.status !== "pending"
+      || value.nextAction.summary !== report.summary.nextAction
+      || JSON.stringify(value.nextAction.approvalRequiredBefore) !== JSON.stringify(report.approval.requiredBefore)) return null;
+    if (!exactKeys(value.boundary, ["mode", "localWrites", "targetRepoMutation", "externalWrites"])
+      || value.boundary.mode !== "read-only"
+      || value.boundary.localWrites !== false
+      || value.boundary.targetRepoMutation !== false
+      || value.boundary.externalWrites !== false) return null;
+    return clone(value);
+  }
+
   var QUALITY_LENSES = [
     "purpose-frequency", "response", "spatial-continuity", "interruptibility",
     "timing-cohesion", "performance", "accessibility", "responsive-resilience",
@@ -468,6 +600,7 @@
     buildSourceBundleJson: buildSourceBundleJson,
     buildSourceBundleRevalidationGateJson: buildSourceBundleRevalidationGateJson,
     normalizeQualityReport: normalizeQualityReport,
+    normalizeReviewWorkflow: normalizeReviewWorkflow,
     normalizeBrowserVerification: normalizeBrowserVerification,
     buildImportedArtifactJson: buildImportedArtifactJson,
   });

@@ -91,6 +91,7 @@ from smoke_assertions import (
     assert_prompt_markdown_component_spec,
     assert_ranked_search_determinism,
     assert_ranked_search_json,
+    assert_review_workflow_json,
     assert_route_catalog_json,
     assert_route_explain_human_output,
     assert_route_json_component_spec,
@@ -783,10 +784,14 @@ def assert_version_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path 
 # Node script, not a design-ai CLI invocation, so it is run directly rather
 # than through npm_exec_cmd/design-ai bin helpers.
 SDK_SMOKE_SCRIPT = """
+import { createHash } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { check, inspectHtml, learn, pack, prompt, recall, reviewPack, route, routes, search, version } from "@design-ai/cli/sdk";
+import {
+  check, inspectHtml, learn, pack, prompt, recall, reviewHtml,
+  reviewPack, route, routes, search, version,
+} from "@design-ai/cli/sdk";
 
 const brief = "Spec a Button component API with variants, props, and keyboard accessibility";
 
@@ -833,6 +838,44 @@ if (quality.summary.confirmedFindings !== 1 || quality.summary.unverifiedFinding
 }
 if (quality.boundary.targetRepoMutation || quality.boundary.externalWrites) {
   throw new Error("inspectHtml() changed the read-only boundary");
+}
+
+const reviewSource = [
+  "",
+  `<html lang="ko"><head><meta name="viewport" content="width=device-width"></head>`,
+  `<body><input name="phone"></body></html>`,
+  "",
+].join("\\n");
+const reviewOptions = {
+  sourceRef: "sdk-review.html",
+  brief: "Review Korean settings",
+  locale: "ko-KR",
+  viewports: ["mobile"],
+  generatedAt: "2026-07-15T00:00:00.000Z",
+};
+const review1 = reviewHtml(reviewSource, reviewOptions);
+const review2 = reviewHtml(reviewSource, reviewOptions);
+if (JSON.stringify(review1) !== JSON.stringify(review2)) throw new Error("reviewHtml() not deterministic");
+if (review1.kind !== "design-ai-review-workflow"
+  || review1.status !== "static-review-complete"
+  || review1.plan.kind !== "design-ai-start"
+  || review1.report.kind !== "design-ai-quality-report") {
+  throw new Error("reviewHtml() bad shape");
+}
+const reviewSourceSha = createHash("sha256").update(reviewSource).digest("hex");
+if (review1.source.sha256 !== reviewSourceSha
+  || review1.source.bytes !== Buffer.byteLength(reviewSource, "utf8")) {
+  throw new Error("reviewHtml() lost exact source identity");
+}
+if (review1.linkage.status !== "pass"
+  || review1.nextAction.status !== "pending"
+  || review1.stages[2].status !== "not-run") {
+  throw new Error("reviewHtml() changed review sequencing or evidence linkage");
+}
+if (review1.boundary.localWrites
+  || review1.boundary.targetRepoMutation
+  || review1.boundary.externalWrites) {
+  throw new Error("reviewHtml() changed the read-only boundary");
 }
 
 const reviewPacks = reviewPack();
@@ -8162,6 +8205,26 @@ def assert_start_smoke(
 ) -> None:
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_start_json(result.stdout, context=context, cmd=cmd)
+
+
+def assert_review_smoke(
+    cmd: list[str],
+    source_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    before = source_path.read_bytes()
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_review_workflow_json(
+        result.stdout,
+        source_path,
+        context=context,
+        cmd=cmd,
+    )
+    if source_path.read_bytes() != before:
+        raise SystemExit(f"{context}: review changed the selected source file")
 
 
 def write_inspect_fixture(file_path: Path) -> None:
@@ -21641,6 +21704,23 @@ def smoke_tarball(tarball: Path) -> None:
         installed_inspect_source = tmp_root / "installed-inspect-source.html"
         installed_quality_report = tmp_root / "installed-quality-report.json"
         write_inspect_fixture(installed_inspect_source)
+        assert_review_smoke(
+            [
+                str(bin_path),
+                "review",
+                str(installed_inspect_source),
+                "--brief",
+                "Review a Korean settings flow",
+                "--locale",
+                "ko-KR",
+                "--viewport",
+                "mobile",
+                "--json",
+            ],
+            installed_inspect_source,
+            env=smoke_env,
+            context="package smoke installed bin canonical review",
+        )
         assert_inspect_smoke(
             [
                 str(bin_path),
@@ -23168,6 +23248,24 @@ def smoke_tarball(tarball: Path) -> None:
         npx_inspect_source = npx_root / "npx-inspect-source.html"
         npx_quality_report = npx_root / "npx-quality-report.json"
         write_inspect_fixture(npx_inspect_source)
+        assert_review_smoke(
+            npm_exec_cmd(
+                tarball,
+                "review",
+                str(npx_inspect_source),
+                "--brief",
+                "Review a Korean settings flow",
+                "--locale",
+                "ko-KR",
+                "--viewport",
+                "mobile",
+                "--json",
+            ),
+            npx_inspect_source,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec canonical review",
+        )
         assert_inspect_smoke(
             npm_exec_cmd(
                 tarball,

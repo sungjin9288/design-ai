@@ -228,6 +228,43 @@ Local release evidence: `npm run release:check` passes with 736 tests, 8 strict
 audits, 715 packaged files, a 0/0 documentation warning policy, and benchmark smoke
 through installed-bin plus one-shot `npm exec` paths.
 
+### P6 - Canonical review workflow
+
+Status: implemented in the current source, pending release.
+
+Make the first complete review action as obvious as the product thesis. A user with
+an existing HTML artifact should not have to run `start` and `inspect` separately,
+carry their context by hand, or guess which result owns the next decision.
+
+The implementation adds `design-ai review`, SDK `reviewHtml()`, MCP
+`design_ai_review_html`, and Website Console review-session import. All four call or
+validate the same operation. The workflow preserves the original start and quality
+contracts, records the exact source byte identity, and links the plan, design
+contract, and report with SHA-256 evidence. Website Console preserves the imported
+workflow bytes while rendering its nested artifacts and ordered stages.
+
+Exit criteria:
+
+- One input produces one plan, one static quality report, and one pending human
+  decision without duplicating context entry.
+- Brief, locale, viewport, source reference, and artifact digests must agree before
+  linkage can pass.
+- Confirmed and unverified findings retain their original meaning.
+- Browser verification remains `not-run`; implementation remains `not-started`.
+- CLI, SDK, MCP, and Website Console preserve the same read-only boundary and
+  contract identity.
+- Installed package, one-shot `npm exec`, SDK import, and Console fixtures reject
+  context, stage, digest, or permission drift.
+
+P6 does not run a browser, edit a target repository, call an external service,
+record learning, or create a general evidence archive. A reusable evidence bundle
+belongs in a later phase after the canonical review chain has stable adoption and
+its additional write boundary is designed explicitly.
+
+Local release evidence: `npm run release:check` passes with 749 tests, 8 strict
+audits, 722 packaged files, a 0/0 documentation warning policy, SDK import smoke,
+and canonical review smoke through installed-bin plus one-shot `npm exec` paths.
+
 ## Quality targets
 
 These are targets for the specialization program, not claims about the current
