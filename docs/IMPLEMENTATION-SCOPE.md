@@ -112,3 +112,5 @@ export, and restores the prior stage when the current artifact is cleared:
 - Stop and create a new proposal when scope expands.
 - Keep commit, push, deployment, and external writes behind their own gates.
 - Record commands, outcomes, artifacts, and remaining uncertainty as P11 evidence.
+
+Continue with [Implementation evidence](IMPLEMENTATION-REVIEW-EVIDENCE.md).

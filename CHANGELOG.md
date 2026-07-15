@@ -5,6 +5,8 @@ User-facing release notes for design-ai. Versions follow semver.
 ## Unreleased
 
 ### Added
+- Added CLI `design-ai review-evidence`, MCP `design_ai_review_evidence`, and Website Console import over one read-only implementation-evidence operation.
+- Added exact-source implementation-evidence request and result v1 contracts that compare the approved Git baseline, enumerate every current changed file, preserve failed or missing verification, and hash only declared regular evidence files.
 - Added CLI `design-ai review-scope` and `review-scope-approve`, SDK `proposeImplementationScope()` and `approveImplementationScope()`, MCP `design_ai_review_scope` and `design_ai_approve_review_scope`, and Website Console proposal/approval import over shared exact-source contracts.
 - Added immutable implementation-scope request, proposal, and approval v1 artifacts with derived repository baseline, file selectors, pre-existing-change ownership, risks, verification commands, and explicit implementation versus release gates.
 - Added CLI `design-ai review-intake`, MCP `design_ai_review_intake`, and Website Console intake import over one shared read-only target repository operation.
@@ -30,6 +32,8 @@ User-facing release notes for design-ai. Versions follow semver.
 - Added a Website Console Start tab that validates and persists the canonical start JSON, displays declared references without claiming inspection, copies the next command and design contract, and exports the unchanged payload.
 
 ### Changed
+- The current source capability contract grows from 26 to 27 MCP tools while the SDK remains at 18 exports and exactly three opt-in learning-profile write tools.
+- Implementation evidence remains pre-commit and read-only; commit, push, deployment, migration execution, network calls, and external writes stay separately gated.
 - The current source capability contract grows from 24 to 26 MCP tools and from 16 to 18 SDK exports while retaining exactly three opt-in learning-profile write tools.
 - Scope approval authorizes only listed source inspection and target-file selectors; commit, push, deployment, migration execution, network calls, and external writes remain separate gates.
 - The current source capability contract grows from 23 to 24 MCP tools while the SDK remains at 16 exports and exactly three opt-in learning-profile write tools.
@@ -49,6 +53,10 @@ User-facing release notes for design-ai. Versions follow semver.
 - Packed-tarball and public-registry smoke now require the start payload to preserve an embedded design contract and empty performed local-write, target-mutation, and external-action arrays.
 
 ### Verified
+- `npm run release:check` passes for P11 with 805 tests, all 8 strict audits, 757 packaged files, a 0/0 documentation warning policy, and installed-bin plus one-shot `npm exec` implementation-evidence smoke.
+- A fresh MCP process called `design_ai_review_evidence`, preserved two declared verification artifact hashes, executed no verification command itself, and returned `attention-required` for three unverified runtime observations plus one remaining risk.
+- Website Console implementation-evidence import, exact-byte export, clear-to-approval restore, and responsive rendering passed at 1440px and 390px with matching SHA-256, 44px minimum visible button targets, no horizontal overflow, and no console warnings or errors.
+- PR #45 passed required audit, documentation policy, package integrity, and CLI plus VS Code library unit-test checks in CI run `29424169441` before merge.
 - `npm run release:check` passed for P10 implementation scope approval with 795 tests, 8 strict audits, 749 packaged files, a 0/0 documentation warning policy, SDK import smoke, and installed-bin plus one-shot proposal/approval smoke.
 - A fresh MCP process created and approved one exact scope while keeping local writes, target mutation, application-source reads, implementation, and external writes unperformed; commit, push, and the declared external write remained separate gates.
 - Website Console approval import, exact-byte export, clear-to-proposal restore, and responsive rendering passed at 1440px and 390px with matching SHA-256, 44px minimum visible button targets, no horizontal overflow, and no console warnings or errors.

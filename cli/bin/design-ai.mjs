@@ -20,6 +20,7 @@
 //   review-intake        Inspect bounded target-repository metadata before implementation approval
 //   review-scope         Build an immutable implementation-scope proposal
 //   review-scope-approve Approve one exact implementation-scope proposal
+//   review-evidence      Check implementation evidence against an approved baseline
 //   review-pack          List or print Korean product review packs
 //   benchmark            Run read-only product specialization regression proof
 //   verify-browser       Run an approved external browser adapter and record local evidence

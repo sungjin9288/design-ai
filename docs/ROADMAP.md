@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 789 - Implementation evidence (implemented, unreleased)
+
+- [x] Added exact-source implementation-evidence request and result v1 contracts.
+- [x] Added read-only Git baseline comparison, approved selector matching, explicit
+  pre-existing-change handling, and regular non-symlink evidence-file hashing.
+- [x] Added CLI `review-evidence` and in-process MCP `design_ai_review_evidence`;
+  SDK remains unchanged because local filesystem and Git access are explicit
+  operator boundaries.
+- [x] Kept test execution, source reads, mutation, commit, push, deployment,
+  network calls, migration execution, and external writes outside the operation.
+- [x] Added Website Console import, original-byte export, forged-contract rejection,
+  compact evidence rendering, and `evidence -> approval -> proposal -> intake`
+  restoration.
+- [x] `npm run release:check` passes with 805 tests, all 8 strict audits, 757
+  packaged files, a 0/0 documentation warning policy, and installed-bin plus
+  one-shot `npm exec` package smoke.
+- [x] A fresh MCP process calls `design_ai_review_evidence`, hashes only the two
+  declared verification artifacts, executes no verification command itself, and
+  preserves unverified browser, responsive, and accessibility proof as warnings.
+- [x] Website Console evidence import, exact-byte export, clear-to-approval restore,
+  and responsive rendering pass at 1440px and 390px with matching SHA-256, 44px
+  minimum visible button targets, no horizontal overflow, and no console warnings
+  or errors.
+- [x] PR #45 passed required CI run `29424169441` before merge.
+
 ## Phase 788 - Implementation scope approval (implemented, unreleased)
 
 - [x] Added exact-source `design-ai-implementation-scope-request`, proposal, and

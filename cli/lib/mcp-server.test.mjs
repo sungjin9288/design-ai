@@ -1,6 +1,6 @@
 import { once } from "node:events";
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -621,6 +621,51 @@ test("scope proposal and approval MCP tools share the in-process contract withou
     assert.deepEqual(approval.decision.authorizedGateIds, ["source-inspection", "target-files"]);
     assert.deepEqual(approval.decision.remainingGateIds, ["external-writes", "commit", "push"]);
     assert.equal(approval.boundary.targetRepoMutation, false);
+
+    mkdirSync(path.join(root, "src", "settings"), { recursive: true });
+    writeFileSync(path.join(root, "src", "settings", "view.tsx"), "export function Settings() { return <button>Save</button>; }\n");
+    const statusEntry = "?? src/settings/view.tsx";
+    const evidenceRequest = {
+      kind: "design-ai-implementation-evidence-request",
+      schemaVersion: 1,
+      consumer: "codex",
+      implementationStartedAt: "2026-07-15T12:01:00.000Z",
+      implementationCompletedAt: "2026-07-15T12:02:00.000Z",
+      executedWork: [{ statusEntry, path: "src/settings/view.tsx", summary: "Implemented the approved settings action." }],
+      verificationResults: buildScopeRequest().verificationCommands.map((command) => ({
+        command,
+        status: "not-run",
+        startedAt: "",
+        completedAt: "",
+        exitCode: null,
+        summary: "Not run in the MCP contract test.",
+        artifacts: [],
+      })),
+      observations: [
+        { id: "a11y", category: "accessibility", status: "unverified", summary: "Not exercised.", artifacts: [] },
+        { id: "responsive", category: "responsive", status: "unverified", summary: "Not exercised.", artifacts: [] },
+        { id: "browser", category: "browser", status: "unverified", summary: "Not exercised.", artifacts: [] },
+      ],
+      remainingRisks: [],
+    };
+    const approvalPath = path.join(receiptDir, "implementation-scope-approval.json");
+    const requestPath = path.join(receiptDir, "implementation-evidence-request.json");
+    writeFileSync(approvalPath, approvalResult.content[0].text);
+    writeFileSync(requestPath, JSON.stringify(evidenceRequest));
+    const evidenceResult = await callMcpTool("design_ai_review_evidence", {
+      approvalPath,
+      requestPath,
+      targetRoot: root,
+      consumer: "codex",
+    }, async () => {
+      runCliCalled = true;
+      return { code: 0, stdout: "unexpected", stderr: "" };
+    });
+    const evidence = JSON.parse(evidenceResult.content[0].text);
+    assert.equal(runCliCalled, false);
+    assert.equal(evidence.status, "attention-required");
+    assert.equal(evidence.boundary.verificationCommandsExecuted.length, 0);
+    assert.equal(evidence.boundary.applicationSourceRead, false);
   } finally {
     rmSync(root, { recursive: true, force: true });
     rmSync(receiptDir, { recursive: true, force: true });

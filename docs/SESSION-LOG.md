@@ -5,6 +5,15 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 789 (unreleased)** — Added exact-source implementation evidence across
+  CLI, in-process MCP, and Website Console. The operation compares one approved
+  baseline with current Git, hashes only declared regular evidence files, keeps
+  failed or missing proof visible, and leaves source reads, command execution,
+  commit, push, deployment, and external writes outside the operation. All 805
+  `npm run release:check` passes with 805 tests, 8 strict audits, 757 packaged
+  files, a 0/0 documentation warning policy, and installed-bin plus one-shot
+  package smoke. A fresh MCP call and desktop/mobile Console proof also pass.
+  PR #45 passes required CI run `29424169441` before merge.
 - **Phase 788 (unreleased)** — Added immutable implementation-scope request,
   proposal, and approval contracts across CLI, typed SDK, in-process MCP, and
   Website Console. The exact-source artifacts bind P9 intake to approved source

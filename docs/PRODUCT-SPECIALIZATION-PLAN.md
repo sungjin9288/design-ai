@@ -386,7 +386,7 @@ does not read application source or perform any implementation action.
 
 ### P11 - Implementation evidence
 
-Status: planned.
+Status: implemented in the current source, pending release.
 
 Execute only an approved P10 scope and record what changed, which tests ran, which
 runtime observations were collected, and what remains unverified. Evidence must
@@ -399,6 +399,14 @@ Exit criteria:
   outcomes, timestamps, and artifact references without upgrading missing runs.
 - Commit and push remain separate, explicit gates with immutable before/after Git
   identity.
+
+The implementation adds an exact-source evidence request and a derived evidence
+artifact. CLI `review-evidence` and MCP `design_ai_review_evidence` compare the
+approved branch, HEAD, remote, pre-existing status, and file selectors with current
+Git state. They hash only declared evidence files and never run the reported
+commands. Website Console validates and preserves the same artifact, then restores
+the approval when the evidence is cleared. SDK remains unchanged because local
+filesystem and Git access are explicit operator boundaries.
 
 ### P12 - Real pilot and adoption proof
 
