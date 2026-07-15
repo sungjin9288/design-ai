@@ -6,6 +6,7 @@
   var SELECTED_TEMPLATE_KEY = "design-ai.website-console.prompt-template";
   var START_PLAN_KEY = "design-ai.website-console.start-plan";
   var QUALITY_REPORT_KEY = "design-ai.website-console.quality-report";
+  var REVIEW_WORKFLOW_KEY = "design-ai.website-console.review-workflow";
   var BROWSER_VERIFICATION_KEY = "design-ai.website-console.browser-verification";
 
   var sourceBundleApi = window.DesignAiWebsiteConsoleSourceBundle;
@@ -21,6 +22,7 @@
     "buildSourceBundleJson",
     "buildSourceBundleRevalidationGateJson",
     "normalizeQualityReport",
+    "normalizeReviewWorkflow",
     "normalizeBrowserVerification",
     "buildImportedArtifactJson",
   ];
@@ -46,6 +48,7 @@
   var buildSourceBundleJson = sourceBundleApi.buildSourceBundleJson;
   var buildSourceBundleRevalidationGateJson = sourceBundleApi.buildSourceBundleRevalidationGateJson;
   var normalizeQualityReport = sourceBundleApi.normalizeQualityReport;
+  var normalizeReviewWorkflow = sourceBundleApi.normalizeReviewWorkflow;
   var normalizeBrowserVerification = sourceBundleApi.normalizeBrowserVerification;
   var buildImportedArtifactJson = sourceBundleApi.buildImportedArtifactJson;
 
@@ -155,10 +158,16 @@
     ["handoff-report", "Final handoff report"],
   ];
 
+  var importedReviewWorkflow = loadImportedArtifact(REVIEW_WORKFLOW_KEY, normalizeReviewWorkflow);
   var appState = {
     workspace: loadWorkspace(),
-    startPlan: loadStartPlan(),
-    qualityReport: loadImportedArtifact(QUALITY_REPORT_KEY, normalizeQualityReport),
+    reviewWorkflow: importedReviewWorkflow,
+    startPlan: importedReviewWorkflow
+      ? normalizeStartPlan(importedReviewWorkflow.value.plan)
+      : loadStartPlan(),
+    qualityReport: importedReviewWorkflow
+      ? importedArtifact(normalizeQualityReport(importedReviewWorkflow.value.report), "")
+      : loadImportedArtifact(QUALITY_REPORT_KEY, normalizeQualityReport),
     browserVerification: loadImportedArtifact(BROWSER_VERIFICATION_KEY, normalizeBrowserVerification),
     qualityLink: { digestStatus: "not-checked", missingViewports: [] },
     activeTab: loadActiveTab(),
@@ -610,6 +619,13 @@
     return { value: value, rawJson: buildImportedArtifactJson(value, rawJson) };
   }
 
+  function clearReviewWorkflowSession() {
+    appState.reviewWorkflow = null;
+    saveImportedArtifact(REVIEW_WORKFLOW_KEY, null);
+    appState.startPlan = loadStartPlan();
+    appState.qualityReport = loadImportedArtifact(QUALITY_REPORT_KEY, normalizeQualityReport);
+  }
+
   function isWorkspacePayload(value) {
     return Boolean(value)
       && typeof value === "object"
@@ -755,7 +771,7 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import review workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
       "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
@@ -767,7 +783,8 @@
   function sidebarCount(id, metrics) {
     if (id === "start") return appState.startPlan ? "1" : "";
     if (id === "quality") {
-      var artifactCount = (appState.qualityReport ? 1 : 0) + (appState.browserVerification ? 1 : 0);
+      var reviewCount = appState.reviewWorkflow || appState.qualityReport ? 1 : 0;
+      var artifactCount = reviewCount + (appState.browserVerification ? 1 : 0);
       return artifactCount ? String(artifactCount) : "";
     }
     if (id === "audit") return metrics.done + "/" + auditCategories.length;
@@ -790,7 +807,7 @@
     var description = isStart
       ? startDescription
       : isQuality
-        ? "Inspect immutable quality and browser evidence separately. Missing runtime proof remains unverified."
+        ? "Inspect the preserved review workflow envelope and its immutable nested quality evidence. Missing runtime proof remains unverified."
         : profile.name + " is tracked locally. Use this app to prepare website improvement work before switching into the target repo.";
     var metadata = isStart
       ? renderStartMetadata()
@@ -914,21 +931,29 @@
   }
 
   function qualityStatusBadge(status) {
-    var tone = status === "warning" ? "warn" : status === "unverified" ? "optional" : status;
+    var tone = status === "warning"
+      ? "warn"
+      : ["complete", "pass"].indexOf(status) !== -1
+        ? "pass"
+        : ["not-run", "not-started", "pending", "unverified"].indexOf(status) !== -1
+          ? "optional"
+          : status;
     return "<span class=\"badge badge--" + escapeAttr(tone || "optional") + "\">" + escapeHtml(labelize(status || "unknown")) + "</span>";
   }
 
   function renderQualityReview() {
+    var reviewWorkflowArtifact = appState.reviewWorkflow;
     var qualityArtifact = appState.qualityReport;
     var browserArtifact = appState.browserVerification;
     if (!qualityArtifact && !browserArtifact) {
-      return panel("Import review evidence", "Import canonical quality-report JSON and optional browser-verification JSON without changing either contract.", [
+      return panel("Import review evidence", "Import a canonical review workflow, quality-report JSON, or optional browser-verification JSON without changing either contract.", [
         "<pre class=\"report-preview start-command\"><code>design-ai inspect page.html --brief \"Review Korean product flow\" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json</code></pre>",
         "<div class=\"graph-boundaries\" aria-label=\"Quality review boundaries\"><span class=\"pill\">Raw JSON preserved</span><span class=\"pill\">No semantic merge</span><span class=\"pill\">No browser run</span><span class=\"pill\">No target mutation</span></div>",
       ].join(""));
     }
 
     return [
+      reviewWorkflowArtifact ? renderReviewWorkflowSession(reviewWorkflowArtifact.value) : "",
       qualityArtifact
         ? renderQualityReportArtifact(qualityArtifact.value)
         : panel("Quality report", "The browser sidecar cannot replace its source quality report.", "<div class=\"empty-state\">Import the exact source quality-report JSON to verify the sidecar digest and declared viewport coverage.</div>"),
@@ -936,7 +961,9 @@
         ? renderBrowserVerificationArtifact(browserArtifact.value)
         : panel("Browser verification", "Runtime evidence remains separate and optional.", "<div class=\"empty-state\">No browser-verification JSON imported. Static and runtime-unknown findings remain unchanged.</div>"),
       "<div class=\"button-row\">",
-      qualityArtifact
+      reviewWorkflowArtifact
+        ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-review-workflow\">Export original review JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-review-workflow\">Clear review workflow</button>"
+        : qualityArtifact
         ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-quality-report\">Export original quality JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-quality-report\">Clear quality report</button>"
         : "",
       browserArtifact
@@ -944,6 +971,25 @@
         : "",
       "</div>",
     ].join("");
+  }
+
+  function renderReviewWorkflowSession(workflow) {
+    var stageLabels = {
+      plan: "Plan",
+      "static-review": "Static review",
+      "browser-verification": "Browser verification",
+      "implementation-handoff": "Implementation handoff",
+    };
+    return panel("Review Session", "Original review-workflow envelope bytes are preserved. Start and Quality render the nested contracts by value.", [
+      "<ol class=\"review-session\" aria-label=\"Review Session timeline\">",
+      workflow.stages.map(function (stage) {
+        return "<li><span class=\"review-session__stage\">" + escapeHtml(stageLabels[stage.id]) + "</span>" + qualityStatusBadge(stage.status) + "</li>";
+      }).join(""),
+      "<li><span class=\"review-session__stage\">Linkage</span>" + qualityStatusBadge(workflow.linkage.status) + "</li>",
+      "<li><span class=\"review-session__stage\">Human review</span>" + qualityStatusBadge(workflow.nextAction.status) + "</li>",
+      "</ol>",
+      "<div class=\"graph-boundaries\" aria-label=\"Review workflow boundary\"><span class=\"pill\">" + escapeHtml(workflow.boundary.mode) + "</span><span class=\"pill\">No local writes</span><span class=\"pill\">No target mutation</span><span class=\"pill\">No external write</span></div>",
+    ].join(""));
   }
 
   function renderQualityReportArtifact(report) {
@@ -2722,6 +2768,15 @@
       appState.startPlan = null;
       saveStartPlan();
       setMessage("Start plan cleared.");
+    } else if (action === "download-review-workflow") {
+      if (appState.reviewWorkflow) {
+        downloadFile("design-ai-review-workflow.json", appState.reviewWorkflow.rawJson, "application/json");
+        setMessage("Original review-workflow JSON exported without reformatting.");
+      }
+    } else if (action === "clear-review-workflow") {
+      clearReviewWorkflowSession();
+      refreshQualityLink();
+      setMessage("Review workflow cleared. Direct Start and Quality imports remain available.");
     } else if (action === "download-quality-report") {
       if (appState.qualityReport) {
         downloadFile("design-ai-quality-report.json", appState.qualityReport.rawJson, "application/json");
@@ -2926,8 +2981,21 @@
       try {
         var rawJson = String(reader.result || "");
         var parsed = JSON.parse(rawJson);
+        var importedReviewWorkflow = normalizeReviewWorkflow(parsed);
+        if (importedReviewWorkflow) {
+          appState.reviewWorkflow = importedArtifact(importedReviewWorkflow, rawJson);
+          appState.startPlan = normalizeStartPlan(importedReviewWorkflow.plan);
+          appState.qualityReport = importedArtifact(normalizeQualityReport(importedReviewWorkflow.report), "");
+          appState.activeTab = "quality";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveImportedArtifact(REVIEW_WORKFLOW_KEY, appState.reviewWorkflow);
+          refreshQualityLink();
+          setMessage("Canonical review-workflow JSON imported. Envelope bytes preserved; nested Start and Quality contracts render by value.");
+          return;
+        }
         var importedQualityReport = normalizeQualityReport(parsed);
         if (importedQualityReport) {
+          clearReviewWorkflowSession();
           appState.qualityReport = importedArtifact(importedQualityReport, rawJson);
           appState.activeTab = "quality";
           localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
@@ -2948,6 +3016,7 @@
         }
         var importedStartPlan = normalizeStartPlan(extractStartPlanPayload(parsed));
         if (importedStartPlan) {
+          clearReviewWorkflowSession();
           appState.startPlan = importedStartPlan;
           appState.activeTab = "start";
           localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
@@ -3016,7 +3085,7 @@
         saveWorkspace();
         setMessage("Workspace JSON imported.");
       } catch (error) {
-        setMessage("Import failed. Use a canonical quality, browser, start, Website Improvement workspace, runbook, or linked preview JSON file.");
+        setMessage("Import failed. Use a canonical review workflow, quality, browser, start, Website Improvement workspace, runbook, or linked preview JSON file.");
       }
     };
     reader.readAsText(file);

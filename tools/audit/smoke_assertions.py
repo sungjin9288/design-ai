@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import shlex
@@ -188,6 +189,7 @@ EXPECTED_HELP_TOPICS = (
     "artifact",
     "start",
     "inspect",
+    "review",
     "review-pack",
     "benchmark",
     "verify-browser",
@@ -240,6 +242,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "artifact": "design-ai artifact <implementation-plan|critique-loop|design-contract> <brief> [--route id] [--json] [--out file]",
     "start": "design-ai start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]",
     "inspect": "design-ai inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--review-pack id] [--json]",
+    "review": "design-ai review <source.html> --brief text [--locale locale] [--viewport name] [--review-pack id] [--json]",
     "review-pack": "design-ai review-pack [id] [--json]",
     "benchmark": "design-ai benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
     "verify-browser": "design-ai verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]",
@@ -298,6 +301,12 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai inspect <source.html> --brief text",
         "--review-pack id",
         "reads only the selected HTML file",
+    ),
+    "review": (
+        "Usage:",
+        "design-ai review <source.html> --brief text",
+        "canonical read-only plan and static design quality review",
+        "does not run a browser",
     ),
     "review-pack": (
         "Usage:",
@@ -4260,6 +4269,119 @@ def assert_inspect_json(raw: str, *, context: str, cmd: list[str]) -> None:
         raise SystemExit(f"inspect JSON after {context} lens inventory changed")
 
 
+def review_workflow_digest(value: object) -> str:
+    encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def assert_review_workflow_json(
+    raw: str,
+    source_path: Path,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        workflow = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse review workflow JSON after {context}") from error
+
+    assert_smoke_json_keys(
+        workflow,
+        [
+            "kind", "schemaVersion", "status", "source", "plan", "report",
+            "linkage", "stages", "nextAction", "boundary",
+        ],
+        label="top-level",
+        context=context,
+        command_label="review workflow JSON",
+    )
+    if (
+        workflow.get("kind") != "design-ai-review-workflow"
+        or workflow.get("schemaVersion") != 1
+        or workflow.get("status") != "static-review-complete"
+    ):
+        raise SystemExit(f"review workflow JSON after {context} changed its contract identity")
+
+    source_bytes = source_path.read_bytes()
+    source = workflow.get("source")
+    expected_source = {
+        "reference": str(source_path.resolve()),
+        "sha256": hashlib.sha256(source_bytes).hexdigest(),
+        "bytes": len(source_bytes),
+    }
+    if source != expected_source:
+        raise SystemExit(f"review workflow JSON after {context} lost exact source identity")
+
+    plan = workflow.get("plan")
+    report = workflow.get("report")
+    if not (
+        isinstance(plan, dict)
+        and plan.get("kind") == "design-ai-start"
+        and plan.get("schemaVersion") == 1
+        and isinstance(plan.get("route"), dict)
+        and plan["route"].get("id") == "design-review"
+        and isinstance(report, dict)
+        and report.get("kind") == "design-ai-quality-report"
+        and report.get("schemaVersion") == 1
+        and isinstance(report.get("context"), dict)
+        and report["context"].get("routeId") == "design-engineering-review"
+    ):
+        raise SystemExit(f"review workflow JSON after {context} changed its nested artifact identities")
+
+    summary = report.get("summary")
+    if not (
+        isinstance(summary, dict)
+        and summary.get("status") == "fail"
+        and summary.get("confirmedFindings") == 1
+        and summary.get("unverifiedFindings") == 1
+    ):
+        raise SystemExit(f"review workflow JSON after {context} lost confirmed and unverified evidence")
+
+    linkage = workflow.get("linkage")
+    expected_linkage = {
+        "status": "pass",
+        "briefMatch": True,
+        "localeMatch": True,
+        "viewportMatch": True,
+        "sourceReferenceMatch": True,
+        "planSha256": review_workflow_digest(plan),
+        "designContractSha256": review_workflow_digest(plan.get("designContract")),
+        "reportSha256": review_workflow_digest(report),
+    }
+    if linkage != expected_linkage:
+        raise SystemExit(f"review workflow JSON after {context} changed artifact linkage evidence")
+
+    expected_stages = [
+        {"id": "plan", "status": "complete", "artifactKind": "design-ai-start"},
+        {"id": "static-review", "status": "complete", "artifactKind": "design-ai-quality-report"},
+        {"id": "browser-verification", "status": "not-run", "artifactKind": None},
+        {"id": "implementation-handoff", "status": "not-started", "artifactKind": None},
+    ]
+    if workflow.get("stages") != expected_stages:
+        raise SystemExit(f"review workflow JSON after {context} changed the canonical stage sequence")
+
+    approval = report.get("approval")
+    required_before = approval.get("requiredBefore") if isinstance(approval, dict) else None
+    next_action = workflow.get("nextAction")
+    if next_action != {
+        "id": "human-review-required",
+        "status": "pending",
+        "summary": summary.get("nextAction"),
+        "approvalRequiredBefore": required_before,
+    }:
+        raise SystemExit(f"review workflow JSON after {context} changed the human review gate")
+
+    if workflow.get("boundary") != {
+        "mode": "read-only",
+        "localWrites": False,
+        "targetRepoMutation": False,
+        "externalWrites": False,
+    }:
+        raise SystemExit(f"review workflow JSON after {context} changed its read-only boundary")
+
+
 def assert_specialization_benchmark_json(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -5173,6 +5295,8 @@ def passing_main_help_output() -> str:
         "    Check generated Markdown artifact quality; add --issues-only or --learn",
         "  start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]",
         "    Build one read-only route, design contract, review, and next-step plan",
+        "  review <source.html> --brief text [--locale locale] [--viewport name] [--review-pack id] [--json]",
+        "    Compose one canonical read-only plan and static quality review",
         "  benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
         "    Run read-only product specialization regression proof",
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",
@@ -9607,6 +9731,108 @@ def run_self_test() -> None:
         expected="performed targetRepoMutations must remain empty",
         scope="smoke assertions",
     )
+    with tempfile.TemporaryDirectory(prefix="design-ai-review-assertion-") as review_tmp:
+        review_source = Path(review_tmp) / "source.html"
+        review_source.write_text("<html lang=\"ko\"><body><input name=\"phone\"></body></html>", encoding="utf-8")
+        source_ref = str(review_source.resolve())
+        plan = {
+            "kind": "design-ai-start",
+            "schemaVersion": 1,
+            "brief": "Review fixture",
+            "context": {"locale": "ko-KR", "viewports": ["mobile"]},
+            "route": {"id": "design-review"},
+            "designContract": {"kind": "design-ai-artifact"},
+        }
+        report = {
+            "kind": "design-ai-quality-report",
+            "schemaVersion": 1,
+            "subject": {"source": source_ref},
+            "context": {
+                "brief": "Review fixture",
+                "locale": "ko-KR",
+                "viewports": ["mobile"],
+                "routeId": "design-engineering-review",
+            },
+            "sources": [{"reference": source_ref}],
+            "summary": {
+                "status": "fail",
+                "confirmedFindings": 1,
+                "unverifiedFindings": 1,
+                "nextAction": "Review findings.",
+            },
+            "approval": {"requiredBefore": ["browser-verification"]},
+        }
+        review_workflow = {
+            "kind": "design-ai-review-workflow",
+            "schemaVersion": 1,
+            "status": "static-review-complete",
+            "source": {
+                "reference": source_ref,
+                "sha256": hashlib.sha256(review_source.read_bytes()).hexdigest(),
+                "bytes": len(review_source.read_bytes()),
+            },
+            "plan": plan,
+            "report": report,
+            "linkage": {
+                "status": "pass",
+                "briefMatch": True,
+                "localeMatch": True,
+                "viewportMatch": True,
+                "sourceReferenceMatch": True,
+                "planSha256": review_workflow_digest(plan),
+                "designContractSha256": review_workflow_digest(plan["designContract"]),
+                "reportSha256": review_workflow_digest(report),
+            },
+            "stages": [
+                {"id": "plan", "status": "complete", "artifactKind": "design-ai-start"},
+                {"id": "static-review", "status": "complete", "artifactKind": "design-ai-quality-report"},
+                {"id": "browser-verification", "status": "not-run", "artifactKind": None},
+                {"id": "implementation-handoff", "status": "not-started", "artifactKind": None},
+            ],
+            "nextAction": {
+                "id": "human-review-required",
+                "status": "pending",
+                "summary": "Review findings.",
+                "approvalRequiredBefore": ["browser-verification"],
+            },
+            "boundary": {
+                "mode": "read-only",
+                "localWrites": False,
+                "targetRepoMutation": False,
+                "externalWrites": False,
+            },
+        }
+        review_cmd = ["design-ai", "review", source_ref, "--brief", "Review fixture", "--json"]
+        assert_review_workflow_json(
+            json.dumps(review_workflow),
+            review_source,
+            context=context,
+            cmd=review_cmd,
+        )
+        broken_linkage = json.loads(json.dumps(review_workflow))
+        broken_linkage["linkage"]["reportSha256"] = "0" * 64
+        expect_self_test_failure(
+            lambda: assert_review_workflow_json(
+                json.dumps(broken_linkage),
+                review_source,
+                context=context,
+                cmd=review_cmd,
+            ),
+            expected="changed artifact linkage evidence",
+            scope="smoke assertions",
+        )
+        writable_review = json.loads(json.dumps(review_workflow))
+        writable_review["boundary"]["targetRepoMutation"] = True
+        expect_self_test_failure(
+            lambda: assert_review_workflow_json(
+                json.dumps(writable_review),
+                review_source,
+                context=context,
+                cmd=review_cmd,
+            ),
+            expected="changed its read-only boundary",
+            scope="smoke assertions",
+        )
     if build_plugin_inventory_summary({
         "skills": [{"name": "a"}, {"name": "b"}],
         "commands": [{"name": "c"}],

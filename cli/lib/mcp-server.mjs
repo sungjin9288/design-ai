@@ -12,9 +12,20 @@ import { buildRoutePayload } from "./route-operation.mjs";
 import { buildStartPayload } from "./start-operation.mjs";
 import { formatStartJson } from "./start.mjs";
 import { inspectHtml } from "./design-quality-inspector.mjs";
+import { buildReviewWorkflow } from "./review-workflow.mjs";
 import { listProductReviewPacks, loadProductReviewPack } from "./product-review-pack.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
+const SERVER_INSTRUCTIONS = [
+  "Use design-ai MCP tools for local, deterministic design expertise.",
+  "Use design_ai_review_html to compose one canonical plan and static review without running a browser or writing files.",
+  "Use design_ai_start for a read-only route and design-contract plan; declared repositories, pages, and screenshots are not inspected and its next command is not executed.",
+  "Use design_ai_inspect_html for a lower-level supplied-HTML quality report; unobserved runtime behavior remains unverified.",
+  "Product review packs are explicit and never inferred from locale.",
+  "Other read-only tools route briefs, generate prompts and artifacts, search the corpus, recall context, check Markdown, validate Website Improvement readiness, and prepare approval-gated handoffs.",
+  "Prefer read-only tools unless the user explicitly asks to record local learning usage.",
+  "Only design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture write the local learning profile, and only when explicitly called.",
+].join(" ");
 const LEARNING_WRITE_BOUNDARY = "Writes ONLY the local learning profile (DESIGN_AI_LEARNING_FILE or its default), and only when explicitly called.";
 const MAX_TOOL_OUTPUT_BYTES = 220_000;
 const DESIGN_AI_BIN = path.join(PACKAGE_ROOT, "cli", "bin", "design-ai.mjs");
@@ -95,6 +106,38 @@ export const MCP_TOOLS = [
         viewports: { type: "array", items: { type: "string", minLength: 1 }, description: "Declared viewport names. Defaults to mobile and desktop." },
         generatedAt: optionalString("Optional normalized UTC timestamp for byte-stable output."),
         reviewPack: optionalString("Optional shipped Korean product review pack id."),
+      },
+      required: ["source", "sourceRef", "brief"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_review_html",
+    title: "Review supplied HTML",
+    description: [
+      "Compose one canonical read-only plan and static design quality report from supplied HTML.",
+      "Does not read paths, run a browser, write files, mutate a repository, or call an external service.",
+    ].join(" "),
+    inputSchema: {
+      type: "object",
+      properties: {
+        source: { type: "string", minLength: 1, description: "HTML source content to review." },
+        sourceRef: { type: "string", minLength: 1, description: "Human-readable source reference used in evidence." },
+        brief: { type: "string", minLength: 1, description: "Review brief." },
+        name: optionalString("Optional subject name."),
+        locale: optionalString("Optional review locale. Default: en."),
+        viewports: { type: "array", items: { type: "string", minLength: 1 }, description: "Declared viewport names." },
+        generatedAt: optionalString("Optional normalized UTC timestamp for byte-stable output."),
+        reviewPack: optionalString("Optional shipped Korean product review pack id."),
+        siteName: optionalString("Declared site name. No workspace is created."),
+        repoUrl: optionalString("Declared repository URL. It is not fetched."),
+        localPath: optionalString("Declared absolute repository path. It is not read."),
+        url: optionalString("Declared page URL. It is not opened."),
+        screenshots: {
+          type: "array",
+          items: { type: "string", minLength: 1 },
+          description: "Declared screenshot references. They are not opened.",
+        },
       },
       required: ["source", "sourceRef", "brief"],
       additionalProperties: false,
@@ -676,6 +719,26 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
     return jsonToolResult(payload);
   }
 
+  if (name === "design_ai_review_html") {
+    const payload = buildReviewWorkflow(input.source, {
+      sourceRef: input.sourceRef,
+      brief: input.brief,
+      name: input.name,
+      locale: input.locale,
+      viewports: input.viewports,
+      generatedAt: input.generatedAt,
+      reviewPack: input.reviewPack,
+      siteName: input.siteName,
+      repoUrl: input.repoUrl,
+      localPath: input.localPath,
+      url: input.url,
+      screenshots: input.screenshots,
+      sourceRoot: DESIGN_AI_HOME,
+      prefix: SYMLINK_PREFIX,
+    });
+    return jsonToolResult(payload);
+  }
+
   if (name === "design_ai_review_pack") {
     const payload = input.id
       ? loadProductReviewPack(input.id)
@@ -836,7 +899,7 @@ export async function handleMcpRequest(message, { runCli = runDesignAiCli } = {}
         name: "design-ai",
         version: readPackageVersion(),
       },
-      instructions: "Use design-ai MCP tools for local, deterministic design expertise: start from one read-only route/design-contract plan, inspect supplied HTML into an evidence-backed quality report, apply explicit Korean product review packs, route briefs, generate prompts/packs, build implementation/critique/DESIGN.md artifacts, search/show the design corpus, recall combined corpus+learning context, check Markdown artifacts, validate Website Improvement MCP readiness, and prepare approval-gated target-repo handoffs. design_ai_start records declared repositories, pages, and screenshots without inspecting them or executing its next command. design_ai_inspect_html reads only the supplied string and leaves unobserved runtime behavior unverified. Product review packs are opt-in and never infer compliance from locale alone. Prefer read-only tools unless the user explicitly asks to record local learning usage. The opt-in write tool set is design_ai_learn_remember, design_ai_learn_feedback, and design_ai_learn_capture — each writes only the local learning profile, and only when explicitly called.",
+      instructions: SERVER_INSTRUCTIONS,
     });
   }
 

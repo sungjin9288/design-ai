@@ -5,6 +5,9 @@ User-facing release notes for design-ai. Versions follow semver.
 ## Unreleased
 
 ### Added
+- Added the canonical `design-ai review`, SDK `reviewHtml()`, and MCP `design_ai_review_html` workflow over one shared read-only operation.
+- Added exact source-byte identity, nested start and quality contracts, SHA-256 artifact linkage, ordered review stages, and a pending human decision to the `design-ai-review-workflow` v1 contract.
+- Added Website Console review-session import, original-byte export, nested artifact rendering, and a responsive semantic stage timeline.
 - Added CLI-only `design-ai benchmark` with strict/list/JSON modes over four packaged synthetic journeys: new design, existing-product refactor, Korean product UX, and multi-agent handoff.
 - Added strict start and design-artifact runtime validators, exact finding-id regression comparisons, SHA-256 suite/input/contract/case-study evidence, consumer-validated transfer envelopes, and four claim-bounded public case studies.
 - Added five versioned Korean product review packs for fintech, commerce, SaaS, content, and game workflows across CLI, SDK, and MCP, plus Website Console quality/browser contract review.
@@ -19,6 +22,8 @@ User-facing release notes for design-ai. Versions follow semver.
 - Added a Website Console Start tab that validates and persists the canonical start JSON, displays declared references without claiming inspection, copies the next command and design contract, and exports the unchanged payload.
 
 ### Changed
+- The current source capability contract grows from 20 to 21 MCP tools and from 13 to 14 SDK exports while retaining exactly three opt-in learning-profile write tools.
+- Existing HTML review now has one canonical entry point; browser verification and implementation remain separate approval-gated stages.
 - Product specialization proof is explicitly `synthetic-fixture` evidence with `adoptionClaim: none`; it reports false negatives, false positives, and missing required uncertainty without an aggregate quality score.
 - The current source capability contract grows from 18 to 19 MCP tools and from 11 to 12 SDK exports while retaining exactly three opt-in learning-profile write tools.
 - CLI inspection reads one explicit regular HTML file up to 1 MB and rejects symbolic links; SDK and MCP inspect supplied strings. None executes scripts, opens a browser, resolves linked resources, writes files, or mutates a target repository.
@@ -28,6 +33,7 @@ User-facing release notes for design-ai. Versions follow semver.
 - Packed-tarball and public-registry smoke now require the start payload to preserve an embedded design contract and empty performed local-write, target-mutation, and external-action arrays.
 
 ### Verified
+- `npm run release:check` passed for the P6 canonical review workflow with 749 tests, 8 strict audits, 722 packaged files, a 0/0 documentation warning policy, SDK import smoke, and canonical review smoke through installed-bin plus one-shot `npm exec` paths.
 - `npm run release:check` passed for the P5 product specialization benchmark with 736 tests, 8 strict audits, 715 packaged files, a 0/0 documentation warning policy, and `design-ai benchmark --strict --json` smoke through installed-bin plus one-shot `npm exec` paths.
 - `npm run release:check` passed for the approval-gated browser verification runner with 706 tests, 8 strict audits, 682 packaged files, a warning-free documentation build, and functional browser sidecar smoke through installed-bin plus one-shot `npm exec` paths.
 - `npm run release:check` passed for the P2 read-only quality engine with 694 tests, 8 strict audits, 676 packaged files, a warning-free documentation build, and installed-bin plus one-shot `npm exec` smoke coverage.

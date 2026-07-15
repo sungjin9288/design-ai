@@ -277,6 +277,14 @@ export interface InspectHtmlOptions {
   reviewPack?: string;
 }
 
+export interface ReviewHtmlOptions extends InspectHtmlOptions {
+  siteName?: string;
+  repoUrl?: string;
+  localPath?: string;
+  url?: string;
+  screenshots?: string[];
+}
+
 export interface DesignQualityReport {
   kind: "design-ai-quality-report";
   schemaVersion: 1;
@@ -302,6 +310,42 @@ export interface DesignQualityReport {
     nextAction: string;
   };
   approval: { status: "pending"; requiredBefore: string[] };
+}
+
+export interface ReviewWorkflow {
+  kind: "design-ai-review-workflow";
+  schemaVersion: 1;
+  status: "static-review-complete";
+  source: { reference: string; sha256: string; bytes: number };
+  plan: StartPayload;
+  report: DesignQualityReport;
+  linkage: {
+    status: "pass";
+    briefMatch: true;
+    localeMatch: true;
+    viewportMatch: true;
+    sourceReferenceMatch: true;
+    planSha256: string;
+    designContractSha256: string;
+    reportSha256: string;
+  };
+  stages: Array<{
+    id: "plan" | "static-review" | "browser-verification" | "implementation-handoff";
+    status: "complete" | "not-run" | "not-started";
+    artifactKind: "design-ai-start" | "design-ai-quality-report" | null;
+  }>;
+  nextAction: {
+    id: "human-review-required";
+    status: "pending";
+    summary: string;
+    approvalRequiredBefore: string[];
+  };
+  boundary: {
+    mode: "read-only";
+    localWrites: false;
+    targetRepoMutation: false;
+    externalWrites: false;
+  };
 }
 
 export interface ProductReviewPackSummary {
@@ -569,6 +613,9 @@ export function start(brief: string, opts?: StartOptions): StartPayload;
 
 /** Inspect supplied HTML without reading paths, running scripts, or writing files. */
 export function inspectHtml(source: string, opts: InspectHtmlOptions): DesignQualityReport;
+
+/** Compose one canonical plan and static HTML review without writing files or running a browser. */
+export function reviewHtml(source: string, opts: ReviewHtmlOptions): ReviewWorkflow;
 
 /** Read one Korean product review pack, or list the available packs when id is omitted. */
 export function reviewPack(id?: string, opts?: Record<string, never>): ProductReviewPack | ProductReviewPackList;

@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 20 tools, including the shared read-only start flow, supplied-HTML quality inspection, Korean product review packs, artifact operations, a Website Improvement bundle handoff, linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 21 tools, including the canonical read-only review workflow, shared start flow, supplied-HTML quality inspection, Korean product review packs, artifact operations, a Website Improvement bundle handoff, linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -56,6 +56,18 @@ If the serialized report exceeds the MCP response limit, the tool returns a vali
 `design_ai_review_pack` lists or reads the five shipped Korean review contracts.
 Pass one returned id as `reviewPack` to `design_ai_inspect_html`. Packs are never
 selected from locale alone; browser and scenario criteria remain `unverified`.
+
+### Canonical review workflow
+
+`design_ai_review_html` maps to CLI `design-ai review` and SDK `reviewHtml()`.
+It composes the shared start plan and static quality report without spawning the
+CLI, then proves their context and SHA-256 linkage. The supplied HTML string is not
+changed. Browser verification remains `not-run`, implementation remains
+`not-started`, and local, target-repository, and external writes remain false.
+
+Use this as the default MCP entry point for an existing HTML artifact. Use
+`design_ai_inspect_html` only when the consumer needs the lower-level quality
+report by itself. See [Canonical review workflow](REVIEW-WORKFLOW.md).
 
 ### Approval-gated website implementation handoff
 

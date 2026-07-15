@@ -7,6 +7,8 @@ import vm from "node:vm";
 
 import { validateBrowserVerification } from "../../cli/lib/browser-verification-contract.mjs";
 import { validateDesignQualityReport } from "../../cli/lib/design-quality-contract.mjs";
+import { PACKAGE_ROOT } from "../../cli/lib/paths.mjs";
+import { buildReviewWorkflow } from "../../cli/lib/review-workflow.mjs";
 
 const CONSOLE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
@@ -92,6 +94,7 @@ test("source-bundle classic script exposes the focused frozen API", () => {
     "buildSourceBundleJson",
     "buildSourceBundleRevalidationGateJson",
     "normalizeQualityReport",
+    "normalizeReviewWorkflow",
     "normalizeBrowserVerification",
     "buildImportedArtifactJson",
   ]);
@@ -205,6 +208,40 @@ test("start plan contract accepts read-only payloads and rejects forged executio
       performed: { ...plan.effects.performed, targetRepoMutations: ["unexpected"] },
     },
   }), null);
+});
+
+test("review workflow normalization preserves the exact linked read-only session", () => {
+  const source = "<!doctype html><html lang=\"ko\"><body><button>저장</button></body></html>";
+  const workflow = buildReviewWorkflow(source, {
+    brief: "한국어 계정 설정 화면을 검토한다",
+    sourceRef: "settings.html",
+    sourceRoot: PACKAGE_ROOT,
+    prefix: "design-",
+    locale: "ko-KR",
+    viewports: ["mobile", "desktop"],
+    generatedAt: "2026-07-15T00:00:00.000Z",
+    reviewPack: "korean-fintech",
+  });
+  const rawWorkflow = JSON.stringify(workflow, null, 2);
+  const normalized = api.normalizeReviewWorkflow(workflow);
+
+  assert.notEqual(normalized, workflow);
+  assert.equal(JSON.stringify(normalized), JSON.stringify(workflow));
+  assert.equal(api.buildImportedArtifactJson(normalized, rawWorkflow), rawWorkflow);
+
+  const invalidLinkage = structuredClone(workflow);
+  invalidLinkage.linkage.reportSha256 = "0".repeat(64);
+  assert.equal(api.normalizeReviewWorkflow(invalidLinkage), null);
+
+  const invalidBoundary = structuredClone(workflow);
+  invalidBoundary.boundary.externalWrites = true;
+  assert.equal(api.normalizeReviewWorkflow(invalidBoundary), null);
+
+  const invalidStages = structuredClone(workflow);
+  invalidStages.stages[2].status = "pass";
+  assert.equal(api.normalizeReviewWorkflow(invalidStages), null);
+
+  assert.equal(api.normalizeReviewWorkflow({ ...workflow, extra: true }), null);
 });
 
 test("source-bundle normalization preserves the provenance contract", () => {
@@ -340,7 +377,7 @@ test("Website Console imports and labels linked preview readiness without claimi
   const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
 
   assert.match(appSource, /website-improvement-linked-preview/);
-  assert.match(appSource, /Import quality, browser, start, workspace, runbook, or preview JSON/);
+  assert.match(appSource, /Import review workflow, quality, browser, start, workspace, runbook, or preview JSON/);
   assert.match(appSource, /No process started by design-ai/);
   assert.match(appSource, /A configured URL is not browser verification/);
   assert.match(appSource, /Linked preview readiness JSON imported\. Report tab opened\./);
@@ -357,6 +394,20 @@ test("Website Console keeps quality and browser contracts separate and preserves
   assert.match(appSource, /window\.crypto\.subtle\.digest\("SHA-256"/);
   assert.match(appSource, /The sidecar does not resolve purpose-frequency or spatial-continuity by itself/);
   assert.match(appSource, /if \(!isWorkspacePayload\(parsed\)\)/);
+});
+
+test("Website Console imports the review workflow before direct artifacts and preserves its envelope", () => {
+  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+
+  assert.match(appSource, /design-ai\.website-console\.review-workflow/);
+  assert.match(appSource, /var importedReviewWorkflow = normalizeReviewWorkflow\(parsed\);/);
+  assert.ok(appSource.indexOf("var importedReviewWorkflow = normalizeReviewWorkflow(parsed);") < appSource.indexOf("var importedQualityReport = normalizeQualityReport(parsed);"));
+  assert.match(appSource, /Envelope bytes preserved; nested Start and Quality contracts render by value\./);
+  assert.match(appSource, /Original review-workflow envelope bytes are preserved/);
+  assert.match(appSource, /Export original review JSON/);
+  assert.match(appSource, /Clear review workflow/);
+  assert.match(appSource, /Browser verification/);
+  assert.match(appSource, /Human review/);
 });
 
 test("Website Console imports start JSON without claiming reference inspection or execution", () => {
