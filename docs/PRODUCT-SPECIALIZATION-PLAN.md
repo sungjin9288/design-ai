@@ -196,8 +196,19 @@ Exit criteria:
 
 ### P5 - Benchmark and adoption proof
 
+Status: implemented in the current source, pending release.
+
 Build a repeatable benchmark suite and publish case studies that show what changed,
 what evidence supported it, and what remained unverified.
+
+The implementation adds a CLI-only, read-only `design-ai benchmark` runner over a
+versioned packaged suite. It covers one new-design contract, two exact finding
+comparisons for existing-product and Korean UX revisions, and one serialized
+multi-agent handoff. Results expose contract failures, missing and unexpected
+finding IDs, fixed findings, persistent `unverified` risks, and false-positive
+notes without calculating an aggregate quality score. Four public synthetic case
+studies record source, change, verification, permission boundary, and remaining
+risk without claiming real customer adoption or production outcomes.
 
 Exit criteria:
 
@@ -207,6 +218,15 @@ Exit criteria:
   arbitrary aggregate quality score.
 - Public case studies identify the source, change, verification, permission
   boundary, and remaining risk.
+
+All three exit criteria are enforced in the packaged suite. Each case study also
+states its claim boundary, and the runner records `evidenceClass: synthetic-fixture`
+plus `adoptionClaim: none` so repeatable product proof cannot be mistaken for real
+customer adoption.
+
+Local release evidence: `npm run release:check` passes with 736 tests, 8 strict
+audits, 715 packaged files, a 0/0 documentation warning policy, and benchmark smoke
+through installed-bin plus one-shot `npm exec` paths.
 
 ## Quality targets
 

@@ -94,6 +94,10 @@ plugins:
             Quickstart: 빠른 시작
             Distribution: 배포
             Architecture: 아키텍처
+            Design Quality: 디자인 품질
+            Product specialization plan: 제품 전문화 계획
+            Product specialization benchmarks: 제품 전문화 벤치마크
+            Quality contract: 품질 계약
             Agent Development: 에이전트 개발
             Website Improvement: 웹사이트 개선
             Overview: 개요
@@ -175,6 +179,7 @@ nav:
   - Architecture: docs/ARCHITECTURE.md
   - Design Quality:
       - Product specialization plan: docs/PRODUCT-SPECIALIZATION-PLAN.md
+      - Product specialization benchmarks: docs/BENCHMARKS.md
       - Quality contract: docs/DESIGN-QUALITY-CONTRACT.md
   - Agent Development: docs/AGENT-DEVELOPMENT.md
   - Agent SDK:

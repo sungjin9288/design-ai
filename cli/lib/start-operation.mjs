@@ -3,6 +3,7 @@ import path from "node:path";
 import { buildArtifact } from "./artifact.mjs";
 import { buildRoutePayload } from "./route-operation.mjs";
 import { buildSiteInitArgs, buildSiteInitCommand } from "./site-next-actions.mjs";
+import { validateStartPayload } from "./start-contract.mjs";
 
 function optionalText(value, field) {
   if (value === undefined || value === null) return "";
@@ -181,7 +182,7 @@ export function buildStartPayload({
   const references = declaredReferences(normalizedContext);
   const pathway = buildPathway(selectedRoute, normalizedBrief, normalizedContext);
 
-  return {
+  return validateStartPayload({
     kind: "design-ai-start",
     schemaVersion: 1,
     brief: normalizedBrief,
@@ -205,5 +206,5 @@ export function buildStartPayload({
       intended: intendedEffects(references, pathway),
       approvalRequiredBefore: [...designContract.approval.requiresApproval],
     },
-  };
+  });
 }

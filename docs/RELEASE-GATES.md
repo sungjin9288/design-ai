@@ -32,6 +32,8 @@ improvement control tower is available as a zero-dependency static Web App at
 - Packed-tarball evidence preservation smoke coverage
 - Handoff reports
 
+The source release gate also runs `design-ai benchmark --strict --json` through installed-bin and one-shot package paths. This read-only product specialization benchmark covers four synthetic cases, uses no aggregate quality score, and does not prove customer adoption.
+
 Local learning preferences are available through `design-ai learn`, with:
 
 - Starter profile bootstrap via preview-first `learn --init`

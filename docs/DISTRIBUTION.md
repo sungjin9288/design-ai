@@ -90,6 +90,7 @@ design-ai pack brief Generate a prompt plus bounded context files with summary/w
 design-ai learn      Manage local learning preferences; use --init for preview-first starter profile bootstrap, --query with list/export for matching profile inspection, --backup --json for a full portable profile backup, --redact --json / --redact --from-file / --redact --stdin for redacted shareable backups, --verify / --diff before moving portable profiles, --restore for preview-first full-profile replacement with automatic rollback backup and optional --backup-file path, --restore-backups for read-only rollback backup inventory, --restore-backups --prune --keep N for preview-first older rollback backup cleanup, --curate for archive-first duplicate/sensitive entry maintenance, --propose-skills for preview-only skill delta proposals from repeated check captures with adjustable --min-evidence proposal thresholds, optional --strict proposal readiness gating, `--report --out skill-proposals.md` Markdown review artifacts, read-only `--review-file` decision joins, read-only `--apply-plan` accepted proposal manual apply plans, `--review-template --out skill-proposals.review.json` JSON decision scaffolds, and `--patch --out skill-proposals.patch` unified diff handoffs, --out file plus --force for safe artifact writes, and --import for confirmed profile merges
 design-ai check file  Check generated Markdown artifact quality; add --examples, --route id, --all-routes, --issues-only, --stdin, --strict, --learn, --yes, --learning-file path, or --json
 design-ai workspace   Show a read-only local dogfood readiness snapshot for git, repository metadata, learning, optional learning usage sidecars, learning eval checkpoints, and release scripts; workspace JSON separates active status from ignored untracked local portfolio/evidence artifacts; add --root path, --learning-file path, --learning-usage path, --learning-eval path, --strict, or --json
+design-ai benchmark   Run the read-only product specialization benchmark; add a case ID, --list, --strict, or --json
 design-ai site file   Validate Website Improvement Console JSON exports and generate handoff artifacts; add --stdin, --sample, --intake-template, --language en|ko, --strict, --json, --mcp-check, --probes, --mcp-plan, --next-actions, --graph, --tasks, --bundle, --bundle-check, --bundle-compare, --bundle-handoff, --bundle-repair, --yes, --report, --prompts, --prompt id, --task id, --out file, or --force
 design-ai examples q Find worked examples; add --route id, --limit N, or --json
 design-ai search q    Search local corpus markdown; add --dir kind, --limit N, or --json
@@ -106,6 +107,10 @@ The current source package smoke runs `design-ai start ... --json` and
 checks require the embedded design contract, the quality report's confirmed and
 unverified split, post-run source-report digest match, and unverified target-mutation/external-write
 boundaries.
+
+It also runs `design-ai benchmark --strict --json` through both package paths. The
+product specialization benchmark covers four synthetic cases, is read-only, uses
+no aggregate quality score, and does not prove customer adoption.
 
 Environment overrides:
 

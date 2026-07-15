@@ -95,6 +95,7 @@ design-ai pack brief summary/warning이 포함된 prompt + 제한된 context fil
 design-ai learn      local learning preference 관리; --init으로 preview-first starter profile bootstrap을 하고, list/export에서 --query로 matching profile을 확인하고, --backup --json은 전체 portable profile backup, --redact --json / --redact --from-file / --redact --stdin은 공유용 redacted backup을 만들며, --verify / --diff로 portable profile 이동 전 상태를 확인하고, --restore는 preview-first 전체 profile 교체와 automatic rollback backup 및 선택형 --backup-file path를 제공하고, --restore-backups는 rollback backup inventory를 읽기 전용으로 보여주며, --restore-backups --prune --keep N은 오래된 rollback backup cleanup을 preview-first로 처리하고, --curate는 duplicate/sensitive entry를 archive-first 방식으로 정리하며, --propose-skills는 반복 check capture 기반 skill delta proposal을 preview-only로 출력하고 조절 가능한 --min-evidence proposal threshold, 선택형 --strict proposal readiness gate, `--report --out skill-proposals.md` Markdown review artifact, read-only `--review-file` decision join, read-only `--apply-plan` accepted proposal manual apply plan, `--review-template --out skill-proposals.review.json` JSON decision scaffold, `--patch --out skill-proposals.patch` unified diff handoff를 지원하며, --out file과 --force로 안전한 artifact 저장을 지원하며, --import는 확인된 profile merge를 수행
 design-ai check file  생성된 Markdown artifact 품질 검사; --examples/--route id/--all-routes/--issues-only/--stdin/--strict/--learn/--yes/--learning-file path/--json 지원
 design-ai workspace   git, repository metadata, learning, optional learning usage sidecar, learning eval checkpoint, release script 상태를 보는 read-only local dogfood readiness snapshot; --root path/--learning-file path/--learning-usage path/--learning-eval path/--strict/--json 지원
+design-ai benchmark   읽기 전용 제품 전문화 벤치마크 실행; 사례 ID/--list/--strict/--json 지원
 design-ai site file   Website Improvement Console JSON export 검증, sample workspace 생성, intake template 생성, handoff artifact 생성; --stdin/--sample/--intake-template/--language en|ko/--strict/--json/--mcp-check/--probes/--mcp-plan/--next-actions/--graph/--tasks/--bundle/--bundle-check/--bundle-compare/--bundle-handoff/--bundle-repair/--yes/--report/--prompts/--prompt id/--task id/--out file/--force 지원
 design-ai examples q worked example 검색; --route id/--limit N/--json 지원
 design-ai search q    로컬 코퍼스 Markdown 검색; --dir kind/--limit N/--json 지원
@@ -110,6 +111,10 @@ design-ai help [cmd|--json] 전체 또는 command별 도움말; --json으로 top
 registry smoke도 같은 검증을 반복하며, embedded design contract, 품질 보고서의
 confirmed/unverified 분리, 원본 HTML byte 보존, target mutation과 external write가
 비어 있는지 확인해요.
+
+두 패키지 경로에서 `design-ai benchmark --strict --json`도 실행해요. 제품 전문화
+벤치마크는 네 합성 사례를 읽기 전용으로 검증하고, 종합 품질 점수를 만들지 않으며,
+실제 고객 채택을 증명하지 않아요.
 
 환경 변수로 오버라이드:
 

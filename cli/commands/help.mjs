@@ -10,6 +10,7 @@ import { runArtifact } from "./artifact.mjs";
 import { runStart } from "./start.mjs";
 import { runInspect } from "./inspect.mjs";
 import { runReviewPack } from "./review-pack.mjs";
+import { runBenchmark } from "./benchmark.mjs";
 import { runVerifyBrowser } from "./verify-browser.mjs";
 import { runCheck } from "./check.mjs";
 import { runDoctor } from "./doctor.mjs";
@@ -50,6 +51,7 @@ export const HELP_COMMANDS = [
   { topic: "start", usage: "start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]", description: "Build one read-only route, design contract, review, and next-step plan" },
   { topic: "inspect", usage: "inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--review-pack id] [--json]", description: "Build a read-only design quality report from explicit HTML" },
   { topic: "review-pack", usage: "review-pack [id] [--json]", description: "List or print Korean product review packs" },
+  { topic: "benchmark", usage: "benchmark [case-id] [--strict] [--json] | benchmark --list [--json]", description: "Run read-only product specialization regression proof" },
   { topic: "verify-browser", usage: "verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]", description: "Run an approved browser adapter and record normalized local evidence" },
   { topic: "doctor", usage: "doctor [--strict] [--json] [--fix]", description: "Diagnose source, runtime, and install state" },
   { topic: "examples", usage: "examples [query] [--route id] [--limit N] [--json]", description: "Find worked examples for a route or query" },
@@ -102,6 +104,7 @@ const HELP_RUNNERS = {
   start: () => runStart(["--help"]),
   inspect: () => runInspect(["--help"]),
   "review-pack": () => runReviewPack(["--help"]),
+  benchmark: () => runBenchmark(["--help"]),
   "verify-browser": () => runVerifyBrowser(["--help"]),
   doctor: () => runDoctor(["--help"]),
   examples: () => runExamples(["--help"]),
@@ -235,6 +238,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai prompt "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai artifact implementation-plan "refactor account settings"`);
   console.log(`  ${dim("$")} design-ai inspect page.html --brief "review account settings" --locale ko-KR --json`);
+  console.log(`  ${dim("$")} design-ai benchmark --strict`);
   console.log(`  ${dim("$")} design-ai pack "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai check output.md --route component-spec --strict`);
   console.log(`  ${dim("$")} design-ai check output.md --learn --yes`);

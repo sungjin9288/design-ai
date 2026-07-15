@@ -1,5 +1,52 @@
 # Roadmap
 
+## Phase 783 - Product specialization benchmark and adoption proof (implemented, unreleased)
+
+Turns the specialization thesis into a repeatable local regression suite without
+using a numeric quality score or overstating synthetic evidence as customer
+adoption.
+
+### Delivered
+- [x] Added CLI-only `design-ai benchmark [case-id] [--strict] [--json]` and `--list` over one versioned packaged suite.
+- [x] Covered new design, existing-product refactor, Korean product UX, and multi-agent handoff with four synthetic fixtures and public case studies.
+- [x] Added strict validators for start and design-artifact payloads, then reused the canonical quality-report validator for inspected fixture evidence.
+- [x] Compared exact `finding-id` sets as false negatives, false positives, and uncertainty regressions instead of calculating an aggregate score.
+- [x] Added SHA-256 identity for the suite, fixture inputs, generated contracts, transfer envelopes, and case studies.
+- [x] Required every case study to keep Source, Change, Verification, Permission boundary, Remaining risk, and Claim boundary sections.
+- [x] Added installed-bin and one-shot `npm exec` package smoke assertions for 4/4 passing cases and the read-only boundary.
+
+### Boundary
+- Every case is marked `synthetic-fixture` with `adoptionClaim: none`; no customer use, production outcome, or first-value time is claimed.
+- The runner reads packaged fixtures and corpus files only. It writes no file, opens no browser, executes no fixture code, mutates no target repository, and makes no external request.
+- Multi-agent coverage uses local transfer envelopes with sender, recipient, artifact kind/version, SHA-256, and consumer validation. It does not claim a real transport or model invocation.
+- Target-repository edits, publication, deployment, and real-user evidence collection remain separate approval-gated work.
+
+### Verification target
+- [x] Unit, CLI, contract, help, dispatch, package-content, and shared smoke assertion tests pass.
+- [x] Package contents include the runner, validators, suite, five HTML fixtures, and four case studies.
+- [x] `npm run release:check` passed with 736 tests, 8 strict audits, 715 packaged files, a 0/0 documentation warning policy, and benchmark smoke through installed-bin plus one-shot `npm exec` paths.
+- [ ] Pull-request CI evidence will be recorded before merge.
+
+## Phase 782 - Korean product packs and Website Console quality review (implemented, unreleased)
+
+Turns Korean fintech, commerce, SaaS, content, and game knowledge into explicit,
+versioned review contracts and gives operators a human-readable quality evidence
+surface in Website Console.
+
+### Delivered
+- [x] Added five opt-in product review packs across CLI, SDK, and MCP with revisioned criteria, benchmarks, false-positive notes, and mobile plus desktop coverage.
+- [x] Added deterministic phone, password-autocomplete, and marketing-consent checks while leaving wrapping, density, payment, probability, and runtime accessibility unverified.
+- [x] Added Website Console quality and browser-sidecar import, validation, digest linkage, viewport coverage, and unchanged JSON export.
+
+### Boundary
+- Locale never selects a product pack implicitly.
+- Static evidence never upgrades browser or scenario criteria.
+- Website Console keeps quality and browser evidence as separate immutable contracts.
+
+### Verification target
+- [x] `npm run release:check` passed with 722 tests, 8 strict audits, and installed-bin plus one-shot package smoke coverage.
+- [x] Pull request #38 passed CI and merged as `7c45776d5b4dad5f8dadf1f900bfc7c530ae218a`.
+
 ## Phase 781 - Approval-gated browser verification runner (implemented, unreleased)
 
 Adds runtime evidence without weakening the read-only static inspector or adding a

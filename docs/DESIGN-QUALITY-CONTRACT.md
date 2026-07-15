@@ -251,3 +251,21 @@ const report = readDesignQualityReport(
 
 The validator returns the report unchanged when it passes and throws an actionable
 error when the contract is incomplete or internally inconsistent.
+
+## Product specialization regression suite
+
+The canonical report fixture proves the v1 report contract in isolation. The wider
+[`design-ai benchmark`](BENCHMARKS.md) suite checks how that contract behaves across
+new design, existing-product refactor, Korean product UX, and multi-agent handoff.
+
+```bash
+design-ai benchmark --strict
+design-ai benchmark korean-product-ux --strict --json
+```
+
+Quality comparison cases run the same inspector against packaged before and after
+sources. They compare exact confirmed finding IDs and preserve the list of
+unverified runtime risks. The handoff case serializes and parses the canonical
+payloads, validates the received report again, and checks that the repository-edit
+approval gate survived. No case writes a file or assigns an aggregate quality
+score.

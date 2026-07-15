@@ -189,6 +189,7 @@ EXPECTED_HELP_TOPICS = (
     "start",
     "inspect",
     "review-pack",
+    "benchmark",
     "verify-browser",
     "doctor",
     "examples",
@@ -240,6 +241,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "start": "design-ai start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]",
     "inspect": "design-ai inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--review-pack id] [--json]",
     "review-pack": "design-ai review-pack [id] [--json]",
+    "benchmark": "design-ai benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
     "verify-browser": "design-ai verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]",
     "doctor": "design-ai doctor [--strict] [--json] [--fix]",
     "examples": "design-ai examples [query] [--route id] [--limit N] [--json]",
@@ -301,6 +303,12 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "Usage:",
         "design-ai review-pack [id] [--json]",
         "reads shipped pack definitions only",
+    ),
+    "benchmark": (
+        "Usage:",
+        "design-ai benchmark [case-id] [--strict] [--json]",
+        "benchmark --list [--json]",
+        "does not write files, mutate a target repository, or call an external service",
     ),
     "verify-browser": (
         "Usage:",
@@ -481,6 +489,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "pack <brief|--from-file file|--stdin|--eval-template|--eval>",
     "check <artifact.md|--stdin|--examples>",
     "start <brief|--from-file file|--stdin>",
+    "benchmark [case-id] [--strict] [--json]",
     "examples [query]",
     "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
     "workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
@@ -4251,6 +4260,237 @@ def assert_inspect_json(raw: str, *, context: str, cmd: list[str]) -> None:
         raise SystemExit(f"inspect JSON after {context} lens inventory changed")
 
 
+def assert_specialization_benchmark_json(raw: str, *, context: str, cmd: list[str]) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        payload = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse benchmark JSON after {context}") from error
+
+    assert_smoke_json_keys(
+        payload,
+        ["kind", "schemaVersion", "suite", "status", "summary", "boundary", "cases"],
+        label="top-level",
+        context=context,
+        command_label="benchmark JSON",
+    )
+    if payload.get("kind") != "design-ai-specialization-benchmark-report" or payload.get("schemaVersion") != 1:
+        raise SystemExit(f"benchmark JSON after {context} kind or schema version changed")
+    suite = payload.get("suite")
+    if not (
+        payload.get("status") == "pass"
+        and isinstance(suite, dict)
+        and suite.get("revision") == 1
+        and suite.get("path") == "examples/benchmarks/product-specialization/suite.json"
+        and re.fullmatch(r"[a-f0-9]{64}", str(suite.get("sha256", "")))
+    ):
+        raise SystemExit(f"benchmark JSON after {context} did not pass suite revision 1")
+
+    summary = payload.get("summary")
+    if not (
+        isinstance(summary, dict)
+        and summary.get("cases") == 4
+        and summary.get("passedCases") == 4
+        and summary.get("failedCases") == 0
+        and summary.get("contractFailures") == 0
+        and summary.get("findingRegressions") == 0
+        and "aggregateQualityScore" not in summary
+    ):
+        raise SystemExit(f"benchmark JSON after {context} changed its no-score regression summary")
+
+    boundary = payload.get("boundary")
+    if boundary != {
+        "mode": "read-only",
+        "targetRepoMutation": False,
+        "externalWrites": False,
+        "localWrites": False,
+    }:
+        raise SystemExit(f"benchmark JSON after {context} changed its read-only boundary")
+
+    cases = payload.get("cases")
+    expected_journeys = [
+        "new-design",
+        "existing-product-refactor",
+        "korean-product-ux",
+        "multi-agent-handoff",
+    ]
+    expected_cases = [
+        {
+            "id": "new-design-contract",
+            "name": "New product design contract",
+            "operation": "new-design-contract",
+            "caseStudy": "docs/case-studies/new-design-contract.md",
+            "inputs": ["examples/benchmarks/product-specialization/new-design-contract/candidate.html"],
+            "contracts": ["design-ai-start", "design-ai-artifact", "design-ai-quality-report"],
+        },
+        {
+            "id": "existing-product-refactor",
+            "name": "Existing settings page refactor",
+            "operation": "quality-comparison",
+            "caseStudy": "docs/case-studies/existing-product-refactor.md",
+            "inputs": [
+                "examples/benchmarks/product-specialization/existing-product-refactor/before.html",
+                "examples/benchmarks/product-specialization/existing-product-refactor/after.html",
+            ],
+            "contracts": ["design-ai-quality-report", "design-ai-quality-report"],
+        },
+        {
+            "id": "korean-product-ux",
+            "name": "Korean fintech account settings",
+            "operation": "quality-comparison",
+            "caseStudy": "docs/case-studies/korean-product-ux.md",
+            "inputs": [
+                "examples/benchmarks/korean-product-packs/korean-fintech/source.html",
+                "examples/benchmarks/product-specialization/korean-product-ux/after.html",
+            ],
+            "contracts": ["design-ai-quality-report", "design-ai-quality-report"],
+        },
+        {
+            "id": "multi-agent-handoff",
+            "name": "Planner to implementation-review handoff",
+            "operation": "multi-agent-handoff",
+            "caseStudy": "docs/case-studies/multi-agent-handoff.md",
+            "inputs": ["examples/benchmarks/product-specialization/multi-agent-handoff/source.html"],
+            "contracts": ["design-ai-start", "design-ai-artifact", "design-ai-quality-report"],
+        },
+    ]
+    if not isinstance(cases, list) or [case.get("journey") for case in cases] != expected_journeys:
+        raise SystemExit(f"benchmark JSON after {context} changed journey coverage or order")
+    if any(case.get("status") != "pass" for case in cases):
+        raise SystemExit(f"benchmark JSON after {context} contains a failing case")
+    if any(case.get("evidenceClass") != "synthetic-fixture" or case.get("adoptionClaim") != "none" for case in cases):
+        raise SystemExit(f"benchmark JSON after {context} overstated its evidence or adoption claim")
+
+    def assert_finding_set(value: object, *, label: str) -> None:
+        if not isinstance(value, dict):
+            raise SystemExit(f"benchmark JSON after {context} {label} finding set is missing")
+        confirmed = value.get("confirmed")
+        unverified = value.get("unverified")
+        if not isinstance(confirmed, dict) or not isinstance(unverified, dict):
+            raise SystemExit(f"benchmark JSON after {context} {label} finding groups are missing")
+        for key in ("expected", "observed", "falseNegatives", "falsePositives"):
+            if not isinstance(confirmed.get(key), list):
+                raise SystemExit(f"benchmark JSON after {context} {label} confirmed {key} changed")
+        for key in ("required", "observed", "missingRequired", "unexpected"):
+            if not isinstance(unverified.get(key), list):
+                raise SystemExit(f"benchmark JSON after {context} {label} unverified {key} changed")
+        all_lists = [
+            *(confirmed[key] for key in ("expected", "observed", "falseNegatives", "falsePositives")),
+            *(unverified[key] for key in ("required", "observed", "missingRequired", "unexpected")),
+        ]
+        if any(any(not isinstance(item, str) for item in values) or len(values) != len(set(values)) for values in all_lists):
+            raise SystemExit(f"benchmark JSON after {context} {label} finding ids are invalid")
+        if (
+            sorted(confirmed["expected"]) != sorted(confirmed["observed"])
+            or sorted(unverified["required"]) != sorted(unverified["observed"])
+            or confirmed["falseNegatives"]
+            or confirmed["falsePositives"]
+            or unverified["missingRequired"]
+            or unverified["unexpected"]
+        ):
+            raise SystemExit(f"benchmark JSON after {context} {label} contains a finding regression")
+
+    for index, case in enumerate(cases):
+        expected_case = expected_cases[index]
+        case = assert_smoke_json_keys(
+            case,
+            [
+                "id", "name", "journey", "operation", "evidenceClass", "adoptionClaim",
+                "inputs", "caseStudy", "boundary", "status", "contracts",
+                "findingComparison", "handoff", "observation",
+            ],
+            label=f"cases[{index}]",
+            context=context,
+            command_label="benchmark JSON",
+        )
+        if case.get("id") != expected_case["id"]:
+            raise SystemExit(f"benchmark JSON after {context} changed case identity")
+        if case.get("name") != expected_case["name"] or case.get("operation") != expected_case["operation"]:
+            raise SystemExit(f"benchmark JSON after {context} changed case name or operation")
+        if case.get("boundary") != boundary:
+            raise SystemExit(f"benchmark JSON after {context} changed a case read-only boundary")
+        case_study = case.get("caseStudy")
+        if not (
+            isinstance(case_study, dict)
+            and case_study.get("path") == expected_case["caseStudy"]
+            and re.fullmatch(r"[a-f0-9]{64}", str(case_study.get("sha256", "")))
+            and case_study.get("valid") is True
+        ):
+            raise SystemExit(f"benchmark JSON after {context} contains invalid case-study evidence")
+        inputs = case.get("inputs")
+        if not isinstance(inputs, list) or not inputs:
+            raise SystemExit(f"benchmark JSON after {context} lost packaged input evidence")
+        for evidence in inputs:
+            if not (
+                isinstance(evidence, dict)
+                and isinstance(evidence.get("path"), str)
+                and evidence["path"]
+                and re.fullmatch(r"[a-f0-9]{64}", str(evidence.get("sha256", "")))
+                and isinstance(evidence.get("size"), int)
+                and evidence["size"] > 0
+            ):
+                raise SystemExit(f"benchmark JSON after {context} contains invalid packaged input evidence")
+        if [evidence.get("path") for evidence in inputs] != expected_case["inputs"]:
+            raise SystemExit(f"benchmark JSON after {context} changed scenario input identity")
+        contracts = case.get("contracts")
+        if not isinstance(contracts, list) or not contracts:
+            raise SystemExit(f"benchmark JSON after {context} lost contract evidence")
+        for contract in contracts:
+            if not (
+                isinstance(contract, dict)
+                and contract.get("valid") is True
+                and contract.get("error") is None
+                and contract.get("schemaVersion") == 1
+                and re.fullmatch(r"[a-f0-9]{64}", str(contract.get("sha256", "")))
+            ):
+                raise SystemExit(f"benchmark JSON after {context} contains invalid contract evidence")
+        if [contract.get("kind") for contract in contracts] != expected_case["contracts"]:
+            raise SystemExit(f"benchmark JSON after {context} changed scenario contract identity")
+
+        comparison = case.get("findingComparison")
+        if not isinstance(comparison, dict) or comparison.get("unit") != "finding-id" or comparison.get("status") != "pass":
+            raise SystemExit(f"benchmark JSON after {context} changed its finding comparison contract")
+        if "candidate" in comparison:
+            assert_finding_set(comparison["candidate"], label=f"{case.get('journey')} candidate")
+        else:
+            assert_finding_set(comparison.get("before"), label=f"{case.get('journey')} before")
+            assert_finding_set(comparison.get("after"), label=f"{case.get('journey')} after")
+            fixed = comparison.get("fixed")
+            before_observed = comparison["before"]["confirmed"]["observed"]
+            after_observed = set(comparison["after"]["confirmed"]["observed"])
+            expected_fixed = [finding_id for finding_id in before_observed if finding_id not in after_observed]
+            if fixed != expected_fixed:
+                raise SystemExit(f"benchmark JSON after {context} changed derived fixed findings")
+
+        handoff = case.get("handoff")
+        if case.get("journey") == "multi-agent-handoff":
+            if not isinstance(handoff, list) or len(handoff) != 2:
+                raise SystemExit(f"benchmark JSON after {context} lost multi-agent handoff evidence")
+            for envelope in handoff:
+                artifact = envelope.get("artifact") if isinstance(envelope, dict) else None
+                received = envelope.get("received") if isinstance(envelope, dict) else None
+                if not (
+                    isinstance(envelope, dict)
+                    and envelope.get("valid") is True
+                    and isinstance(envelope.get("sender"), str)
+                    and envelope["sender"] == "planning-agent"
+                    and isinstance(envelope.get("recipient"), str)
+                    and envelope["recipient"] == "implementation-review-agent"
+                    and isinstance(artifact, dict)
+                    and isinstance(received, dict)
+                    and isinstance(artifact.get("kind"), str)
+                    and artifact.get("schemaVersion") == 1
+                    and re.fullmatch(r"[a-f0-9]{64}", str(artifact.get("sha256", "")))
+                    and artifact.get("sha256") == received.get("sha256")
+                    and received.get("consumerValidation") == "pass"
+                ):
+                    raise SystemExit(f"benchmark JSON after {context} contains invalid handoff evidence")
+            if [envelope["artifact"]["kind"] for envelope in handoff] != ["design-ai-start", "design-ai-quality-report"]:
+                raise SystemExit(f"benchmark JSON after {context} changed handoff artifact identity")
+        elif handoff is not None:
+            raise SystemExit(f"benchmark JSON after {context} added handoff evidence to a non-handoff case")
+
+
 def assert_prompt_markdown_component_spec(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     if raw.lstrip().startswith("{"):
@@ -4933,6 +5173,8 @@ def passing_main_help_output() -> str:
         "    Check generated Markdown artifact quality; add --issues-only or --learn",
         "  start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]",
         "    Build one read-only route, design contract, review, and next-step plan",
+        "  benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
+        "    Run read-only product specialization regression proof",
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",
         "  learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
         "    Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization",
@@ -4948,6 +5190,132 @@ def passing_main_help_output() -> str:
         "Docs:    https://github.com/sungjin9288/design-ai",
         f"Plugin:  {EXPECTED_PLUGIN_INVENTORY_SUMMARY} (UI/UX, website improvement, motion,",
     ])
+
+
+def passing_specialization_benchmark_json() -> str:
+    case_definitions = [
+        {
+            "id": "new-design-contract",
+            "name": "New product design contract",
+            "journey": "new-design",
+            "operation": "new-design-contract",
+            "caseStudy": "docs/case-studies/new-design-contract.md",
+            "inputs": ["examples/benchmarks/product-specialization/new-design-contract/candidate.html"],
+            "contracts": ["design-ai-start", "design-ai-artifact", "design-ai-quality-report"],
+        },
+        {
+            "id": "existing-product-refactor",
+            "name": "Existing settings page refactor",
+            "journey": "existing-product-refactor",
+            "operation": "quality-comparison",
+            "caseStudy": "docs/case-studies/existing-product-refactor.md",
+            "inputs": [
+                "examples/benchmarks/product-specialization/existing-product-refactor/before.html",
+                "examples/benchmarks/product-specialization/existing-product-refactor/after.html",
+            ],
+            "contracts": ["design-ai-quality-report", "design-ai-quality-report"],
+        },
+        {
+            "id": "korean-product-ux",
+            "name": "Korean fintech account settings",
+            "journey": "korean-product-ux",
+            "operation": "quality-comparison",
+            "caseStudy": "docs/case-studies/korean-product-ux.md",
+            "inputs": [
+                "examples/benchmarks/korean-product-packs/korean-fintech/source.html",
+                "examples/benchmarks/product-specialization/korean-product-ux/after.html",
+            ],
+            "contracts": ["design-ai-quality-report", "design-ai-quality-report"],
+        },
+        {
+            "id": "multi-agent-handoff",
+            "name": "Planner to implementation-review handoff",
+            "journey": "multi-agent-handoff",
+            "operation": "multi-agent-handoff",
+            "caseStudy": "docs/case-studies/multi-agent-handoff.md",
+            "inputs": ["examples/benchmarks/product-specialization/multi-agent-handoff/source.html"],
+            "contracts": ["design-ai-start", "design-ai-artifact", "design-ai-quality-report"],
+        },
+    ]
+    def finding_set() -> dict:
+        return {
+            "confirmed": {"expected": [], "observed": [], "falseNegatives": [], "falsePositives": []},
+            "unverified": {"required": [], "observed": [], "missingRequired": [], "unexpected": []},
+        }
+
+    cases = []
+    for definition in case_definitions:
+        journey = definition["journey"]
+        comparison = {
+            "unit": "finding-id",
+            "status": "pass",
+            "falsePositiveNotes": ["Synthetic fixture boundary."],
+        }
+        if journey == "new-design":
+            comparison["candidate"] = finding_set()
+        else:
+            comparison.update({"before": finding_set(), "after": finding_set(), "fixed": []})
+        handoff = None
+        if journey == "multi-agent-handoff":
+            handoff = [
+                {
+                    "sender": "planning-agent",
+                    "recipient": "implementation-review-agent",
+                    "artifact": {"kind": kind, "schemaVersion": 1, "sha256": "d" * 64},
+                    "received": {"sha256": "d" * 64, "consumerValidation": "pass"},
+                    "valid": True,
+                }
+                for kind in ("design-ai-start", "design-ai-quality-report")
+            ]
+        cases.append({
+            "id": definition["id"],
+            "name": definition["name"],
+            "journey": journey,
+            "operation": definition["operation"],
+            "evidenceClass": "synthetic-fixture",
+            "adoptionClaim": "none",
+            "inputs": [{"path": source, "sha256": "b" * 64, "size": 1} for source in definition["inputs"]],
+            "caseStudy": {"path": definition["caseStudy"], "sha256": "c" * 64, "valid": True},
+            "boundary": {
+                "mode": "read-only",
+                "targetRepoMutation": False,
+                "externalWrites": False,
+                "localWrites": False,
+            },
+            "status": "pass",
+            "contracts": [
+                {"kind": kind, "schemaVersion": 1, "sha256": "e" * 64, "valid": True, "error": None}
+                for kind in definition["contracts"]
+            ],
+            "findingComparison": comparison,
+            "handoff": handoff,
+            "observation": {},
+        })
+
+    return json.dumps({
+        "kind": "design-ai-specialization-benchmark-report",
+        "schemaVersion": 1,
+        "suite": {
+            "revision": 1,
+            "path": "examples/benchmarks/product-specialization/suite.json",
+            "sha256": "a" * 64,
+        },
+        "status": "pass",
+        "summary": {
+            "cases": 4,
+            "passedCases": 4,
+            "failedCases": 0,
+            "contractFailures": 0,
+            "findingRegressions": 0,
+        },
+        "boundary": {
+            "mode": "read-only",
+            "targetRepoMutation": False,
+            "externalWrites": False,
+            "localWrites": False,
+        },
+        "cases": cases,
+    })
 
 
 def passing_version_output() -> str:
@@ -9144,6 +9512,90 @@ def run_self_test() -> None:
     cmd = ["design-ai", "doctor", "--json"]
     help_cmd = ["design-ai", "help", "--json"]
     parse_error_message = f"failed to parse doctor JSON after {context}"
+
+    benchmark_cmd = ["design-ai", "benchmark", "--strict", "--json"]
+    assert_specialization_benchmark_json(
+        passing_specialization_benchmark_json(),
+        context=context,
+        cmd=benchmark_cmd,
+    )
+    unsafe_benchmark = json.loads(passing_specialization_benchmark_json())
+    unsafe_benchmark["boundary"]["targetRepoMutation"] = True
+    expect_self_test_failure(
+        lambda: assert_specialization_benchmark_json(json.dumps(unsafe_benchmark), context=context, cmd=benchmark_cmd),
+        expected="changed its read-only boundary",
+        scope="smoke assertions",
+    )
+    scored_benchmark = json.loads(passing_specialization_benchmark_json())
+    scored_benchmark["summary"]["aggregateQualityScore"] = 100
+    expect_self_test_failure(
+        lambda: assert_specialization_benchmark_json(json.dumps(scored_benchmark), context=context, cmd=benchmark_cmd),
+        expected="changed its no-score regression summary",
+        scope="smoke assertions",
+    )
+    invalid_contract_benchmark = json.loads(passing_specialization_benchmark_json())
+    invalid_contract_benchmark["cases"][0]["contracts"][0]["valid"] = False
+    expect_self_test_failure(
+        lambda: assert_specialization_benchmark_json(json.dumps(invalid_contract_benchmark), context=context, cmd=benchmark_cmd),
+        expected="contains invalid contract evidence",
+        scope="smoke assertions",
+    )
+    invented_contract_benchmark = json.loads(passing_specialization_benchmark_json())
+    invented_contract_benchmark["cases"][0]["contracts"][0].update({"kind": "invented-contract", "schemaVersion": 99})
+    expect_self_test_failure(
+        lambda: assert_specialization_benchmark_json(json.dumps(invented_contract_benchmark), context=context, cmd=benchmark_cmd),
+        expected="contains invalid contract evidence",
+        scope="smoke assertions",
+    )
+    invented_operation_benchmark = json.loads(passing_specialization_benchmark_json())
+    invented_operation_benchmark["cases"][0]["operation"] = "invented-operation"
+    expect_self_test_failure(
+        lambda: assert_specialization_benchmark_json(json.dumps(invented_operation_benchmark), context=context, cmd=benchmark_cmd),
+        expected="changed case name or operation",
+        scope="smoke assertions",
+    )
+    invalid_case_study_benchmark = json.loads(passing_specialization_benchmark_json())
+    invalid_case_study_benchmark["cases"][0]["caseStudy"]["valid"] = False
+    expect_self_test_failure(
+        lambda: assert_specialization_benchmark_json(json.dumps(invalid_case_study_benchmark), context=context, cmd=benchmark_cmd),
+        expected="contains invalid case-study evidence",
+        scope="smoke assertions",
+    )
+    invalid_finding_benchmark = json.loads(passing_specialization_benchmark_json())
+    invalid_finding_benchmark["cases"][0]["findingComparison"]["candidate"]["confirmed"]["expected"] = ["missing-finding"]
+    expect_self_test_failure(
+        lambda: assert_specialization_benchmark_json(json.dumps(invalid_finding_benchmark), context=context, cmd=benchmark_cmd),
+        expected="contains a finding regression",
+        scope="smoke assertions",
+    )
+    invented_fixed_benchmark = json.loads(passing_specialization_benchmark_json())
+    invented_fixed_benchmark["cases"][1]["findingComparison"]["fixed"] = ["invented-finding"]
+    expect_self_test_failure(
+        lambda: assert_specialization_benchmark_json(json.dumps(invented_fixed_benchmark), context=context, cmd=benchmark_cmd),
+        expected="changed derived fixed findings",
+        scope="smoke assertions",
+    )
+    invalid_handoff_benchmark = json.loads(passing_specialization_benchmark_json())
+    invalid_handoff_benchmark["cases"][3]["handoff"][0]["valid"] = False
+    expect_self_test_failure(
+        lambda: assert_specialization_benchmark_json(json.dumps(invalid_handoff_benchmark), context=context, cmd=benchmark_cmd),
+        expected="contains invalid handoff evidence",
+        scope="smoke assertions",
+    )
+    unrelated_handoff_benchmark = json.loads(passing_specialization_benchmark_json())
+    unrelated_handoff_benchmark["cases"][3]["handoff"][0]["sender"] = "unrelated-agent"
+    expect_self_test_failure(
+        lambda: assert_specialization_benchmark_json(json.dumps(unrelated_handoff_benchmark), context=context, cmd=benchmark_cmd),
+        expected="contains invalid handoff evidence",
+        scope="smoke assertions",
+    )
+    invalid_handoff_schema_benchmark = json.loads(passing_specialization_benchmark_json())
+    invalid_handoff_schema_benchmark["cases"][3]["handoff"][0]["artifact"]["schemaVersion"] = 99
+    expect_self_test_failure(
+        lambda: assert_specialization_benchmark_json(json.dumps(invalid_handoff_schema_benchmark), context=context, cmd=benchmark_cmd),
+        expected="contains invalid handoff evidence",
+        scope="smoke assertions",
+    )
 
     assert_no_ansi("plain output", cmd)
     start_cmd = ["design-ai", "start", EXPECTED_ROUTE_BRIEF, "--json"]

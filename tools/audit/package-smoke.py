@@ -70,6 +70,7 @@ from smoke_assertions import (
     assert_index_status_json,
     assert_index_verify_json,
     assert_inspect_json,
+    assert_specialization_benchmark_json,
     assert_install_doctor_lifecycle_output,
     assert_install_output,
     assert_list_catalog_output,
@@ -908,6 +909,19 @@ def assert_review_pack_json_smoke(
         raise SystemExit(f"{context}: packed fintech identity or revision drifted")
     if not isinstance(payload.get("criteria"), list) or len(payload["criteria"]) < 4:
         raise SystemExit(f"{context}: packed fintech criteria are missing")
+
+
+def assert_specialization_benchmark_smoke(
+    cmd: list[str],
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    result = run_plain(cmd, cwd=cwd, env=env)
+    if result.returncode != 0:
+        raise SystemExit(f"{context} failed (exit {result.returncode})")
+    assert_specialization_benchmark_json(result.stdout, context=context, cmd=cmd)
 
 
 def assert_workspace_json_smoke(cmd: list[str], *, env: dict[str, str], cwd: Path | None = None, context: str) -> None:
@@ -20640,6 +20654,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin review-pack JSON",
         )
+        assert_specialization_benchmark_smoke(
+            [str(bin_path), "benchmark", "--strict", "--json"],
+            cwd=install_root,
+            env=smoke_env,
+            context="package smoke installed bin specialization benchmark",
+        )
         assert_design_ai_mcp_protocol_smoke(
             [str(mcp_bin_path)],
             cwd=install_root,
@@ -23138,6 +23158,12 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec start plan",
+        )
+        assert_specialization_benchmark_smoke(
+            npm_exec_cmd(tarball, "benchmark", "--strict", "--json"),
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec specialization benchmark",
         )
         npx_inspect_source = npx_root / "npx-inspect-source.html"
         npx_quality_report = npx_root / "npx-quality-report.json"

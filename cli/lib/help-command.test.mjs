@@ -124,6 +124,10 @@ test("runHelp emits a machine-readable help topic catalog", async () => {
     "design-ai review-pack [id] [--json]",
   );
   assert.equal(
+    catalog.topics.find((topic) => topic.topic === "benchmark").usage,
+    "design-ai benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
+  );
+  assert.equal(
     catalog.topics.find((topic) => topic.topic === "verify-browser").usage,
     "design-ai verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]",
   );
