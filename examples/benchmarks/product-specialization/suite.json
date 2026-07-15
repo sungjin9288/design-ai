@@ -1,0 +1,139 @@
+{
+  "kind": "design-ai-specialization-benchmark-suite",
+  "schemaVersion": 1,
+  "revision": 1,
+  "cases": [
+    {
+      "id": "new-design-contract",
+      "journey": "new-design",
+      "name": "New product design contract",
+      "operation": "new-design-contract",
+      "brief": "Design a Korean team workspace that helps operators review pending approvals without losing context.",
+      "caseStudy": "docs/case-studies/new-design-contract.md",
+      "input": {
+        "routeId": "design-from-brief",
+        "source": "examples/benchmarks/product-specialization/new-design-contract/candidate.html",
+        "locale": "ko-KR",
+        "viewports": ["mobile", "desktop"]
+      },
+      "expectation": {
+        "routeId": "design-from-brief",
+        "artifactMode": "design-contract",
+        "outputFile": "DESIGN.md",
+        "candidateConfirmed": [],
+        "requiredUnverified": ["runtime-evidence-not-collected"],
+        "falsePositiveNotes": [
+          "The fixture-authored candidate has no supported static defect, but its visual and interaction quality must remain unverified until runtime review."
+        ]
+      },
+      "boundary": {
+        "mode": "read-only",
+        "targetRepoMutation": false,
+        "externalWrites": false,
+        "localWrites": false
+      }
+    },
+    {
+      "id": "existing-product-refactor",
+      "journey": "existing-product-refactor",
+      "name": "Existing settings page refactor",
+      "operation": "quality-comparison",
+      "brief": "Refactor an existing settings page while preserving its structure and correcting only confirmed static defects.",
+      "caseStudy": "docs/case-studies/existing-product-refactor.md",
+      "input": {
+        "before": "examples/benchmarks/product-specialization/existing-product-refactor/before.html",
+        "after": "examples/benchmarks/product-specialization/existing-product-refactor/after.html",
+        "locale": "en",
+        "viewports": ["mobile", "desktop"],
+        "reviewPack": ""
+      },
+      "expectation": {
+        "beforeConfirmed": [
+          "missing-document-language",
+          "missing-accessible-name-button-5-1",
+          "missing-image-alt-6-1",
+          "missing-viewport-declaration"
+        ],
+        "afterConfirmed": [],
+        "persistentUnverified": ["runtime-evidence-not-collected"],
+        "falsePositiveNotes": [
+          "The corrected page must remove all four confirmed static findings without turning absent runtime evidence into a pass."
+        ]
+      },
+      "boundary": {
+        "mode": "read-only",
+        "targetRepoMutation": false,
+        "externalWrites": false,
+        "localWrites": false
+      }
+    },
+    {
+      "id": "korean-product-ux",
+      "journey": "korean-product-ux",
+      "name": "Korean fintech account settings",
+      "operation": "quality-comparison",
+      "brief": "Review Korean fintech account settings for form semantics, consent defaults, and evidence gaps.",
+      "caseStudy": "docs/case-studies/korean-product-ux.md",
+      "input": {
+        "before": "examples/benchmarks/korean-product-packs/korean-fintech/source.html",
+        "after": "examples/benchmarks/product-specialization/korean-product-ux/after.html",
+        "locale": "ko-KR",
+        "viewports": ["mobile", "desktop"],
+        "reviewPack": "korean-fintech"
+      },
+      "expectation": {
+        "beforeConfirmed": [
+          "product-pack:korean-fintech:korean-phone-input-semantics",
+          "product-pack:korean-fintech:korean-auth-autocomplete",
+          "product-pack:korean-fintech:korean-marketing-consent-default"
+        ],
+        "afterConfirmed": [],
+        "persistentUnverified": [
+          "product-pack:korean-fintech:korean-payment-disclosure",
+          "product-pack:korean-fintech:korean-dense-financial-data",
+          "product-pack:korean-fintech:korean-accessibility-runtime",
+          "runtime-evidence-not-collected"
+        ],
+        "falsePositiveNotes": [
+          "Correct phone, password, and consent semantics must remove only the three static findings; payment disclosure, density, and runtime accessibility remain unverified."
+        ]
+      },
+      "boundary": {
+        "mode": "read-only",
+        "targetRepoMutation": false,
+        "externalWrites": false,
+        "localWrites": false
+      }
+    },
+    {
+      "id": "multi-agent-handoff",
+      "journey": "multi-agent-handoff",
+      "name": "Planner to implementation-review handoff",
+      "operation": "multi-agent-handoff",
+      "brief": "Prepare an agent-readable design contract and hand an unchanged quality report to an implementation reviewer.",
+      "caseStudy": "docs/case-studies/multi-agent-handoff.md",
+      "input": {
+        "routeId": "agentic-design-development",
+        "source": "examples/benchmarks/product-specialization/multi-agent-handoff/source.html",
+        "locale": "ko-KR",
+        "viewports": ["mobile", "desktop"],
+        "producer": "planning-agent",
+        "consumer": "implementation-review-agent"
+      },
+      "expectation": {
+        "beforeConfirmed": [],
+        "afterConfirmed": [],
+        "persistentUnverified": ["runtime-evidence-not-collected"],
+        "falsePositiveNotes": [
+          "Serialization must preserve the exact start and quality-report payloads; a clean static report must not imply that the consumer executed runtime verification."
+        ]
+      },
+      "boundary": {
+        "mode": "read-only",
+        "targetRepoMutation": false,
+        "externalWrites": false,
+        "localWrites": false
+      }
+    }
+  ]
+}

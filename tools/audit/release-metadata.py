@@ -3124,6 +3124,29 @@ RELEASE_UPDATE_DRY_RUN_JSON_COMMAND_TERM_GROUPS = (
 RELEASE_UPDATE_DRY_RUN_PLAN_TERM_GROUPS = (
     ("machine-readable update plan",),
 )
+RELEASE_SPECIALIZATION_BENCHMARK_TERM_GROUPS = (
+    ("`design-ai benchmark --strict --json`",),
+    (
+        "product specialization benchmark",
+        "제품 전문화 벤치마크",
+    ),
+    (
+        "four synthetic cases",
+        "네 합성 사례",
+    ),
+    (
+        "read-only",
+        "읽기 전용",
+    ),
+    (
+        "no aggregate quality score",
+        "종합 품질 점수를 만들지",
+    ),
+    (
+        "does not prove customer adoption",
+        "실제 고객 채택을 증명하지",
+    ),
+)
 RELEASE_POLICY_PHRASE_LABELS = (
     "MkDocs warning-policy phrase",
     "local CI command phrase",
@@ -3134,6 +3157,7 @@ RELEASE_POLICY_PHRASE_LABELS = (
     "Product Readiness release policy full gate evidence guard release-check phrase",
     "packed tarball smoke phrase",
     "package smoke command phrase",
+    "product specialization benchmark package smoke phrase",
     "learn signals strict package smoke phrase",
     "learn signals Markdown package smoke phrase",
     "learn signals JSON out package smoke phrase",
@@ -3356,6 +3380,10 @@ RELEASE_POLICY_PHRASE_CHECKS = (
     ),
     ("packed tarball smoke phrase", RELEASE_PACKED_TARBALL_SMOKE_TERM_GROUPS),
     ("package smoke command phrase", RELEASE_PACKAGE_SMOKE_COMMAND_TERM_GROUPS),
+    (
+        "product specialization benchmark package smoke phrase",
+        RELEASE_SPECIALIZATION_BENCHMARK_TERM_GROUPS,
+    ),
     (
         "learn signals strict package smoke phrase",
         RELEASE_LEARN_SIGNALS_STRICT_PACKAGE_SMOKE_TERM_GROUPS,
@@ -4321,6 +4349,7 @@ human `design-ai update --dry-run` output and `design-ai update --dry-run --json
 machine-readable update plan before mutating lifecycle commands, plus
 human diagnostics output from `design-ai doctor --strict` and
 machine-readable diagnostics output from `design-ai doctor --json` before release.
+The package gate runs `design-ai benchmark --strict --json` as a read-only product specialization benchmark for four synthetic cases, with no aggregate quality score, and does not prove customer adoption.
 """
     korean_policy_doc = """# Distribution Korean
 
@@ -4428,6 +4457,7 @@ human `design-ai update --dry-run` 출력과 `design-ai update --dry-run --json`
 machine-readable update plan도 mutating lifecycle command 전에 확인하고,
 `design-ai doctor --strict` human diagnostics 출력과
 `design-ai doctor --json` machine-readable diagnostics 출력도 release 전에 확인해요.
+패키지 게이트는 `design-ai benchmark --strict --json`을 실행하는 읽기 전용 제품 전문화 벤치마크예요. 네 합성 사례를 검증하고, 종합 품질 점수를 만들지 않으며, 실제 고객 채택을 증명하지 않아요.
 """
     release_policy_docs = {
         "README.md": english_policy_doc,

@@ -1,15 +1,16 @@
 // Shared design artifact planning for CLI, SDK, MCP, and Website Console adapters.
 
 import { parseBriefSourceFlag } from "./brief.mjs";
+import {
+  DESIGN_ARTIFACT_APPROVAL_REQUIREMENTS,
+  DESIGN_ARTIFACT_MODES,
+  validateDesignArtifact,
+} from "./artifact-contract.mjs";
 import { parseOutputFlags } from "./output.mjs";
 import { buildPromptPlan } from "./prompt.mjs";
 import { unknownOptionMessage } from "./suggest.mjs";
 
-export const ARTIFACT_MODES = [
-  "implementation-plan",
-  "critique-loop",
-  "design-contract",
-];
+export const ARTIFACT_MODES = DESIGN_ARTIFACT_MODES;
 
 const ARTIFACT_OPTIONS = [
   "-h",
@@ -252,12 +253,7 @@ export function buildArtifact({
     outputSections: [...definition.outputSections],
     approval: {
       status: "pending-human-approval",
-      requiresApproval: [
-        "editing a target repository",
-        "installing or changing dependencies",
-        "running migrations or changing persistent data",
-        "creating commits, pushing, deploying, or writing to an external system",
-      ],
+      requiresApproval: [...DESIGN_ARTIFACT_APPROVAL_REQUIREMENTS],
     },
     verification: {
       command: promptPlan.qualityCommand.replace("output.md", definition.outputFile),
@@ -265,10 +261,10 @@ export function buildArtifact({
     },
   };
 
-  return {
+  return validateDesignArtifact({
     ...artifact,
     markdown: renderArtifactMarkdown(artifact),
-  };
+  });
 }
 
 export function formatArtifactJson(artifact) {
