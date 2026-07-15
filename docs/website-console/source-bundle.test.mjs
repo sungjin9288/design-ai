@@ -132,6 +132,8 @@ test("source-bundle classic script exposes the focused frozen API", () => {
     "targetRepoIntakeMatchesReceipt",
     "normalizeBrowserVerification",
     "buildImportedArtifactJson",
+    "sha256Text",
+    "utf8ByteLength",
   ]);
 });
 
@@ -614,11 +616,13 @@ test("Website Console loads classic deferred scripts in dependency order", () =>
   const indexPath = path.join(CONSOLE_ROOT, "index.html");
   const html = readFileSync(indexPath, "utf8");
   const contractIndex = html.indexOf('<script src="./source-bundle.js" defer></script>');
+  const scopeIndex = html.indexOf('<script src="./implementation-scope.js" defer></script>');
   const appIndex = html.indexOf('<script src="./app.js" defer></script>');
 
   assert.equal(existsSync(path.join(CONSOLE_ROOT, "source-bundle.js")), true);
+  assert.equal(existsSync(path.join(CONSOLE_ROOT, "implementation-scope.js")), true);
   assert.equal(existsSync(path.join(CONSOLE_ROOT, "app.js")), true);
-  assert.ok(contractIndex >= 0 && contractIndex < appIndex);
+  assert.ok(contractIndex >= 0 && contractIndex < scopeIndex && scopeIndex < appIndex);
 });
 
 test("Website Console renders a visible failure for missing or partial contracts", () => {
@@ -662,7 +666,7 @@ test("Website Console imports and labels linked preview readiness without claimi
   const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
 
   assert.match(appSource, /website-improvement-linked-preview/);
-  assert.match(appSource, /Import target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
+  assert.match(appSource, /Import scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
   assert.match(appSource, /No process started by design-ai/);
   assert.match(appSource, /A configured URL is not browser verification/);
   assert.match(appSource, /Linked preview readiness JSON imported\. Report tab opened\./);
@@ -739,6 +743,26 @@ test("Website Console imports target intake first and keeps implementation unaut
   assert.match(appSource, /Original target-repository intake JSON exported without reformatting/);
   assert.match(appSource, /Implementation unauthorized/);
   assert.match(appSource, /Target repository intake cleared\. Earlier review evidence remains available\./);
+});
+
+test("Website Console imports scope approval before proposal and restores the prior stage", () => {
+  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+
+  const approvalImport = "var importedScopeApproval = normalizeImplementationScopeApproval(parsed);";
+  const proposalImport = "var importedScopeProposal = normalizeImplementationScopeProposal(parsed);";
+  const intakeImport = "var importedTargetRepoIntake = normalizeTargetRepoIntake(parsed);";
+  assert.ok(appSource.indexOf(approvalImport) < appSource.indexOf(proposalImport));
+  assert.ok(appSource.indexOf(proposalImport) < appSource.indexOf(intakeImport));
+  assert.match(appSource, /Implementation Scope Approval/);
+  assert.match(appSource, /Implementation Scope Proposal/);
+  assert.match(appSource, /Original implementation-scope approval JSON exported without reformatting/);
+  assert.match(appSource, /Original implementation-scope proposal JSON exported without reformatting/);
+  assert.match(appSource, /Scope approval cleared\. Original implementation-scope proposal restored\./);
+  assert.match(appSource, /Scope proposal cleared\. Original target-repository intake restored\./);
+  assert.match(appSource, /No mutation performed/);
+  assert.match(appSource, /Commit pending/);
+  assert.match(appSource, /Push pending/);
+  assert.match(appSource, /Deployment pending/);
 });
 
 test("Website Console imports start JSON without claiming reference inspection or execution", () => {

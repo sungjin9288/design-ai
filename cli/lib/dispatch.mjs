@@ -13,6 +13,8 @@ import { runReview } from "../commands/review.mjs";
 import { runReviewHandoff } from "../commands/review-handoff.mjs";
 import { runReviewHandoffVerify } from "../commands/review-handoff-verify.mjs";
 import { runReviewIntake } from "../commands/review-intake.mjs";
+import { runReviewScope } from "../commands/review-scope.mjs";
+import { runReviewScopeApprove } from "../commands/review-scope-approve.mjs";
 import { runReviewPack } from "../commands/review-pack.mjs";
 import { runBenchmark } from "../commands/benchmark.mjs";
 import { runVerifyBrowser } from "../commands/verify-browser.mjs";
@@ -56,6 +58,8 @@ const commands = {
   "review-handoff": runReviewHandoff,
   "review-handoff-verify": runReviewHandoffVerify,
   "review-intake": runReviewIntake,
+  "review-scope": runReviewScope,
+  "review-scope-approve": runReviewScopeApprove,
   "review-pack": runReviewPack,
   benchmark: runBenchmark,
   "verify-browser": runVerifyBrowser,
@@ -112,6 +116,8 @@ export const CANONICAL_COMMANDS = [
   "review-handoff",
   "review-handoff-verify",
   "review-intake",
+  "review-scope",
+  "review-scope-approve",
   "review-pack",
   "benchmark",
   "verify-browser",

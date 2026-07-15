@@ -102,6 +102,7 @@ plugins:
             Review evidence handoff: 리뷰 근거 인계
             Review handoff validation receipt: 리뷰 인계 검증 영수증
             Target repository intake: 대상 저장소 사전 점검
+            Implementation scope approval: 구현 범위 승인
             Agent Development: 에이전트 개발
             Website Improvement: 웹사이트 개선
             Overview: 개요
@@ -189,6 +190,7 @@ nav:
       - Review evidence handoff: docs/REVIEW-HANDOFF.md
       - Review handoff validation receipt: docs/REVIEW-HANDOFF-RECEIPT.md
       - Target repository intake: docs/REVIEW-INTAKE.md
+      - Implementation scope approval: docs/IMPLEMENTATION-SCOPE.md
   - Agent Development: docs/AGENT-DEVELOPMENT.md
   - Agent SDK:
       - Reference: docs/SDK.md

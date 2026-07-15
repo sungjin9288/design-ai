@@ -16,6 +16,10 @@ import { buildReviewWorkflow } from "./review-workflow.mjs";
 import { buildReviewHandoff } from "./review-handoff.mjs";
 import { verifyReviewHandoff } from "./review-handoff-receipt.mjs";
 import { buildTargetRepoIntakeFromFile } from "./target-repo-intake.mjs";
+import {
+  approveImplementationScope,
+  proposeImplementationScope,
+} from "./implementation-scope.mjs";
 import { listProductReviewPacks, loadProductReviewPack } from "./product-review-pack.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
@@ -25,6 +29,8 @@ const SERVER_INSTRUCTIONS = [
   "Use design_ai_review_handoff to prepare a self-validating, undelivered transfer for another agent.",
   "Use design_ai_verify_review_handoff to validate an exact transfer and emit a bounded consumer receipt.",
   "Use design_ai_review_intake to inspect only the receipt-declared target root metadata and local Git state before scope approval.",
+  "Use design_ai_review_scope to bind an exact intake and scope request into an immutable proposal without reading application source.",
+  "Use design_ai_approve_review_scope only after explicit human confirmation to authorize the proposal's listed selectors; release actions remain separately gated.",
   "Use design_ai_start for a read-only route and design-contract plan; declared repositories, pages, and screenshots are not inspected and its next command is not executed.",
   "Use design_ai_inspect_html for a lower-level supplied-HTML quality report; unobserved runtime behavior remains unverified.",
   "Product review packs are explicit and never inferred from locale.",
@@ -216,6 +222,47 @@ export const MCP_TOOLS = [
         consumer: { type: "string", minLength: 1, description: "Consumer name; must match the validated receipt." },
       },
       required: ["receiptPath", "targetRoot", "consumer"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_review_scope",
+    title: "Propose an implementation scope",
+    description: [
+      "Bind exact target-intake and scope-request sources into an immutable implementation proposal.",
+      "Read-only: does not inspect application source, mutate the target, use the network, or authorize implementation.",
+    ].join(" "),
+    inputSchema: {
+      type: "object",
+      properties: {
+        intakeSource: { type: "string", minLength: 2, description: "Exact design-ai-target-repo-intake JSON source." },
+        intakeRef: { type: "string", minLength: 1, description: "Human-readable intake source reference." },
+        requestSource: { type: "string", minLength: 2, description: "Exact design-ai-implementation-scope-request JSON source." },
+        requestRef: { type: "string", minLength: 1, description: "Human-readable request source reference." },
+        consumer: { type: "string", minLength: 1, description: "Consumer name; must match the intake." },
+      },
+      required: ["intakeSource", "intakeRef", "requestSource", "requestRef", "consumer"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_approve_review_scope",
+    title: "Approve an implementation scope",
+    description: [
+      "Record explicit human approval for one exact implementation-scope proposal.",
+      "The operation writes nothing and authorizes only listed source reads and target-file changes; commit, push, deployment, migration execution, and external writes remain separately gated.",
+    ].join(" "),
+    inputSchema: {
+      type: "object",
+      properties: {
+        proposalSource: { type: "string", minLength: 2, description: "Exact design-ai-implementation-scope-proposal JSON source." },
+        proposalRef: { type: "string", minLength: 1, description: "Human-readable proposal source reference." },
+        approver: { type: "string", minLength: 1, description: "Self-declared approving person or role." },
+        approvalRef: { type: "string", minLength: 1, description: "Human-readable approval evidence reference." },
+        approvedAt: { type: "string", minLength: 1, description: "Canonical UTC ISO approval timestamp." },
+        confirmed: { type: "boolean", description: "Must be true to record explicit approval." },
+      },
+      required: ["proposalSource", "proposalRef", "approver", "approvalRef", "approvedAt", "confirmed"],
       additionalProperties: false,
     },
   },
@@ -831,6 +878,26 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
       receiptPath: input.receiptPath,
       targetRoot: input.targetRoot,
       consumer: input.consumer,
+    });
+    return jsonToolResult(payload);
+  }
+
+  if (name === "design_ai_review_scope") {
+    const payload = proposeImplementationScope(input.intakeSource, input.requestSource, {
+      intakeRef: input.intakeRef,
+      requestRef: input.requestRef,
+      consumer: input.consumer,
+    });
+    return jsonToolResult(payload);
+  }
+
+  if (name === "design_ai_approve_review_scope") {
+    const payload = approveImplementationScope(input.proposalSource, {
+      proposalRef: input.proposalRef,
+      approver: input.approver,
+      approvalRef: input.approvalRef,
+      approvedAt: input.approvedAt,
+      confirmed: input.confirmed,
     });
     return jsonToolResult(payload);
   }

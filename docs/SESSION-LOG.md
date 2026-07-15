@@ -5,6 +5,15 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 788 (unreleased)** — Added immutable implementation-scope request,
+  proposal, and approval contracts across CLI, typed SDK, in-process MCP, and
+  Website Console. The exact-source artifacts bind P9 intake to approved source
+  reads and target selectors while keeping commit, push, deployment, migration
+  execution, and external writes separately gated. The local release gate passes
+  with 795 tests, 8 strict audits, 749 packaged files, and installed-bin plus
+  one-shot smoke; fresh MCP proposal/approval and desktop/mobile Console proof
+  also pass with exact-byte export and restore behavior. PR #44 passes required
+  CI run `29418999657` before merge.
 - **Phase 787 (unreleased)** — Added a read-only target repository intake across CLI, MCP, and Website Console. It binds one validated consumer receipt to the exact declared local checkout, reads only bounded root metadata and local Git evidence, and leaves application source, network access, mutation, and implementation outside the contract. The local release gate passes with 778 tests, 8 strict audits, 739 packaged files, installed-bin plus one-shot intake smoke; desktop/mobile Console proof, a fresh Codex MCP call, and PR #43 required CI run `29413686416` pass. MCP reads the receipt from one explicit absolute path after a real fresh-client attempt showed that transferring the full receipt through the tool call was unnecessarily large.
 - **Phase 786 (unreleased)** — Added a separate consumer validation receipt across CLI, SDK, MCP, and Website Console. It revalidates exact handoff bytes for the named self-declared consumer while keeping identity, transport, acceptance, target-repository intake, and implementation unverified. The local release gate passes with 767 tests, 8 strict audits, 734 packaged files, SDK import smoke, and installed-bin plus one-shot receipt smoke; desktop/mobile Console, a fresh Codex MCP call, and PR #42 required CI run `29408587642` pass, while fresh Claude execution is blocked before the MCP call by organization policy.
 - **Phase 785 (unreleased)** — Added a self-validating review evidence handoff across CLI, SDK, MCP, and Website Console, preserving exact workflow and optional browser-evidence source bytes while keeping delivery, consumer validation, target inspection, and implementation pending; the local release gate passes with 760 tests, 8 strict audits, 728 packaged files, a 0/0 documentation warning policy, SDK import smoke, and installed-bin plus one-shot handoff smoke.

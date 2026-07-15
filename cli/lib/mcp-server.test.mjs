@@ -62,6 +62,65 @@ function runFixtureGit(root, args) {
   if (result.status !== 0) throw new Error(result.stderr || `git ${args.join(" ")} failed`);
 }
 
+function initializeFixtureRepo(root) {
+  writeFileSync(path.join(root, "package.json"), JSON.stringify({
+    scripts: { dev: "vite", build: "vite build" },
+    devDependencies: { vite: "7.0.0" },
+  }));
+  runFixtureGit(root, ["init", "-b", "main"]);
+  runFixtureGit(root, ["config", "user.name", "Design AI Test"]);
+  runFixtureGit(root, ["config", "user.email", "design-ai@example.com"]);
+  runFixtureGit(root, ["add", "."]);
+  runFixtureGit(root, ["commit", "-m", "test: initialize target"]);
+  runFixtureGit(root, ["remote", "add", "origin", "https://github.com/acme/site.git"]);
+}
+
+function buildFixtureReceipt(root) {
+  const workflow = buildReviewWorkflow(
+    "<!doctype html><html lang=\"ko\"><body><button>저장</button></body></html>",
+    {
+      sourceRef: "settings.html",
+      brief: "Review Korean settings",
+      repoUrl: "https://github.com/acme/site",
+      localPath: root,
+      locale: "ko-KR",
+      viewports: ["mobile"],
+      generatedAt: "2026-07-15T00:00:00.000Z",
+      sourceRoot: PACKAGE_ROOT,
+      prefix: SYMLINK_PREFIX,
+    },
+  );
+  const handoff = buildReviewHandoff(JSON.stringify(workflow, null, 2), {
+    workflowRef: "review-workflow.json",
+    recipient: "codex",
+  });
+  return verifyReviewHandoff(JSON.stringify(handoff, null, 2), {
+    handoffRef: "review-handoff.json",
+    consumer: "codex",
+  });
+}
+
+function buildScopeRequest() {
+  return {
+    kind: "design-ai-implementation-scope-request",
+    schemaVersion: 1,
+    objective: "Clarify the settings save action without changing the architecture.",
+    intendedBehavior: ["Keep the primary action clear and keyboard accessible."],
+    files: {
+      inspect: ["src/settings/**/*.tsx", "src/settings/**/*.test.tsx"],
+      change: ["src/settings/**/*.tsx"],
+      generated: [],
+    },
+    dependencies: [],
+    migrations: [],
+    externalWrites: [{ system: "GitHub", action: "push branch", destination: "acme/site" }],
+    verificationCommands: ["npm test", "npm run build"],
+    risks: ["The current label may be referenced by an existing test."],
+    preExistingChanges: [],
+    release: { commit: true, push: true, deployment: false },
+  };
+}
+
 test("MCP tool list exposes design-ai read-only workflow tools", async () => {
   const response = await handleMcpRequest({
     jsonrpc: "2.0",
@@ -466,39 +525,8 @@ test("design_ai_review_intake reads bounded target metadata without spawning the
   const root = mkdtempSync(path.join(tmpdir(), "design-ai-mcp-intake-"));
   const receiptDir = mkdtempSync(path.join(tmpdir(), "design-ai-mcp-receipt-"));
   try {
-    writeFileSync(path.join(root, "package.json"), JSON.stringify({
-      scripts: { dev: "vite", build: "vite build" },
-      devDependencies: { vite: "7.0.0" },
-    }));
-    runFixtureGit(root, ["init", "-b", "main"]);
-    runFixtureGit(root, ["config", "user.name", "Design AI Test"]);
-    runFixtureGit(root, ["config", "user.email", "design-ai@example.com"]);
-    runFixtureGit(root, ["add", "."]);
-    runFixtureGit(root, ["commit", "-m", "test: initialize target"]);
-    runFixtureGit(root, ["remote", "add", "origin", "https://github.com/acme/site.git"]);
-
-    const workflow = buildReviewWorkflow(
-      "<!doctype html><html lang=\"ko\"><body><button>저장</button></body></html>",
-      {
-        sourceRef: "settings.html",
-        brief: "Review Korean settings",
-        repoUrl: "https://github.com/acme/site",
-        localPath: root,
-        locale: "ko-KR",
-        viewports: ["mobile"],
-        generatedAt: "2026-07-15T00:00:00.000Z",
-        sourceRoot: PACKAGE_ROOT,
-        prefix: SYMLINK_PREFIX,
-      },
-    );
-    const handoff = buildReviewHandoff(JSON.stringify(workflow, null, 2), {
-      workflowRef: "review-workflow.json",
-      recipient: "codex",
-    });
-    const receipt = verifyReviewHandoff(JSON.stringify(handoff, null, 2), {
-      handoffRef: "review-handoff.json",
-      consumer: "codex",
-    });
+    initializeFixtureRepo(root);
+    const receipt = buildFixtureReceipt(root);
     const receiptPath = path.join(receiptDir, "review-handoff-receipt.json");
     writeFileSync(receiptPath, JSON.stringify(receipt, null, 2));
     let runCliCalled = false;
@@ -538,6 +566,65 @@ test("design_ai_review_intake rejects a relative receipt path", async () => {
     }),
     /receiptPath must be an absolute path/,
   );
+});
+
+test("scope proposal and approval MCP tools share the in-process contract without spawning the CLI", async () => {
+  const root = mkdtempSync(path.join(tmpdir(), "design-ai-mcp-scope-"));
+  const receiptDir = mkdtempSync(path.join(tmpdir(), "design-ai-mcp-scope-receipt-"));
+  try {
+    initializeFixtureRepo(root);
+    const receiptPath = path.join(receiptDir, "review-handoff-receipt.json");
+    writeFileSync(receiptPath, JSON.stringify(buildFixtureReceipt(root), null, 2));
+    const intakeResult = await callMcpTool("design_ai_review_intake", {
+      receiptPath,
+      targetRoot: root,
+      consumer: "codex",
+    });
+
+    let runCliCalled = false;
+    const proposalResult = await callMcpTool(
+      "design_ai_review_scope",
+      {
+        intakeSource: intakeResult.content[0].text,
+        intakeRef: "target-repo-intake.json",
+        requestSource: JSON.stringify(buildScopeRequest(), null, 2),
+        requestRef: "implementation-scope-request.json",
+        consumer: "codex",
+      },
+      async () => {
+        runCliCalled = true;
+        return { code: 0, stdout: "unexpected", stderr: "" };
+      },
+    );
+    const proposal = JSON.parse(proposalResult.content[0].text);
+    const approvalResult = await callMcpTool(
+      "design_ai_approve_review_scope",
+      {
+        proposalSource: proposalResult.content[0].text,
+        proposalRef: "implementation-scope-proposal.json",
+        approver: "product owner",
+        approvalRef: "approved in task",
+        approvedAt: "2026-07-15T12:00:00.000Z",
+        confirmed: true,
+      },
+      async () => {
+        runCliCalled = true;
+        return { code: 0, stdout: "unexpected", stderr: "" };
+      },
+    );
+    const approval = JSON.parse(approvalResult.content[0].text);
+
+    assert.equal(runCliCalled, false);
+    assert.equal(proposal.status, "approval-pending");
+    assert.equal(proposal.boundary.applicationSourceRead, false);
+    assert.equal(approval.status, "approved-for-implementation");
+    assert.deepEqual(approval.decision.authorizedGateIds, ["source-inspection", "target-files"]);
+    assert.deepEqual(approval.decision.remainingGateIds, ["external-writes", "commit", "push"]);
+    assert.equal(approval.boundary.targetRepoMutation, false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+    rmSync(receiptDir, { recursive: true, force: true });
+  }
 });
 
 test("design_ai_review_pack lists and reads shipped contracts without spawning the CLI", async () => {

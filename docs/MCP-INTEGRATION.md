@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 24 tools, including the canonical read-only review workflow, self-validating review handoff, consumer validation receipt, target repository intake, shared start flow, supplied-HTML quality inspection, Korean product review packs, artifact operations, a Website Improvement bundle handoff, linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 26 tools, including target intake, immutable scope proposal, separate scope approval, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -104,6 +104,18 @@ inspection; symbolic links are not followed.
 The result can be ready for scope review, need attention, or be blocked. None of
 those states authorizes source review or implementation. See [Target repository
 intake](REVIEW-INTAKE.md).
+
+### Implementation scope proposal and approval
+
+`design_ai_review_scope` accepts exact P9 intake and scope-request strings. It
+returns an immutable proposal without reading application source or authorizing
+implementation. `design_ai_approve_review_scope` requires explicit confirmation,
+an approver, evidence reference, and canonical UTC timestamp for one exact
+proposal. Both tools call the shared operation in-process without spawning the CLI.
+
+Approval authorizes only listed source and target-file selectors. Commit, push,
+deployment, migration execution, network access, and external writes remain
+separate gates. See [Implementation scope approval](IMPLEMENTATION-SCOPE.md).
 
 ### Approval-gated website implementation handoff
 

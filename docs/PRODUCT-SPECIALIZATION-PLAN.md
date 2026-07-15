@@ -358,7 +358,7 @@ dependencies, call a network, accept the handoff, or authorize implementation.
 
 ### P10 - Implementation scope approval
 
-Status: planned.
+Status: implemented in the current source, pending release.
 
 Turn a valid P9 intake into a reviewable proposal that names the exact files to
 inspect or change, intended behavior, risks, verification commands, and ownership
@@ -372,6 +372,17 @@ Exit criteria:
 - File globs, dependency changes, migrations, generated files, external writes,
   commit, push, and deployment each have visible approval states.
 - Scope expansion creates a new proposal instead of mutating approved history.
+
+The implementation adds `design-ai review-scope` and
+`design-ai review-scope-approve`, SDK `proposeImplementationScope()` and
+`approveImplementationScope()`, MCP `design_ai_review_scope` and
+`design_ai_approve_review_scope`, and Website Console import, exact export, and
+stage restore. Proposal and approval are separate immutable v1 artifacts.
+
+Every gate is derived again from the exact P9 intake and request. Approval grants
+only listed source inspection and target-file selectors. External writes, commit,
+push, deployment, and running an external-state migration remain separate. P10
+does not read application source or perform any implementation action.
 
 ### P11 - Implementation evidence
 

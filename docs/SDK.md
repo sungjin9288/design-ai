@@ -1,6 +1,6 @@
 # Agent SDK reference
 
-> Status: current source candidate — 15 read-only exports plus the opt-in `learn.*` local-write namespace; published v5.0.0 has 9 read-only verbs
+> Status: current source candidate — 17 read-only exports plus the opt-in `learn.*` local-write namespace; published v5.0.0 has 9 read-only verbs
 
 `@design-ai/cli/sdk` lets an external Node.js program — an agent runtime, a build script, a custom tool — use design-ai's deterministic design capabilities as importable functions, without shelling out to the CLI or spawning the MCP server. It is a thin, curated adapter over the same `cli/lib` functions the CLI and MCP server already call, so a capability that ships in the CLI is instantly available to an SDK consumer.
 
@@ -8,7 +8,7 @@ See [`AGENT-SDK.md`](AGENT-SDK.md) for the full design rationale, phased plan, a
 
 MCP parity: SDK `start()`, `reviewHtml()`, `reviewHandoff()`, `verifyReviewHandoff()`, `inspectHtml()`, `reviewPack()`, and `artifact()` map to `design_ai_start`, `design_ai_review_html`, `design_ai_review_handoff`, `design_ai_verify_review_handoff`, `design_ai_inspect_html`, `design_ai_review_pack`, and `design_ai_artifact`; `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
 
-Filesystem boundary: Website Improvement linked-preview inspection and target repository intake remain CLI/MCP operations (`design-ai site --linked-preview`, `design_ai_site_linked_preview`, `design-ai review-intake`, `design_ai_review_intake`) rather than SDK exports. SDK `start()` may declare references without reading them, while `reviewHtml()`, `reviewHandoff()`, `verifyReviewHandoff()`, and `inspectHtml()` accept source text and display references instead of paths. `reviewPack()` reads shipped definitions only. The SDK therefore stays a curated capability adapter with 16 current-source exports and no general local-project filesystem surface.
+Filesystem boundary: Website Improvement linked-preview inspection and target repository intake remain CLI/MCP operations rather than SDK exports. Scope proposal and approval accept exact JSON strings, so `proposeImplementationScope()` and `approveImplementationScope()` add no general local-project filesystem access. The SDK has 18 current-source exports and exactly three opt-in local learning write methods.
 
 ## Install and import
 
@@ -19,7 +19,7 @@ npm install @design-ai/cli
 ```
 
 ```js
-import { artifact, start, reviewHtml, reviewHandoff, verifyReviewHandoff, inspectHtml, reviewPack, route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
+import { approveImplementationScope, artifact, start, reviewHtml, reviewHandoff, verifyReviewHandoff, inspectHtml, proposeImplementationScope, reviewPack, route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
 ```
 
 Only the `./sdk` subpath is exported — `import "@design-ai/cli"` (the bare package root) is intentionally not exported, so importing the SDK is always an explicit `@design-ai/cli/sdk` import. `cli/lib/*` is internal and unstable; do not import it directly.
@@ -45,6 +45,13 @@ Every verb below is a pure, read-only adapter:
 - Semantic results are deterministic. Timestamped reports expose `generatedAt`; callers that need byte-stable output provide that value explicitly.
 
 ## Verbs
+
+### `proposeImplementationScope()` and `approveImplementationScope()`
+
+These functions bind exact P9 intake and request strings into an immutable
+proposal, then record explicit approval for that exact proposal. They do not read
+application source or perform target writes. See [Implementation scope
+approval](IMPLEMENTATION-SCOPE.md) for complete options and gate meaning.
 
 ### `start(brief, opts)`
 

@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 788 - Implementation scope approval (implemented, unreleased)
+
+- [x] Added exact-source `design-ai-implementation-scope-request`, proposal, and
+  approval v1 contracts with derived repository baseline, selector, ownership,
+  verification, risk, and gate validation.
+- [x] Added `review-scope` and `review-scope-approve` CLI commands, two typed SDK
+  exports, and two in-process MCP tools without adding a production dependency.
+- [x] Kept proposal and approval operations read-only; approval authorizes only
+  listed source reads and target-file changes while commit, push, deployment,
+  migration execution, and external writes remain separately gated.
+- [x] Added Website Console exact import/export, forged-artifact rejection, compact
+  scope rendering, and `approval -> proposal -> intake` restore behavior.
+- [x] Added installed-bin, one-shot `npm exec`, SDK import, MCP, package-content,
+  and browser contract coverage.
+- [x] `npm run release:check` passes with 795 tests, 8 strict audits, 749
+  packaged files, a 0/0 documentation warning policy, and package smoke.
+- [x] A fresh MCP process creates and approves the exact scope while preserving
+  false performed-action flags and the separate commit, push, and external-write
+  gates.
+- [x] Website Console approval import, original-byte export, clear-to-proposal
+  restore, and responsive rendering pass at 1440px and 390px with matching
+  SHA-256, 44px minimum button height, no horizontal overflow, and no console
+  warnings or errors.
+- [x] PR #44 passed required CI run `29418999657` before merge.
+
 ## Phase 787 - Target repository intake (implemented, unreleased)
 
 Grounds a validated review handoff in the exact local repository that would

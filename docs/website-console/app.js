@@ -10,6 +10,8 @@
   var REVIEW_HANDOFF_KEY = "design-ai.website-console.review-handoff";
   var REVIEW_HANDOFF_RECEIPT_KEY = "design-ai.website-console.review-handoff-receipt";
   var TARGET_REPO_INTAKE_KEY = "design-ai.website-console.target-repo-intake";
+  var IMPLEMENTATION_SCOPE_PROPOSAL_KEY = "design-ai.website-console.implementation-scope-proposal";
+  var IMPLEMENTATION_SCOPE_APPROVAL_KEY = "design-ai.website-console.implementation-scope-approval";
   var BROWSER_VERIFICATION_KEY = "design-ai.website-console.browser-verification";
 
   var sourceBundleApi = window.DesignAiWebsiteConsoleSourceBundle;
@@ -62,6 +64,19 @@
   var targetRepoIntakeMatchesReceipt = sourceBundleApi.targetRepoIntakeMatchesReceipt;
   var normalizeBrowserVerification = sourceBundleApi.normalizeBrowserVerification;
   var buildImportedArtifactJson = sourceBundleApi.buildImportedArtifactJson;
+  var implementationScopeApi = window.DesignAiWebsiteConsoleImplementationScope;
+  if (!implementationScopeApi
+    || typeof implementationScopeApi.normalizeImplementationScopeProposal !== "function"
+    || typeof implementationScopeApi.normalizeImplementationScopeApproval !== "function") {
+    var failedScopeApp = document.getElementById("app");
+    if (failedScopeApp) {
+      failedScopeApp.setAttribute("data-status", "error");
+      failedScopeApp.innerHTML = '<main id="main" class="loading-shell" tabindex="-1"><h1>Website Console unavailable</h1><p>Required local scripts did not load. Reload after updating the complete Website Console bundle.</p></main>';
+    }
+    throw new Error("Website Console implementation-scope contract failed to load.");
+  }
+  var normalizeImplementationScopeProposal = implementationScopeApi.normalizeImplementationScopeProposal;
+  var normalizeImplementationScopeApproval = implementationScopeApi.normalizeImplementationScopeApproval;
 
   var auditCategories = [
     {
@@ -169,10 +184,22 @@
     ["handoff-report", "Final handoff report"],
   ];
 
-  var importedTargetRepoIntake = loadImportedArtifact(
-    TARGET_REPO_INTAKE_KEY,
-    normalizeTargetRepoIntake,
+  var importedScopeApproval = loadImportedArtifact(
+    IMPLEMENTATION_SCOPE_APPROVAL_KEY,
+    normalizeImplementationScopeApproval,
   );
+  var importedScopeProposal = importedScopeApproval
+    ? importedArtifact(
+      normalizeImplementationScopeProposal(importedScopeApproval.value.proposal.value),
+      importedScopeApproval.value.proposal.source,
+    )
+    : loadImportedArtifact(IMPLEMENTATION_SCOPE_PROPOSAL_KEY, normalizeImplementationScopeProposal);
+  var importedTargetRepoIntake = importedScopeProposal
+    ? importedArtifact(
+      normalizeTargetRepoIntake(importedScopeProposal.value.intake.value),
+      importedScopeProposal.value.intake.source,
+    )
+    : loadImportedArtifact(TARGET_REPO_INTAKE_KEY, normalizeTargetRepoIntake);
   var importedReviewReceipt = loadImportedArtifact(
     REVIEW_HANDOFF_RECEIPT_KEY,
     normalizeReviewHandoffReceipt,
@@ -196,6 +223,8 @@
     : loadImportedArtifact(REVIEW_WORKFLOW_KEY, normalizeReviewWorkflow);
   var appState = {
     workspace: loadWorkspace(),
+    implementationScopeApproval: importedScopeApproval,
+    implementationScopeProposal: importedScopeProposal,
     targetRepoIntake: importedTargetRepoIntake,
     reviewReceipt: importedReviewReceipt,
     reviewHandoff: importedReviewHandoff,
@@ -665,6 +694,7 @@
   }
 
   function clearReviewWorkflowSession() {
+    clearImplementationScopeProposalSession();
     appState.targetRepoIntake = null;
     saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
     appState.reviewReceipt = null;
@@ -678,6 +708,7 @@
   }
 
   function clearReviewHandoffSession() {
+    clearImplementationScopeProposalSession();
     appState.targetRepoIntake = null;
     saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
     appState.reviewReceipt = null;
@@ -695,6 +726,7 @@
   }
 
   function clearReviewReceiptSession() {
+    clearImplementationScopeProposalSession();
     appState.targetRepoIntake = null;
     saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
     appState.reviewReceipt = null;
@@ -723,8 +755,32 @@
   }
 
   function clearTargetRepoIntakeSession() {
+    clearImplementationScopeProposalSession();
     appState.targetRepoIntake = null;
     saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
+  }
+
+  function clearImplementationScopeApprovalSession() {
+    appState.implementationScopeApproval = null;
+    saveImportedArtifact(IMPLEMENTATION_SCOPE_APPROVAL_KEY, null);
+    appState.implementationScopeProposal = loadImportedArtifact(
+      IMPLEMENTATION_SCOPE_PROPOSAL_KEY,
+      normalizeImplementationScopeProposal,
+    );
+    if (appState.implementationScopeProposal) {
+      appState.targetRepoIntake = importedArtifact(
+        normalizeTargetRepoIntake(appState.implementationScopeProposal.value.intake.value),
+        appState.implementationScopeProposal.value.intake.source,
+      );
+    }
+  }
+
+  function clearImplementationScopeProposalSession() {
+    appState.implementationScopeApproval = null;
+    saveImportedArtifact(IMPLEMENTATION_SCOPE_APPROVAL_KEY, null);
+    appState.implementationScopeProposal = null;
+    saveImportedArtifact(IMPLEMENTATION_SCOPE_PROPOSAL_KEY, null);
+    appState.targetRepoIntake = loadImportedArtifact(TARGET_REPO_INTAKE_KEY, normalizeTargetRepoIntake);
   }
 
   function isWorkspacePayload(value) {
@@ -872,7 +928,7 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
       "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
@@ -1041,13 +1097,16 @@
   }
 
   function renderQualityReview() {
+    var scopeApprovalArtifact = appState.implementationScopeApproval;
+    var scopeProposalArtifact = appState.implementationScopeProposal;
     var targetRepoIntakeArtifact = appState.targetRepoIntake;
     var reviewReceiptArtifact = appState.reviewReceipt;
     var reviewHandoffArtifact = appState.reviewHandoff;
     var reviewWorkflowArtifact = appState.reviewWorkflow;
     var qualityArtifact = appState.qualityReport;
     var browserArtifact = appState.browserVerification;
-    if (!targetRepoIntakeArtifact && !reviewReceiptArtifact && !reviewHandoffArtifact
+    if (!scopeApprovalArtifact && !scopeProposalArtifact && !targetRepoIntakeArtifact
+      && !reviewReceiptArtifact && !reviewHandoffArtifact
       && !reviewWorkflowArtifact && !qualityArtifact && !browserArtifact) {
       return panel("Import review evidence", "Import a canonical review workflow, quality-report JSON, or optional browser-verification JSON without changing either contract.", [
         "<pre class=\"report-preview start-command\"><code>design-ai inspect page.html --brief \"Review Korean product flow\" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json</code></pre>",
@@ -1056,9 +1115,13 @@
     }
 
     return [
-      targetRepoIntakeArtifact
-        ? renderTargetRepoIntake(targetRepoIntakeArtifact.value)
-        : "",
+      scopeApprovalArtifact
+        ? renderImplementationScopeApproval(scopeApprovalArtifact.value)
+        : scopeProposalArtifact
+          ? renderImplementationScopeProposal(scopeProposalArtifact.value)
+          : targetRepoIntakeArtifact
+            ? renderTargetRepoIntake(targetRepoIntakeArtifact.value)
+            : "",
       reviewReceiptArtifact
         ? renderReviewHandoffReceipt(reviewReceiptArtifact.value)
         : "",
@@ -1072,9 +1135,13 @@
         ? renderBrowserVerificationArtifact(browserArtifact.value)
         : panel("Browser verification", "Runtime evidence remains separate and optional.", "<div class=\"empty-state\">No browser-verification JSON imported. Static and runtime-unknown findings remain unchanged.</div>"),
       "<div class=\"button-row\">",
-      targetRepoIntakeArtifact
-        ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-target-intake\">Export original intake JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-target-intake\">Clear target intake</button>"
-        : reviewReceiptArtifact
+      scopeApprovalArtifact
+        ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-scope-approval\">Export original approval JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-scope-approval\">Clear scope approval</button>"
+        : scopeProposalArtifact
+          ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-scope-proposal\">Export original proposal JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-scope-proposal\">Clear scope proposal</button>"
+          : targetRepoIntakeArtifact
+            ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-target-intake\">Export original intake JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-target-intake\">Clear target intake</button>"
+          : reviewReceiptArtifact
           ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-review-receipt\">Export original receipt JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-review-receipt\">Clear validation receipt</button>"
         : reviewHandoffArtifact
           ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-review-handoff\">Export original handoff JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-review-handoff\">Clear review handoff</button>"
@@ -1088,6 +1155,39 @@
         : "",
       "</div>",
     ].join("");
+  }
+
+  function renderImplementationScopeProposal(proposal) {
+    var pendingGates = proposal.approvalGates.filter(function (gate) {
+      return gate.status === "pending";
+    }).map(function (gate) { return labelize(gate.id); });
+    return panel("Implementation Scope Proposal", "The exact intake and request are linked. Application source and target files remain untouched until this proposal is approved separately.", [
+      "<div class=\"evidence-summary\" aria-label=\"Implementation scope proposal summary\">",
+      metric("Status", proposal.status, "Human approval required"),
+      metric("Change selectors", proposal.scope.files.change.length, "Bounded target files"),
+      metric("Verification", proposal.scope.verificationCommands.length, "Commands declared"),
+      metric("Risks", proposal.scope.risks.length, "Recorded before implementation"),
+      "</div>",
+      "<dl class=\"evidence-list\"><div><dt>Objective</dt><dd>" + escapeHtml(proposal.scope.objective) + "</dd></div><div><dt>Target</dt><dd><code>" + escapeHtml(proposal.baseline.targetPath) + "</code></dd></div><div><dt>Branch and head</dt><dd><code>" + escapeHtml((proposal.baseline.branch || "detached") + " @ " + (proposal.baseline.head || "unknown")) + "</code></dd></div></dl>",
+      "<div class=\"grid-2 start-details\"><div><h4>Approved-file candidates</h4>" + renderStartList(proposal.scope.files.change.concat(proposal.scope.files.generated), "No file selectors recorded.") + "</div><div><h4>Pending gates</h4>" + renderStartList(pendingGates, "No pending gates recorded.") + "</div></div>",
+      "<div class=\"graph-boundaries\" aria-label=\"Implementation scope proposal boundary\"><span class=\"pill\">Read-only</span><span class=\"pill\">No source read</span><span class=\"pill\">No target mutation</span><span class=\"pill\">No network</span><span class=\"pill\">Implementation unauthorized</span></div>",
+    ].join(""));
+  }
+
+  function renderImplementationScopeApproval(approval) {
+    var files = approval.authorization.files.change.concat(approval.authorization.files.generated);
+    var remaining = approval.decision.remainingGateIds.map(labelize);
+    return panel("Implementation Scope Approval", "The named approver authorized only the linked selectors. This approval operation did not read source, mutate the target, commit, push, deploy, or write externally.", [
+      "<div class=\"evidence-summary\" aria-label=\"Implementation scope approval summary\">",
+      metric("Status", approval.status, "Implementation selectors only"),
+      metric("Approver", approval.approver.name, approval.approver.reference),
+      metric("Authorized gates", approval.decision.authorizedGateIds.length, "Source inspection and target files"),
+      metric("Remaining gates", remaining.length, "Release authority separate"),
+      "</div>",
+      "<dl class=\"evidence-list\"><div><dt>Target</dt><dd><code>" + escapeHtml(approval.authorization.targetPath) + "</code></dd></div><div><dt>Approved at</dt><dd>" + escapeHtml(approval.approver.approvedAt) + "</dd></div><div><dt>Proposal SHA-256</dt><dd><code>" + escapeHtml(approval.proposal.sha256) + "</code></dd></div></dl>",
+      "<div class=\"grid-2 start-details\"><div><h4>Authorized selectors</h4>" + renderStartList(files, "No mutation selectors authorized.") + "</div><div><h4>Still requires approval</h4>" + renderStartList(remaining, "No release gates requested.") + "</div></div>",
+      "<div class=\"graph-boundaries\" aria-label=\"Implementation scope approval boundary\"><span class=\"badge badge--pass\">Scope approved</span><span class=\"pill\">No mutation performed</span><span class=\"pill\">No external write</span><span class=\"pill\">Commit pending</span><span class=\"pill\">Push pending</span><span class=\"pill\">Deployment pending</span></div>",
+    ].join(""));
   }
 
   function renderTargetRepoIntake(intake) {
@@ -2973,6 +3073,24 @@
       clearReviewReceiptSession();
       refreshQualityLink();
       setMessage("Validation receipt cleared. Original review handoff restored.");
+    } else if (action === "download-scope-approval") {
+      if (appState.implementationScopeApproval) {
+        downloadFile("design-ai-implementation-scope-approval.json", appState.implementationScopeApproval.rawJson, "application/json");
+        setMessage("Original implementation-scope approval JSON exported without reformatting.");
+      }
+    } else if (action === "clear-scope-approval") {
+      clearImplementationScopeApprovalSession();
+      refreshQualityLink();
+      setMessage("Scope approval cleared. Original implementation-scope proposal restored.");
+    } else if (action === "download-scope-proposal") {
+      if (appState.implementationScopeProposal) {
+        downloadFile("design-ai-implementation-scope-proposal.json", appState.implementationScopeProposal.rawJson, "application/json");
+        setMessage("Original implementation-scope proposal JSON exported without reformatting.");
+      }
+    } else if (action === "clear-scope-proposal") {
+      clearImplementationScopeProposalSession();
+      refreshQualityLink();
+      setMessage("Scope proposal cleared. Original target-repository intake restored.");
     } else if (action === "download-target-intake") {
       if (appState.targetRepoIntake) {
         downloadFile("design-ai-target-repo-intake.json", appState.targetRepoIntake.rawJson, "application/json");
@@ -3186,12 +3304,54 @@
       try {
         var rawJson = String(reader.result || "");
         var parsed = JSON.parse(rawJson);
+        var importedScopeApproval = normalizeImplementationScopeApproval(parsed);
+        if (importedScopeApproval) {
+          var approvedProposal = normalizeImplementationScopeProposal(importedScopeApproval.proposal.value);
+          appState.implementationScopeApproval = importedArtifact(importedScopeApproval, rawJson);
+          appState.implementationScopeProposal = importedArtifact(
+            approvedProposal,
+            importedScopeApproval.proposal.source,
+          );
+          appState.targetRepoIntake = importedArtifact(
+            normalizeTargetRepoIntake(approvedProposal.intake.value),
+            approvedProposal.intake.source,
+          );
+          appState.activeTab = "quality";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveImportedArtifact(IMPLEMENTATION_SCOPE_APPROVAL_KEY, appState.implementationScopeApproval);
+          saveImportedArtifact(IMPLEMENTATION_SCOPE_PROPOSAL_KEY, appState.implementationScopeProposal);
+          saveImportedArtifact(TARGET_REPO_INTAKE_KEY, appState.targetRepoIntake);
+          refreshQualityLink();
+          setMessage("Implementation-scope approval imported. Exact proposal linkage and remaining release gates preserved.");
+          return;
+        }
+        var importedScopeProposal = normalizeImplementationScopeProposal(parsed);
+        if (importedScopeProposal) {
+          appState.implementationScopeApproval = null;
+          saveImportedArtifact(IMPLEMENTATION_SCOPE_APPROVAL_KEY, null);
+          appState.implementationScopeProposal = importedArtifact(importedScopeProposal, rawJson);
+          appState.targetRepoIntake = importedArtifact(
+            normalizeTargetRepoIntake(importedScopeProposal.intake.value),
+            importedScopeProposal.intake.source,
+          );
+          appState.activeTab = "quality";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveImportedArtifact(IMPLEMENTATION_SCOPE_PROPOSAL_KEY, appState.implementationScopeProposal);
+          saveImportedArtifact(TARGET_REPO_INTAKE_KEY, appState.targetRepoIntake);
+          refreshQualityLink();
+          setMessage("Implementation-scope proposal imported. Exact intake, request, selectors, risks, and pending gates preserved.");
+          return;
+        }
         var importedTargetRepoIntake = normalizeTargetRepoIntake(parsed);
         if (importedTargetRepoIntake) {
           if (appState.reviewReceipt
             && !targetRepoIntakeMatchesReceipt(importedTargetRepoIntake, appState.reviewReceipt.rawJson)) {
             throw new Error("Target repository intake does not match the imported receipt source.");
           }
+          appState.implementationScopeApproval = null;
+          appState.implementationScopeProposal = null;
+          saveImportedArtifact(IMPLEMENTATION_SCOPE_APPROVAL_KEY, null);
+          saveImportedArtifact(IMPLEMENTATION_SCOPE_PROPOSAL_KEY, null);
           appState.targetRepoIntake = importedArtifact(importedTargetRepoIntake, rawJson);
           appState.activeTab = "quality";
           localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
@@ -3203,6 +3363,7 @@
         var importedReviewReceipt = normalizeReviewHandoffReceipt(parsed);
         if (importedReviewReceipt) {
           var receiptHandoff = importedReviewReceipt.handoff.value;
+          clearImplementationScopeProposalSession();
           appState.targetRepoIntake = null;
           saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
           appState.reviewReceipt = importedArtifact(importedReviewReceipt, rawJson);
@@ -3237,6 +3398,7 @@
         }
         var importedReviewHandoff = normalizeReviewHandoff(parsed);
         if (importedReviewHandoff) {
+          clearImplementationScopeProposalSession();
           appState.targetRepoIntake = null;
           saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
           appState.reviewReceipt = null;
@@ -3268,6 +3430,7 @@
         }
         var importedReviewWorkflow = normalizeReviewWorkflow(parsed);
         if (importedReviewWorkflow) {
+          clearImplementationScopeProposalSession();
           appState.targetRepoIntake = null;
           saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
           appState.reviewReceipt = null;

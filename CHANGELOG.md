@@ -5,6 +5,8 @@ User-facing release notes for design-ai. Versions follow semver.
 ## Unreleased
 
 ### Added
+- Added CLI `design-ai review-scope` and `review-scope-approve`, SDK `proposeImplementationScope()` and `approveImplementationScope()`, MCP `design_ai_review_scope` and `design_ai_approve_review_scope`, and Website Console proposal/approval import over shared exact-source contracts.
+- Added immutable implementation-scope request, proposal, and approval v1 artifacts with derived repository baseline, file selectors, pre-existing-change ownership, risks, verification commands, and explicit implementation versus release gates.
 - Added CLI `design-ai review-intake`, MCP `design_ai_review_intake`, and Website Console intake import over one shared read-only target repository operation.
 - Added `design-ai-target-repo-intake` v1 with exact receipt linkage, declared and resolved path identity, bounded root project metadata, unfiltered local Git evidence, remaining approvals, and an unauthorized implementation-scope gate.
 - Added `design-ai review-handoff-verify`, SDK `verifyReviewHandoff()`, MCP `design_ai_verify_review_handoff`, and Website Console receipt import over one shared read-only validator.
@@ -28,6 +30,8 @@ User-facing release notes for design-ai. Versions follow semver.
 - Added a Website Console Start tab that validates and persists the canonical start JSON, displays declared references without claiming inspection, copies the next command and design contract, and exports the unchanged payload.
 
 ### Changed
+- The current source capability contract grows from 24 to 26 MCP tools and from 16 to 18 SDK exports while retaining exactly three opt-in learning-profile write tools.
+- Scope approval authorizes only listed source inspection and target-file selectors; commit, push, deployment, migration execution, network calls, and external writes remain separate gates.
 - The current source capability contract grows from 23 to 24 MCP tools while the SDK remains at 16 exports and exactly three opt-in learning-profile write tools.
 - Receiving agents can now prove which local checkout they inspected without reading application source, following symbolic links, starting a preview, calling a network, or authorizing implementation.
 - The current source capability contract grows from 22 to 23 MCP tools and from 15 to 16 SDK exports while retaining exactly three opt-in learning-profile write tools.
@@ -45,6 +49,10 @@ User-facing release notes for design-ai. Versions follow semver.
 - Packed-tarball and public-registry smoke now require the start payload to preserve an embedded design contract and empty performed local-write, target-mutation, and external-action arrays.
 
 ### Verified
+- `npm run release:check` passed for P10 implementation scope approval with 795 tests, 8 strict audits, 749 packaged files, a 0/0 documentation warning policy, SDK import smoke, and installed-bin plus one-shot proposal/approval smoke.
+- A fresh MCP process created and approved one exact scope while keeping local writes, target mutation, application-source reads, implementation, and external writes unperformed; commit, push, and the declared external write remained separate gates.
+- Website Console approval import, exact-byte export, clear-to-proposal restore, and responsive rendering passed at 1440px and 390px with matching SHA-256, 44px minimum visible button targets, no horizontal overflow, and no console warnings or errors.
+- PR #44 passed required audit, documentation policy, package integrity, and CLI plus VS Code library unit-test checks in CI run `29418999657` before merge.
 - `npm run release:check` passed for the P9 target repository intake with 778 tests, 8 strict audits, 739 packaged files, a 0/0 documentation warning policy, and installed-bin plus one-shot intake smoke.
 - Website Console intake import, exact JSON export, clear, and receipt restore passed at 1440px and 390px with 44px minimum visible button targets, no horizontal overflow, no console warnings or errors, and matching exported SHA-256.
 - A fresh Codex process called `design_ai_review_intake` through the configured local MCP server and confirmed exact target path and repository URL matches without target mutation, application-source reads, or implementation authorization.

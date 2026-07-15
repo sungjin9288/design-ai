@@ -2,7 +2,7 @@
 
 Use this guide when you want Claude Code or Codex to call design-ai as an MCP server instead of asking the agent to read files manually.
 
-The server is local, stdio-based, and deterministic. The current source candidate exposes 24 tools, including the canonical review workflow, self-validating review handoff, consumer validation receipt, target repository intake, shared start flow, supplied-HTML quality inspection, Korean product review packs, design artifact operations, recall, a read-only Website Improvement bundle handoff, a read-only linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. The server wraps existing `design-ai` CLI workflows such as route selection, prompt generation, corpus search, artifact checks, and Website Improvement planning.
+The server is local, stdio-based, and deterministic. The current source candidate exposes 26 tools, including immutable implementation-scope proposal and separate approval, while retaining exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. Shared scope operations run in-process and leave commit, push, deployment, migration execution, and external writes separately gated.
 
 ## What the server exposes
 

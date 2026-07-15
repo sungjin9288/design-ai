@@ -23,6 +23,10 @@
 export { artifact } from "./artifact-adapter.mjs";
 export { check } from "./check-adapter.mjs";
 export { inspectHtml } from "./inspect-adapter.mjs";
+export {
+  approveImplementationScope,
+  proposeImplementationScope,
+} from "./implementation-scope-adapter.mjs";
 export { reviewHtml } from "./review-adapter.mjs";
 export { reviewHandoff } from "./review-handoff-adapter.mjs";
 export { verifyReviewHandoff } from "./verify-review-handoff-adapter.mjs";

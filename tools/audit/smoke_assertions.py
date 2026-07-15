@@ -193,6 +193,8 @@ EXPECTED_HELP_TOPICS = (
     "review-handoff",
     "review-handoff-verify",
     "review-intake",
+    "review-scope",
+    "review-scope-approve",
     "review-pack",
     "benchmark",
     "verify-browser",
@@ -249,6 +251,8 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "review-handoff": "design-ai review-handoff <review-workflow.json> --recipient name [--quality-report file --browser-verification file] [--json]",
     "review-handoff-verify": "design-ai review-handoff-verify <review-handoff.json> --consumer name [--json]",
     "review-intake": "design-ai review-intake <receipt.json> --target-root path --consumer name [--json]",
+    "review-scope": "design-ai review-scope <target-intake.json> --request scope-request.json --consumer name [--json]",
+    "review-scope-approve": "design-ai review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes [--json]",
     "review-pack": "design-ai review-pack [id] [--json]",
     "benchmark": "design-ai benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
     "verify-browser": "design-ai verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]",
@@ -333,6 +337,18 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai review-intake <receipt.json> --target-root path --consumer name",
         "reads package.json, supported root entry metadata, and local Git metadata only",
         "does not read application source, start a preview, call a network, write a file, mutate the target repository, or authorize implementation",
+    ),
+    "review-scope": (
+        "Usage:",
+        "design-ai review-scope <target-intake.json> --request scope-request.json --consumer name",
+        "reads only the two explicit JSON files and writes nothing",
+        "Source inspection, target mutation, external writes, commit, push, and deployment remain unapproved",
+    ),
+    "review-scope-approve": (
+        "Usage:",
+        "design-ai review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes",
+        "reads one explicit proposal JSON file and writes nothing",
+        "External writes, commit, push, deployment, and external-state migration remain separately gated",
     ),
     "review-pack": (
         "Usage:",
@@ -527,6 +543,8 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "review-handoff <review-workflow.json> --recipient name",
     "review-handoff-verify <review-handoff.json> --consumer name",
     "review-intake <receipt.json> --target-root path --consumer name",
+    "review-scope <target-intake.json> --request scope-request.json --consumer name",
+    "review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes",
     "benchmark [case-id] [--strict] [--json]",
     "examples [query]",
     "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
@@ -4723,6 +4741,125 @@ def assert_target_repo_intake_json(
         raise SystemExit(f"target repo intake JSON after {context} exceeded its read-only boundary")
 
 
+def assert_implementation_scope_proposal_json(
+    raw: str,
+    intake_path: Path,
+    request_path: Path,
+    *,
+    consumer: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        proposal = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse implementation scope proposal after {context}") from error
+
+    assert_smoke_json_keys(
+        proposal,
+        [
+            "kind", "schemaVersion", "status", "consumer", "intake", "request",
+            "linkage", "baseline", "scope", "approvalGates", "issues", "nextAction", "boundary",
+        ],
+        label="top-level",
+        context=context,
+        command_label="implementation scope proposal JSON",
+    )
+    if (
+        proposal.get("kind") != "design-ai-implementation-scope-proposal"
+        or proposal.get("schemaVersion") != 1
+        or proposal.get("status") != "approval-pending"
+        or proposal.get("consumer") != {
+            "name": consumer,
+            "intakeConsumerMatch": True,
+            "identity": "self-declared",
+        }
+    ):
+        raise SystemExit(f"implementation scope proposal after {context} changed identity or status")
+
+    for field, source_path in (("intake", intake_path), ("request", request_path)):
+        source = source_path.read_text(encoding="utf-8")
+        artifact = proposal.get(field, {})
+        if (
+            artifact.get("reference") != str(source_path.resolve())
+            or artifact.get("source") != source
+            or artifact.get("sha256") != hashlib.sha256(source.encode("utf-8")).hexdigest()
+            or artifact.get("bytes") != len(source.encode("utf-8"))
+            or artifact.get("value") != json.loads(source)
+        ):
+            raise SystemExit(f"implementation scope proposal after {context} changed {field} source identity")
+
+    gates = {gate.get("id"): gate.get("status") for gate in proposal.get("approvalGates", [])}
+    if gates.get("source-inspection") != "pending" or gates.get("target-files") != "pending":
+        raise SystemExit(f"implementation scope proposal after {context} changed implementation gates")
+    if gates.get("external-writes") != "pending" or gates.get("commit") != "pending" or gates.get("push") != "pending":
+        raise SystemExit(f"implementation scope proposal after {context} changed release gates")
+    if proposal.get("nextAction", {}).get("implementationAuthorized") is not False:
+        raise SystemExit(f"implementation scope proposal after {context} authorized implementation early")
+    if proposal.get("boundary") != {
+        "mode": "read-only",
+        "localWrites": False,
+        "targetRepoMutation": False,
+        "externalWrites": False,
+        "networkCalls": False,
+        "applicationSourceRead": False,
+        "scopeApproved": False,
+        "implementationStarted": False,
+    }:
+        raise SystemExit(f"implementation scope proposal after {context} exceeded its read-only boundary")
+
+
+def assert_implementation_scope_approval_json(
+    raw: str,
+    proposal_path: Path,
+    *,
+    approver: str,
+    approval_ref: str,
+    approved_at: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        approval = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse implementation scope approval after {context}") from error
+
+    if (
+        approval.get("kind") != "design-ai-implementation-scope-approval"
+        or approval.get("schemaVersion") != 1
+        or approval.get("status") != "approved-for-implementation"
+        or approval.get("approver") != {
+            "name": approver,
+            "identity": "self-declared",
+            "reference": approval_ref,
+            "approvedAt": approved_at,
+        }
+    ):
+        raise SystemExit(f"implementation scope approval after {context} changed identity or decision")
+    proposal_source = proposal_path.read_text(encoding="utf-8")
+    proposal_artifact = approval.get("proposal", {})
+    if (
+        proposal_artifact.get("source") != proposal_source
+        or proposal_artifact.get("sha256") != hashlib.sha256(proposal_source.encode("utf-8")).hexdigest()
+        or proposal_artifact.get("bytes") != len(proposal_source.encode("utf-8"))
+        or proposal_artifact.get("value") != json.loads(proposal_source)
+    ):
+        raise SystemExit(f"implementation scope approval after {context} changed proposal identity")
+    decision = approval.get("decision", {})
+    if decision.get("authorizedGateIds") != ["source-inspection", "target-files"]:
+        raise SystemExit(f"implementation scope approval after {context} changed implementation authority")
+    if decision.get("remainingGateIds") != ["external-writes", "commit", "push"]:
+        raise SystemExit(f"implementation scope approval after {context} changed remaining release gates")
+    boundary = approval.get("boundary", {})
+    if boundary.get("targetRepoMutation") is not False or boundary.get("implementationStarted") is not False:
+        raise SystemExit(f"implementation scope approval after {context} claimed implementation work")
+    for field in ["externalWritesAuthorized", "commitAuthorized", "pushAuthorized", "deploymentAuthorized"]:
+        if boundary.get(field) is not False:
+            raise SystemExit(f"implementation scope approval after {context} expanded {field}")
+
+
 def assert_specialization_benchmark_json(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -5644,6 +5781,10 @@ def passing_main_help_output() -> str:
         "    Validate a handoff and emit a bounded consumer receipt",
         "  review-intake <receipt.json> --target-root path --consumer name [--json]",
         "    Inspect bounded target metadata before implementation scope approval",
+        "  review-scope <target-intake.json> --request scope-request.json --consumer name [--json]",
+        "    Build an immutable implementation-scope proposal",
+        "  review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes [--json]",
+        "    Approve one exact implementation-scope proposal",
         "  benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
         "    Run read-only product specialization regression proof",
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",
