@@ -66,7 +66,7 @@ Add an `exports` map to `package.json`:
 
 ### Phase A — read-only SDK core
 
-The ten current-source verbs above (`start`, `artifact`, `route`, `prompt`, `pack`, `search`, `recall`, `check`, `routes`, `version`) are pure adapters over existing `cli/lib` functions. They perform no file writes or network calls. `start` records declared product references without reading them; `prompt` and `pack` may read the local learning profile when requested, but they do not record a learning-usage sidecar through the SDK.
+The current read-only verbs, including `start`, `reviewHtml`, `reviewHandoff`, `inspectHtml`, `reviewPack`, and `artifact`, are pure adapters over existing `cli/lib` functions. They perform no file writes or network calls. `start` records declared product references without reading them; review operations accept caller-supplied source strings; `prompt` and `pack` may read the local learning profile when requested, but they do not record a learning-usage sidecar through the SDK.
 
 Verification gates:
 - `node --test` unit coverage for each adapter: signature, option defaults, return-shape keys, determinism, and parity with the CLI `--json` output for a fixed brief.

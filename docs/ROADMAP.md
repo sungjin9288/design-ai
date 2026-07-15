@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 785 - Review evidence handoff (implemented, unreleased)
+
+Turns one canonical review session into a portable contract another agent can
+validate without claiming that the handoff was transported, accepted, or
+implemented.
+
+### Delivered
+- [x] Added CLI `design-ai review-handoff`, SDK `reviewHandoff()`, and MCP `design_ai_review_handoff` over one shared operation.
+- [x] Preserved exact workflow, quality-report, and browser-verification source strings with byte counts, SHA-256 digests, parsed values, and explicit references.
+- [x] Required optional quality and browser evidence as a pair, then verified semantic report identity, browser source digest, and declared viewport coverage.
+- [x] Added named recipient, `not-delivered`, pending consumer validation, prepared implementation handoff, and unchanged remaining approval gates.
+- [x] Added Website Console handoff import, full revalidation, original-byte export, and responsive handoff-stage rendering.
+- [x] Expanded the source capability contract to 22 MCP tools and 15 SDK exports while retaining exactly three opt-in learning-profile write tools.
+- [x] Added installed-bin, one-shot `npm exec`, SDK import, Console, help, package-content, and shared drift assertion coverage.
+
+### Boundary
+- The CLI reads explicit regular JSON files. SDK and MCP receive exact source strings.
+- The operation writes no local file, sends no transport, invokes no model, inspects or mutates no target repository, starts no implementation, and makes no external request.
+- A prepared handoff remains unaccepted until the named consumer validates it and obtains its remaining approvals.
+
+### Verification target
+- [x] Focused core, CLI, SDK, MCP, Console, help, capability, and smoke assertion tests pass.
+- [x] `npm run release:check` passes with 760 tests, 8 strict audits, 728 packaged files, SDK import smoke, installed-bin and one-shot handoff smoke, and a 0/0 documentation warning policy.
+- [x] PR #41 passed required CI run `29405311672` before merge.
+
 ## Phase 784 - Canonical review workflow (implemented, unreleased)
 
 Turns one existing HTML artifact into a single linked review session instead of
@@ -23,7 +48,7 @@ commands.
 ### Verification target
 - [x] Focused core, CLI, SDK, MCP, Console, help, and smoke assertion tests pass.
 - [x] `npm run release:check` passes with 749 tests, 8 strict audits, 722 packaged files, a 0/0 documentation warning policy, SDK import smoke, and installed-bin plus one-shot review smoke.
-- [ ] Pull-request CI evidence will be recorded before merge.
+- [x] PR #40 passed required CI before merge.
 
 ## Phase 783 - Product specialization benchmark and adoption proof (implemented, unreleased)
 

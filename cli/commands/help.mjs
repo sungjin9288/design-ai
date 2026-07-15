@@ -10,6 +10,7 @@ import { runArtifact } from "./artifact.mjs";
 import { runStart } from "./start.mjs";
 import { runInspect } from "./inspect.mjs";
 import { runReview } from "./review.mjs";
+import { runReviewHandoff } from "./review-handoff.mjs";
 import { runReviewPack } from "./review-pack.mjs";
 import { runBenchmark } from "./benchmark.mjs";
 import { runVerifyBrowser } from "./verify-browser.mjs";
@@ -52,6 +53,7 @@ export const HELP_COMMANDS = [
   { topic: "start", usage: "start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]", description: "Build one read-only route, design contract, review, and next-step plan" },
   { topic: "inspect", usage: "inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--review-pack id] [--json]", description: "Build a read-only design quality report from explicit HTML" },
   { topic: "review", usage: "review <source.html> --brief text [--locale locale] [--viewport name] [--review-pack id] [--json]", description: "Compose one canonical read-only plan and static quality review" },
+  { topic: "review-handoff", usage: "review-handoff <review-workflow.json> --recipient name [--quality-report file --browser-verification file] [--json]", description: "Prepare a self-validating, undelivered review handoff" },
   { topic: "review-pack", usage: "review-pack [id] [--json]", description: "List or print Korean product review packs" },
   { topic: "benchmark", usage: "benchmark [case-id] [--strict] [--json] | benchmark --list [--json]", description: "Run read-only product specialization regression proof" },
   { topic: "verify-browser", usage: "verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]", description: "Run an approved browser adapter and record normalized local evidence" },
@@ -106,6 +108,7 @@ const HELP_RUNNERS = {
   start: () => runStart(["--help"]),
   inspect: () => runInspect(["--help"]),
   review: () => runReview(["--help"]),
+  "review-handoff": () => runReviewHandoff(["--help"]),
   "review-pack": () => runReviewPack(["--help"]),
   benchmark: () => runBenchmark(["--help"]),
   "verify-browser": () => runVerifyBrowser(["--help"]),

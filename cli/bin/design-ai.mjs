@@ -15,6 +15,7 @@
 //   start                Build one read-only route, design contract, review state, and next-step plan
 //   inspect              Build a read-only quality report from one explicit HTML file
 //   review               Compose one read-only plan and static quality review
+//   review-handoff       Prepare a self-validating review handoff for another agent
 //   review-pack          List or print Korean product review packs
 //   benchmark            Run read-only product specialization regression proof
 //   verify-browser       Run an approved external browser adapter and record local evidence

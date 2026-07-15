@@ -33,6 +33,7 @@ design-ai routes
 design-ai prompt "audit a Figma signup flow for Korean fintech"
 design-ai review-pack korean-fintech
 design-ai review page.html --brief "한국 핀테크 설정 검토" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json
+design-ai review-handoff review-workflow.json --recipient implementation-agent --json
 design-ai inspect page.html --brief "한국 핀테크 설정 검토" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json
 design-ai benchmark --strict
 design-ai pack "audit a Figma signup flow for Korean fintech" --max-bytes 80000
@@ -69,6 +70,12 @@ design-ai show knowledge/PRINCIPLES.md:29
 design contract, static quality report를 함께 반환하고 문맥과 SHA-256 linkage를
 증명한 뒤 browser verification과 구현 전에 멈춥니다. 품질 보고서만 필요할 때는
 하위 수준의 `inspect`를 사용하세요. [표준 디자인 리뷰 워크플로우](REVIEW-WORKFLOW.ko.md)를
+참고하세요.
+
+다른 에이전트나 검토자가 리뷰를 이어받을 때는 `design-ai review-handoff`를
+사용하세요. 원본 workflow JSON과 수신자를 보존하고 전송과 수신자 검증이 대기인
+상태에서 멈춥니다. 정확한 브라우저 근거가 있을 때만 `--quality-report`와
+`--browser-verification`을 함께 전달하세요. [리뷰 근거 인계](REVIEW-HANDOFF.ko.md)를
 참고하세요.
 
 맞는 command, 재사용 가능한 agent prompt, portable context bundle, artifact QA, known-good reference, opt-in local preference, 정확한 knowledge file을 찾아야 할 때 CLI route + prompt + pack + check + examples + learn + search + show를 사용하세요. `design-ai route --explain`은 왜 해당 route가 매칭됐는지와 참조 파일이 몇 개 사용 가능한지 보여줘요. 생성된 prompt에는 선택된 route id, routing reason, reference examples, 읽을 파일 목록, 실행 규칙, 추천 `design-ai check output.md --route <id> --strict` 명령, route-aware verification checklist가 포함돼요. 생성된 pack에는 context summary와 truncated/unavailable file warning이 들어가고, 가능한 경우 선택된 reference example file까지 포함돼서 다른 agent에 보내기 전에 bundle이 충분한지 판단할 수 있어요. `design-ai learn`은 local preference entry를 저장하고, 명시적 `--feedback`을 durable keep/improve/avoid guidance로 바꾸며, inline text / `--from-file` / `--stdin` feedback, category/query/limit filtering, 전체 portable `--backup --json`, local profile 또는 portable JSON을 `--redact --from-file` / `--redact --stdin`으로 받아 공유용 redacted `--redact --json` 출력 생성, `--out file` JSON artifact 저장과 `--force` overwrite control, portable JSON `--verify`, `--dry-run` preview와 confirmed `--yes` merge를 포함한 portable import, cleanup suggestion을 포함하는 non-mutating `--audit`, 안전한 `--audit --fix --dry-run` preview와 confirmed `--fix --yes` cleanup, `--stats` summary, confirmed `--forget`/`--clear` control을 지원해요. `learn --list --query --explain`과 `learn --export --query`는 recency fallback 없이 query와 맞는 local preference를 보여주고, list 설명에는 score, matched token, selection reason이 포함돼요. `prompt`/`pack --with-learning`은 명시적으로 요청했을 때만 entry를 포함하며 현재 brief와의 relevance로 먼저 정렬한 뒤 recency로 보완하고, `--learning-category`와 `--learning-limit`으로 주입 범위를 좁히며, warning profile이 보이도록 learned-context audit summary를 함께 넣어요. `design-ai check`는 생성된 Markdown이 grounding, unresolved marker, accessibility, responsive, screen-reader, misuse guidance를 갖췄는지 검사하고, `--route <id>`를 주면 산출물 유형별 route-specific evidence도 함께 점검해요. `--learn --yes`를 추가하면 warn/fail check 결과를 local learning entry로 저장해요. `design-ai check --examples --route <id>`를 쓰면 같은 QA rule로 해당 workflow의 worked example도 검사할 수 있고, `design-ai check --examples --all-routes --issues-only`는 maintainer용 전체 example QA gap summary를 출력해요. `design-ai examples --route <id>`는 선택한 workflow에 맞는 worked output을 찾아줘요. 실제 product/design brief가 shell 한 줄보다 길면 `--from-file` 또는 `--stdin`을 사용하세요. 자동 routing이 거의 맞지만 특정 workflow를 고르고 싶다면 `--route <id>`를 사용하세요. id는 `design-ai routes`, `design-ai route --list`, 또는 `design-ai route "..." --json`에서 확인할 수 있어요.

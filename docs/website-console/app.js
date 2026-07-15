@@ -7,6 +7,7 @@
   var START_PLAN_KEY = "design-ai.website-console.start-plan";
   var QUALITY_REPORT_KEY = "design-ai.website-console.quality-report";
   var REVIEW_WORKFLOW_KEY = "design-ai.website-console.review-workflow";
+  var REVIEW_HANDOFF_KEY = "design-ai.website-console.review-handoff";
   var BROWSER_VERIFICATION_KEY = "design-ai.website-console.browser-verification";
 
   var sourceBundleApi = window.DesignAiWebsiteConsoleSourceBundle;
@@ -23,6 +24,7 @@
     "buildSourceBundleRevalidationGateJson",
     "normalizeQualityReport",
     "normalizeReviewWorkflow",
+    "normalizeReviewHandoff",
     "normalizeBrowserVerification",
     "buildImportedArtifactJson",
   ];
@@ -49,6 +51,7 @@
   var buildSourceBundleRevalidationGateJson = sourceBundleApi.buildSourceBundleRevalidationGateJson;
   var normalizeQualityReport = sourceBundleApi.normalizeQualityReport;
   var normalizeReviewWorkflow = sourceBundleApi.normalizeReviewWorkflow;
+  var normalizeReviewHandoff = sourceBundleApi.normalizeReviewHandoff;
   var normalizeBrowserVerification = sourceBundleApi.normalizeBrowserVerification;
   var buildImportedArtifactJson = sourceBundleApi.buildImportedArtifactJson;
 
@@ -158,9 +161,16 @@
     ["handoff-report", "Final handoff report"],
   ];
 
-  var importedReviewWorkflow = loadImportedArtifact(REVIEW_WORKFLOW_KEY, normalizeReviewWorkflow);
+  var importedReviewHandoff = loadImportedArtifact(REVIEW_HANDOFF_KEY, normalizeReviewHandoff);
+  var importedReviewWorkflow = importedReviewHandoff
+    ? importedArtifact(
+      normalizeReviewWorkflow(importedReviewHandoff.value.artifacts.reviewWorkflow.value),
+      importedReviewHandoff.value.artifacts.reviewWorkflow.source,
+    )
+    : loadImportedArtifact(REVIEW_WORKFLOW_KEY, normalizeReviewWorkflow);
   var appState = {
     workspace: loadWorkspace(),
+    reviewHandoff: importedReviewHandoff,
     reviewWorkflow: importedReviewWorkflow,
     startPlan: importedReviewWorkflow
       ? normalizeStartPlan(importedReviewWorkflow.value.plan)
@@ -168,7 +178,14 @@
     qualityReport: importedReviewWorkflow
       ? importedArtifact(normalizeQualityReport(importedReviewWorkflow.value.report), "")
       : loadImportedArtifact(QUALITY_REPORT_KEY, normalizeQualityReport),
-    browserVerification: loadImportedArtifact(BROWSER_VERIFICATION_KEY, normalizeBrowserVerification),
+    browserVerification: importedReviewHandoff
+      ? importedReviewHandoff.value.artifacts.browserVerification
+        ? importedArtifact(
+          normalizeBrowserVerification(importedReviewHandoff.value.artifacts.browserVerification.value),
+          importedReviewHandoff.value.artifacts.browserVerification.source,
+        )
+        : null
+      : loadImportedArtifact(BROWSER_VERIFICATION_KEY, normalizeBrowserVerification),
     qualityLink: { digestStatus: "not-checked", missingViewports: [] },
     activeTab: loadActiveTab(),
     selectedTemplate: localStorage.getItem(SELECTED_TEMPLATE_KEY) || "codex-repo-intake",
@@ -620,10 +637,25 @@
   }
 
   function clearReviewWorkflowSession() {
+    appState.reviewHandoff = null;
+    saveImportedArtifact(REVIEW_HANDOFF_KEY, null);
     appState.reviewWorkflow = null;
     saveImportedArtifact(REVIEW_WORKFLOW_KEY, null);
     appState.startPlan = loadStartPlan();
     appState.qualityReport = loadImportedArtifact(QUALITY_REPORT_KEY, normalizeQualityReport);
+  }
+
+  function clearReviewHandoffSession() {
+    appState.reviewHandoff = null;
+    saveImportedArtifact(REVIEW_HANDOFF_KEY, null);
+    appState.reviewWorkflow = loadImportedArtifact(REVIEW_WORKFLOW_KEY, normalizeReviewWorkflow);
+    appState.startPlan = appState.reviewWorkflow
+      ? normalizeStartPlan(appState.reviewWorkflow.value.plan)
+      : loadStartPlan();
+    appState.qualityReport = appState.reviewWorkflow
+      ? importedArtifact(normalizeQualityReport(appState.reviewWorkflow.value.report), "")
+      : loadImportedArtifact(QUALITY_REPORT_KEY, normalizeQualityReport);
+    appState.browserVerification = loadImportedArtifact(BROWSER_VERIFICATION_KEY, normalizeBrowserVerification);
   }
 
   function isWorkspacePayload(value) {
@@ -771,7 +803,7 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import review workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import review handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
       "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
@@ -935,13 +967,14 @@
       ? "warn"
       : ["complete", "pass"].indexOf(status) !== -1
         ? "pass"
-        : ["not-run", "not-started", "pending", "unverified"].indexOf(status) !== -1
+        : ["prepared", "not-delivered", "not-run", "not-started", "pending", "unverified"].indexOf(status) !== -1
           ? "optional"
           : status;
     return "<span class=\"badge badge--" + escapeAttr(tone || "optional") + "\">" + escapeHtml(labelize(status || "unknown")) + "</span>";
   }
 
   function renderQualityReview() {
+    var reviewHandoffArtifact = appState.reviewHandoff;
     var reviewWorkflowArtifact = appState.reviewWorkflow;
     var qualityArtifact = appState.qualityReport;
     var browserArtifact = appState.browserVerification;
@@ -953,7 +986,9 @@
     }
 
     return [
-      reviewWorkflowArtifact ? renderReviewWorkflowSession(reviewWorkflowArtifact.value) : "",
+      reviewHandoffArtifact
+        ? renderReviewHandoffSession(reviewHandoffArtifact.value)
+        : reviewWorkflowArtifact ? renderReviewWorkflowSession(reviewWorkflowArtifact.value) : "",
       qualityArtifact
         ? renderQualityReportArtifact(qualityArtifact.value)
         : panel("Quality report", "The browser sidecar cannot replace its source quality report.", "<div class=\"empty-state\">Import the exact source quality-report JSON to verify the sidecar digest and declared viewport coverage.</div>"),
@@ -961,7 +996,9 @@
         ? renderBrowserVerificationArtifact(browserArtifact.value)
         : panel("Browser verification", "Runtime evidence remains separate and optional.", "<div class=\"empty-state\">No browser-verification JSON imported. Static and runtime-unknown findings remain unchanged.</div>"),
       "<div class=\"button-row\">",
-      reviewWorkflowArtifact
+      reviewHandoffArtifact
+        ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-review-handoff\">Export original handoff JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-review-handoff\">Clear review handoff</button>"
+        : reviewWorkflowArtifact
         ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-review-workflow\">Export original review JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-review-workflow\">Clear review workflow</button>"
         : qualityArtifact
         ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-quality-report\">Export original quality JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-quality-report\">Clear quality report</button>"
@@ -971,6 +1008,30 @@
         : "",
       "</div>",
     ].join("");
+  }
+
+  function renderReviewHandoffSession(handoff) {
+    var stageLabels = {
+      plan: "Plan",
+      "static-review": "Static review",
+      "browser-verification": "Browser verification",
+      "implementation-handoff": "Implementation handoff",
+    };
+    return panel("Prepared Handoff", "The transfer is self-validating but has not been delivered or accepted by the recipient.", [
+      "<div class=\"evidence-summary\" aria-label=\"Review handoff summary\">",
+      metric("Recipient", handoff.recipient.name, "Named destination only"),
+      metric("Delivery", handoff.recipient.delivery, "No transport performed"),
+      metric("Consumer validation", handoff.recipient.consumerValidation, "Recipient must revalidate"),
+      metric("Linkage", handoff.linkage.status, handoff.status),
+      "</div>",
+      "<ol class=\"review-session\" aria-label=\"Review handoff timeline\">",
+      handoff.stages.map(function (stage) {
+        return "<li><span class=\"review-session__stage\">" + escapeHtml(stageLabels[stage.id]) + "</span>" + qualityStatusBadge(stage.status) + "</li>";
+      }).join(""),
+      "<li><span class=\"review-session__stage\">Consumer validation</span>" + qualityStatusBadge(handoff.recipient.consumerValidation) + "</li>",
+      "</ol>",
+      "<div class=\"graph-boundaries\" aria-label=\"Review handoff boundary\"><span class=\"pill\">" + escapeHtml(handoff.boundary.mode) + "</span><span class=\"pill\">Not delivered</span><span class=\"pill\">No target mutation</span><span class=\"pill\">No external write</span></div>",
+    ].join(""));
   }
 
   function renderReviewWorkflowSession(workflow) {
@@ -2777,6 +2838,15 @@
       clearReviewWorkflowSession();
       refreshQualityLink();
       setMessage("Review workflow cleared. Direct Start and Quality imports remain available.");
+    } else if (action === "download-review-handoff") {
+      if (appState.reviewHandoff) {
+        downloadFile("design-ai-review-handoff.json", appState.reviewHandoff.rawJson, "application/json");
+        setMessage("Original review-handoff JSON exported without reformatting.");
+      }
+    } else if (action === "clear-review-handoff") {
+      clearReviewHandoffSession();
+      refreshQualityLink();
+      setMessage("Review handoff cleared. Direct review imports restored.");
     } else if (action === "download-quality-report") {
       if (appState.qualityReport) {
         downloadFile("design-ai-quality-report.json", appState.qualityReport.rawJson, "application/json");
@@ -2981,8 +3051,37 @@
       try {
         var rawJson = String(reader.result || "");
         var parsed = JSON.parse(rawJson);
+        var importedReviewHandoff = normalizeReviewHandoff(parsed);
+        if (importedReviewHandoff) {
+          appState.reviewHandoff = importedArtifact(importedReviewHandoff, rawJson);
+          appState.reviewWorkflow = importedArtifact(
+            normalizeReviewWorkflow(importedReviewHandoff.artifacts.reviewWorkflow.value),
+            importedReviewHandoff.artifacts.reviewWorkflow.source,
+          );
+          appState.startPlan = normalizeStartPlan(importedReviewHandoff.artifacts.reviewWorkflow.value.plan);
+          appState.qualityReport = importedArtifact(
+            normalizeQualityReport(importedReviewHandoff.artifacts.reviewWorkflow.value.report),
+            importedReviewHandoff.artifacts.qualityReport
+              ? importedReviewHandoff.artifacts.qualityReport.source
+              : "",
+          );
+          appState.browserVerification = importedReviewHandoff.artifacts.browserVerification
+            ? importedArtifact(
+              normalizeBrowserVerification(importedReviewHandoff.artifacts.browserVerification.value),
+              importedReviewHandoff.artifacts.browserVerification.source,
+            )
+            : null;
+          appState.activeTab = "quality";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveImportedArtifact(REVIEW_HANDOFF_KEY, appState.reviewHandoff);
+          refreshQualityLink();
+          setMessage("Canonical review-handoff JSON imported. Source bytes and pending delivery boundary preserved.");
+          return;
+        }
         var importedReviewWorkflow = normalizeReviewWorkflow(parsed);
         if (importedReviewWorkflow) {
+          appState.reviewHandoff = null;
+          saveImportedArtifact(REVIEW_HANDOFF_KEY, null);
           appState.reviewWorkflow = importedArtifact(importedReviewWorkflow, rawJson);
           appState.startPlan = normalizeStartPlan(importedReviewWorkflow.plan);
           appState.qualityReport = importedArtifact(normalizeQualityReport(importedReviewWorkflow.report), "");
@@ -3006,6 +3105,7 @@
         }
         var importedBrowserVerification = normalizeBrowserVerification(parsed);
         if (importedBrowserVerification) {
+          if (appState.reviewHandoff) clearReviewHandoffSession();
           appState.browserVerification = importedArtifact(importedBrowserVerification, rawJson);
           appState.activeTab = "quality";
           localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
@@ -3085,7 +3185,7 @@
         saveWorkspace();
         setMessage("Workspace JSON imported.");
       } catch (error) {
-        setMessage("Import failed. Use a canonical review workflow, quality, browser, start, Website Improvement workspace, runbook, or linked preview JSON file.");
+        setMessage("Import failed. Use a canonical review handoff, workflow, quality, browser, start, Website Improvement workspace, runbook, or linked preview JSON file.");
       }
     };
     reader.readAsText(file);

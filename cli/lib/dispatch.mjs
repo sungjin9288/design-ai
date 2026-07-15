@@ -10,6 +10,7 @@ import { runArtifact } from "../commands/artifact.mjs";
 import { runStart } from "../commands/start.mjs";
 import { runInspect } from "../commands/inspect.mjs";
 import { runReview } from "../commands/review.mjs";
+import { runReviewHandoff } from "../commands/review-handoff.mjs";
 import { runReviewPack } from "../commands/review-pack.mjs";
 import { runBenchmark } from "../commands/benchmark.mjs";
 import { runVerifyBrowser } from "../commands/verify-browser.mjs";
@@ -50,6 +51,7 @@ const commands = {
   start: runStart,
   inspect: runInspect,
   review: runReview,
+  "review-handoff": runReviewHandoff,
   "review-pack": runReviewPack,
   benchmark: runBenchmark,
   "verify-browser": runVerifyBrowser,
@@ -103,6 +105,7 @@ export const CANONICAL_COMMANDS = [
   "start",
   "inspect",
   "review",
+  "review-handoff",
   "review-pack",
   "benchmark",
   "verify-browser",

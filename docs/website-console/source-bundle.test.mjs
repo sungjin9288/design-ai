@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,6 +10,8 @@ import { validateBrowserVerification } from "../../cli/lib/browser-verification-
 import { validateDesignQualityReport } from "../../cli/lib/design-quality-contract.mjs";
 import { PACKAGE_ROOT } from "../../cli/lib/paths.mjs";
 import { buildReviewWorkflow } from "../../cli/lib/review-workflow.mjs";
+import { buildReviewHandoff } from "../../cli/lib/review-handoff.mjs";
+import { validateReviewHandoff } from "../../cli/lib/review-handoff-contract.mjs";
 
 const CONSOLE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
@@ -80,6 +83,31 @@ function canonicalBrowserReport() {
   };
 }
 
+function failedBrowserReport() {
+  const report = canonicalBrowserReport();
+  const probe = report.probes[0];
+  const findingId = `finding:${probe.id}`;
+  probe.status = "fail";
+  probe.findingIds = [findingId];
+  report.findings = [{
+    id: findingId,
+    probeId: probe.id,
+    sourceFindingIds: [],
+    status: "confirmed",
+    title: "Responsive verification failed",
+    observation: probe.observation,
+    artifacts: probe.artifacts,
+  }];
+  report.summary = {
+    status: "fail",
+    passed: report.probes.length - 1,
+    failed: 1,
+    unverified: 0,
+    nextAction: "Fix the confirmed failure, then rerun browser verification.",
+  };
+  return report;
+}
+
 test("source-bundle classic script exposes the focused frozen API", () => {
   assert.equal(Object.isFrozen(api), true);
   assert.deepEqual(Object.keys(api), [
@@ -95,6 +123,7 @@ test("source-bundle classic script exposes the focused frozen API", () => {
     "buildSourceBundleRevalidationGateJson",
     "normalizeQualityReport",
     "normalizeReviewWorkflow",
+    "normalizeReviewHandoff",
     "normalizeBrowserVerification",
     "buildImportedArtifactJson",
   ]);
@@ -244,6 +273,66 @@ test("review workflow normalization preserves the exact linked read-only session
   assert.equal(api.normalizeReviewWorkflow({ ...workflow, extra: true }), null);
 });
 
+test("review handoff normalization revalidates embedded sources and pending delivery", () => {
+  const source = "<!doctype html><html lang=\"ko\"><body><button>저장</button></body></html>";
+  const workflow = buildReviewWorkflow(source, {
+    brief: "한국어 계정 설정 화면을 검토한다",
+    sourceRef: "settings.html",
+    sourceRoot: PACKAGE_ROOT,
+    prefix: "design-",
+    locale: "ko-KR",
+    viewports: ["mobile"],
+    generatedAt: "2026-07-15T00:00:00.000Z",
+  });
+  const workflowSource = JSON.stringify(workflow, null, 2);
+  const qualityReportSource = JSON.stringify(workflow.report, null, 2);
+  const browser = canonicalBrowserReport();
+  browser.sourceReport.sha256 = createHash("sha256").update(qualityReportSource).digest("hex");
+  const handoff = buildReviewHandoff(workflowSource, {
+    workflowRef: "review-workflow.json",
+    recipient: "codex",
+    qualityReportSource,
+    qualityReportRef: "quality-report.json",
+    browserVerificationSource: JSON.stringify(browser, null, 2),
+    browserVerificationRef: "browser-verification.json",
+  });
+  const rawHandoff = JSON.stringify(handoff, null, 2);
+  const normalized = api.normalizeReviewHandoff(handoff);
+
+  assert.strictEqual(validateReviewHandoff(handoff), handoff);
+  assert.notEqual(normalized, handoff);
+  assert.equal(JSON.stringify(normalized), JSON.stringify(handoff));
+  assert.equal(api.buildImportedArtifactJson(normalized, rawHandoff), rawHandoff);
+  assert.equal(normalized.recipient.delivery, "not-delivered");
+  assert.equal(normalized.recipient.consumerValidation, "pending");
+
+  const failedBrowser = failedBrowserReport();
+  failedBrowser.sourceReport.sha256 = createHash("sha256").update(qualityReportSource).digest("hex");
+  const failedHandoff = buildReviewHandoff(workflowSource, {
+    workflowRef: "review-workflow.json",
+    recipient: "codex",
+    qualityReportSource,
+    qualityReportRef: "quality-report.json",
+    browserVerificationSource: JSON.stringify(failedBrowser, null, 2),
+    browserVerificationRef: "browser-verification.json",
+  });
+  const normalizedFailure = api.normalizeReviewHandoff(failedHandoff);
+  assert.notEqual(normalizedFailure, null);
+  assert.ok(normalizedFailure.nextAction.approvalRequiredBefore.some((item) => item.includes("browser")));
+
+  const changedSource = structuredClone(handoff);
+  changedSource.artifacts.reviewWorkflow.source += "\n";
+  assert.equal(api.normalizeReviewHandoff(changedSource), null);
+
+  const changedDelivery = structuredClone(handoff);
+  changedDelivery.recipient.delivery = "delivered";
+  assert.equal(api.normalizeReviewHandoff(changedDelivery), null);
+
+  const changedViewport = structuredClone(handoff);
+  changedViewport.artifacts.browserVerification.value.viewports[0].name = "desktop";
+  assert.equal(api.normalizeReviewHandoff(changedViewport), null);
+});
+
 test("source-bundle normalization preserves the provenance contract", () => {
   const normalized = api.normalizeRunbookSourceBundle({
     directory: "/tmp/bundle",
@@ -377,7 +466,7 @@ test("Website Console imports and labels linked preview readiness without claimi
   const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
 
   assert.match(appSource, /website-improvement-linked-preview/);
-  assert.match(appSource, /Import review workflow, quality, browser, start, workspace, runbook, or preview JSON/);
+  assert.match(appSource, /Import review handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
   assert.match(appSource, /No process started by design-ai/);
   assert.match(appSource, /A configured URL is not browser verification/);
   assert.match(appSource, /Linked preview readiness JSON imported\. Report tab opened\./);
@@ -408,6 +497,21 @@ test("Website Console imports the review workflow before direct artifacts and pr
   assert.match(appSource, /Clear review workflow/);
   assert.match(appSource, /Browser verification/);
   assert.match(appSource, /Human review/);
+});
+
+test("Website Console imports review handoff first and keeps delivery pending", () => {
+  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+
+  assert.match(appSource, /design-ai\.website-console\.review-handoff/);
+  assert.match(appSource, /var importedReviewHandoff = normalizeReviewHandoff\(parsed\);/);
+  assert.ok(appSource.indexOf("var importedReviewHandoff = normalizeReviewHandoff(parsed);") < appSource.indexOf("var importedReviewWorkflow = normalizeReviewWorkflow(parsed);"));
+  assert.match(appSource, /Canonical review-handoff JSON imported\. Source bytes and pending delivery boundary preserved\./);
+  assert.match(appSource, /Prepared Handoff/);
+  assert.match(appSource, /No transport performed/);
+  assert.match(appSource, /Recipient must revalidate/);
+  assert.match(appSource, /Export original handoff JSON/);
+  assert.match(appSource, /Original review-handoff JSON exported without reformatting\./);
+  assert.match(appSource, /Clear review handoff/);
 });
 
 test("Website Console imports start JSON without claiming reference inspection or execution", () => {

@@ -265,6 +265,39 @@ Local release evidence: `npm run release:check` passes with 749 tests, 8 strict
 audits, 722 packaged files, a 0/0 documentation warning policy, SDK import smoke,
 and canonical review smoke through installed-bin plus one-shot `npm exec` paths.
 
+### P7 - Review evidence handoff
+
+Status: implemented in the current source, pending release.
+
+Make a review safe to pass between agents without pretending that a local JSON
+object is a delivered or accepted result. A consumer should be able to prove which
+workflow it received, whether browser evidence came from the exact quality-report
+bytes, and which approvals still block implementation.
+
+The implementation adds CLI `design-ai review-handoff`, SDK `reviewHandoff()`, MCP
+`design_ai_review_handoff`, and Website Console handoff import. The contract stores
+each source string beside its parsed value, byte count, SHA-256 digest, and
+reference. Browser evidence is optional, but its quality report and sidecar must be
+supplied as a pair and agree with the workflow report and declared viewports.
+
+Exit criteria:
+
+- The exact review-workflow source survives preparation, import, and export.
+- Browser-linked handoffs reject missing pairs, semantic drift, source-digest
+  drift, and incomplete viewport evidence.
+- A named recipient never implies transport; delivery stays `not-delivered` and
+  consumer validation stays `pending`.
+- The handoff stage is `prepared`, not implemented, and remaining approval gates
+  survive unchanged unless browser evidence has actually satisfied them.
+- CLI, SDK, MCP, and Website Console validate the same read-only contract.
+- Installed package, one-shot `npm exec`, SDK import, Console fixtures, and shared
+  smoke assertions reject source, linkage, stage, recipient, or permission drift.
+
+P7 does not send a message, invoke another model, inspect a target repository,
+write an evidence file, edit code, run implementation tests, commit, push, deploy,
+or call an external service. Those actions belong to the receiving workflow under
+its own permissions and evidence.
+
 ## Quality targets
 
 These are targets for the specialization program, not claims about the current

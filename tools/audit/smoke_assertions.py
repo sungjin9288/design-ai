@@ -190,6 +190,7 @@ EXPECTED_HELP_TOPICS = (
     "start",
     "inspect",
     "review",
+    "review-handoff",
     "review-pack",
     "benchmark",
     "verify-browser",
@@ -243,6 +244,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "start": "design-ai start <brief|--from-file file|--stdin> [--route id] [--repo-url url|--local-path path] [--url url] [--screenshot ref] [--locale locale] [--viewport name] [--json]",
     "inspect": "design-ai inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--review-pack id] [--json]",
     "review": "design-ai review <source.html> --brief text [--locale locale] [--viewport name] [--review-pack id] [--json]",
+    "review-handoff": "design-ai review-handoff <review-workflow.json> --recipient name [--quality-report file --browser-verification file] [--json]",
     "review-pack": "design-ai review-pack [id] [--json]",
     "benchmark": "design-ai benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
     "verify-browser": "design-ai verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]",
@@ -307,6 +309,14 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai review <source.html> --brief text",
         "canonical read-only plan and static design quality review",
         "does not run a browser",
+    ),
+    "review-handoff": (
+        "Usage:",
+        "design-ai review-handoff <review-workflow.json> --recipient name",
+        "--quality-report file",
+        "--browser-verification file",
+        "reads explicit JSON files and writes nothing",
+        "not delivered, consumer-validated, or implemented",
     ),
     "review-pack": (
         "Usage:",
@@ -498,6 +508,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "pack <brief|--from-file file|--stdin|--eval-template|--eval>",
     "check <artifact.md|--stdin|--examples>",
     "start <brief|--from-file file|--stdin>",
+    "review-handoff <review-workflow.json> --recipient name",
     "benchmark [case-id] [--strict] [--json]",
     "examples [query]",
     "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
@@ -4382,6 +4393,106 @@ def assert_review_workflow_json(
         raise SystemExit(f"review workflow JSON after {context} changed its read-only boundary")
 
 
+def assert_review_handoff_json(
+    raw: str,
+    workflow_path: Path,
+    *,
+    recipient: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        handoff = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse review handoff JSON after {context}") from error
+
+    assert_smoke_json_keys(
+        handoff,
+        [
+            "kind", "schemaVersion", "status", "recipient", "artifacts",
+            "linkage", "stages", "nextAction", "boundary",
+        ],
+        label="top-level",
+        context=context,
+        command_label="review handoff JSON",
+    )
+    if (
+        handoff.get("kind") != "design-ai-review-handoff"
+        or handoff.get("schemaVersion") != 1
+        or handoff.get("status") != "static-evidence-prepared"
+    ):
+        raise SystemExit(f"review handoff JSON after {context} changed its contract identity")
+    if handoff.get("recipient") != {
+        "name": recipient,
+        "delivery": "not-delivered",
+        "consumerValidation": "pending",
+    }:
+        raise SystemExit(f"review handoff JSON after {context} changed its pending recipient state")
+
+    artifacts = handoff.get("artifacts")
+    if not isinstance(artifacts, dict) or set(artifacts) != {
+        "reviewWorkflow", "qualityReport", "browserVerification",
+    }:
+        raise SystemExit(f"review handoff JSON after {context} changed its artifact inventory")
+    workflow_artifact = artifacts.get("reviewWorkflow")
+    workflow_source = workflow_path.read_text(encoding="utf-8")
+    if not isinstance(workflow_artifact, dict) or set(workflow_artifact) != {
+        "reference", "sha256", "bytes", "source", "value",
+    }:
+        raise SystemExit(f"review handoff JSON after {context} changed its workflow artifact shape")
+    if (
+        workflow_artifact.get("reference") != str(workflow_path.resolve())
+        or workflow_artifact.get("source") != workflow_source
+        or workflow_artifact.get("sha256") != hashlib.sha256(workflow_source.encode("utf-8")).hexdigest()
+        or workflow_artifact.get("bytes") != len(workflow_source.encode("utf-8"))
+    ):
+        raise SystemExit(f"review handoff JSON after {context} lost exact workflow source identity")
+    try:
+        workflow_value = json.loads(workflow_source)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"review handoff source workflow after {context} is invalid JSON") from error
+    if workflow_artifact.get("value") != workflow_value:
+        raise SystemExit(f"review handoff JSON after {context} changed its embedded workflow value")
+    if artifacts.get("qualityReport") is not None or artifacts.get("browserVerification") is not None:
+        raise SystemExit(f"review handoff JSON after {context} added undeclared browser evidence")
+
+    linkage = handoff.get("linkage")
+    expected_linkage = {
+        "status": "pass",
+        "reviewWorkflowArtifactSha256": review_workflow_digest(workflow_value),
+        "qualityReportArtifactSha256": workflow_value.get("linkage", {}).get("reportSha256"),
+        "browserVerificationArtifactSha256": None,
+        "qualityReportArtifactMatch": None,
+        "browserSourceReportMatch": None,
+        "viewportCoverage": "not-run",
+    }
+    if linkage != expected_linkage:
+        raise SystemExit(f"review handoff JSON after {context} changed artifact linkage evidence")
+    if handoff.get("stages") != [
+        {"id": "plan", "status": "complete", "artifactKind": "design-ai-start"},
+        {"id": "static-review", "status": "complete", "artifactKind": "design-ai-quality-report"},
+        {"id": "browser-verification", "status": "not-run", "artifactKind": None},
+        {"id": "implementation-handoff", "status": "prepared", "artifactKind": "design-ai-review-handoff"},
+    ]:
+        raise SystemExit(f"review handoff JSON after {context} changed its stage sequence")
+    if handoff.get("nextAction") != {
+        "id": "consumer-validation-required",
+        "status": "pending",
+        "summary": f"Deliver this prepared handoff to {recipient}, then validate it before implementation.",
+        "approvalRequiredBefore": workflow_value.get("nextAction", {}).get("approvalRequiredBefore"),
+    }:
+        raise SystemExit(f"review handoff JSON after {context} changed its consumer gate")
+    if handoff.get("boundary") != {
+        "mode": "read-only",
+        "localWrites": False,
+        "targetRepoMutation": False,
+        "externalWrites": False,
+        "deliveryPerformed": False,
+    }:
+        raise SystemExit(f"review handoff JSON after {context} changed its undelivered boundary")
+
+
 def assert_specialization_benchmark_json(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -5297,6 +5408,8 @@ def passing_main_help_output() -> str:
         "    Build one read-only route, design contract, review, and next-step plan",
         "  review <source.html> --brief text [--locale locale] [--viewport name] [--review-pack id] [--json]",
         "    Compose one canonical read-only plan and static quality review",
+        "  review-handoff <review-workflow.json> --recipient name [--quality-report file --browser-verification file] [--json]",
+        "    Prepare a self-validating, undelivered review handoff",
         "  benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
         "    Run read-only product specialization regression proof",
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",
@@ -9831,6 +9944,94 @@ def run_self_test() -> None:
                 cmd=review_cmd,
             ),
             expected="changed its read-only boundary",
+            scope="smoke assertions",
+        )
+
+        workflow_source = json.dumps(review_workflow, ensure_ascii=False, indent=2)
+        workflow_path = Path(review_tmp) / "review-workflow.json"
+        workflow_path.write_text(workflow_source, encoding="utf-8")
+        recipient = "smoke-agent"
+        review_handoff = {
+            "kind": "design-ai-review-handoff",
+            "schemaVersion": 1,
+            "status": "static-evidence-prepared",
+            "recipient": {
+                "name": recipient,
+                "delivery": "not-delivered",
+                "consumerValidation": "pending",
+            },
+            "artifacts": {
+                "reviewWorkflow": {
+                    "reference": str(workflow_path.resolve()),
+                    "sha256": hashlib.sha256(workflow_source.encode("utf-8")).hexdigest(),
+                    "bytes": len(workflow_source.encode("utf-8")),
+                    "source": workflow_source,
+                    "value": review_workflow,
+                },
+                "qualityReport": None,
+                "browserVerification": None,
+            },
+            "linkage": {
+                "status": "pass",
+                "reviewWorkflowArtifactSha256": review_workflow_digest(review_workflow),
+                "qualityReportArtifactSha256": review_workflow["linkage"]["reportSha256"],
+                "browserVerificationArtifactSha256": None,
+                "qualityReportArtifactMatch": None,
+                "browserSourceReportMatch": None,
+                "viewportCoverage": "not-run",
+            },
+            "stages": [
+                {"id": "plan", "status": "complete", "artifactKind": "design-ai-start"},
+                {"id": "static-review", "status": "complete", "artifactKind": "design-ai-quality-report"},
+                {"id": "browser-verification", "status": "not-run", "artifactKind": None},
+                {"id": "implementation-handoff", "status": "prepared", "artifactKind": "design-ai-review-handoff"},
+            ],
+            "nextAction": {
+                "id": "consumer-validation-required",
+                "status": "pending",
+                "summary": f"Deliver this prepared handoff to {recipient}, then validate it before implementation.",
+                "approvalRequiredBefore": review_workflow["nextAction"]["approvalRequiredBefore"],
+            },
+            "boundary": {
+                "mode": "read-only",
+                "localWrites": False,
+                "targetRepoMutation": False,
+                "externalWrites": False,
+                "deliveryPerformed": False,
+            },
+        }
+        handoff_cmd = ["design-ai", "review-handoff", str(workflow_path), "--recipient", recipient, "--json"]
+        assert_review_handoff_json(
+            json.dumps(review_handoff),
+            workflow_path,
+            recipient=recipient,
+            context=context,
+            cmd=handoff_cmd,
+        )
+        delivered_handoff = json.loads(json.dumps(review_handoff))
+        delivered_handoff["recipient"]["delivery"] = "delivered"
+        expect_self_test_failure(
+            lambda: assert_review_handoff_json(
+                json.dumps(delivered_handoff),
+                workflow_path,
+                recipient=recipient,
+                context=context,
+                cmd=handoff_cmd,
+            ),
+            expected="changed its pending recipient state",
+            scope="smoke assertions",
+        )
+        changed_source_handoff = json.loads(json.dumps(review_handoff))
+        changed_source_handoff["artifacts"]["reviewWorkflow"]["source"] += "\n"
+        expect_self_test_failure(
+            lambda: assert_review_handoff_json(
+                json.dumps(changed_source_handoff),
+                workflow_path,
+                recipient=recipient,
+                context=context,
+                cmd=handoff_cmd,
+            ),
+            expected="lost exact workflow source identity",
             scope="smoke assertions",
         )
     if build_plugin_inventory_summary({
