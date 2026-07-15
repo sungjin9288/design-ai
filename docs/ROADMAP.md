@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 786 - Consumer validation receipt (implemented, unreleased)
+
+Lets the named receiving agent prove that it revalidated the exact handoff bytes
+without turning contract validation into an identity, acceptance, or implementation
+claim.
+
+### Delivered
+- [x] Added CLI `design-ai review-handoff-verify`, SDK `verifyReviewHandoff()`, and MCP `design_ai_verify_review_handoff` over one shared validator.
+- [x] Added `design-ai-review-handoff-receipt` v1 with exact handoff source, byte count, SHA-256 digest, parsed value, evidence summary, unchanged approvals, and pending target-repository intake.
+- [x] Required the self-declared consumer to match the named handoff recipient and rejected source, digest, evidence, approval, or boundary drift.
+- [x] Added Website Console receipt-first import, nested handoff restoration, original-byte export, clear-to-handoff behavior, and responsive receipt rendering.
+- [x] Expanded the source capability contract to 23 MCP tools and 16 SDK exports while retaining exactly three opt-in learning-profile write tools.
+- [x] Added help, SDK, MCP, Console, package-content, installed-bin, one-shot `npm exec`, and shared smoke coverage.
+
+### Boundary
+- Contract validation does not verify consumer identity, transport, receipt by an external system, acceptance, target-repository intake, implementation, or delivery.
+- CLI reads one explicit regular JSON file. SDK and MCP receive the exact source string. The operation writes nothing and makes no external request.
+- The receipt leaves implementation unauthorized and carries every remaining approval forward unchanged.
+
+### Verification target
+- [x] Focused contract, CLI, SDK, MCP, capability, Console, and smoke self-tests pass.
+- [x] `npm run release:check` passes with 767 tests, 8 strict audits, 734 packaged files, SDK import smoke, and installed-bin plus one-shot receipt smoke.
+- [x] Website Console receipt import, export, clear, and handoff restore pass at 1440px and 390px with exact exported SHA-256, 44px minimum visible button targets, no horizontal overflow, and no console warnings or errors.
+- [x] A fresh Codex process calls `design_ai_verify_review_handoff` through the configured local MCP server and returns the bounded receipt.
+- [ ] Fresh Claude MCP invocation remains blocked before tool execution because the organization has disabled Claude Code subscription access. The configured server itself reports connected; no Claude receipt claim is made.
+- [x] PR #42 passed required CI run `29408587642` before merge.
+
 ## Phase 785 - Review evidence handoff (implemented, unreleased)
 
 Turns one canonical review session into a portable contract another agent can

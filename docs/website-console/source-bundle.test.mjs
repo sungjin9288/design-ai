@@ -12,6 +12,8 @@ import { PACKAGE_ROOT } from "../../cli/lib/paths.mjs";
 import { buildReviewWorkflow } from "../../cli/lib/review-workflow.mjs";
 import { buildReviewHandoff } from "../../cli/lib/review-handoff.mjs";
 import { validateReviewHandoff } from "../../cli/lib/review-handoff-contract.mjs";
+import { verifyReviewHandoff } from "../../cli/lib/review-handoff-receipt.mjs";
+import { validateReviewHandoffReceipt } from "../../cli/lib/review-handoff-receipt-contract.mjs";
 
 const CONSOLE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
@@ -124,6 +126,7 @@ test("source-bundle classic script exposes the focused frozen API", () => {
     "normalizeQualityReport",
     "normalizeReviewWorkflow",
     "normalizeReviewHandoff",
+    "normalizeReviewHandoffReceipt",
     "normalizeBrowserVerification",
     "buildImportedArtifactJson",
   ]);
@@ -333,6 +336,52 @@ test("review handoff normalization revalidates embedded sources and pending deli
   assert.equal(api.normalizeReviewHandoff(changedViewport), null);
 });
 
+test("review handoff receipt normalization preserves exact nested handoff proof", () => {
+  const workflow = buildReviewWorkflow(
+    "<!doctype html><html lang=\"ko\"><body><button>저장</button></body></html>",
+    {
+      brief: "한국어 계정 설정 화면을 검토한다",
+      sourceRef: "settings.html",
+      sourceRoot: PACKAGE_ROOT,
+      prefix: "design-",
+      locale: "ko-KR",
+      viewports: ["mobile"],
+      generatedAt: "2026-07-15T00:00:00.000Z",
+    },
+  );
+  const handoff = buildReviewHandoff(JSON.stringify(workflow, null, 2), {
+    workflowRef: "review-workflow.json",
+    recipient: "codex",
+  });
+  const handoffSource = `${JSON.stringify(handoff, null, 2)}\n`;
+  const receipt = verifyReviewHandoff(handoffSource, {
+    handoffRef: "review-handoff.json",
+    consumer: "codex",
+  });
+  const rawReceipt = JSON.stringify(receipt, null, 2);
+  const normalized = api.normalizeReviewHandoffReceipt(receipt);
+
+  assert.strictEqual(validateReviewHandoffReceipt(receipt), receipt);
+  assert.notEqual(normalized, receipt);
+  assert.equal(JSON.stringify(normalized), JSON.stringify(receipt));
+  assert.equal(api.buildImportedArtifactJson(normalized, rawReceipt), rawReceipt);
+  assert.equal(normalized.handoff.source, handoffSource);
+  assert.equal(normalized.consumer.identity, "self-declared");
+  assert.equal(normalized.consumer.acceptance, "not-claimed");
+
+  const wrongConsumer = structuredClone(receipt);
+  wrongConsumer.consumer.name = "claude";
+  assert.equal(api.normalizeReviewHandoffReceipt(wrongConsumer), null);
+
+  const changedHandoff = structuredClone(receipt);
+  changedHandoff.handoff.source += "\n";
+  assert.equal(api.normalizeReviewHandoffReceipt(changedHandoff), null);
+
+  const implementationClaim = structuredClone(receipt);
+  implementationClaim.nextAction.implementationAuthorized = true;
+  assert.equal(api.normalizeReviewHandoffReceipt(implementationClaim), null);
+});
+
 test("source-bundle normalization preserves the provenance contract", () => {
   const normalized = api.normalizeRunbookSourceBundle({
     directory: "/tmp/bundle",
@@ -466,7 +515,7 @@ test("Website Console imports and labels linked preview readiness without claimi
   const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
 
   assert.match(appSource, /website-improvement-linked-preview/);
-  assert.match(appSource, /Import review handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
+  assert.match(appSource, /Import review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
   assert.match(appSource, /No process started by design-ai/);
   assert.match(appSource, /A configured URL is not browser verification/);
   assert.match(appSource, /Linked preview readiness JSON imported\. Report tab opened\./);
@@ -512,6 +561,21 @@ test("Website Console imports review handoff first and keeps delivery pending", 
   assert.match(appSource, /Export original handoff JSON/);
   assert.match(appSource, /Original review-handoff JSON exported without reformatting\./);
   assert.match(appSource, /Clear review handoff/);
+});
+
+test("Website Console imports consumer receipt first and preserves exact receipt bytes", () => {
+  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+
+  assert.match(appSource, /design-ai\.website-console\.review-handoff-receipt/);
+  assert.match(appSource, /var importedReviewReceipt = normalizeReviewHandoffReceipt\(parsed\);/);
+  assert.ok(appSource.indexOf("var importedReviewReceipt = normalizeReviewHandoffReceipt(parsed);") < appSource.indexOf("var importedReviewHandoff = normalizeReviewHandoff(parsed);"));
+  assert.match(appSource, /Canonical review-handoff receipt imported\. Exact receipt and nested handoff bytes preserved\./);
+  assert.match(appSource, /Consumer Validation Receipt/);
+  assert.match(appSource, /Identity, transport, acceptance, and implementation remain unverified/);
+  assert.match(appSource, /Export original receipt JSON/);
+  assert.match(appSource, /Original review-handoff receipt JSON exported without reformatting\./);
+  assert.match(appSource, /Clear validation receipt/);
+  assert.match(appSource, /Validation receipt cleared\. Original review handoff restored\./);
 });
 
 test("Website Console imports start JSON without claiming reference inspection or execution", () => {

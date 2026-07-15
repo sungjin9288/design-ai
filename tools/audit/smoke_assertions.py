@@ -191,6 +191,7 @@ EXPECTED_HELP_TOPICS = (
     "inspect",
     "review",
     "review-handoff",
+    "review-handoff-verify",
     "review-pack",
     "benchmark",
     "verify-browser",
@@ -245,6 +246,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "inspect": "design-ai inspect <source.html> --brief text [--name name] [--locale locale] [--viewport name] [--review-pack id] [--json]",
     "review": "design-ai review <source.html> --brief text [--locale locale] [--viewport name] [--review-pack id] [--json]",
     "review-handoff": "design-ai review-handoff <review-workflow.json> --recipient name [--quality-report file --browser-verification file] [--json]",
+    "review-handoff-verify": "design-ai review-handoff-verify <review-handoff.json> --consumer name [--json]",
     "review-pack": "design-ai review-pack [id] [--json]",
     "benchmark": "design-ai benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
     "verify-browser": "design-ai verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]",
@@ -317,6 +319,12 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "--browser-verification file",
         "reads explicit JSON files and writes nothing",
         "not delivered, consumer-validated, or implemented",
+    ),
+    "review-handoff-verify": (
+        "Usage:",
+        "design-ai review-handoff-verify <review-handoff.json> --consumer name",
+        "reads one explicit JSON file and writes nothing",
+        "identity, transport, acceptance, target-repository intake, and implementation remain unverified",
     ),
     "review-pack": (
         "Usage:",
@@ -509,6 +517,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "check <artifact.md|--stdin|--examples>",
     "start <brief|--from-file file|--stdin>",
     "review-handoff <review-workflow.json> --recipient name",
+    "review-handoff-verify <review-handoff.json> --consumer name",
     "benchmark [case-id] [--strict] [--json]",
     "examples [query]",
     "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
@@ -4493,6 +4502,97 @@ def assert_review_handoff_json(
         raise SystemExit(f"review handoff JSON after {context} changed its undelivered boundary")
 
 
+def assert_review_handoff_receipt_json(
+    raw: str,
+    handoff_path: Path,
+    *,
+    consumer: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        receipt = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse review handoff receipt JSON after {context}") from error
+
+    assert_smoke_json_keys(
+        receipt,
+        [
+            "kind", "schemaVersion", "status", "consumer", "handoff", "evidence",
+            "remainingApprovals", "nextAction", "boundary",
+        ],
+        label="top-level",
+        context=context,
+        command_label="review handoff receipt JSON",
+    )
+    if (
+        receipt.get("kind") != "design-ai-review-handoff-receipt"
+        or receipt.get("schemaVersion") != 1
+        or receipt.get("status") != "contract-validated"
+    ):
+        raise SystemExit(f"review handoff receipt JSON after {context} changed its contract identity")
+
+    handoff_source = handoff_path.read_text(encoding="utf-8")
+    try:
+        handoff_value = json.loads(handoff_source)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"review handoff receipt source after {context} is invalid JSON") from error
+    if receipt.get("consumer") != {
+        "name": consumer,
+        "expectedRecipient": consumer,
+        "recipientMatch": True,
+        "identity": "self-declared",
+        "contractValidation": "pass",
+        "acceptance": "not-claimed",
+    }:
+        raise SystemExit(f"review handoff receipt JSON after {context} changed its consumer boundary")
+    handoff_artifact = receipt.get("handoff")
+    if not isinstance(handoff_artifact, dict) or set(handoff_artifact) != {
+        "reference", "sha256", "bytes", "source", "value",
+    }:
+        raise SystemExit(f"review handoff receipt JSON after {context} changed its handoff artifact")
+    if (
+        handoff_artifact.get("reference") != str(handoff_path.resolve())
+        or handoff_artifact.get("source") != handoff_source
+        or handoff_artifact.get("value") != handoff_value
+        or handoff_artifact.get("sha256") != hashlib.sha256(handoff_source.encode("utf-8")).hexdigest()
+        or handoff_artifact.get("bytes") != len(handoff_source.encode("utf-8"))
+    ):
+        raise SystemExit(f"review handoff receipt JSON after {context} lost exact handoff identity")
+
+    report_summary = handoff_value["artifacts"]["reviewWorkflow"]["value"]["report"]["summary"]
+    browser_artifact = handoff_value["artifacts"]["browserVerification"]
+    browser_status = browser_artifact["value"]["summary"]["status"] if browser_artifact else "not-run"
+    if receipt.get("evidence") != {
+        "qualityStatus": report_summary["status"],
+        "confirmedFindings": report_summary["confirmedFindings"],
+        "unverifiedFindings": report_summary["unverifiedFindings"],
+        "browserStatus": browser_status,
+    }:
+        raise SystemExit(f"review handoff receipt JSON after {context} changed its evidence summary")
+    if receipt.get("remainingApprovals") != handoff_value["nextAction"]["approvalRequiredBefore"]:
+        raise SystemExit(f"review handoff receipt JSON after {context} changed remaining approvals")
+    if receipt.get("nextAction") != {
+        "id": "target-repo-intake-required",
+        "status": "pending",
+        "summary": "Inspect the declared target repository before any implementation begins.",
+        "implementationAuthorized": False,
+    }:
+        raise SystemExit(f"review handoff receipt JSON after {context} changed its next action")
+    if receipt.get("boundary") != {
+        "mode": "read-only",
+        "localWrites": False,
+        "targetRepoMutation": False,
+        "externalWrites": False,
+        "transportVerified": False,
+        "consumerIdentityVerified": False,
+        "acceptanceRecorded": False,
+        "implementationStarted": False,
+    }:
+        raise SystemExit(f"review handoff receipt JSON after {context} exceeded its proof boundary")
+
+
 def assert_specialization_benchmark_json(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -5410,6 +5510,8 @@ def passing_main_help_output() -> str:
         "    Compose one canonical read-only plan and static quality review",
         "  review-handoff <review-workflow.json> --recipient name [--quality-report file --browser-verification file] [--json]",
         "    Prepare a self-validating, undelivered review handoff",
+        "  review-handoff-verify <review-handoff.json> --consumer name [--json]",
+        "    Validate a handoff and emit a bounded consumer receipt",
         "  benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
         "    Run read-only product specialization regression proof",
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",

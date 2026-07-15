@@ -108,7 +108,7 @@ handoff 바이트를 재포맷하지 않고 반환합니다. 인계를 지우면
 
 구현 전에 받는 에이전트나 검토자는 다음 순서로 확인해야 합니다.
 
-1. handoff 계약을 다시 검증합니다.
+1. `design-ai review-handoff-verify`로 handoff 계약을 다시 검증합니다.
 2. confirmed finding과 unverified finding을 나눠 읽습니다.
 3. 수신자와 요청 범위가 여전히 맞는지 확인합니다.
 4. `nextAction.approvalRequiredBefore`에 남은 승인을 받습니다.
@@ -117,3 +117,6 @@ handoff 바이트를 재포맷하지 않고 반환합니다. 인계를 지우면
 그 뒤에만 별도 구현 작업을 시작할 수 있습니다. 이 인계만으로 전송, 수락,
 대상 저장소 검사, 코드 수정, 테스트, 커밋, 푸시, 배포, 외부 쓰기가 끝났다고
 표현하지 않습니다.
+
+CLI, SDK, MCP, Website Console 검증 흐름은
+[리뷰 인계 검증 영수증](REVIEW-HANDOFF-RECEIPT.ko.md)을 참고하세요.

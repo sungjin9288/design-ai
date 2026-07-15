@@ -34,6 +34,7 @@ design-ai prompt "audit a Figma signup flow for Korean fintech"
 design-ai review-pack korean-fintech
 design-ai review page.html --brief "한국 핀테크 설정 검토" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json
 design-ai review-handoff review-workflow.json --recipient implementation-agent --json
+design-ai review-handoff-verify review-handoff.json --consumer implementation-agent --json
 design-ai inspect page.html --brief "한국 핀테크 설정 검토" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json
 design-ai benchmark --strict
 design-ai pack "audit a Figma signup flow for Korean fintech" --max-bytes 80000
@@ -70,6 +71,11 @@ design-ai show knowledge/PRINCIPLES.md:29
 design contract, static quality report를 함께 반환하고 문맥과 SHA-256 linkage를
 증명한 뒤 browser verification과 구현 전에 멈춥니다. 품질 보고서만 필요할 때는
 하위 수준의 `inspect`를 사용하세요. [표준 디자인 리뷰 워크플로우](REVIEW-WORKFLOW.ko.md)를
+참고하세요.
+
+수신 에이전트는 `design-ai review-handoff-verify`로 handoff 원본을 다시 검증하고
+consumer receipt를 만듭니다. 이는 계약 검증만 증명하며 신원, 전송, 수락, 대상
+저장소 확인, 구현은 여전히 미검증입니다. [리뷰 인계 검증 영수증](REVIEW-HANDOFF-RECEIPT.ko.md)을
 참고하세요.
 
 다른 에이전트나 검토자가 리뷰를 이어받을 때는 `design-ai review-handoff`를

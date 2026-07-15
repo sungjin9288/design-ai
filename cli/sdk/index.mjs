@@ -25,6 +25,7 @@ export { check } from "./check-adapter.mjs";
 export { inspectHtml } from "./inspect-adapter.mjs";
 export { reviewHtml } from "./review-adapter.mjs";
 export { reviewHandoff } from "./review-handoff-adapter.mjs";
+export { verifyReviewHandoff } from "./verify-review-handoff-adapter.mjs";
 export { reviewPack } from "./review-pack-adapter.mjs";
 export { learn } from "./learn-adapter.mjs";
 export { pack } from "./pack-adapter.mjs";

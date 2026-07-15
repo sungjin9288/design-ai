@@ -285,6 +285,33 @@ test("reviewHandoff() return-shape keeps transfer, validation, and writes pendin
   assert.equal(result.boundary.deliveryPerformed, false);
 });
 
+test("verifyReviewHandoff() proves contract validation without claiming consumer identity", () => {
+  const workflow = sdk.reviewHtml(
+    "<!doctype html><html lang=\"ko\"><body><button>저장</button></body></html>",
+    {
+      sourceRef: "settings.html",
+      brief: "Review Korean settings",
+      locale: "ko-KR",
+      viewports: ["mobile"],
+      generatedAt: "2026-07-15T00:00:00.000Z",
+    },
+  );
+  const handoff = sdk.reviewHandoff(JSON.stringify(workflow, null, 2), {
+    workflowRef: "review-workflow.json",
+    recipient: "codex",
+  });
+  const receipt = sdk.verifyReviewHandoff(JSON.stringify(handoff, null, 2), {
+    handoffRef: "review-handoff.json",
+    consumer: "codex",
+  });
+
+  assert.equal(receipt.kind, "design-ai-review-handoff-receipt");
+  assert.equal(receipt.consumer.contractValidation, "pass");
+  assert.equal(receipt.consumer.identity, "self-declared");
+  assert.equal(receipt.nextAction.implementationAuthorized, false);
+  assert.equal(receipt.boundary.targetRepoMutation, false);
+});
+
 test("reviewPack() exposes the shipped read-only Korean review registry", () => {
   const list = sdk.reviewPack();
   const pack = sdk.reviewPack("korean-commerce");

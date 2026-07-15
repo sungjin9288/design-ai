@@ -407,6 +407,49 @@ test("design_ai_review_handoff prepares an undelivered transfer without spawning
   assert.equal(payload.boundary.targetRepoMutation, false);
 });
 
+test("design_ai_verify_review_handoff emits a bounded receipt without spawning the CLI", async () => {
+  const reviewResult = await callMcpTool(
+    "design_ai_review_html",
+    {
+      source: "<!doctype html><html lang=\"ko\"><body><button>저장</button></body></html>",
+      sourceRef: "settings.html",
+      brief: "Review Korean settings",
+      locale: "ko-KR",
+      viewports: ["mobile"],
+      generatedAt: "2026-07-15T00:00:00.000Z",
+    },
+    async () => ({ code: 0, stdout: "unexpected", stderr: "" }),
+  );
+  const handoffResult = await callMcpTool(
+    "design_ai_review_handoff",
+    {
+      workflowSource: reviewResult.content[0].text,
+      workflowRef: "review-workflow.json",
+      recipient: "codex",
+    },
+    async () => ({ code: 0, stdout: "unexpected", stderr: "" }),
+  );
+  let runCliCalled = false;
+  const receiptResult = await callMcpTool(
+    "design_ai_verify_review_handoff",
+    {
+      handoffSource: handoffResult.content[0].text,
+      handoffRef: "review-handoff.json",
+      consumer: "codex",
+    },
+    async () => {
+      runCliCalled = true;
+      return { code: 0, stdout: "unexpected", stderr: "" };
+    },
+  );
+  const receipt = JSON.parse(receiptResult.content[0].text);
+
+  assert.equal(runCliCalled, false);
+  assert.equal(receipt.kind, "design-ai-review-handoff-receipt");
+  assert.equal(receipt.consumer.contractValidation, "pass");
+  assert.equal(receipt.boundary.consumerIdentityVerified, false);
+});
+
 test("design_ai_review_pack lists and reads shipped contracts without spawning the CLI", async () => {
   let runCliCalled = false;
   const listResult = await callMcpTool("design_ai_review_pack", {}, async () => {

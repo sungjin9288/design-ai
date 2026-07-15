@@ -689,6 +689,61 @@
     return clone(value);
   }
 
+  function normalizeReviewHandoffReceipt(value) {
+    if (!exactKeys(value, [
+      "kind", "schemaVersion", "status", "consumer", "handoff", "evidence",
+      "remainingApprovals", "nextAction", "boundary",
+    ])) return null;
+    if (value.kind !== "design-ai-review-handoff-receipt"
+      || value.schemaVersion !== 1
+      || value.status !== "contract-validated") return null;
+    var handoffArtifact = normalizeReviewHandoffArtifact(value.handoff, normalizeReviewHandoff);
+    if (!handoffArtifact) return null;
+    if (!exactKeys(value.consumer, [
+      "name", "expectedRecipient", "recipientMatch", "identity", "contractValidation", "acceptance",
+    ])
+      || !hasText(value.consumer.name)
+      || value.consumer.expectedRecipient !== handoffArtifact.value.recipient.name
+      || value.consumer.name !== value.consumer.expectedRecipient
+      || value.consumer.recipientMatch !== true
+      || value.consumer.identity !== "self-declared"
+      || value.consumer.contractValidation !== "pass"
+      || value.consumer.acceptance !== "not-claimed") return null;
+
+    var reportSummary = handoffArtifact.value.artifacts.reviewWorkflow.value.report.summary;
+    var browserStatus = handoffArtifact.value.artifacts.browserVerification
+      ? handoffArtifact.value.artifacts.browserVerification.value.summary.status
+      : "not-run";
+    if (!exactKeys(value.evidence, [
+      "qualityStatus", "confirmedFindings", "unverifiedFindings", "browserStatus",
+    ])
+      || value.evidence.qualityStatus !== reportSummary.status
+      || value.evidence.confirmedFindings !== reportSummary.confirmedFindings
+      || value.evidence.unverifiedFindings !== reportSummary.unverifiedFindings
+      || value.evidence.browserStatus !== browserStatus) return null;
+    if (!isTextArray(value.remainingApprovals, true)
+      || JSON.stringify(value.remainingApprovals)
+        !== JSON.stringify(handoffArtifact.value.nextAction.approvalRequiredBefore)) return null;
+    if (!exactKeys(value.nextAction, ["id", "status", "summary", "implementationAuthorized"])
+      || value.nextAction.id !== "target-repo-intake-required"
+      || value.nextAction.status !== "pending"
+      || !hasText(value.nextAction.summary)
+      || value.nextAction.implementationAuthorized !== false) return null;
+    if (!exactKeys(value.boundary, [
+      "mode", "localWrites", "targetRepoMutation", "externalWrites", "transportVerified",
+      "consumerIdentityVerified", "acceptanceRecorded", "implementationStarted",
+    ])
+      || value.boundary.mode !== "read-only"
+      || value.boundary.localWrites !== false
+      || value.boundary.targetRepoMutation !== false
+      || value.boundary.externalWrites !== false
+      || value.boundary.transportVerified !== false
+      || value.boundary.consumerIdentityVerified !== false
+      || value.boundary.acceptanceRecorded !== false
+      || value.boundary.implementationStarted !== false) return null;
+    return clone(value);
+  }
+
   function buildImportedArtifactJson(value, rawJson) {
     var raw = String(rawJson || "");
     if (raw) {
@@ -715,6 +770,7 @@
     normalizeQualityReport: normalizeQualityReport,
     normalizeReviewWorkflow: normalizeReviewWorkflow,
     normalizeReviewHandoff: normalizeReviewHandoff,
+    normalizeReviewHandoffReceipt: normalizeReviewHandoffReceipt,
     normalizeBrowserVerification: normalizeBrowserVerification,
     buildImportedArtifactJson: buildImportedArtifactJson,
   });

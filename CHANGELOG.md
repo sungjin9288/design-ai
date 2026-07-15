@@ -5,6 +5,8 @@ User-facing release notes for design-ai. Versions follow semver.
 ## Unreleased
 
 ### Added
+- Added `design-ai review-handoff-verify`, SDK `verifyReviewHandoff()`, MCP `design_ai_verify_review_handoff`, and Website Console receipt import over one shared read-only validator.
+- Added `design-ai-review-handoff-receipt` v1 with exact handoff source identity, matching self-declared consumer, derived evidence summary, unchanged remaining approvals, and pending target-repository intake.
 - Added `design-ai review-handoff`, SDK `reviewHandoff()`, MCP `design_ai_review_handoff`, and Website Console handoff import over one shared read-only operation.
 - Added exact source-byte envelopes, optional quality/browser evidence linkage, named but undelivered recipients, pending consumer validation, and prepared implementation-handoff stages to `design-ai-review-handoff` v1.
 - Added the canonical `design-ai review`, SDK `reviewHtml()`, and MCP `design_ai_review_html` workflow over one shared read-only operation.
@@ -24,6 +26,8 @@ User-facing release notes for design-ai. Versions follow semver.
 - Added a Website Console Start tab that validates and persists the canonical start JSON, displays declared references without claiming inspection, copies the next command and design contract, and exports the unchanged payload.
 
 ### Changed
+- The current source capability contract grows from 22 to 23 MCP tools and from 15 to 16 SDK exports while retaining exactly three opt-in learning-profile write tools.
+- Receiving agents can now record contract validation without claiming identity, transport, acceptance, target-repository inspection, or implementation.
 - The current source capability contract grows from 21 to 22 MCP tools and from 14 to 15 SDK exports while retaining exactly three opt-in learning-profile write tools.
 - Review sessions can now be prepared for another agent without claiming transport, acceptance, target-repository inspection, or implementation.
 - The current source capability contract grows from 20 to 21 MCP tools and from 13 to 14 SDK exports while retaining exactly three opt-in learning-profile write tools.
@@ -37,6 +41,10 @@ User-facing release notes for design-ai. Versions follow semver.
 - Packed-tarball and public-registry smoke now require the start payload to preserve an embedded design contract and empty performed local-write, target-mutation, and external-action arrays.
 
 ### Verified
+- `npm run release:check` passed for the P8 consumer validation receipt with 767 tests, 8 strict audits, 734 packaged files, a 0/0 documentation warning policy, SDK import smoke, and installed-bin plus one-shot receipt smoke.
+- Website Console receipt import, exact-byte export, clear, and handoff restore passed at 1440px and 390px with 44px minimum visible button targets, no horizontal overflow, no console warnings or errors, and an exported SHA-256 matching the imported receipt.
+- A fresh Codex process called `design_ai_verify_review_handoff` through the configured local MCP server. Fresh Claude execution remained blocked before the MCP call by organization-level Claude Code subscription policy, so no Claude receipt validation is claimed.
+- PR #42 passed required audit, documentation policy, package integrity, and CLI plus VS Code library unit-test checks in CI run `29408587642` before merge.
 - `npm run release:check` passed for the P7 review evidence handoff with 760 tests, 8 strict audits, 728 packaged files, a 0/0 documentation warning policy, SDK import smoke, and installed-bin plus one-shot handoff smoke.
 - Website Console handoff import and original-byte export passed at 1440px and 390px with no horizontal overflow, undersized visible buttons, console warnings, or console errors; exported SHA-256 matched the imported file.
 - `npm run release:check` passed for the P6 canonical review workflow with 749 tests, 8 strict audits, 722 packaged files, a 0/0 documentation warning policy, SDK import smoke, and canonical review smoke through installed-bin plus one-shot `npm exec` paths.
