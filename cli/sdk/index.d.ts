@@ -289,7 +289,7 @@ export interface DesignQualityReport {
   kind: "design-ai-quality-report";
   schemaVersion: 1;
   generatedAt: string;
-  subject: { name: string; type: "page"; source: string };
+  subject: { name: string; type: "artifact" | "component" | "flow" | "page" | "application"; source: string };
   context: { brief: string; routeId: "design-engineering-review"; locale: string; viewports: string[] };
   boundary: {
     mode: "read-only";
@@ -310,6 +310,119 @@ export interface DesignQualityReport {
     nextAction: string;
   };
   approval: { status: "pending"; requiredBefore: string[] };
+}
+
+export type ReviewComparisonStatus = "improved" | "unchanged" | "attention-required" | "regressed";
+export type ReviewComparisonLensChange = "unchanged" | "improved" | "regressed" | "evidence-gained" | "evidence-lost";
+
+export interface ReviewComparisonOptions {
+  baselineRef: string;
+  candidateRef: string;
+  compact?: boolean;
+}
+
+export interface ReviewComparisonSource<T> {
+  reference: string;
+  sha256: string;
+  bytes: number;
+  source: string;
+  value: T;
+}
+
+export interface ReviewComparisonFindingChanges {
+  resolved: Array<{
+    id: string;
+    lens: DesignQualityLensId;
+    beforeStatus: DesignQualityFinding["status"];
+    beforeSeverity: DesignQualityFinding["severity"];
+    afterLensStatus: DesignQualityStatus;
+    reason: string;
+  }>;
+  persistent: Array<{
+    id: string;
+    lens: DesignQualityLensId;
+    beforeStatus: DesignQualityFinding["status"];
+    afterStatus: DesignQualityFinding["status"];
+    beforeSeverity: DesignQualityFinding["severity"];
+    afterSeverity: DesignQualityFinding["severity"];
+    reason: string;
+  }>;
+  introduced: Array<{
+    id: string;
+    lens: DesignQualityLensId;
+    afterStatus: DesignQualityFinding["status"];
+    afterSeverity: DesignQualityFinding["severity"];
+    reason: string;
+  }>;
+  uncertain: Array<{
+    id: string;
+    lens: DesignQualityLensId;
+    beforeStatus: DesignQualityFinding["status"];
+    beforeSeverity: DesignQualityFinding["severity"];
+    afterLensStatus: DesignQualityStatus;
+    reason: string;
+  }>;
+}
+
+export interface ReviewComparison {
+  kind: "design-ai-review-comparison";
+  schemaVersion: 1;
+  status: ReviewComparisonStatus;
+  baseline: ReviewComparisonSource<DesignQualityReport>;
+  candidate: ReviewComparisonSource<DesignQualityReport>;
+  context: {
+    subject: DesignQualityReport["subject"];
+    brief: string;
+    routeId: string;
+    locale: string;
+    viewports: string[];
+  };
+  lensTransitions: Array<{
+    id: DesignQualityLensId;
+    before: DesignQualityStatus;
+    after: DesignQualityStatus;
+    change: ReviewComparisonLensChange;
+  }>;
+  findings: ReviewComparisonFindingChanges;
+  summary: {
+    status: ReviewComparisonStatus;
+    resolved: number;
+    persistent: number;
+    introduced: number;
+    uncertain: number;
+    nextAction: string;
+  };
+  approval: { status: "pending"; requiredBefore: string[] };
+  boundary: {
+    mode: "read-only-review-comparison";
+    localWrites: false;
+    targetRepoMutation: false;
+    externalWrites: false;
+    networkCalls: false;
+    boundedImprovementEstablished: boolean;
+    productionQualityEstablished: false;
+    adoptionEstablished: false;
+  };
+}
+
+export interface CompactReviewComparisonSource {
+  reference: string;
+  sha256: string;
+  bytes: number;
+  kind: "design-ai-quality-report";
+  schemaVersion: 1;
+  reportStatus: DesignQualityStatus;
+}
+
+export interface ReviewComparisonSummary extends Omit<ReviewComparison, "kind" | "baseline" | "candidate"> {
+  kind: "design-ai-review-comparison-summary";
+  sources: { baseline: CompactReviewComparisonSource; candidate: CompactReviewComparisonSource };
+  representation: {
+    mode: "compact";
+    fullArtifactKind: "design-ai-review-comparison";
+    fullArtifactSchemaVersion: 1;
+    omittedFields: string[];
+  };
 }
 
 export interface ReviewWorkflow {
@@ -1006,6 +1119,18 @@ export function inspectHtml(source: string, opts: InspectHtmlOptions): DesignQua
 
 /** Compose one canonical plan and static HTML review without writing files or running a browser. */
 export function reviewHtml(source: string, opts: ReviewHtmlOptions): ReviewWorkflow;
+
+/** Compare two exact quality reports without reading paths, writing files, or making broader quality claims. */
+export function compareReviews(
+  baselineSource: string,
+  candidateSource: string,
+  opts: ReviewComparisonOptions & { compact: true },
+): ReviewComparisonSummary;
+export function compareReviews(
+  baselineSource: string,
+  candidateSource: string,
+  opts: ReviewComparisonOptions,
+): ReviewComparison | ReviewComparisonSummary;
 
 /** Prepare a self-validating review handoff without delivery, implementation, or writes. */
 export function reviewHandoff(workflowSource: string, opts: ReviewHandoffOptions): ReviewHandoff;

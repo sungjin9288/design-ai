@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 28 tools, including target intake, scope approval, implementation evidence, real-pilot evidence, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 29 tools, including verified review comparison, target intake, scope approval, implementation evidence, real-pilot evidence, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -68,6 +68,20 @@ changed. Browser verification remains `not-run`, implementation remains
 Use this as the default MCP entry point for an existing HTML artifact. Use
 `design_ai_inspect_html` only when the consumer needs the lower-level quality
 report by itself. See [Canonical review workflow](REVIEW-WORKFLOW.md).
+
+### Verified design iteration
+
+`design_ai_compare_reviews` maps to CLI `design-ai review-compare` and SDK
+`compareReviews()`. It accepts two exact canonical quality-report strings plus
+their references, verifies that both reports describe the same subject and
+context, and derives lens transitions and finding decisions in-process.
+
+Compact output is the default because MCP clients do not usually need two copies
+of the nested source bodies. The summary still carries both references, SHA-256
+digests, byte counts, every decision, approval gate, and claim boundary. Set
+`compact: false` only when the caller needs the full source envelopes. The tool
+writes nothing, calls no network, and cannot establish production quality or
+adoption. See [Verified design iteration](REVIEW-COMPARISON.md).
 
 ### Review evidence handoff
 

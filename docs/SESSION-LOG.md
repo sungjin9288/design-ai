@@ -5,6 +5,18 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 791 (unreleased)** — Added verified before-and-after design comparison
+  across CLI, typed SDK, in-process MCP, and Website Console. The exact-source
+  contract requires matching subject and review context, records every lens
+  transition, and separates resolved, persistent, introduced, and uncertain
+  findings. A missing finding is not called resolved until its candidate lens
+  passes. The full local release gate passes with 831 tests, 8 strict audits, 774
+  packaged files, warning-free docs, and installed-bin plus one-shot comparison
+  smoke. A fresh stdio MCP process lists all 29 tools and returns a 3,934-byte
+  compact comparison with matching source hashes. Desktop/mobile Console checks pass with exact
+  JSON export parity, no horizontal overflow or console errors, a working keyboard
+  skip link, and 44px minimum visible navigation height. PR review remains before
+  merge.
 - **Phase 790 (unreleased)** — Added exact-source real-pilot evidence across CLI,
   typed SDK, in-process MCP, and Website Console. It joins P11 implementation
   evidence, the original P6 workflow, and one consented operator record; derives

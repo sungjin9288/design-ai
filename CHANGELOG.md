@@ -5,6 +5,8 @@ User-facing release notes for design-ai. Versions follow semver.
 ## Unreleased
 
 ### Added
+- Added CLI `design-ai review-compare`, SDK `compareReviews()`, MCP `design_ai_compare_reviews`, and Website Console import over one exact-source before-and-after design review operation.
+- Added `design-ai-review-comparison` v1 and compact summary contracts with matching subject and context guards, all eight lens transitions, and resolved, persistent, introduced, or uncertain finding decisions.
 - Added CLI `design-ai review-pilot`, SDK `recordPilotEvidence()`, MCP `design_ai_review_pilot`, and Website Console import over one exact-source real-pilot evidence operation.
 - Added strict `design-ai-pilot-record` and derived `design-ai-pilot-evidence` v1 contracts for consent, first-value time, finding decisions, approval friction, implementation completion, unresolved risk, and real/synthetic/inferred/unverified claim separation.
 - Added CLI `design-ai review-evidence`, MCP `design_ai_review_evidence`, and Website Console import over one read-only implementation-evidence operation.
@@ -34,6 +36,8 @@ User-facing release notes for design-ai. Versions follow semver.
 - Added a Website Console Start tab that validates and persists the canonical start JSON, displays declared references without claiming inspection, copies the next command and design contract, and exports the unchanged payload.
 
 ### Changed
+- The current source capability contract grows from 28 to 29 MCP tools and from 19 to 20 SDK exports while retaining exactly three opt-in learning-profile write tools.
+- Review comparison calls a missing finding resolved only when its candidate lens passes. Target mutation, commit, push, deployment, external writes, production quality, and adoption remain outside the read-only contract.
 - `design_ai_review_pilot` now accepts opt-in `compact: true` for large exact-source
   chains. It validates the full P12 artifact first, then keeps source identities,
   consent, metrics, claims, issues, next action, and safety boundaries while
@@ -69,6 +73,9 @@ User-facing release notes for design-ai. Versions follow semver.
 - Packed-tarball and public-registry smoke now require the start payload to preserve an embedded design contract and empty performed local-write, target-mutation, and external-action arrays.
 
 ### Verified
+- `npm run release:check` passes for P13 with 831 tests, all 8 strict audits, 774 packaged files, a 0/0 documentation warning policy, SDK import smoke, and review-comparison smoke through installed-bin plus one-shot `npm exec` paths.
+- Website Console full comparison import, reload restore, exact-byte export, and responsive rendering pass at 1440px and 390px with a working keyboard skip link, 44px minimum visible navigation height, no horizontal overflow, no console warnings or errors, and matching exported SHA-256.
+- A fresh stdio MCP process lists all 29 current-source tools and returns a 3,934-byte compact `design_ai_compare_reviews` result with matching baseline and candidate hashes plus unchanged read-only and claim boundaries.
 - `npm run release:check` passes for P11 with 805 tests, all 8 strict audits, 757 packaged files, a 0/0 documentation warning policy, and installed-bin plus one-shot `npm exec` implementation-evidence smoke.
 - A fresh MCP process called `design_ai_review_evidence`, preserved two declared verification artifact hashes, executed no verification command itself, and returned `attention-required` for three unverified runtime observations plus one remaining risk.
 - Website Console implementation-evidence import, exact-byte export, clear-to-approval restore, and responsive rendering passed at 1440px and 390px with matching SHA-256, 44px minimum visible button targets, no horizontal overflow, and no console warnings or errors.

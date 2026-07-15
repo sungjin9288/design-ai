@@ -13,6 +13,7 @@ import { buildStartPayload } from "./start-operation.mjs";
 import { formatStartJson } from "./start.mjs";
 import { inspectHtml } from "./design-quality-inspector.mjs";
 import { buildReviewWorkflow } from "./review-workflow.mjs";
+import { compareReviewReports, summarizeReviewComparison } from "./review-comparison.mjs";
 import { buildReviewHandoff } from "./review-handoff.mjs";
 import { verifyReviewHandoff } from "./review-handoff-receipt.mjs";
 import { buildTargetRepoIntakeFromFile } from "./target-repo-intake.mjs";
@@ -28,6 +29,7 @@ const PROTOCOL_VERSION = "2025-11-25";
 const SERVER_INSTRUCTIONS = [
   "Use design-ai MCP tools for local, deterministic design expertise.",
   "Use design_ai_review_html to compose one canonical plan and static review without running a browser or writing files.",
+  "Use design_ai_compare_reviews to verify what changed between two exact canonical quality reports; compact output is the default.",
   "Use design_ai_review_handoff to prepare a self-validating, undelivered transfer for another agent.",
   "Use design_ai_verify_review_handoff to validate an exact transfer and emit a bounded consumer receipt.",
   "Use design_ai_review_intake to inspect only the receipt-declared target root metadata and local Git state before scope approval.",
@@ -156,6 +158,27 @@ export const MCP_TOOLS = [
         },
       },
       required: ["source", "sourceRef", "brief"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_compare_reviews",
+    title: "Compare before-and-after design reviews",
+    description: [
+      "Compare two exact canonical quality reports and classify resolved, persistent, introduced, and uncertain findings.",
+      "Compact output is the default and preserves source references, SHA-256 digests, byte counts, decisions, and boundaries without repeating source bodies. Set compact to false for the full artifact.",
+      "Read-only: writes nothing, changes no repository, calls no network, and does not establish production quality or adoption.",
+    ].join(" "),
+    inputSchema: {
+      type: "object",
+      properties: {
+        baselineSource: { type: "string", minLength: 2, description: "Exact baseline design-ai-quality-report JSON source." },
+        baselineRef: { type: "string", minLength: 1, description: "Human-readable baseline source reference." },
+        candidateSource: { type: "string", minLength: 2, description: "Exact candidate design-ai-quality-report JSON source." },
+        candidateRef: { type: "string", minLength: 1, description: "Human-readable candidate source reference." },
+        compact: optionalBoolean("Return compact output. Defaults to true; set false only when full source bodies are required."),
+      },
+      required: ["baselineSource", "baselineRef", "candidateSource", "candidateRef"],
       additionalProperties: false,
     },
   },
@@ -894,6 +917,14 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
       prefix: SYMLINK_PREFIX,
     });
     return jsonToolResult(payload);
+  }
+
+  if (name === "design_ai_compare_reviews") {
+    const payload = compareReviewReports(input.baselineSource, input.candidateSource, {
+      baselineRef: input.baselineRef,
+      candidateRef: input.candidateRef,
+    });
+    return jsonToolResult(input.compact === false ? payload : summarizeReviewComparison(payload));
   }
 
   if (name === "design_ai_review_handoff") {

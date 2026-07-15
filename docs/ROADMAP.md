@@ -1,5 +1,30 @@
 # Roadmap
 
+## Phase 791 - Verified design iteration (implemented, local release gate complete)
+
+- [x] Added one exact-source `design-ai-review-comparison` v1 contract with all
+  eight lens transitions and resolved, persistent, introduced, and uncertain
+  finding decisions.
+- [x] Added CLI `review-compare`, typed SDK `compareReviews()`, in-process MCP
+  `design_ai_compare_reviews`, and Website Console full-artifact import, restore,
+  render, and original-byte export.
+- [x] Kept a missing finding uncertain until its candidate lens passes and rejected
+  subject, review-context, finding-lens, source, and derived-decision drift.
+- [x] Added compact output that omits only repeated source bodies while preserving
+  references, SHA-256 digests, byte counts, decisions, approvals, and boundaries.
+- [x] Added package-content, installed-bin, one-shot `npm exec`, SDK import, MCP,
+  and shared Console contract coverage.
+- [x] Verified Website Console at 1440px and 390px with no horizontal overflow,
+  zero console warnings or errors, a working keyboard skip link, 44px minimum
+  visible navigation height, and exact import/export SHA-256 parity.
+- [x] Passed `npm run release:check` with 831 tests, all 8 strict audits, 774
+  packaged files, a 0/0 documentation warning policy, SDK import smoke, and
+  installed-bin plus one-shot comparison smoke.
+- [x] Started a fresh stdio MCP process, found `design_ai_compare_reviews` in the
+  29-tool inventory, and returned a 3,934-byte compact artifact with matching
+  source hashes and unchanged permission and claim boundaries.
+- [ ] Pass required pull-request CI, review, and merge.
+
 ## Phase 790 - Real pilot evidence (implemented, local verification complete)
 
 - [x] Added strict pilot-record and derived pilot-evidence v1 contracts over exact

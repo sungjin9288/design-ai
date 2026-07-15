@@ -196,6 +196,7 @@ EXPECTED_HELP_TOPICS = (
     "review-scope",
     "review-scope-approve",
     "review-evidence",
+    "review-compare",
     "review-pilot",
     "review-pack",
     "benchmark",
@@ -256,6 +257,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "review-scope": "design-ai review-scope <target-intake.json> --request scope-request.json --consumer name [--json]",
     "review-scope-approve": "design-ai review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes [--json]",
     "review-evidence": "design-ai review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name [--json]",
+    "review-compare": "design-ai review-compare <baseline-quality-report.json> --candidate candidate-quality-report.json [--compact] [--json]",
     "review-pilot": "design-ai review-pilot <implementation-evidence.json> --workflow review-workflow.json --record pilot-record.json [--json]",
     "review-pack": "design-ai review-pack [id] [--json]",
     "benchmark": "design-ai benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
@@ -359,6 +361,12 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name",
         "reads the two explicit JSON files, local Git metadata, and declared evidence artifacts only",
         "does not run tests, commit, push, deploy, use the network, or read application source",
+    ),
+    "review-compare": (
+        "Usage:",
+        "design-ai review-compare <baseline-quality-report.json> --candidate candidate-quality-report.json",
+        "reads two explicit JSON files only",
+        "does not establish production quality or adoption",
     ),
     "review-pilot": (
         "Usage:",
@@ -4332,6 +4340,82 @@ def assert_inspect_json(raw: str, *, context: str, cmd: list[str]) -> None:
     lens_ids = [item.get("id") for item in lenses] if isinstance(lenses, list) else []
     if lens_ids != expected_lenses:
         raise SystemExit(f"inspect JSON after {context} lens inventory changed")
+
+
+def assert_review_comparison_json(
+    raw: str,
+    baseline_path: Path,
+    candidate_path: Path,
+    *,
+    compact: bool,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        comparison = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse review comparison JSON after {context}") from error
+
+    expected_kind = "design-ai-review-comparison-summary" if compact else "design-ai-review-comparison"
+    if (
+        comparison.get("kind") != expected_kind
+        or comparison.get("schemaVersion") != 1
+        or comparison.get("status") != "attention-required"
+    ):
+        raise SystemExit(f"review comparison JSON after {context} changed identity or status")
+
+    source_container = comparison.get("sources") if compact else comparison
+    for field, source_path in (("baseline", baseline_path), ("candidate", candidate_path)):
+        source_bytes = source_path.read_bytes()
+        artifact = source_container.get(field, {}) if isinstance(source_container, dict) else {}
+        if (
+            artifact.get("reference") != str(source_path.resolve())
+            or artifact.get("sha256") != hashlib.sha256(source_bytes).hexdigest()
+            or artifact.get("bytes") != len(source_bytes)
+        ):
+            raise SystemExit(f"review comparison JSON after {context} lost {field} source identity")
+        if not compact and (
+            artifact.get("source") != source_bytes.decode("utf-8")
+            or artifact.get("value") != json.loads(source_bytes)
+        ):
+            raise SystemExit(f"review comparison JSON after {context} changed {field} source content")
+
+    summary = comparison.get("summary", {})
+    if (
+        summary.get("resolved") != 0
+        or summary.get("persistent") != 2
+        or summary.get("introduced") != 0
+        or summary.get("uncertain") != 0
+    ):
+        raise SystemExit(f"review comparison JSON after {context} changed finding decisions")
+    if comparison.get("approval") != {
+        "status": "pending",
+        "requiredBefore": ["target repository mutation", "commit", "push", "deployment", "external writes"],
+    }:
+        raise SystemExit(f"review comparison JSON after {context} changed its approval gate")
+    boundary = comparison.get("boundary", {})
+    if boundary != {
+        "mode": "read-only-review-comparison",
+        "localWrites": False,
+        "targetRepoMutation": False,
+        "externalWrites": False,
+        "networkCalls": False,
+        "boundedImprovementEstablished": False,
+        "productionQualityEstablished": False,
+        "adoptionEstablished": False,
+    }:
+        raise SystemExit(f"review comparison JSON after {context} expanded its claim or mutation boundary")
+    if compact:
+        representation = comparison.get("representation", {})
+        if (
+            representation.get("mode") != "compact"
+            or representation.get("fullArtifactKind") != "design-ai-review-comparison"
+            or representation.get("omittedFields") != [
+                "baseline.source", "baseline.value", "candidate.source", "candidate.value",
+            ]
+        ):
+            raise SystemExit(f"review comparison JSON after {context} changed compact representation evidence")
 
 
 def review_workflow_digest(value: object) -> str:

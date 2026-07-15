@@ -2,7 +2,7 @@
 
 Use this guide when you want Claude Code or Codex to call design-ai as an MCP server instead of asking the agent to read files manually.
 
-The server is local, stdio-based, and deterministic. The current source candidate exposes 28 tools, including immutable implementation-scope proposal, separate approval, implementation evidence, and bounded real-pilot evidence, while retaining exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. Shared scope and pilot operations run in-process and leave commit, push, deployment, migration execution, and external writes separately gated.
+The server is local, stdio-based, and deterministic. The current source candidate exposes 29 tools, including verified review comparison, immutable implementation-scope proposal, separate approval, implementation evidence, and bounded real-pilot evidence, while retaining exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. Shared comparison, scope, and pilot operations run in-process and leave commit, push, deployment, migration execution, and external writes separately gated.
 
 ## What the server exposes
 
@@ -11,6 +11,7 @@ The server is local, stdio-based, and deterministic. The current source candidat
 | `design_ai_route` | Recommend the best design-ai route, skill, command, and knowledge files for a task brief. | Read-only |
 | `design_ai_start` | Build one route, design contract, unexecuted review state, next command, and explicit performed/intended effect boundary from a brief and declared context. | Read-only; declared repository, page, and screenshot references are not inspected |
 | `design_ai_review_html` | Compose the canonical start plan and static quality report for supplied HTML, with exact source identity, artifact digests, context linkage, ordered stages, and a pending human review gate. | Read-only; no browser run, local write, target-repository mutation, or external write |
+| `design_ai_compare_reviews` | Compare two exact canonical quality reports for the same subject and context, then classify lens transitions and resolved, persistent, introduced, or uncertain findings. Compact identity-preserving output is the default. | Read-only; no local write, target mutation, network call, production-quality claim, or adoption claim |
 | `design_ai_review_handoff` | Prepare a self-validating transfer from exact review-workflow JSON, with optional paired browser evidence and a named recipient. | Read-only and undelivered; consumer validation, target inspection, implementation, local writes, and external writes remain pending |
 | `design_ai_verify_review_handoff` | Validate exact handoff bytes and evidence for the named consumer, then emit a separate receipt. | Read-only contract proof; identity, transport, acceptance, target inspection, and implementation remain unverified |
 | `design_ai_review_intake` | Validate an exact receipt, then inspect only its declared target's supported root metadata and local Git state. | Read-only repository intake; no application-source read, preview, network, target mutation, or implementation |

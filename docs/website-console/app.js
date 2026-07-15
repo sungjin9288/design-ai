@@ -14,6 +14,7 @@
   var IMPLEMENTATION_SCOPE_APPROVAL_KEY = "design-ai.website-console.implementation-scope-approval";
   var IMPLEMENTATION_EVIDENCE_KEY = "design-ai.website-console.implementation-evidence";
   var PILOT_EVIDENCE_KEY = "design-ai.website-console.pilot-evidence";
+  var REVIEW_COMPARISON_KEY = "design-ai.website-console.review-comparison";
   var BROWSER_VERIFICATION_KEY = "design-ai.website-console.browser-verification";
 
   var sourceBundleApi = window.DesignAiWebsiteConsoleSourceBundle;
@@ -66,6 +67,16 @@
   var targetRepoIntakeMatchesReceipt = sourceBundleApi.targetRepoIntakeMatchesReceipt;
   var normalizeBrowserVerification = sourceBundleApi.normalizeBrowserVerification;
   var buildImportedArtifactJson = sourceBundleApi.buildImportedArtifactJson;
+  var reviewComparisonApi = window.DesignAiWebsiteConsoleReviewComparison;
+  if (!reviewComparisonApi || typeof reviewComparisonApi.normalizeReviewComparison !== "function") {
+    var failedComparisonApp = document.getElementById("app");
+    if (failedComparisonApp) {
+      failedComparisonApp.setAttribute("data-status", "error");
+      failedComparisonApp.innerHTML = '<main id="main" class="loading-shell" tabindex="-1"><h1>Website Console unavailable</h1><p>Required local scripts did not load. Reload after updating the complete Website Console bundle.</p></main>';
+    }
+    throw new Error("Website Console review-comparison contract failed to load.");
+  }
+  var normalizeReviewComparisonArtifact = reviewComparisonApi.normalizeReviewComparison;
   var implementationScopeApi = window.DesignAiWebsiteConsoleImplementationScope;
   if (!implementationScopeApi
     || typeof implementationScopeApi.normalizeImplementationScopeProposal !== "function"
@@ -207,6 +218,7 @@
     ["handoff-report", "Final handoff report"],
   ];
 
+  var importedReviewComparison = loadImportedArtifact(REVIEW_COMPARISON_KEY, normalizeReviewComparisonArtifact);
   var importedPilotEvidence = loadImportedArtifact(PILOT_EVIDENCE_KEY, normalizePilotEvidenceArtifact);
   var importedImplementationEvidence = importedPilotEvidence
     ? importedArtifact(
@@ -260,6 +272,7 @@
     : loadImportedArtifact(REVIEW_WORKFLOW_KEY, normalizeReviewWorkflow);
   var appState = {
     workspace: loadWorkspace(),
+    reviewComparison: importedReviewComparison,
     pilotEvidence: importedPilotEvidence,
     implementationEvidence: importedImplementationEvidence,
     implementationScopeApproval: importedScopeApproval,
@@ -997,7 +1010,7 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import pilot evidence, implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import review comparison, pilot evidence, implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
       "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
@@ -1010,7 +1023,7 @@
     if (id === "start") return appState.startPlan ? "1" : "";
     if (id === "quality") {
       var reviewCount = appState.reviewWorkflow || appState.qualityReport ? 1 : 0;
-      var artifactCount = reviewCount + (appState.browserVerification ? 1 : 0);
+      var artifactCount = reviewCount + (appState.reviewComparison ? 1 : 0) + (appState.browserVerification ? 1 : 0);
       return artifactCount ? String(artifactCount) : "";
     }
     if (id === "audit") return metrics.done + "/" + auditCategories.length;
@@ -1033,7 +1046,7 @@
     var description = isStart
       ? startDescription
       : isQuality
-        ? "Inspect the preserved review workflow envelope and its immutable nested quality evidence. Missing runtime proof remains unverified."
+        ? "Inspect exact review evidence and verified before-and-after decisions. Missing runtime proof remains unverified."
         : profile.name + " is tracked locally. Use this app to prepare website improvement work before switching into the target repo.";
     var metadata = isStart
       ? renderStartMetadata()
@@ -1159,13 +1172,14 @@
   function qualityStatusBadge(status) {
     var tone = status;
     if (["warning", "attention-required"].indexOf(status) !== -1) tone = "warn";
-    else if (["complete", "evidence-complete", "pass", "contract-validated", "ready-for-scope-review"].indexOf(status) !== -1) tone = "pass";
-    else if (status === "blocked") tone = "fail";
-    else if (["prepared", "not-delivered", "not-run", "not-started", "pending", "unverified"].indexOf(status) !== -1) tone = "optional";
+    else if (["complete", "evidence-complete", "pass", "contract-validated", "ready-for-scope-review", "improved"].indexOf(status) !== -1) tone = "pass";
+    else if (["blocked", "regressed"].indexOf(status) !== -1) tone = "fail";
+    else if (["prepared", "not-delivered", "not-run", "not-started", "pending", "unverified", "unchanged"].indexOf(status) !== -1) tone = "optional";
     return "<span class=\"badge badge--" + escapeAttr(tone || "optional") + "\">" + escapeHtml(labelize(status || "unknown")) + "</span>";
   }
 
   function renderQualityReview() {
+    var reviewComparisonArtifact = appState.reviewComparison;
     var pilotEvidenceArtifact = appState.pilotEvidence;
     var implementationEvidenceArtifact = appState.implementationEvidence;
     var scopeApprovalArtifact = appState.implementationScopeApproval;
@@ -1176,7 +1190,7 @@
     var reviewWorkflowArtifact = appState.reviewWorkflow;
     var qualityArtifact = appState.qualityReport;
     var browserArtifact = appState.browserVerification;
-    if (!pilotEvidenceArtifact && !implementationEvidenceArtifact && !scopeApprovalArtifact && !scopeProposalArtifact && !targetRepoIntakeArtifact
+    if (!reviewComparisonArtifact && !pilotEvidenceArtifact && !implementationEvidenceArtifact && !scopeApprovalArtifact && !scopeProposalArtifact && !targetRepoIntakeArtifact
       && !reviewReceiptArtifact && !reviewHandoffArtifact
       && !reviewWorkflowArtifact && !qualityArtifact && !browserArtifact) {
       return panel("Import review evidence", "Import a canonical review workflow, quality-report JSON, or optional browser-verification JSON without changing either contract.", [
@@ -1186,6 +1200,9 @@
     }
 
     return [
+      reviewComparisonArtifact
+        ? renderReviewComparisonArtifact(reviewComparisonArtifact.value)
+        : "",
       pilotEvidenceArtifact
         ? renderPilotEvidence(pilotEvidenceArtifact.value)
         : implementationEvidenceArtifact
@@ -1210,6 +1227,9 @@
         ? renderBrowserVerificationArtifact(browserArtifact.value)
         : panel("Browser verification", "Runtime evidence remains separate and optional.", "<div class=\"empty-state\">No browser-verification JSON imported. Static and runtime-unknown findings remain unchanged.</div>"),
       "<div class=\"button-row\">",
+      reviewComparisonArtifact
+        ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-review-comparison\">Export original comparison JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-review-comparison\">Clear review comparison</button>"
+        : "",
       pilotEvidenceArtifact
         ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-pilot-evidence\">Export original pilot JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-pilot-evidence\">Clear pilot evidence</button>"
         : implementationEvidenceArtifact
@@ -1234,6 +1254,31 @@
         : "",
       "</div>",
     ].join("");
+  }
+
+  function renderReviewComparisonArtifact(comparison) {
+    var sourceRows = [
+      "Baseline: " + comparison.baseline.reference + " / " + comparison.baseline.sha256 + " / " + comparison.baseline.bytes + " bytes",
+      "Candidate: " + comparison.candidate.reference + " / " + comparison.candidate.sha256 + " / " + comparison.candidate.bytes + " bytes",
+    ];
+    var transitions = comparison.lensTransitions.map(function (transition) {
+      return transition.id + ": " + transition.before + " to " + transition.after + " (" + transition.change + ")";
+    });
+    var findingRows = ["resolved", "persistent", "introduced", "uncertain"].reduce(function (rows, category) {
+      return rows.concat(comparison.findings[category].map(function (finding) {
+        return category + ": " + finding.id + " / " + finding.lens;
+      }));
+    }, []);
+    return panel("Verified Design Iteration", "Exact before-and-after reports are compared without turning missing evidence into improvement claims.", [
+      "<div class=\"evidence-summary\" aria-label=\"Review comparison summary\">",
+      metric("Status", comparison.status, comparison.summary.nextAction),
+      metric("Resolved", comparison.summary.resolved, "Candidate lens passes"),
+      metric("Persistent", comparison.summary.persistent, "Finding remains"),
+      metric("Introduced", comparison.summary.introduced, "Candidate-only findings"),
+      "</div>",
+      "<div class=\"graph-boundaries\" aria-label=\"Review comparison boundary\">" + qualityStatusBadge(comparison.status) + "<span class=\"pill\">Read-only comparison</span><span class=\"pill\">" + escapeHtml(String(comparison.summary.uncertain)) + " uncertain</span><span class=\"pill\">No production-quality claim</span><span class=\"pill\">No adoption claim</span></div>",
+      "<div class=\"grid-2 start-details\"><div><h4>Exact sources</h4>" + renderStartList(sourceRows, "No sources recorded.") + "<h4>Finding decisions</h4>" + renderStartList(findingRows, "No finding changes recorded.") + "</div><div><h4>Lens transitions</h4>" + renderStartList(transitions, "No lens transitions recorded.") + "<h4>Approval gates</h4>" + renderStartList(comparison.approval.requiredBefore, "No approval gates recorded.") + "</div></div>",
+    ].join(""));
   }
 
   function renderPilotEvidence(evidence) {
@@ -3170,6 +3215,15 @@
       appState.startPlan = null;
       saveStartPlan();
       setMessage("Start plan cleared.");
+    } else if (action === "download-review-comparison") {
+      if (appState.reviewComparison) {
+        downloadFile("design-ai-review-comparison.json", appState.reviewComparison.rawJson, "application/json");
+        setMessage("Original review-comparison JSON exported without reformatting.");
+      }
+    } else if (action === "clear-review-comparison") {
+      appState.reviewComparison = null;
+      saveImportedArtifact(REVIEW_COMPARISON_KEY, null);
+      setMessage("Review comparison cleared. Other review evidence remains available.");
     } else if (action === "download-review-workflow") {
       if (appState.reviewWorkflow) {
         downloadFile("design-ai-review-workflow.json", appState.reviewWorkflow.rawJson, "application/json");
@@ -3446,6 +3500,15 @@
       try {
         var rawJson = String(reader.result || "");
         var parsed = JSON.parse(rawJson);
+        var importedReviewComparison = normalizeReviewComparisonArtifact(parsed);
+        if (importedReviewComparison) {
+          appState.reviewComparison = importedArtifact(importedReviewComparison, rawJson);
+          appState.activeTab = "quality";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveImportedArtifact(REVIEW_COMPARISON_KEY, appState.reviewComparison);
+          setMessage("Review comparison imported. Exact source identity, finding decisions, approval gates, and claim boundaries preserved.");
+          return;
+        }
         var importedPilotEvidence = normalizePilotEvidenceArtifact(parsed);
         if (importedPilotEvidence) {
           var pilotImplementationEvidence = normalizeImplementationEvidenceArtifact(
@@ -3765,7 +3828,7 @@
         saveWorkspace();
         setMessage("Workspace JSON imported.");
       } catch (error) {
-        setMessage("Import failed. Use a canonical target intake, review receipt, handoff, workflow, quality, browser, start, Website Improvement workspace, runbook, or linked preview JSON file.");
+        setMessage("Import failed. Use a canonical review comparison, target intake, review receipt, handoff, workflow, quality, browser, start, Website Improvement workspace, runbook, or linked preview JSON file.");
       }
     };
     reader.readAsText(file);

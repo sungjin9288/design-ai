@@ -28,6 +28,7 @@ export {
   proposeImplementationScope,
 } from "./implementation-scope-adapter.mjs";
 export { reviewHtml } from "./review-adapter.mjs";
+export { compareReviews } from "./review-comparison-adapter.mjs";
 export { reviewHandoff } from "./review-handoff-adapter.mjs";
 export { verifyReviewHandoff } from "./verify-review-handoff-adapter.mjs";
 export { reviewPack } from "./review-pack-adapter.mjs";

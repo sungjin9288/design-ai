@@ -74,6 +74,7 @@ from smoke_assertions import (
     assert_implementation_scope_proposal_json,
     assert_implementation_evidence_json,
     assert_pilot_evidence_json,
+    assert_review_comparison_json,
     assert_specialization_benchmark_json,
     assert_install_doctor_lifecycle_output,
     assert_install_output,
@@ -796,7 +797,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
-  approveImplementationScope, check, inspectHtml, learn, pack, prompt,
+  approveImplementationScope, check, compareReviews, inspectHtml, learn, pack, prompt,
   proposeImplementationScope, recall, reviewHandoff, reviewHtml, reviewPack,
   route, routes, search, version,
   verifyReviewHandoff,
@@ -847,6 +848,29 @@ if (quality.summary.confirmedFindings !== 1 || quality.summary.unverifiedFinding
 }
 if (quality.boundary.targetRepoMutation || quality.boundary.externalWrites) {
   throw new Error("inspectHtml() changed the read-only boundary");
+}
+
+const qualitySource = JSON.stringify(quality, null, 2);
+const comparison = compareReviews(qualitySource, qualitySource, {
+  baselineRef: "sdk-baseline-quality-report.json",
+  candidateRef: "sdk-candidate-quality-report.json",
+});
+if (comparison.kind !== "design-ai-review-comparison"
+  || comparison.status !== "attention-required"
+  || comparison.summary.persistent !== 2
+  || comparison.boundary.productionQualityEstablished
+  || comparison.boundary.adoptionEstablished) {
+  throw new Error("compareReviews() changed comparison decisions or claim boundaries");
+}
+const compactComparison = compareReviews(qualitySource, qualitySource, {
+  baselineRef: "sdk-baseline-quality-report.json",
+  candidateRef: "sdk-candidate-quality-report.json",
+  compact: true,
+});
+if (compactComparison.kind !== "design-ai-review-comparison-summary"
+  || compactComparison.sources.baseline.sha256 !== comparison.baseline.sha256
+  || compactComparison.representation.mode !== "compact") {
+  throw new Error("compareReviews() compact output lost exact source identity");
 }
 
 const reviewSource = [
@@ -8322,6 +8346,31 @@ def assert_review_smoke(
     if source_path.read_bytes() != before:
         raise SystemExit(f"{context}: review changed the selected source file")
     return result.stdout
+
+
+def assert_review_comparison_smoke(
+    cmd: list[str],
+    baseline_path: Path,
+    candidate_path: Path,
+    *,
+    compact: bool,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    baseline_before = baseline_path.read_bytes()
+    candidate_before = candidate_path.read_bytes()
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_review_comparison_json(
+        result.stdout,
+        baseline_path,
+        candidate_path,
+        compact=compact,
+        context=context,
+        cmd=cmd,
+    )
+    if baseline_path.read_bytes() != baseline_before or candidate_path.read_bytes() != candidate_before:
+        raise SystemExit(f"{context}: review-compare changed a selected quality report")
 
 
 def assert_review_handoff_smoke(
@@ -22353,6 +22402,22 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin HTML inspection",
         )
+        assert_review_comparison_smoke(
+            [
+                str(bin_path),
+                "review-compare",
+                str(installed_quality_report),
+                "--candidate",
+                str(installed_quality_report),
+                "--compact",
+                "--json",
+            ],
+            installed_quality_report,
+            installed_quality_report,
+            compact=True,
+            env=smoke_env,
+            context="package smoke installed bin review comparison",
+        )
         installed_browser_target = tmp_root / "installed-browser-target"
         installed_browser_home = tmp_root / "installed-browser-home"
         installed_browser_target.mkdir()
@@ -24115,6 +24180,22 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec HTML inspection",
+        )
+        assert_review_comparison_smoke(
+            npm_exec_cmd(
+                tarball,
+                "review-compare",
+                str(npx_quality_report),
+                "--candidate",
+                str(npx_quality_report),
+                "--json",
+            ),
+            npx_quality_report,
+            npx_quality_report,
+            compact=False,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec review comparison",
         )
         npx_browser_target = tmp_root / "npx-browser-target"
         npx_browser_home = tmp_root / "npx-browser-home"
