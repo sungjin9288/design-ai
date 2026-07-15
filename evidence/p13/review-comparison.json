@@ -1,0 +1,536 @@
+{
+  "kind": "design-ai-review-comparison",
+  "schemaVersion": 1,
+  "status": "attention-required",
+  "baseline": {
+    "reference": "/Users/sungjin/dev/design/examples/benchmarks/korean-fintech-settings/quality-report.json",
+    "sha256": "aa580c20023dd206ac23ccf2817a762e62f2a8194361f012c077912afd58eab4",
+    "bytes": 6605,
+    "source": "{\n  \"kind\": \"design-ai-quality-report\",\n  \"schemaVersion\": 1,\n  \"generatedAt\": \"2026-07-14T00:00:00.000Z\",\n  \"subject\": {\n    \"name\": \"Korean fintech account settings benchmark\",\n    \"type\": \"flow\",\n    \"source\": \"examples/benchmarks/korean-fintech-settings/source.html\"\n  },\n  \"context\": {\n    \"brief\": \"Review a Korean fintech account settings flow before implementation handoff.\",\n    \"routeId\": \"design-engineering-review\",\n    \"locale\": \"ko-KR\",\n    \"viewports\": [\"mobile\", \"desktop\"]\n  },\n  \"boundary\": {\n    \"mode\": \"read-only\",\n    \"targetRepoMutation\": false,\n    \"externalWrites\": false,\n    \"localEvidenceWrites\": false,\n    \"localEvidencePath\": null,\n    \"notes\": [\n      \"The source is a synthetic benchmark fixture.\",\n      \"No browser session was available for this baseline report.\"\n    ]\n  },\n  \"sources\": [\n    {\n      \"kind\": \"code\",\n      \"reference\": \"examples/benchmarks/korean-fintech-settings/source.html\",\n      \"observation\": \"Static HTML fixture inspected without executing scripts or changing files.\"\n    },\n    {\n      \"kind\": \"brief\",\n      \"reference\": \"quality-report.json#context.brief\",\n      \"observation\": \"The brief requires Korean fintech and implementation-handoff coverage.\"\n    }\n  ],\n  \"lenses\": [\n    {\n      \"id\": \"purpose-frequency\",\n      \"status\": \"pass\",\n      \"summary\": \"The page exposes one focused account-maintenance task.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:9-17\",\n          \"observation\": \"The main region contains one settings heading, one field, and one save action.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"response\",\n      \"status\": \"unverified\",\n      \"summary\": \"Activation feedback cannot be confirmed from static HTML.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:16\",\n          \"observation\": \"The fixture defines a button but no runtime state or handler.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"spatial-continuity\",\n      \"status\": \"pass\",\n      \"summary\": \"No overlay, navigation, or spatial transition exists in the fixture.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:8-18\",\n          \"observation\": \"The fixture is a single static main region.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"interruptibility\",\n      \"status\": \"unverified\",\n      \"summary\": \"Repeated submission and cancellation behavior require runtime evidence.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:16\",\n          \"observation\": \"Static markup cannot prove rapid-repeat or in-flight cancellation behavior.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"timing-cohesion\",\n      \"status\": \"unverified\",\n      \"summary\": \"No motion implementation is present to inspect.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html\",\n          \"observation\": \"The fixture has no stylesheet, animation, or transition.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"performance\",\n      \"status\": \"unverified\",\n      \"summary\": \"Static markup cannot establish responsiveness under realistic interaction or content.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html\",\n          \"observation\": \"The fixture has no executable workload from which runtime responsiveness can be measured.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"accessibility\",\n      \"status\": \"fail\",\n      \"summary\": \"The phone input has no programmatically associated label.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:12-14\",\n          \"observation\": \"Visible field text is a span and the input has no label, aria-label, or aria-labelledby.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"responsive-resilience\",\n      \"status\": \"unverified\",\n      \"summary\": \"Viewport behavior and Korean label wrapping require browser evidence.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:5\",\n          \"observation\": \"A viewport meta tag exists, but static inspection cannot prove layout resilience.\"\n        }\n      ]\n    }\n  ],\n  \"findings\": [\n    {\n      \"id\": \"missing-associated-label\",\n      \"lens\": \"accessibility\",\n      \"severity\": \"p1\",\n      \"status\": \"confirmed\",\n      \"title\": \"Associate the phone field label with its input\",\n      \"location\": \"examples/benchmarks/korean-fintech-settings/source.html:12\",\n      \"before\": \"The visible phone label is a span next to an unlabeled input.\",\n      \"after\": \"Use a label element whose for value matches the input id.\",\n      \"why\": \"Screen-reader users need a programmatic name for the field.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:12-14\",\n          \"observation\": \"No label association or accessible-name attribute is present.\"\n        }\n      ],\n      \"verification\": [\n        \"Inspect the accessibility tree and confirm the input name is 휴대폰 번호.\",\n        \"Tab to the field and confirm the visible focus indicator remains present.\"\n      ]\n    },\n    {\n      \"id\": \"runtime-interaction-proof-missing\",\n      \"lens\": \"interruptibility\",\n      \"severity\": \"p2\",\n      \"status\": \"unverified\",\n      \"title\": \"Record repeated-submit and cancellation behavior\",\n      \"location\": \"runtime: save action\",\n      \"before\": \"No runtime session was available, so in-flight behavior is unknown.\",\n      \"after\": \"Exercise the save action five times rapidly and attempt cancellation during the request.\",\n      \"why\": \"Static code cannot establish whether repeated input queues, locks, or preserves current state.\",\n      \"evidence\": [\n        {\n          \"kind\": \"manual\",\n          \"reference\": \"quality-report.json#boundary.notes\",\n          \"observation\": \"The baseline explicitly records that no browser session was available.\"\n        }\n      ],\n      \"verification\": [\n        \"Run the approved browser verification profile against mobile and desktop viewports.\",\n        \"Record rapid-repeat, cancellation, keyboard, and reduced-motion observations.\"\n      ]\n    }\n  ],\n  \"summary\": {\n    \"status\": \"fail\",\n    \"confirmedFindings\": 1,\n    \"unverifiedFindings\": 1,\n    \"blockingFindings\": 0,\n    \"nextAction\": \"Fix the accessible-name failure, then collect the missing runtime evidence.\"\n  },\n  \"approval\": {\n    \"status\": \"pending\",\n    \"requiredBefore\": [\n      \"editing the target repository\",\n      \"starting a browser verification process\",\n      \"creating a commit or external handoff\"\n    ]\n  }\n}\n",
+    "value": {
+      "kind": "design-ai-quality-report",
+      "schemaVersion": 1,
+      "generatedAt": "2026-07-14T00:00:00.000Z",
+      "subject": {
+        "name": "Korean fintech account settings benchmark",
+        "type": "flow",
+        "source": "examples/benchmarks/korean-fintech-settings/source.html"
+      },
+      "context": {
+        "brief": "Review a Korean fintech account settings flow before implementation handoff.",
+        "routeId": "design-engineering-review",
+        "locale": "ko-KR",
+        "viewports": [
+          "mobile",
+          "desktop"
+        ]
+      },
+      "boundary": {
+        "mode": "read-only",
+        "targetRepoMutation": false,
+        "externalWrites": false,
+        "localEvidenceWrites": false,
+        "localEvidencePath": null,
+        "notes": [
+          "The source is a synthetic benchmark fixture.",
+          "No browser session was available for this baseline report."
+        ]
+      },
+      "sources": [
+        {
+          "kind": "code",
+          "reference": "examples/benchmarks/korean-fintech-settings/source.html",
+          "observation": "Static HTML fixture inspected without executing scripts or changing files."
+        },
+        {
+          "kind": "brief",
+          "reference": "quality-report.json#context.brief",
+          "observation": "The brief requires Korean fintech and implementation-handoff coverage."
+        }
+      ],
+      "lenses": [
+        {
+          "id": "purpose-frequency",
+          "status": "pass",
+          "summary": "The page exposes one focused account-maintenance task.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:9-17",
+              "observation": "The main region contains one settings heading, one field, and one save action."
+            }
+          ]
+        },
+        {
+          "id": "response",
+          "status": "unverified",
+          "summary": "Activation feedback cannot be confirmed from static HTML.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:16",
+              "observation": "The fixture defines a button but no runtime state or handler."
+            }
+          ]
+        },
+        {
+          "id": "spatial-continuity",
+          "status": "pass",
+          "summary": "No overlay, navigation, or spatial transition exists in the fixture.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:8-18",
+              "observation": "The fixture is a single static main region."
+            }
+          ]
+        },
+        {
+          "id": "interruptibility",
+          "status": "unverified",
+          "summary": "Repeated submission and cancellation behavior require runtime evidence.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:16",
+              "observation": "Static markup cannot prove rapid-repeat or in-flight cancellation behavior."
+            }
+          ]
+        },
+        {
+          "id": "timing-cohesion",
+          "status": "unverified",
+          "summary": "No motion implementation is present to inspect.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html",
+              "observation": "The fixture has no stylesheet, animation, or transition."
+            }
+          ]
+        },
+        {
+          "id": "performance",
+          "status": "unverified",
+          "summary": "Static markup cannot establish responsiveness under realistic interaction or content.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html",
+              "observation": "The fixture has no executable workload from which runtime responsiveness can be measured."
+            }
+          ]
+        },
+        {
+          "id": "accessibility",
+          "status": "fail",
+          "summary": "The phone input has no programmatically associated label.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:12-14",
+              "observation": "Visible field text is a span and the input has no label, aria-label, or aria-labelledby."
+            }
+          ]
+        },
+        {
+          "id": "responsive-resilience",
+          "status": "unverified",
+          "summary": "Viewport behavior and Korean label wrapping require browser evidence.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:5",
+              "observation": "A viewport meta tag exists, but static inspection cannot prove layout resilience."
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "missing-associated-label",
+          "lens": "accessibility",
+          "severity": "p1",
+          "status": "confirmed",
+          "title": "Associate the phone field label with its input",
+          "location": "examples/benchmarks/korean-fintech-settings/source.html:12",
+          "before": "The visible phone label is a span next to an unlabeled input.",
+          "after": "Use a label element whose for value matches the input id.",
+          "why": "Screen-reader users need a programmatic name for the field.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:12-14",
+              "observation": "No label association or accessible-name attribute is present."
+            }
+          ],
+          "verification": [
+            "Inspect the accessibility tree and confirm the input name is 휴대폰 번호.",
+            "Tab to the field and confirm the visible focus indicator remains present."
+          ]
+        },
+        {
+          "id": "runtime-interaction-proof-missing",
+          "lens": "interruptibility",
+          "severity": "p2",
+          "status": "unverified",
+          "title": "Record repeated-submit and cancellation behavior",
+          "location": "runtime: save action",
+          "before": "No runtime session was available, so in-flight behavior is unknown.",
+          "after": "Exercise the save action five times rapidly and attempt cancellation during the request.",
+          "why": "Static code cannot establish whether repeated input queues, locks, or preserves current state.",
+          "evidence": [
+            {
+              "kind": "manual",
+              "reference": "quality-report.json#boundary.notes",
+              "observation": "The baseline explicitly records that no browser session was available."
+            }
+          ],
+          "verification": [
+            "Run the approved browser verification profile against mobile and desktop viewports.",
+            "Record rapid-repeat, cancellation, keyboard, and reduced-motion observations."
+          ]
+        }
+      ],
+      "summary": {
+        "status": "fail",
+        "confirmedFindings": 1,
+        "unverifiedFindings": 1,
+        "blockingFindings": 0,
+        "nextAction": "Fix the accessible-name failure, then collect the missing runtime evidence."
+      },
+      "approval": {
+        "status": "pending",
+        "requiredBefore": [
+          "editing the target repository",
+          "starting a browser verification process",
+          "creating a commit or external handoff"
+        ]
+      }
+    }
+  },
+  "candidate": {
+    "reference": "/private/tmp/design-ai-p13/candidate-quality-report.json",
+    "sha256": "38b368b0c219f3e4b06dc29d3381447847fb0fc4d5eeb9444c106a031d98ef47",
+    "bytes": 6623,
+    "source": "{\n  \"kind\": \"design-ai-quality-report\",\n  \"schemaVersion\": 1,\n  \"generatedAt\": \"2026-07-15T00:00:00.000Z\",\n  \"subject\": {\n    \"name\": \"Korean fintech account settings benchmark\",\n    \"type\": \"flow\",\n    \"source\": \"examples/benchmarks/korean-fintech-settings/source.html\"\n  },\n  \"context\": {\n    \"brief\": \"Review a Korean fintech account settings flow before implementation handoff.\",\n    \"routeId\": \"design-engineering-review\",\n    \"locale\": \"ko-KR\",\n    \"viewports\": [\n      \"mobile\",\n      \"desktop\"\n    ]\n  },\n  \"boundary\": {\n    \"mode\": \"read-only\",\n    \"targetRepoMutation\": false,\n    \"externalWrites\": false,\n    \"localEvidenceWrites\": false,\n    \"localEvidencePath\": null,\n    \"notes\": [\n      \"The source is a synthetic benchmark fixture.\",\n      \"No browser session was available for this baseline report.\"\n    ]\n  },\n  \"sources\": [\n    {\n      \"kind\": \"code\",\n      \"reference\": \"examples/benchmarks/korean-fintech-settings/source.html\",\n      \"observation\": \"Static HTML fixture inspected without executing scripts or changing files.\"\n    },\n    {\n      \"kind\": \"brief\",\n      \"reference\": \"quality-report.json#context.brief\",\n      \"observation\": \"The brief requires Korean fintech and implementation-handoff coverage.\"\n    }\n  ],\n  \"lenses\": [\n    {\n      \"id\": \"purpose-frequency\",\n      \"status\": \"pass\",\n      \"summary\": \"The page exposes one focused account-maintenance task.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:9-17\",\n          \"observation\": \"The main region contains one settings heading, one field, and one save action.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"response\",\n      \"status\": \"unverified\",\n      \"summary\": \"Activation feedback cannot be confirmed from static HTML.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:16\",\n          \"observation\": \"The fixture defines a button but no runtime state or handler.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"spatial-continuity\",\n      \"status\": \"pass\",\n      \"summary\": \"No overlay, navigation, or spatial transition exists in the fixture.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:8-18\",\n          \"observation\": \"The fixture is a single static main region.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"interruptibility\",\n      \"status\": \"unverified\",\n      \"summary\": \"Repeated submission and cancellation behavior require runtime evidence.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:16\",\n          \"observation\": \"Static markup cannot prove rapid-repeat or in-flight cancellation behavior.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"timing-cohesion\",\n      \"status\": \"unverified\",\n      \"summary\": \"No motion implementation is present to inspect.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html\",\n          \"observation\": \"The fixture has no stylesheet, animation, or transition.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"performance\",\n      \"status\": \"unverified\",\n      \"summary\": \"Static markup cannot establish responsiveness under realistic interaction or content.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html\",\n          \"observation\": \"The fixture has no executable workload from which runtime responsiveness can be measured.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"accessibility\",\n      \"status\": \"fail\",\n      \"summary\": \"The phone input has no programmatically associated label.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:12-14\",\n          \"observation\": \"Visible field text is a span and the input has no label, aria-label, or aria-labelledby.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"responsive-resilience\",\n      \"status\": \"unverified\",\n      \"summary\": \"Viewport behavior and Korean label wrapping require browser evidence.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:5\",\n          \"observation\": \"A viewport meta tag exists, but static inspection cannot prove layout resilience.\"\n        }\n      ]\n    }\n  ],\n  \"findings\": [\n    {\n      \"id\": \"missing-associated-label\",\n      \"lens\": \"accessibility\",\n      \"severity\": \"p1\",\n      \"status\": \"confirmed\",\n      \"title\": \"Associate the phone field label with its input\",\n      \"location\": \"examples/benchmarks/korean-fintech-settings/source.html:12\",\n      \"before\": \"The visible phone label is a span next to an unlabeled input.\",\n      \"after\": \"Use a label element whose for value matches the input id.\",\n      \"why\": \"Screen-reader users need a programmatic name for the field.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"source.html:12-14\",\n          \"observation\": \"No label association or accessible-name attribute is present.\"\n        }\n      ],\n      \"verification\": [\n        \"Inspect the accessibility tree and confirm the input name is 휴대폰 번호.\",\n        \"Tab to the field and confirm the visible focus indicator remains present.\"\n      ]\n    },\n    {\n      \"id\": \"runtime-interaction-proof-missing\",\n      \"lens\": \"interruptibility\",\n      \"severity\": \"p2\",\n      \"status\": \"unverified\",\n      \"title\": \"Record repeated-submit and cancellation behavior\",\n      \"location\": \"runtime: save action\",\n      \"before\": \"No runtime session was available, so in-flight behavior is unknown.\",\n      \"after\": \"Exercise the save action five times rapidly and attempt cancellation during the request.\",\n      \"why\": \"Static code cannot establish whether repeated input queues, locks, or preserves current state.\",\n      \"evidence\": [\n        {\n          \"kind\": \"manual\",\n          \"reference\": \"quality-report.json#boundary.notes\",\n          \"observation\": \"The baseline explicitly records that no browser session was available.\"\n        }\n      ],\n      \"verification\": [\n        \"Run the approved browser verification profile against mobile and desktop viewports.\",\n        \"Record rapid-repeat, cancellation, keyboard, and reduced-motion observations.\"\n      ]\n    }\n  ],\n  \"summary\": {\n    \"status\": \"fail\",\n    \"confirmedFindings\": 1,\n    \"unverifiedFindings\": 1,\n    \"blockingFindings\": 0,\n    \"nextAction\": \"Fix the accessible-name failure, then collect the missing runtime evidence.\"\n  },\n  \"approval\": {\n    \"status\": \"pending\",\n    \"requiredBefore\": [\n      \"editing the target repository\",\n      \"starting a browser verification process\",\n      \"creating a commit or external handoff\"\n    ]\n  }\n}\n",
+    "value": {
+      "kind": "design-ai-quality-report",
+      "schemaVersion": 1,
+      "generatedAt": "2026-07-15T00:00:00.000Z",
+      "subject": {
+        "name": "Korean fintech account settings benchmark",
+        "type": "flow",
+        "source": "examples/benchmarks/korean-fintech-settings/source.html"
+      },
+      "context": {
+        "brief": "Review a Korean fintech account settings flow before implementation handoff.",
+        "routeId": "design-engineering-review",
+        "locale": "ko-KR",
+        "viewports": [
+          "mobile",
+          "desktop"
+        ]
+      },
+      "boundary": {
+        "mode": "read-only",
+        "targetRepoMutation": false,
+        "externalWrites": false,
+        "localEvidenceWrites": false,
+        "localEvidencePath": null,
+        "notes": [
+          "The source is a synthetic benchmark fixture.",
+          "No browser session was available for this baseline report."
+        ]
+      },
+      "sources": [
+        {
+          "kind": "code",
+          "reference": "examples/benchmarks/korean-fintech-settings/source.html",
+          "observation": "Static HTML fixture inspected without executing scripts or changing files."
+        },
+        {
+          "kind": "brief",
+          "reference": "quality-report.json#context.brief",
+          "observation": "The brief requires Korean fintech and implementation-handoff coverage."
+        }
+      ],
+      "lenses": [
+        {
+          "id": "purpose-frequency",
+          "status": "pass",
+          "summary": "The page exposes one focused account-maintenance task.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:9-17",
+              "observation": "The main region contains one settings heading, one field, and one save action."
+            }
+          ]
+        },
+        {
+          "id": "response",
+          "status": "unverified",
+          "summary": "Activation feedback cannot be confirmed from static HTML.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:16",
+              "observation": "The fixture defines a button but no runtime state or handler."
+            }
+          ]
+        },
+        {
+          "id": "spatial-continuity",
+          "status": "pass",
+          "summary": "No overlay, navigation, or spatial transition exists in the fixture.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:8-18",
+              "observation": "The fixture is a single static main region."
+            }
+          ]
+        },
+        {
+          "id": "interruptibility",
+          "status": "unverified",
+          "summary": "Repeated submission and cancellation behavior require runtime evidence.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:16",
+              "observation": "Static markup cannot prove rapid-repeat or in-flight cancellation behavior."
+            }
+          ]
+        },
+        {
+          "id": "timing-cohesion",
+          "status": "unverified",
+          "summary": "No motion implementation is present to inspect.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html",
+              "observation": "The fixture has no stylesheet, animation, or transition."
+            }
+          ]
+        },
+        {
+          "id": "performance",
+          "status": "unverified",
+          "summary": "Static markup cannot establish responsiveness under realistic interaction or content.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html",
+              "observation": "The fixture has no executable workload from which runtime responsiveness can be measured."
+            }
+          ]
+        },
+        {
+          "id": "accessibility",
+          "status": "fail",
+          "summary": "The phone input has no programmatically associated label.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:12-14",
+              "observation": "Visible field text is a span and the input has no label, aria-label, or aria-labelledby."
+            }
+          ]
+        },
+        {
+          "id": "responsive-resilience",
+          "status": "unverified",
+          "summary": "Viewport behavior and Korean label wrapping require browser evidence.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:5",
+              "observation": "A viewport meta tag exists, but static inspection cannot prove layout resilience."
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "missing-associated-label",
+          "lens": "accessibility",
+          "severity": "p1",
+          "status": "confirmed",
+          "title": "Associate the phone field label with its input",
+          "location": "examples/benchmarks/korean-fintech-settings/source.html:12",
+          "before": "The visible phone label is a span next to an unlabeled input.",
+          "after": "Use a label element whose for value matches the input id.",
+          "why": "Screen-reader users need a programmatic name for the field.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "source.html:12-14",
+              "observation": "No label association or accessible-name attribute is present."
+            }
+          ],
+          "verification": [
+            "Inspect the accessibility tree and confirm the input name is 휴대폰 번호.",
+            "Tab to the field and confirm the visible focus indicator remains present."
+          ]
+        },
+        {
+          "id": "runtime-interaction-proof-missing",
+          "lens": "interruptibility",
+          "severity": "p2",
+          "status": "unverified",
+          "title": "Record repeated-submit and cancellation behavior",
+          "location": "runtime: save action",
+          "before": "No runtime session was available, so in-flight behavior is unknown.",
+          "after": "Exercise the save action five times rapidly and attempt cancellation during the request.",
+          "why": "Static code cannot establish whether repeated input queues, locks, or preserves current state.",
+          "evidence": [
+            {
+              "kind": "manual",
+              "reference": "quality-report.json#boundary.notes",
+              "observation": "The baseline explicitly records that no browser session was available."
+            }
+          ],
+          "verification": [
+            "Run the approved browser verification profile against mobile and desktop viewports.",
+            "Record rapid-repeat, cancellation, keyboard, and reduced-motion observations."
+          ]
+        }
+      ],
+      "summary": {
+        "status": "fail",
+        "confirmedFindings": 1,
+        "unverifiedFindings": 1,
+        "blockingFindings": 0,
+        "nextAction": "Fix the accessible-name failure, then collect the missing runtime evidence."
+      },
+      "approval": {
+        "status": "pending",
+        "requiredBefore": [
+          "editing the target repository",
+          "starting a browser verification process",
+          "creating a commit or external handoff"
+        ]
+      }
+    }
+  },
+  "context": {
+    "subject": {
+      "name": "Korean fintech account settings benchmark",
+      "type": "flow",
+      "source": "examples/benchmarks/korean-fintech-settings/source.html"
+    },
+    "brief": "Review a Korean fintech account settings flow before implementation handoff.",
+    "routeId": "design-engineering-review",
+    "locale": "ko-KR",
+    "viewports": [
+      "mobile",
+      "desktop"
+    ]
+  },
+  "lensTransitions": [
+    {
+      "id": "purpose-frequency",
+      "before": "pass",
+      "after": "pass",
+      "change": "unchanged"
+    },
+    {
+      "id": "response",
+      "before": "unverified",
+      "after": "unverified",
+      "change": "unchanged"
+    },
+    {
+      "id": "spatial-continuity",
+      "before": "pass",
+      "after": "pass",
+      "change": "unchanged"
+    },
+    {
+      "id": "interruptibility",
+      "before": "unverified",
+      "after": "unverified",
+      "change": "unchanged"
+    },
+    {
+      "id": "timing-cohesion",
+      "before": "unverified",
+      "after": "unverified",
+      "change": "unchanged"
+    },
+    {
+      "id": "performance",
+      "before": "unverified",
+      "after": "unverified",
+      "change": "unchanged"
+    },
+    {
+      "id": "accessibility",
+      "before": "fail",
+      "after": "fail",
+      "change": "unchanged"
+    },
+    {
+      "id": "responsive-resilience",
+      "before": "unverified",
+      "after": "unverified",
+      "change": "unchanged"
+    }
+  ],
+  "findings": {
+    "resolved": [],
+    "persistent": [
+      {
+        "id": "missing-associated-label",
+        "lens": "accessibility",
+        "beforeStatus": "confirmed",
+        "afterStatus": "confirmed",
+        "beforeSeverity": "p1",
+        "afterSeverity": "p1",
+        "reason": "The finding remains in the candidate report."
+      },
+      {
+        "id": "runtime-interaction-proof-missing",
+        "lens": "interruptibility",
+        "beforeStatus": "unverified",
+        "afterStatus": "unverified",
+        "beforeSeverity": "p2",
+        "afterSeverity": "p2",
+        "reason": "The finding remains in the candidate report."
+      }
+    ],
+    "introduced": [],
+    "uncertain": []
+  },
+  "summary": {
+    "status": "attention-required",
+    "resolved": 0,
+    "persistent": 2,
+    "introduced": 0,
+    "uncertain": 0,
+    "nextAction": "Resolve persistent and introduced findings, or collect evidence for uncertain findings."
+  },
+  "approval": {
+    "status": "pending",
+    "requiredBefore": [
+      "target repository mutation",
+      "commit",
+      "push",
+      "deployment",
+      "external writes"
+    ]
+  },
+  "boundary": {
+    "mode": "read-only-review-comparison",
+    "localWrites": false,
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "networkCalls": false,
+    "boundedImprovementEstablished": false,
+    "productionQualityEstablished": false,
+    "adoptionEstablished": false
+  }
+}

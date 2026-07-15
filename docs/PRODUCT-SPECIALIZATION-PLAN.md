@@ -410,9 +410,9 @@ filesystem and Git access are explicit operator boundaries.
 
 ### P12 - Real pilot and adoption proof
 
-Status: implemented in the current source; one consented internal dogfood chain is
-complete, while fresh-process MCP proof is blocked by the current response-size
-limit.
+Status: merged in PR #46. One consented internal dogfood chain and the compact
+fresh-process MCP path are complete. The full nested MCP response remains an
+explicit response-size error instead of being truncated.
 
 Run the complete review-to-implementation chain on one consented real project.
 Measure time to first useful artifact, finding precision, approval friction,
@@ -444,6 +444,47 @@ of the imported pilot artifact. The final nested MCP response is 452,923 bytes a
 remains an explicit output-limit error. An opt-in compact view validates that full
 artifact first, then returns a 4,021-byte summary with matching source references,
 SHA-256 digests, byte counts, measures, issues, claims, next action, and boundaries.
+
+### P13 - Verified design iteration
+
+Status: implemented in the current source; local contract, browser, and release
+verification are complete, while pull-request review remains.
+
+Close the loop between review and implementation. A user should be able to compare
+the exact baseline and candidate quality reports and understand which design
+findings resolved, persisted, appeared, or remain uncertain. The answer must keep
+the evidence that produced it and must not collapse eight design lenses into an
+opaque score.
+
+The implementation adds CLI `review-compare`, SDK `compareReviews()`, MCP
+`design_ai_compare_reviews`, and Website Console import, restore, render, and
+original-byte export. The shared v1 contract requires the same subject, brief,
+route, locale, and viewport set. A missing finding is resolved only when its
+candidate lens passes; otherwise it remains uncertain. Lens changes separately
+record improvement, regression, evidence gained, and evidence lost.
+
+Exit criteria:
+
+- Exact baseline and candidate references, source bytes, SHA-256 digests, parsed
+  reports, and derived decisions survive the full artifact.
+- Compact output removes only repeated source bodies and preserves identities,
+  decisions, approval gates, and claim boundaries.
+- Installed-bin, one-shot `npm exec`, SDK, MCP, and Website Console validate the
+  same rules and reject subject, context, lens, source, or derived-decision drift.
+- Desktop and mobile Console checks show no horizontal overflow, keyboard skip-link
+  failure, undersized visible navigation controls, or console errors.
+- Target mutation, commit, push, deployment, and external writes remain separate
+  approvals.
+
+P13 can establish bounded improvement between two supplied reviews. It does not
+establish production quality, customer adoption, or business impact. Those claims
+still require separate runtime and user evidence.
+
+Local release evidence: `npm run release:check` passes with 831 tests, all 8 strict
+audits, 774 packaged files, a 0/0 documentation warning policy, SDK import smoke,
+and comparison smoke through installed-bin plus one-shot `npm exec` paths. A fresh
+stdio MCP process listed all 29 tools and returned a 3,934-byte compact comparison
+with matching source identities and unchanged read-only boundaries.
 
 ## Quality targets
 

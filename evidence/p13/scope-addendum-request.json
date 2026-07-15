@@ -1,0 +1,36 @@
+{
+  "kind": "design-ai-implementation-scope-request",
+  "schemaVersion": 1,
+  "objective": "Keep the direct design-ai MCP server setup guide aligned with the P13 public capability contract.",
+  "intendedBehavior": [
+    "State the current-source MCP tool count as 29.",
+    "Name verified review comparison as a current-source MCP capability.",
+    "Preserve the published v5.0.0 count and every permission boundary."
+  ],
+  "files": {
+    "inspect": [
+      "docs/integrations/design-ai-mcp-server.md"
+    ],
+    "change": [
+      "docs/integrations/design-ai-mcp-server.md"
+    ],
+    "generated": [
+      "evidence/p13/scope-addendum-*.json"
+    ]
+  },
+  "dependencies": [],
+  "migrations": [],
+  "externalWrites": [],
+  "verificationCommands": [
+    "npm run release:check"
+  ],
+  "risks": [
+    "A stale tool count could make Claude or Codex setup documentation disagree with the actual MCP inventory."
+  ],
+  "preExistingChanges": [],
+  "release": {
+    "commit": false,
+    "push": false,
+    "deployment": false
+  }
+}

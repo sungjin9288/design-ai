@@ -8,6 +8,7 @@ import vm from "node:vm";
 
 import { validateBrowserVerification } from "../../cli/lib/browser-verification-contract.mjs";
 import { validateDesignQualityReport } from "../../cli/lib/design-quality-contract.mjs";
+import { compareReviewReports } from "../../cli/lib/review-comparison.mjs";
 import { PACKAGE_ROOT } from "../../cli/lib/paths.mjs";
 import { buildReviewWorkflow } from "../../cli/lib/review-workflow.mjs";
 import { buildReviewHandoff } from "../../cli/lib/review-handoff.mjs";
@@ -28,7 +29,22 @@ function loadApi() {
   return sandbox.DesignAiWebsiteConsoleSourceBundle;
 }
 
+function loadReviewComparisonApi() {
+  const sandbox = {};
+  vm.createContext(sandbox);
+  vm.runInContext(
+    readFileSync(path.join(CONSOLE_ROOT, "source-bundle.js"), "utf8"),
+    sandbox,
+  );
+  vm.runInContext(
+    readFileSync(path.join(CONSOLE_ROOT, "review-comparison.js"), "utf8"),
+    sandbox,
+  );
+  return sandbox.DesignAiWebsiteConsoleReviewComparison;
+}
+
 const api = loadApi();
+const comparisonApi = loadReviewComparisonApi();
 
 function canonicalBrowserReport() {
   const checks = [
@@ -135,6 +151,56 @@ test("source-bundle classic script exposes the focused frozen API", () => {
     "sha256Text",
     "utf8ByteLength",
   ]);
+});
+
+test("review-comparison classic script validates the shared full comparison contract", () => {
+  const qualityPath = path.join(
+    PACKAGE_ROOT,
+    "examples",
+    "benchmarks",
+    "korean-fintech-settings",
+    "quality-report.json",
+  );
+  const baselineSource = readFileSync(qualityPath, "utf8");
+  const candidate = JSON.parse(baselineSource);
+  candidate.generatedAt = "2026-07-15T00:00:00.000Z";
+  const candidateSource = `${JSON.stringify(candidate, null, 2)}\n`;
+  const comparison = compareReviewReports(baselineSource, candidateSource, {
+    baselineRef: "before.json",
+    candidateRef: "after.json",
+  });
+  const normalized = comparisonApi.normalizeReviewComparison(comparison);
+
+  assert.equal(Object.isFrozen(comparisonApi), true);
+  assert.deepEqual(Object.keys(comparisonApi), ["normalizeReviewComparison"]);
+  assert.notEqual(normalized, comparison);
+  assert.equal(JSON.stringify(normalized), JSON.stringify(comparison));
+
+  const changedDecision = structuredClone(comparison);
+  changedDecision.findings.persistent[0].reason = "Treat the finding as resolved.";
+  assert.equal(comparisonApi.normalizeReviewComparison(changedDecision), null);
+
+  const changedSource = structuredClone(comparison);
+  changedSource.baseline.source += " ";
+  assert.equal(comparisonApi.normalizeReviewComparison(changedSource), null);
+  assert.equal(comparisonApi.normalizeReviewComparison({ ...comparison, kind: "design-ai-review-comparison-summary" }), null);
+});
+
+test("Website Console loads, imports, renders, restores, and exports full review comparisons", () => {
+  const indexSource = readFileSync(path.join(CONSOLE_ROOT, "index.html"), "utf8");
+  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+
+  assert.ok(indexSource.indexOf("./source-bundle.js") < indexSource.indexOf("./review-comparison.js"));
+  assert.ok(indexSource.indexOf("./review-comparison.js") < indexSource.indexOf("./app.js"));
+  assert.match(appSource, /design-ai\.website-console\.review-comparison/);
+  assert.match(appSource, /var importedReviewComparison = normalizeReviewComparisonArtifact\(parsed\);/);
+  assert.match(appSource, /Verified Design Iteration/);
+  assert.match(appSource, /Exact source identity, finding decisions, approval gates, and claim boundaries preserved/);
+  assert.match(appSource, /Export original comparison JSON/);
+  assert.match(appSource, /Original review-comparison JSON exported without reformatting/);
+  assert.match(appSource, /Review comparison cleared\. Other review evidence remains available/);
+  assert.match(appSource, /No production-quality claim/);
+  assert.match(appSource, /No adoption claim/);
 });
 
 test("quality and browser contracts reject unknown shapes and preserve imported JSON bytes", () => {
@@ -670,7 +736,7 @@ test("Website Console imports and labels linked preview readiness without claimi
   const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
 
   assert.match(appSource, /website-improvement-linked-preview/);
-  assert.match(appSource, /Import pilot evidence, implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
+  assert.match(appSource, /Import review comparison, pilot evidence, implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
   assert.match(appSource, /No process started by design-ai/);
   assert.match(appSource, /A configured URL is not browser verification/);
   assert.match(appSource, /Linked preview readiness JSON imported\. Report tab opened\./);

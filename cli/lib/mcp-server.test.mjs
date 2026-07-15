@@ -1,6 +1,6 @@
 import { once } from "node:events";
 import { spawn, spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -138,6 +138,7 @@ test("MCP tool list exposes design-ai read-only workflow tools", async () => {
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_start"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_inspect_html"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_review_html"));
+  assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_compare_reviews"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_review_handoff"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_review_pack"));
   assert.ok(response.result.tools.some((tool) => tool.name === "design_ai_artifact"));
@@ -351,6 +352,53 @@ test("design_ai_review_pilot exposes optional compact output", () => {
   assert.equal(tool.inputSchema.properties.compact.type, "boolean");
   assert.equal(tool.inputSchema.required.includes("compact"), false);
   assert.match(tool.description, /compact/);
+});
+
+test("design_ai_compare_reviews defaults to compact output and can return the full artifact", async () => {
+  const fixturePath = path.join(
+    PACKAGE_ROOT,
+    "examples",
+    "benchmarks",
+    "korean-fintech-settings",
+    "quality-report.json",
+  );
+  const baselineSource = readFileSync(fixturePath, "utf8");
+  const candidate = JSON.parse(baselineSource);
+  candidate.generatedAt = "2026-07-15T00:00:00.000Z";
+  const candidateSource = `${JSON.stringify(candidate, null, 2)}\n`;
+  const input = {
+    baselineSource,
+    baselineRef: "before.json",
+    candidateSource,
+    candidateRef: "after.json",
+  };
+
+  const compactResult = await callMcpTool("design_ai_compare_reviews", input);
+  const fullResult = await callMcpTool("design_ai_compare_reviews", { ...input, compact: false });
+  const compact = JSON.parse(compactResult.content[0].text);
+  const full = JSON.parse(fullResult.content[0].text);
+
+  assert.equal(compactResult.isError, false);
+  assert.equal(compact.kind, "design-ai-review-comparison-summary");
+  assert.equal(compact.sources.baseline.reference, "before.json");
+  assert.equal(Object.hasOwn(compact.sources.baseline, "source"), false);
+  assert.equal(fullResult.isError, false);
+  assert.equal(full.kind, "design-ai-review-comparison");
+  assert.equal(full.baseline.source, baselineSource);
+  assert.equal(full.candidate.source, candidateSource);
+});
+
+test("design_ai_compare_reviews exposes a closed exact-source input contract", () => {
+  const tool = MCP_TOOLS.find((item) => item.name === "design_ai_compare_reviews");
+
+  assert.deepEqual(tool.inputSchema.required, [
+    "baselineSource",
+    "baselineRef",
+    "candidateSource",
+    "candidateRef",
+  ]);
+  assert.equal(tool.inputSchema.properties.compact.type, "boolean");
+  assert.match(tool.description, /Compact output is the default/);
 });
 
 test("design_ai_route uses the shared route operation without spawning the CLI", async () => {

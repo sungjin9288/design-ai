@@ -16,6 +16,7 @@ import { runReviewIntake } from "./review-intake.mjs";
 import { runReviewScope } from "./review-scope.mjs";
 import { runReviewScopeApprove } from "./review-scope-approve.mjs";
 import { runReviewEvidence } from "./review-evidence.mjs";
+import { runReviewCompare } from "./review-compare.mjs";
 import { runReviewPilot } from "./review-pilot.mjs";
 import { runReviewPack } from "./review-pack.mjs";
 import { runBenchmark } from "./benchmark.mjs";
@@ -65,6 +66,7 @@ export const HELP_COMMANDS = [
   { topic: "review-scope", usage: "review-scope <target-intake.json> --request scope-request.json --consumer name [--json]", description: "Build an immutable implementation-scope proposal" },
   { topic: "review-scope-approve", usage: "review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes [--json]", description: "Approve one exact implementation-scope proposal" },
   { topic: "review-evidence", usage: "review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name [--json]", description: "Check implementation evidence against an approved baseline" },
+  { topic: "review-compare", usage: "review-compare <baseline-quality-report.json> --candidate candidate-quality-report.json [--compact] [--json]", description: "Compare exact before-and-after quality reports without changing the project" },
   { topic: "review-pilot", usage: "review-pilot <implementation-evidence.json> --workflow review-workflow.json --record pilot-record.json [--json]", description: "Build bounded evidence for one consented real pilot" },
   { topic: "review-pack", usage: "review-pack [id] [--json]", description: "List or print Korean product review packs" },
   { topic: "benchmark", usage: "benchmark [case-id] [--strict] [--json] | benchmark --list [--json]", description: "Run read-only product specialization regression proof" },
@@ -126,6 +128,7 @@ const HELP_RUNNERS = {
   "review-scope": () => runReviewScope(["--help"]),
   "review-scope-approve": () => runReviewScopeApprove(["--help"]),
   "review-evidence": () => runReviewEvidence(["--help"]),
+  "review-compare": () => runReviewCompare(["--help"]),
   "review-pilot": () => runReviewPilot(["--help"]),
   "review-pack": () => runReviewPack(["--help"]),
   benchmark: () => runBenchmark(["--help"]),
@@ -262,6 +265,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai prompt "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai artifact implementation-plan "refactor account settings"`);
   console.log(`  ${dim("$")} design-ai inspect page.html --brief "review account settings" --locale ko-KR --json`);
+  console.log(`  ${dim("$")} design-ai review-compare before.json --candidate after.json --compact --json`);
   console.log(`  ${dim("$")} design-ai benchmark --strict`);
   console.log(`  ${dim("$")} design-ai pack "spec a Button component"`);
   console.log(`  ${dim("$")} design-ai check output.md --route component-spec --strict`);

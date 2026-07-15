@@ -1,0 +1,160 @@
+{
+  "kind": "design-ai-p13-mcp-proof",
+  "schemaVersion": 1,
+  "transport": "fresh-stdio-process",
+  "protocolVersion": "2025-11-25",
+  "toolCount": 29,
+  "toolPresent": true,
+  "responseBytes": 3934,
+  "result": {
+    "kind": "design-ai-review-comparison-summary",
+    "schemaVersion": 1,
+    "status": "attention-required",
+    "sources": {
+      "baseline": {
+        "reference": "/Users/sungjin/dev/design/examples/benchmarks/korean-fintech-settings/quality-report.json",
+        "sha256": "aa580c20023dd206ac23ccf2817a762e62f2a8194361f012c077912afd58eab4",
+        "bytes": 6605,
+        "kind": "design-ai-quality-report",
+        "schemaVersion": 1,
+        "reportStatus": "fail"
+      },
+      "candidate": {
+        "reference": "/private/tmp/design-ai-p13/candidate-quality-report.json",
+        "sha256": "38b368b0c219f3e4b06dc29d3381447847fb0fc4d5eeb9444c106a031d98ef47",
+        "bytes": 6623,
+        "kind": "design-ai-quality-report",
+        "schemaVersion": 1,
+        "reportStatus": "fail"
+      }
+    },
+    "context": {
+      "subject": {
+        "name": "Korean fintech account settings benchmark",
+        "type": "flow",
+        "source": "examples/benchmarks/korean-fintech-settings/source.html"
+      },
+      "brief": "Review a Korean fintech account settings flow before implementation handoff.",
+      "routeId": "design-engineering-review",
+      "locale": "ko-KR",
+      "viewports": [
+        "mobile",
+        "desktop"
+      ]
+    },
+    "lensTransitions": [
+      {
+        "id": "purpose-frequency",
+        "before": "pass",
+        "after": "pass",
+        "change": "unchanged"
+      },
+      {
+        "id": "response",
+        "before": "unverified",
+        "after": "unverified",
+        "change": "unchanged"
+      },
+      {
+        "id": "spatial-continuity",
+        "before": "pass",
+        "after": "pass",
+        "change": "unchanged"
+      },
+      {
+        "id": "interruptibility",
+        "before": "unverified",
+        "after": "unverified",
+        "change": "unchanged"
+      },
+      {
+        "id": "timing-cohesion",
+        "before": "unverified",
+        "after": "unverified",
+        "change": "unchanged"
+      },
+      {
+        "id": "performance",
+        "before": "unverified",
+        "after": "unverified",
+        "change": "unchanged"
+      },
+      {
+        "id": "accessibility",
+        "before": "fail",
+        "after": "fail",
+        "change": "unchanged"
+      },
+      {
+        "id": "responsive-resilience",
+        "before": "unverified",
+        "after": "unverified",
+        "change": "unchanged"
+      }
+    ],
+    "findings": {
+      "resolved": [],
+      "persistent": [
+        {
+          "id": "missing-associated-label",
+          "lens": "accessibility",
+          "beforeStatus": "confirmed",
+          "afterStatus": "confirmed",
+          "beforeSeverity": "p1",
+          "afterSeverity": "p1",
+          "reason": "The finding remains in the candidate report."
+        },
+        {
+          "id": "runtime-interaction-proof-missing",
+          "lens": "interruptibility",
+          "beforeStatus": "unverified",
+          "afterStatus": "unverified",
+          "beforeSeverity": "p2",
+          "afterSeverity": "p2",
+          "reason": "The finding remains in the candidate report."
+        }
+      ],
+      "introduced": [],
+      "uncertain": []
+    },
+    "summary": {
+      "status": "attention-required",
+      "resolved": 0,
+      "persistent": 2,
+      "introduced": 0,
+      "uncertain": 0,
+      "nextAction": "Resolve persistent and introduced findings, or collect evidence for uncertain findings."
+    },
+    "approval": {
+      "status": "pending",
+      "requiredBefore": [
+        "target repository mutation",
+        "commit",
+        "push",
+        "deployment",
+        "external writes"
+      ]
+    },
+    "boundary": {
+      "mode": "read-only-review-comparison",
+      "localWrites": false,
+      "targetRepoMutation": false,
+      "externalWrites": false,
+      "networkCalls": false,
+      "boundedImprovementEstablished": false,
+      "productionQualityEstablished": false,
+      "adoptionEstablished": false
+    },
+    "representation": {
+      "mode": "compact",
+      "fullArtifactKind": "design-ai-review-comparison",
+      "fullArtifactSchemaVersion": 1,
+      "omittedFields": [
+        "baseline.source",
+        "baseline.value",
+        "candidate.source",
+        "candidate.value"
+      ]
+    }
+  }
+}
