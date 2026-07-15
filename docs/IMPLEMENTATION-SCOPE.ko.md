@@ -76,3 +76,5 @@ Website Console에 제안서나 승인 JSON을 가져오면 중첩된 원본과 
 - 범위가 넓어지면 멈추고 새 제안서를 만듭니다.
 - commit, push, deployment, 외부 쓰기는 각각 별도 gate로 남깁니다.
 - 실행 명령, 결과, artifact, 확인하지 못한 항목을 P11 근거로 기록합니다.
+
+다음 단계는 [구현 증빙](IMPLEMENTATION-REVIEW-EVIDENCE.ko.md)에서 이어집니다.

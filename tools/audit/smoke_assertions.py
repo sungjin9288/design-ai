@@ -195,6 +195,7 @@ EXPECTED_HELP_TOPICS = (
     "review-intake",
     "review-scope",
     "review-scope-approve",
+    "review-evidence",
     "review-pack",
     "benchmark",
     "verify-browser",
@@ -253,6 +254,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "review-intake": "design-ai review-intake <receipt.json> --target-root path --consumer name [--json]",
     "review-scope": "design-ai review-scope <target-intake.json> --request scope-request.json --consumer name [--json]",
     "review-scope-approve": "design-ai review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes [--json]",
+    "review-evidence": "design-ai review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name [--json]",
     "review-pack": "design-ai review-pack [id] [--json]",
     "benchmark": "design-ai benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
     "verify-browser": "design-ai verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]",
@@ -349,6 +351,12 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes",
         "reads one explicit proposal JSON file and writes nothing",
         "External writes, commit, push, deployment, and external-state migration remain separately gated",
+    ),
+    "review-evidence": (
+        "Usage:",
+        "design-ai review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name",
+        "reads the two explicit JSON files, local Git metadata, and declared evidence artifacts only",
+        "does not run tests, commit, push, deploy, use the network, or read application source",
     ),
     "review-pack": (
         "Usage:",
@@ -545,6 +553,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "review-intake <receipt.json> --target-root path --consumer name",
     "review-scope <target-intake.json> --request scope-request.json --consumer name",
     "review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes",
+    "review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name",
     "benchmark [case-id] [--strict] [--json]",
     "examples [query]",
     "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
@@ -4860,6 +4869,77 @@ def assert_implementation_scope_approval_json(
             raise SystemExit(f"implementation scope approval after {context} expanded {field}")
 
 
+def assert_implementation_evidence_json(
+    raw: str,
+    approval_path: Path,
+    request_path: Path,
+    target_root: Path,
+    *,
+    consumer: str,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        evidence = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse implementation evidence after {context}") from error
+
+    if (
+        evidence.get("kind") != "design-ai-implementation-evidence"
+        or evidence.get("schemaVersion") != 1
+        or evidence.get("status") != "attention-required"
+        or evidence.get("consumer") != consumer
+    ):
+        raise SystemExit(f"implementation evidence after {context} changed identity or status")
+    for field, source_path in (("approval", approval_path), ("request", request_path)):
+        source = source_path.read_text(encoding="utf-8")
+        artifact = evidence.get(field, {})
+        if (
+            artifact.get("reference") != str(source_path.resolve())
+            or artifact.get("source") != source
+            or artifact.get("sha256") != hashlib.sha256(source.encode("utf-8")).hexdigest()
+            or artifact.get("bytes") != len(source.encode("utf-8"))
+            or artifact.get("value") != json.loads(source)
+        ):
+            raise SystemExit(f"implementation evidence after {context} changed {field} source identity")
+    observed = evidence.get("observed", {})
+    changes = observed.get("worktreeChanges", [])
+    if (
+        observed.get("targetPath") != str(target_root)
+        or observed.get("branch") != "main"
+        or len(changes) != 1
+        or changes[0].get("path") != "src/settings/view.tsx"
+        or changes[0].get("reported") is not True
+        or changes[0].get("selector") != "src/settings/**/*.tsx"
+    ):
+        raise SystemExit(f"implementation evidence after {context} changed observed Git evidence")
+    verification = evidence.get("verification", {})
+    if (
+        verification.get("expectedCommands") != ["npm test", "npm run build"]
+        or verification.get("summary") != {"pass": 0, "fail": 0, "notRun": 2}
+        or len(evidence.get("observations", [])) != 3
+        or evidence.get("artifacts") != []
+        or not evidence.get("issues")
+    ):
+        raise SystemExit(f"implementation evidence after {context} promoted missing proof")
+    boundary = evidence.get("boundary", {})
+    if (
+        boundary.get("mode") != "read-only-evidence"
+        or boundary.get("verificationCommandsExecuted") != []
+        or boundary.get("evidenceFilesRead") != []
+        or boundary.get("applicationSourceRead") is not False
+    ):
+        raise SystemExit(f"implementation evidence after {context} changed its read boundary")
+    for field in [
+        "localWrites", "targetRepoMutation", "externalWrites", "networkCalls",
+        "implementationPerformed", "commitAuthorized", "commitPerformed",
+        "pushAuthorized", "pushPerformed", "deploymentAuthorized", "deploymentPerformed",
+    ]:
+        if boundary.get(field) is not False:
+            raise SystemExit(f"implementation evidence after {context} expanded {field}")
+
+
 def assert_specialization_benchmark_json(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -5785,6 +5865,8 @@ def passing_main_help_output() -> str:
         "    Build an immutable implementation-scope proposal",
         "  review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes [--json]",
         "    Approve one exact implementation-scope proposal",
+        "  review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name [--json]",
+        "    Check implementation evidence against an approved baseline",
         "  benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
         "    Run read-only product specialization regression proof",
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",

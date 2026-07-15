@@ -38,6 +38,7 @@ design-ai review-handoff-verify review-handoff.json --consumer implementation-ag
 design-ai review-intake review-handoff-receipt.json --target-root /absolute/path/to/settings --consumer implementation-agent --json
 design-ai review-scope target-repo-intake.json --request implementation-scope-request.json --consumer implementation-agent --json
 design-ai review-scope-approve implementation-scope-proposal.json --approver "product owner" --approval-ref "approved in task" --approved-at "2026-07-15T12:00:00.000Z" --yes --json
+design-ai review-evidence implementation-scope-approval.json --request implementation-evidence-request.json --target-root /absolute/path/to/settings --consumer implementation-agent --json
 design-ai inspect page.html --brief "한국 핀테크 설정 검토" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json
 design-ai benchmark --strict
 design-ai pack "audit a Figma signup flow for Korean fintech" --max-bytes 80000
@@ -75,6 +76,11 @@ design contract, static quality report를 함께 반환하고 문맥과 SHA-256 
 증명한 뒤 browser verification과 구현 전에 멈춥니다. 품질 보고서만 필요할 때는
 하위 수준의 `inspect`를 사용하세요. [표준 디자인 리뷰 워크플로우](REVIEW-WORKFLOW.ko.md)를
 참고하세요.
+
+승인한 selector만 구현한 뒤 commit 전에 `design-ai review-evidence`를
+실행하세요. 승인 당시 기준점과 현재 Git 상태를 비교하고, 실행하지 않은 검증은
+그대로 미실행으로 남기며, 선언한 증빙 파일만 해시로 확인합니다. [구현
+증빙](IMPLEMENTATION-REVIEW-EVIDENCE.ko.md)을 참고하세요.
 
 수신 에이전트는 `design-ai review-handoff-verify`로 handoff 원본을 다시 검증하고
 consumer receipt를 만듭니다. 이는 계약 검증만 증명하며 신원, 전송, 수락, 대상

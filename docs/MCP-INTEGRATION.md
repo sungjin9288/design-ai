@@ -117,6 +117,15 @@ Approval authorizes only listed source and target-file selectors. Commit, push,
 deployment, migration execution, network access, and external writes remain
 separate gates. See [Implementation scope approval](IMPLEMENTATION-SCOPE.md).
 
+### Implementation evidence
+
+`design_ai_review_evidence` accepts absolute paths to one exact scope approval,
+one evidence request, and the approved target root, plus the matching consumer.
+It compares local Git state with the approved baseline and hashes only declared
+evidence artifacts. It does not run tests, read application source, mutate the
+target, or authorize commit, push, deployment, migration execution, or external
+writes. See [Implementation evidence](IMPLEMENTATION-REVIEW-EVIDENCE.md).
+
 ### Approval-gated website implementation handoff
 
 The v5.0.0 source candidate adds `design_ai_site_bundle_handoff`. It verifies a local Website Improvement bundle through the existing CLI boundary and returns a target-repo prompt plus a `pending-human-approval` contract. The call is read-only: it does not contact an external MCP, edit the target repository, install dependencies, deploy, commit, or push.

@@ -72,6 +72,7 @@ from smoke_assertions import (
     assert_inspect_json,
     assert_implementation_scope_approval_json,
     assert_implementation_scope_proposal_json,
+    assert_implementation_evidence_json,
     assert_specialization_benchmark_json,
     assert_install_doctor_lifecycle_output,
     assert_install_output,
@@ -8500,6 +8501,50 @@ def assert_implementation_scope_approval_smoke(
     return result.stdout
 
 
+def assert_implementation_evidence_smoke(
+    cmd: list[str],
+    approval_path: Path,
+    request_path: Path,
+    target_root: Path,
+    *,
+    consumer: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> str:
+    approval_before = approval_path.read_bytes()
+    request_before = request_path.read_bytes()
+    status_before = subprocess.run(
+        ["git", "status", "--short", "--untracked-files=all"],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_implementation_evidence_json(
+        result.stdout,
+        approval_path,
+        request_path,
+        target_root,
+        consumer=consumer,
+        context=context,
+        cmd=cmd,
+    )
+    if approval_path.read_bytes() != approval_before or request_path.read_bytes() != request_before:
+        raise SystemExit(f"{context}: review-evidence changed an input artifact")
+    status_after = subprocess.run(
+        ["git", "status", "--short", "--untracked-files=all"],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout
+    if status_after != status_before:
+        raise SystemExit(f"{context}: review-evidence changed the target repository")
+    return result.stdout
+
+
 def write_implementation_scope_request(file_path: Path) -> None:
     file_path.write_text(
         json.dumps(
@@ -8522,6 +8567,54 @@ def write_implementation_scope_request(file_path: Path) -> None:
                 "risks": ["The current label may be referenced by an existing test."],
                 "preExistingChanges": [],
                 "release": {"commit": True, "push": True, "deployment": False},
+            },
+            indent=2,
+        ) + "\n",
+        encoding="utf-8",
+    )
+
+
+def write_implementation_evidence_request(file_path: Path, target_root: Path) -> None:
+    status = subprocess.run(
+        ["git", "-c", "core.quotepath=false", "status", "--short", "--untracked-files=all"],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout.strip()
+    file_path.write_text(
+        json.dumps(
+            {
+                "kind": "design-ai-implementation-evidence-request",
+                "schemaVersion": 1,
+                "consumer": "package-smoke-agent",
+                "implementationStartedAt": "2026-07-15T12:01:00.000Z",
+                "implementationCompletedAt": "2026-07-15T12:02:00.000Z",
+                "executedWork": [
+                    {
+                        "statusEntry": status,
+                        "path": "src/settings/view.tsx",
+                        "summary": "Implemented the approved settings action.",
+                    }
+                ],
+                "verificationResults": [
+                    {
+                        "command": command,
+                        "status": "not-run",
+                        "startedAt": "",
+                        "completedAt": "",
+                        "exitCode": None,
+                        "summary": "Not run during package contract smoke.",
+                        "artifacts": [],
+                    }
+                    for command in ["npm test", "npm run build"]
+                ],
+                "observations": [
+                    {"id": "a11y", "category": "accessibility", "status": "unverified", "summary": "Not exercised.", "artifacts": []},
+                    {"id": "responsive", "category": "responsive", "status": "unverified", "summary": "Not exercised.", "artifacts": []},
+                    {"id": "browser", "category": "browser", "status": "unverified", "summary": "Not exercised.", "artifacts": []},
+                ],
+                "remainingRisks": [],
             },
             indent=2,
         ) + "\n",
@@ -22104,7 +22197,7 @@ def smoke_tarball(tarball: Path) -> None:
         )
         installed_scope_proposal = tmp_root / "installed-implementation-scope-proposal.json"
         installed_scope_proposal.write_text(installed_scope_source, encoding="utf-8")
-        assert_implementation_scope_approval_smoke(
+        installed_scope_approval_source = assert_implementation_scope_approval_smoke(
             [
                 str(bin_path),
                 "review-scope-approve",
@@ -22126,6 +22219,8 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin implementation scope approval",
         )
+        installed_scope_approval = tmp_root / "installed-implementation-scope-approval.json"
+        installed_scope_approval.write_text(installed_scope_approval_source, encoding="utf-8")
         assert_inspect_smoke(
             [
                 str(bin_path),
@@ -23754,7 +23849,7 @@ def smoke_tarball(tarball: Path) -> None:
         )
         npx_scope_proposal = tmp_root / "npx-implementation-scope-proposal.json"
         npx_scope_proposal.write_text(npx_scope_source, encoding="utf-8")
-        assert_implementation_scope_approval_smoke(
+        npx_scope_approval_source = assert_implementation_scope_approval_smoke(
             npm_exec_cmd(
                 tarball,
                 "review-scope-approve",
@@ -23776,6 +23871,57 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec implementation scope approval",
+        )
+        npx_scope_approval = tmp_root / "npx-implementation-scope-approval.json"
+        npx_scope_approval.write_text(npx_scope_approval_source, encoding="utf-8")
+        implementation_source = target_repo_intake_root / "src" / "settings" / "view.tsx"
+        implementation_source.parent.mkdir(parents=True)
+        implementation_source.write_text(
+            "export function Settings() { return <button>Save</button>; }\n",
+            encoding="utf-8",
+        )
+        implementation_evidence_request = tmp_root / "implementation-evidence-request.json"
+        write_implementation_evidence_request(implementation_evidence_request, target_repo_intake_root)
+        assert_implementation_evidence_smoke(
+            [
+                str(bin_path),
+                "review-evidence",
+                str(installed_scope_approval),
+                "--request",
+                str(implementation_evidence_request),
+                "--target-root",
+                str(target_repo_intake_root),
+                "--consumer",
+                "package-smoke-agent",
+                "--json",
+            ],
+            installed_scope_approval,
+            implementation_evidence_request,
+            target_repo_intake_root,
+            consumer="package-smoke-agent",
+            env=smoke_env,
+            context="package smoke installed bin implementation evidence",
+        )
+        assert_implementation_evidence_smoke(
+            npm_exec_cmd(
+                tarball,
+                "review-evidence",
+                str(npx_scope_approval),
+                "--request",
+                str(implementation_evidence_request),
+                "--target-root",
+                str(target_repo_intake_root),
+                "--consumer",
+                "package-smoke-agent",
+                "--json",
+            ),
+            npx_scope_approval,
+            implementation_evidence_request,
+            target_repo_intake_root,
+            consumer="package-smoke-agent",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec implementation evidence",
         )
         assert_inspect_smoke(
             npm_exec_cmd(

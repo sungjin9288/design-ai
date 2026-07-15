@@ -20,6 +20,7 @@ import {
   approveImplementationScope,
   proposeImplementationScope,
 } from "./implementation-scope.mjs";
+import { buildImplementationEvidenceFromFiles } from "./implementation-evidence.mjs";
 import { listProductReviewPacks, loadProductReviewPack } from "./product-review-pack.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
@@ -31,6 +32,7 @@ const SERVER_INSTRUCTIONS = [
   "Use design_ai_review_intake to inspect only the receipt-declared target root metadata and local Git state before scope approval.",
   "Use design_ai_review_scope to bind an exact intake and scope request into an immutable proposal without reading application source.",
   "Use design_ai_approve_review_scope only after explicit human confirmation to authorize the proposal's listed selectors; release actions remain separately gated.",
+  "Use design_ai_review_evidence to compare an approved baseline with local Git state and declared evidence artifacts without running verification or changing the target.",
   "Use design_ai_start for a read-only route and design-contract plan; declared repositories, pages, and screenshots are not inspected and its next command is not executed.",
   "Use design_ai_inspect_html for a lower-level supplied-HTML quality report; unobserved runtime behavior remains unverified.",
   "Product review packs are explicit and never inferred from locale.",
@@ -263,6 +265,25 @@ export const MCP_TOOLS = [
         confirmed: { type: "boolean", description: "Must be true to record explicit approval." },
       },
       required: ["proposalSource", "proposalRef", "approver", "approvalRef", "approvedAt", "confirmed"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_review_evidence",
+    title: "Review implementation evidence",
+    description: [
+      "Compare one exact scope approval and evidence request with the approved local target's Git state and declared evidence artifacts.",
+      "Read-only: writes nothing, reads no application source, runs no verification command, and does not commit, push, deploy, use the network, or authorize a release action.",
+    ].join(" "),
+    inputSchema: {
+      type: "object",
+      properties: {
+        approvalPath: { type: "string", minLength: 1, description: "Absolute path to the exact design-ai-implementation-scope-approval JSON." },
+        requestPath: { type: "string", minLength: 1, description: "Absolute path to the exact design-ai-implementation-evidence-request JSON." },
+        targetRoot: { type: "string", minLength: 1, description: "Absolute local path authorized by the scope approval." },
+        consumer: { type: "string", minLength: 1, description: "Consumer name matching the approval and request." },
+      },
+      required: ["approvalPath", "requestPath", "targetRoot", "consumer"],
       additionalProperties: false,
     },
   },
@@ -898,6 +919,19 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
       approvalRef: input.approvalRef,
       approvedAt: input.approvedAt,
       confirmed: input.confirmed,
+    });
+    return jsonToolResult(payload);
+  }
+
+  if (name === "design_ai_review_evidence") {
+    for (const field of ["approvalPath", "requestPath", "targetRoot"]) {
+      if (!path.isAbsolute(input[field])) throw new Error(`${field} must be an absolute path`);
+    }
+    const payload = buildImplementationEvidenceFromFiles({
+      approvalPath: input.approvalPath,
+      requestPath: input.requestPath,
+      targetRoot: input.targetRoot,
+      consumer: input.consumer,
     });
     return jsonToolResult(payload);
   }

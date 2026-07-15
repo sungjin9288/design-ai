@@ -87,6 +87,7 @@
       "design_ai_review_intake",
       "design_ai_review_scope",
       "design_ai_approve_review_scope",
+      "design_ai_review_evidence",
       "design_ai_prompt",
       "design_ai_artifact",
       "design_ai_pack",
