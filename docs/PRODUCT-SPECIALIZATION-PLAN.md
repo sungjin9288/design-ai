@@ -325,6 +325,86 @@ consumer accepted the work, whether a target repository was inspected, or whethe
 implementation began. Those claims require separate evidence from the receiving
 workflow.
 
+### P9 - Target repository intake
+
+Status: implemented in the current source, pending release.
+
+P9 grounds the handoff in the repository that will actually receive the work.
+CLI `design-ai review-intake`, MCP `design_ai_review_intake`, and Website Console
+share `design-ai-target-repo-intake` v1. The operation accepts an exact P8 receipt,
+requires the same consumer and absolute path, and links the receipt by source
+digest, byte count, handoff digest, and workflow digest.
+
+The intake reads only supported root project metadata and local Git state. It
+records the declared and observed remote, branch, upstream, ahead/behind state,
+last commit, and every current worktree entry up to a documented output limit.
+Existing changes are never hidden with Design AI-specific ignore rules.
+
+Exit criteria:
+
+- Consumer and path mismatches fail before target inspection.
+- Symbolic links are rejected and are not followed by either metadata or Git
+  inspection.
+- Remote drift blocks scope review; existing changes and detached HEAD remain
+  visible attention states.
+- The artifact lists every metadata file and Git command inspected and keeps the
+  application-source list empty.
+- CLI, MCP, Console, installed package, and one-shot `npm exec` validate the same
+  contract while leaving the receipt and target repository unchanged.
+
+P9 does not expose an SDK adapter because local repository access is an explicit
+filesystem boundary. It does not read application source, start a preview, install
+dependencies, call a network, accept the handoff, or authorize implementation.
+
+### P10 - Implementation scope approval
+
+Status: planned.
+
+Turn a valid P9 intake into a reviewable proposal that names the exact files to
+inspect or change, intended behavior, risks, verification commands, and ownership
+of pre-existing worktree changes. No source read or edit begins until the proposal
+is explicitly approved.
+
+Exit criteria:
+
+- The proposal references one P9 intake digest and cannot silently change target,
+  consumer, or repository identity.
+- File globs, dependency changes, migrations, generated files, external writes,
+  commit, push, and deployment each have visible approval states.
+- Scope expansion creates a new proposal instead of mutating approved history.
+
+### P11 - Implementation evidence
+
+Status: planned.
+
+Execute only an approved P10 scope and record what changed, which tests ran, which
+runtime observations were collected, and what remains unverified. Evidence must
+distinguish Design AI's action from pre-existing target changes.
+
+Exit criteria:
+
+- Every changed file maps to approved scope or is reported as a blocking drift.
+- Test, build, accessibility, responsive, and browser evidence records commands,
+  outcomes, timestamps, and artifact references without upgrading missing runs.
+- Commit and push remain separate, explicit gates with immutable before/after Git
+  identity.
+
+### P12 - Real pilot and adoption proof
+
+Status: planned.
+
+Run the complete review-to-implementation chain on one consented real project.
+Measure time to first useful artifact, finding precision, approval friction,
+implementation completion, and unresolved risk. Synthetic benchmarks remain
+separate from pilot evidence.
+
+Exit criteria:
+
+- The project owner approves evidence collection and every mutation boundary.
+- The case study identifies real, synthetic, inferred, and unverified claims.
+- No adoption, outcome, or production-quality claim appears without source-backed
+  pilot evidence.
+
 ## Quality targets
 
 These are targets for the specialization program, not claims about the current

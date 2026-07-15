@@ -94,6 +94,7 @@ from smoke_assertions import (
     assert_review_handoff_json,
     assert_review_handoff_receipt_json,
     assert_review_workflow_json,
+    assert_target_repo_intake_json,
     assert_route_catalog_json,
     assert_route_explain_human_output,
     assert_route_json_component_spec,
@@ -5133,6 +5134,32 @@ def prepare_workspace_strict_repo(repo: Path) -> None:
     run_fixture_git(repo, "branch", "--set-upstream-to=origin/main", "main")
 
 
+def prepare_target_repo_intake_fixture(repo: Path) -> None:
+    repo.mkdir(parents=True, exist_ok=True)
+    (repo / "package.json").write_text(
+        json.dumps(
+            {
+                "scripts": {"dev": "vite", "build": "vite build", "test": "node --test"},
+                "devDependencies": {"vite": "7.0.0"},
+                "packageManager": "pnpm@10.0.0",
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    (repo / "pnpm-lock.yaml").write_text("lockfileVersion: '9.0'\n", encoding="utf-8")
+    run_fixture_git(repo, "init", "-q")
+    run_fixture_git(repo, "checkout", "-b", "main")
+    run_fixture_git(repo, "config", "user.email", "package-smoke@example.com")
+    run_fixture_git(repo, "config", "user.name", "Package Smoke")
+    run_fixture_git(repo, "add", ".")
+    run_fixture_git(repo, "commit", "-m", "test: initialize target repo intake fixture")
+    run_fixture_git(repo, "remote", "add", "origin", "https://github.com/acme/site.git")
+    run_fixture_git(repo, "update-ref", "refs/remotes/origin/main", "HEAD")
+    run_fixture_git(repo, "branch", "--set-upstream-to=origin/main", "main")
+
+
 def write_workspace_learning_eval_fixture(profile_path: Path, eval_path: Path) -> None:
     profile_path.parent.mkdir(parents=True, exist_ok=True)
     eval_path.parent.mkdir(parents=True, exist_ok=True)
@@ -8307,7 +8334,7 @@ def assert_review_handoff_receipt_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
-) -> None:
+) -> str:
     before = handoff_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_review_handoff_receipt_json(
@@ -8319,6 +8346,51 @@ def assert_review_handoff_receipt_smoke(
     )
     if handoff_path.read_bytes() != before:
         raise SystemExit(f"{context}: review-handoff-verify changed its source handoff")
+    return result.stdout
+
+
+def assert_target_repo_intake_smoke(
+    cmd: list[str],
+    receipt_path: Path,
+    target_root: Path,
+    *,
+    consumer: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    receipt_before = receipt_path.read_bytes()
+    manifest_path = target_root / "package.json"
+    manifest_before = manifest_path.read_bytes()
+    status_before = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_target_repo_intake_json(
+        result.stdout,
+        receipt_path,
+        target_root,
+        consumer=consumer,
+        context=context,
+        cmd=cmd,
+    )
+    if receipt_path.read_bytes() != receipt_before:
+        raise SystemExit(f"{context}: review-intake changed its source receipt")
+    if manifest_path.read_bytes() != manifest_before:
+        raise SystemExit(f"{context}: review-intake changed target project metadata")
+    status_after = subprocess.run(
+        ["git", "status", "--short"],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout
+    if status_after != status_before:
+        raise SystemExit(f"{context}: review-intake changed the target repository")
 
 
 def write_inspect_fixture(file_path: Path) -> None:
@@ -20723,6 +20795,7 @@ def smoke_tarball(tarball: Path) -> None:
         npm_cache = tmp_root / "npm-cache"
         installed_workspace_strict_root = tmp_root / "installed-workspace-strict"
         npx_workspace_strict_root = tmp_root / "npx-workspace-strict"
+        target_repo_intake_root = tmp_root / "target-repo-intake"
         installed_workspace_learning_profile = tmp_root / "installed-workspace-strict-learning.json"
         installed_workspace_learning_eval = tmp_root / "installed-workspace-learning-eval.json"
         installed_workspace_auto_profile = tmp_root / "installed-workspace-auto" / "learning.json"
@@ -20737,6 +20810,7 @@ def smoke_tarball(tarball: Path) -> None:
         write_browser_adapter(browser_adapter)
         prepare_workspace_strict_repo(installed_workspace_strict_root)
         prepare_workspace_strict_repo(npx_workspace_strict_root)
+        prepare_target_repo_intake_fixture(target_repo_intake_root)
         write_workspace_learning_eval_fixture(
             installed_workspace_learning_profile,
             installed_workspace_learning_eval,
@@ -21806,6 +21880,10 @@ def smoke_tarball(tarball: Path) -> None:
                 str(installed_inspect_source),
                 "--brief",
                 "Review a Korean settings flow",
+                "--repo-url",
+                "https://github.com/acme/site",
+                "--local-path",
+                str(target_repo_intake_root),
                 "--locale",
                 "ko-KR",
                 "--viewport",
@@ -21833,7 +21911,7 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke installed bin review handoff",
         )
         installed_review_handoff.write_text(installed_handoff_source, encoding="utf-8")
-        assert_review_handoff_receipt_smoke(
+        installed_review_receipt_source = assert_review_handoff_receipt_smoke(
             [
                 str(bin_path),
                 "review-handoff-verify",
@@ -21846,6 +21924,25 @@ def smoke_tarball(tarball: Path) -> None:
             consumer="package-smoke-agent",
             env=smoke_env,
             context="package smoke installed bin review handoff receipt",
+        )
+        installed_review_receipt = tmp_root / "installed-review-handoff-receipt.json"
+        installed_review_receipt.write_text(installed_review_receipt_source, encoding="utf-8")
+        assert_target_repo_intake_smoke(
+            [
+                str(bin_path),
+                "review-intake",
+                str(installed_review_receipt),
+                "--target-root",
+                str(target_repo_intake_root),
+                "--consumer",
+                "package-smoke-agent",
+                "--json",
+            ],
+            installed_review_receipt,
+            target_repo_intake_root,
+            consumer="package-smoke-agent",
+            env=smoke_env,
+            context="package smoke installed bin target repo intake",
         )
         assert_inspect_smoke(
             [
@@ -23382,6 +23479,10 @@ def smoke_tarball(tarball: Path) -> None:
                 str(npx_inspect_source),
                 "--brief",
                 "Review a Korean settings flow",
+                "--repo-url",
+                "https://github.com/acme/site",
+                "--local-path",
+                str(target_repo_intake_root),
                 "--locale",
                 "ko-KR",
                 "--viewport",
@@ -23411,7 +23512,7 @@ def smoke_tarball(tarball: Path) -> None:
             context="package smoke npm exec review handoff",
         )
         npx_review_handoff.write_text(npx_handoff_source, encoding="utf-8")
-        assert_review_handoff_receipt_smoke(
+        npx_review_receipt_source = assert_review_handoff_receipt_smoke(
             npm_exec_cmd(
                 tarball,
                 "review-handoff-verify",
@@ -23425,6 +23526,26 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec review handoff receipt",
+        )
+        npx_review_receipt = tmp_root / "npx-review-handoff-receipt.json"
+        npx_review_receipt.write_text(npx_review_receipt_source, encoding="utf-8")
+        assert_target_repo_intake_smoke(
+            npm_exec_cmd(
+                tarball,
+                "review-intake",
+                str(npx_review_receipt),
+                "--target-root",
+                str(target_repo_intake_root),
+                "--consumer",
+                "package-smoke-agent",
+                "--json",
+            ),
+            npx_review_receipt,
+            target_repo_intake_root,
+            consumer="package-smoke-agent",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec target repo intake",
         )
         assert_inspect_smoke(
             npm_exec_cmd(

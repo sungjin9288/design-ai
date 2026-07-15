@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 
 import { validateReviewHandoffArtifact } from "./review-handoff-contract.mjs";
@@ -138,4 +139,8 @@ export function validateReviewHandoffReceipt(receipt) {
   validateNextAction(receipt);
   validateBoundary(receipt.boundary);
   return receipt;
+}
+
+export function reviewHandoffReceiptSourceDigest(source) {
+  return createHash("sha256").update(source).digest("hex");
 }

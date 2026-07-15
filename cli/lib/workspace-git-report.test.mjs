@@ -98,6 +98,26 @@ test("collectGitReport keeps tracked changes and unknown untracked files active"
   assert.equal(report.hasIgnoredLocalArtifacts, true);
 }));
 
+test("collectGitReport can preserve every target-repository status entry", () => withTempDir((dir) => {
+  const report = collectGitReport({
+    root: dir,
+    ignoreLocalArtifacts: false,
+    gitRunner: fakeGit({
+      "rev-parse --is-inside-work-tree": ok("true\n"),
+      "rev-parse --show-toplevel": ok(`${dir}\n`),
+      "branch --show-current": ok("main\n"),
+      "status --short": ok("?? DEV_LOG.md\n?? evidence/\n"),
+      "rev-parse --abbrev-ref --symbolic-full-name @{u}": fail("no upstream"),
+      "config --get remote.origin.url": ok("https://github.com/acme/site.git\n"),
+      "log -1 --pretty=%h%x09%s": ok("abc123\tfeat: initial site\n"),
+    }),
+  });
+
+  assert.equal(report.clean, false);
+  assert.deepEqual(report.statusShort, ["?? DEV_LOG.md", "?? evidence/"]);
+  assert.deepEqual(report.ignoredStatusShort, []);
+}));
+
 test("collectWorkspaceReport combines git, learning, and release readiness", () => withTempDir((dir) => {
   const repoRoot = path.join(dir, "repo");
   const sourceRoot = path.join(dir, "source");

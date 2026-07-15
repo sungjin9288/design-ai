@@ -9,6 +9,7 @@
   var REVIEW_WORKFLOW_KEY = "design-ai.website-console.review-workflow";
   var REVIEW_HANDOFF_KEY = "design-ai.website-console.review-handoff";
   var REVIEW_HANDOFF_RECEIPT_KEY = "design-ai.website-console.review-handoff-receipt";
+  var TARGET_REPO_INTAKE_KEY = "design-ai.website-console.target-repo-intake";
   var BROWSER_VERIFICATION_KEY = "design-ai.website-console.browser-verification";
 
   var sourceBundleApi = window.DesignAiWebsiteConsoleSourceBundle;
@@ -27,6 +28,8 @@
     "normalizeReviewWorkflow",
     "normalizeReviewHandoff",
     "normalizeReviewHandoffReceipt",
+    "normalizeTargetRepoIntake",
+    "targetRepoIntakeMatchesReceipt",
     "normalizeBrowserVerification",
     "buildImportedArtifactJson",
   ];
@@ -55,6 +58,8 @@
   var normalizeReviewWorkflow = sourceBundleApi.normalizeReviewWorkflow;
   var normalizeReviewHandoff = sourceBundleApi.normalizeReviewHandoff;
   var normalizeReviewHandoffReceipt = sourceBundleApi.normalizeReviewHandoffReceipt;
+  var normalizeTargetRepoIntake = sourceBundleApi.normalizeTargetRepoIntake;
+  var targetRepoIntakeMatchesReceipt = sourceBundleApi.targetRepoIntakeMatchesReceipt;
   var normalizeBrowserVerification = sourceBundleApi.normalizeBrowserVerification;
   var buildImportedArtifactJson = sourceBundleApi.buildImportedArtifactJson;
 
@@ -164,10 +169,19 @@
     ["handoff-report", "Final handoff report"],
   ];
 
+  var importedTargetRepoIntake = loadImportedArtifact(
+    TARGET_REPO_INTAKE_KEY,
+    normalizeTargetRepoIntake,
+  );
   var importedReviewReceipt = loadImportedArtifact(
     REVIEW_HANDOFF_RECEIPT_KEY,
     normalizeReviewHandoffReceipt,
   );
+  if (importedTargetRepoIntake && importedReviewReceipt
+    && !targetRepoIntakeMatchesReceipt(importedTargetRepoIntake.value, importedReviewReceipt.rawJson)) {
+    importedTargetRepoIntake = null;
+    localStorage.removeItem(TARGET_REPO_INTAKE_KEY);
+  }
   var importedReviewHandoff = importedReviewReceipt
     ? importedArtifact(
       normalizeReviewHandoff(importedReviewReceipt.value.handoff.value),
@@ -182,6 +196,7 @@
     : loadImportedArtifact(REVIEW_WORKFLOW_KEY, normalizeReviewWorkflow);
   var appState = {
     workspace: loadWorkspace(),
+    targetRepoIntake: importedTargetRepoIntake,
     reviewReceipt: importedReviewReceipt,
     reviewHandoff: importedReviewHandoff,
     reviewWorkflow: importedReviewWorkflow,
@@ -650,6 +665,8 @@
   }
 
   function clearReviewWorkflowSession() {
+    appState.targetRepoIntake = null;
+    saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
     appState.reviewReceipt = null;
     saveImportedArtifact(REVIEW_HANDOFF_RECEIPT_KEY, null);
     appState.reviewHandoff = null;
@@ -661,6 +678,8 @@
   }
 
   function clearReviewHandoffSession() {
+    appState.targetRepoIntake = null;
+    saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
     appState.reviewReceipt = null;
     saveImportedArtifact(REVIEW_HANDOFF_RECEIPT_KEY, null);
     appState.reviewHandoff = null;
@@ -676,6 +695,8 @@
   }
 
   function clearReviewReceiptSession() {
+    appState.targetRepoIntake = null;
+    saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
     appState.reviewReceipt = null;
     saveImportedArtifact(REVIEW_HANDOFF_RECEIPT_KEY, null);
     appState.reviewHandoff = loadImportedArtifact(REVIEW_HANDOFF_KEY, normalizeReviewHandoff);
@@ -699,6 +720,11 @@
         handoff.artifacts.browserVerification.source,
       )
       : null;
+  }
+
+  function clearTargetRepoIntakeSession() {
+    appState.targetRepoIntake = null;
+    saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
   }
 
   function isWorkspacePayload(value) {
@@ -846,7 +872,7 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
       "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
@@ -1006,23 +1032,23 @@
   }
 
   function qualityStatusBadge(status) {
-    var tone = status === "warning"
-      ? "warn"
-      : ["complete", "pass", "contract-validated"].indexOf(status) !== -1
-        ? "pass"
-        : ["prepared", "not-delivered", "not-run", "not-started", "pending", "unverified"].indexOf(status) !== -1
-          ? "optional"
-          : status;
+    var tone = status;
+    if (["warning", "attention-required"].indexOf(status) !== -1) tone = "warn";
+    else if (["complete", "pass", "contract-validated", "ready-for-scope-review"].indexOf(status) !== -1) tone = "pass";
+    else if (status === "blocked") tone = "fail";
+    else if (["prepared", "not-delivered", "not-run", "not-started", "pending", "unverified"].indexOf(status) !== -1) tone = "optional";
     return "<span class=\"badge badge--" + escapeAttr(tone || "optional") + "\">" + escapeHtml(labelize(status || "unknown")) + "</span>";
   }
 
   function renderQualityReview() {
+    var targetRepoIntakeArtifact = appState.targetRepoIntake;
     var reviewReceiptArtifact = appState.reviewReceipt;
     var reviewHandoffArtifact = appState.reviewHandoff;
     var reviewWorkflowArtifact = appState.reviewWorkflow;
     var qualityArtifact = appState.qualityReport;
     var browserArtifact = appState.browserVerification;
-    if (!qualityArtifact && !browserArtifact) {
+    if (!targetRepoIntakeArtifact && !reviewReceiptArtifact && !reviewHandoffArtifact
+      && !reviewWorkflowArtifact && !qualityArtifact && !browserArtifact) {
       return panel("Import review evidence", "Import a canonical review workflow, quality-report JSON, or optional browser-verification JSON without changing either contract.", [
         "<pre class=\"report-preview start-command\"><code>design-ai inspect page.html --brief \"Review Korean product flow\" --review-pack korean-fintech --locale ko-KR --viewport mobile --viewport desktop --json</code></pre>",
         "<div class=\"graph-boundaries\" aria-label=\"Quality review boundaries\"><span class=\"pill\">Raw JSON preserved</span><span class=\"pill\">No semantic merge</span><span class=\"pill\">No browser run</span><span class=\"pill\">No target mutation</span></div>",
@@ -1030,6 +1056,9 @@
     }
 
     return [
+      targetRepoIntakeArtifact
+        ? renderTargetRepoIntake(targetRepoIntakeArtifact.value)
+        : "",
       reviewReceiptArtifact
         ? renderReviewHandoffReceipt(reviewReceiptArtifact.value)
         : "",
@@ -1043,8 +1072,10 @@
         ? renderBrowserVerificationArtifact(browserArtifact.value)
         : panel("Browser verification", "Runtime evidence remains separate and optional.", "<div class=\"empty-state\">No browser-verification JSON imported. Static and runtime-unknown findings remain unchanged.</div>"),
       "<div class=\"button-row\">",
-      reviewReceiptArtifact
-        ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-review-receipt\">Export original receipt JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-review-receipt\">Clear validation receipt</button>"
+      targetRepoIntakeArtifact
+        ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-target-intake\">Export original intake JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-target-intake\">Clear target intake</button>"
+        : reviewReceiptArtifact
+          ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-review-receipt\">Export original receipt JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-review-receipt\">Clear validation receipt</button>"
         : reviewHandoffArtifact
           ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-review-handoff\">Export original handoff JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-review-handoff\">Clear review handoff</button>"
         : reviewWorkflowArtifact
@@ -1057,6 +1088,26 @@
         : "",
       "</div>",
     ].join("");
+  }
+
+  function renderTargetRepoIntake(intake) {
+    var targetPath = intake.target.resolvedPath || intake.target.declaredPath;
+    return panel("Target Repository Intake", "Only declared root metadata and local Git state were inspected. Application source, preview, network, and implementation remain untouched.", [
+      "<div class=\"evidence-summary\" aria-label=\"Target repository intake summary\">",
+      metric("Status", intake.status, "Scope review only"),
+      metric("Project", intake.project.framework, intake.project.packageManager || "No package manager"),
+      metric("Git", intake.git.branch || "Detached", intake.git.clean ? "Clean working tree" : "Existing changes"),
+      metric("Remote", intake.git.remoteMatch ? "Matched" : "Mismatch", "Repository URL"),
+      "</div>",
+      "<dl class=\"evidence-list\"><div><dt>Target</dt><dd><code>" + escapeHtml(targetPath) + "</code></dd></div><div><dt>Receipt SHA-256</dt><dd><code>" + escapeHtml(intake.receipt.sha256) + "</code></dd></div><div><dt>Metadata files read</dt><dd>" + escapeHtml(intake.inspection.metadataFilesRead.join(", ") || "None") + "</dd></div><div><dt>Existing changes</dt><dd>" + escapeHtml(String(intake.git.changes.total)) + "</dd></div></dl>",
+      "<ol class=\"review-session\" aria-label=\"Target repository intake timeline\">",
+      "<li><span class=\"review-session__stage\">Receipt validation</span>" + qualityStatusBadge("pass") + "</li>",
+      "<li><span class=\"review-session__stage\">Root metadata</span>" + qualityStatusBadge(intake.project.metadataStatus) + "</li>",
+      "<li><span class=\"review-session__stage\">Git state</span>" + qualityStatusBadge(intake.git.status) + "</li>",
+      "<li><span class=\"review-session__stage\">Implementation scope</span>" + qualityStatusBadge(intake.nextAction.status) + "</li>",
+      "</ol>",
+      "<div class=\"graph-boundaries\" aria-label=\"Target repository intake boundary\"><span class=\"pill\">Read-only</span><span class=\"pill\">No source read</span><span class=\"pill\">No preview</span><span class=\"pill\">No network</span><span class=\"pill\">Implementation unauthorized</span></div>",
+    ].join(""));
   }
 
   function renderReviewHandoffReceipt(receipt) {
@@ -2922,6 +2973,15 @@
       clearReviewReceiptSession();
       refreshQualityLink();
       setMessage("Validation receipt cleared. Original review handoff restored.");
+    } else if (action === "download-target-intake") {
+      if (appState.targetRepoIntake) {
+        downloadFile("design-ai-target-repo-intake.json", appState.targetRepoIntake.rawJson, "application/json");
+        setMessage("Original target-repository intake JSON exported without reformatting.");
+      }
+    } else if (action === "clear-target-intake") {
+      clearTargetRepoIntakeSession();
+      refreshQualityLink();
+      setMessage("Target repository intake cleared. Earlier review evidence remains available.");
     } else if (action === "download-quality-report") {
       if (appState.qualityReport) {
         downloadFile("design-ai-quality-report.json", appState.qualityReport.rawJson, "application/json");
@@ -3126,9 +3186,25 @@
       try {
         var rawJson = String(reader.result || "");
         var parsed = JSON.parse(rawJson);
+        var importedTargetRepoIntake = normalizeTargetRepoIntake(parsed);
+        if (importedTargetRepoIntake) {
+          if (appState.reviewReceipt
+            && !targetRepoIntakeMatchesReceipt(importedTargetRepoIntake, appState.reviewReceipt.rawJson)) {
+            throw new Error("Target repository intake does not match the imported receipt source.");
+          }
+          appState.targetRepoIntake = importedArtifact(importedTargetRepoIntake, rawJson);
+          appState.activeTab = "quality";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveImportedArtifact(TARGET_REPO_INTAKE_KEY, appState.targetRepoIntake);
+          refreshQualityLink();
+          setMessage("Target repository intake imported. Receipt digest, bounded metadata, and Git state preserved.");
+          return;
+        }
         var importedReviewReceipt = normalizeReviewHandoffReceipt(parsed);
         if (importedReviewReceipt) {
           var receiptHandoff = importedReviewReceipt.handoff.value;
+          appState.targetRepoIntake = null;
+          saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
           appState.reviewReceipt = importedArtifact(importedReviewReceipt, rawJson);
           appState.reviewHandoff = importedArtifact(
             normalizeReviewHandoff(receiptHandoff),
@@ -3161,6 +3237,8 @@
         }
         var importedReviewHandoff = normalizeReviewHandoff(parsed);
         if (importedReviewHandoff) {
+          appState.targetRepoIntake = null;
+          saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
           appState.reviewReceipt = null;
           saveImportedArtifact(REVIEW_HANDOFF_RECEIPT_KEY, null);
           appState.reviewHandoff = importedArtifact(importedReviewHandoff, rawJson);
@@ -3190,6 +3268,8 @@
         }
         var importedReviewWorkflow = normalizeReviewWorkflow(parsed);
         if (importedReviewWorkflow) {
+          appState.targetRepoIntake = null;
+          saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
           appState.reviewReceipt = null;
           saveImportedArtifact(REVIEW_HANDOFF_RECEIPT_KEY, null);
           appState.reviewHandoff = null;
@@ -3297,7 +3377,7 @@
         saveWorkspace();
         setMessage("Workspace JSON imported.");
       } catch (error) {
-        setMessage("Import failed. Use a canonical review receipt, handoff, workflow, quality, browser, start, Website Improvement workspace, runbook, or linked preview JSON file.");
+        setMessage("Import failed. Use a canonical target intake, review receipt, handoff, workflow, quality, browser, start, Website Improvement workspace, runbook, or linked preview JSON file.");
       }
     };
     reader.readAsText(file);

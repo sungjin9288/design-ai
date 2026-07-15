@@ -94,7 +94,11 @@ function splitGitStatusShort(statusShort) {
   return { activeStatusShort, ignoredStatusShort };
 }
 
-export function collectGitReport({ root = process.cwd(), gitRunner = runGitCommand } = {}) {
+export function collectGitReport({
+  root = process.cwd(),
+  gitRunner = runGitCommand,
+  ignoreLocalArtifacts = true,
+} = {}) {
   const resolvedRoot = path.resolve(root);
   const base = {
     isRepo: false,
@@ -146,7 +150,9 @@ export function collectGitReport({ root = process.cwd(), gitRunner = runGitComma
   }
 
   const statusShort = statusResult.ok ? splitLines(statusResult.stdout) : [];
-  const { activeStatusShort, ignoredStatusShort } = splitGitStatusShort(statusShort);
+  const { activeStatusShort, ignoredStatusShort } = ignoreLocalArtifacts
+    ? splitGitStatusShort(statusShort)
+    : { activeStatusShort: statusShort, ignoredStatusShort: [] };
 
   return {
     ...base,

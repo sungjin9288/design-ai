@@ -2,7 +2,7 @@
 
 Use this guide when you want Claude Code or Codex to call design-ai as an MCP server instead of asking the agent to read files manually.
 
-The server is local, stdio-based, and deterministic. The current source candidate exposes 23 tools, including the canonical review workflow, self-validating review handoff, consumer validation receipt, shared start flow, supplied-HTML quality inspection, Korean product review packs, design artifact operations, recall, a read-only Website Improvement bundle handoff, a read-only linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. The server wraps existing `design-ai` CLI workflows such as route selection, prompt generation, corpus search, artifact checks, and Website Improvement planning.
+The server is local, stdio-based, and deterministic. The current source candidate exposes 24 tools, including the canonical review workflow, self-validating review handoff, consumer validation receipt, target repository intake, shared start flow, supplied-HTML quality inspection, Korean product review packs, design artifact operations, recall, a read-only Website Improvement bundle handoff, a read-only linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. The server wraps existing `design-ai` CLI workflows such as route selection, prompt generation, corpus search, artifact checks, and Website Improvement planning.
 
 ## What the server exposes
 
@@ -13,6 +13,7 @@ The server is local, stdio-based, and deterministic. The current source candidat
 | `design_ai_review_html` | Compose the canonical start plan and static quality report for supplied HTML, with exact source identity, artifact digests, context linkage, ordered stages, and a pending human review gate. | Read-only; no browser run, local write, target-repository mutation, or external write |
 | `design_ai_review_handoff` | Prepare a self-validating transfer from exact review-workflow JSON, with optional paired browser evidence and a named recipient. | Read-only and undelivered; consumer validation, target inspection, implementation, local writes, and external writes remain pending |
 | `design_ai_verify_review_handoff` | Validate exact handoff bytes and evidence for the named consumer, then emit a separate receipt. | Read-only contract proof; identity, transport, acceptance, target inspection, and implementation remain unverified |
+| `design_ai_review_intake` | Validate an exact receipt, then inspect only its declared target's supported root metadata and local Git state. | Read-only repository intake; no application-source read, preview, network, target mutation, or implementation |
 | `design_ai_inspect_html` | Inspect supplied HTML and return the canonical eight-lens quality report with confirmed and unverified findings kept separate. Oversized reports return valid structured error JSON rather than truncated JSON. | Read-only; reads only the supplied string and does not run scripts, open a browser, read paths, or write files |
 | `design_ai_review_pack` | List or read the five versioned Korean fintech, commerce, SaaS, content, and game review contracts. | Read-only; reads shipped pack definitions only |
 | `design_ai_prompt` | Generate a ready-to-use prompt from a brief. Optional `withRecall` (with `recallLimit`, 1-20) augments the output with brief-relevant shipped corpus knowledge ranked by the deterministic lexical scorer; requires no index and makes no network call. | Read-only by default; `withLearning` records local usage metadata |
@@ -158,6 +159,12 @@ Use design_ai_site_mcp_check on this Website Improvement workspace JSON.
 Then generate a design_ai_site_mcp_plan and summarize blocking MCP gaps.
 ```
 
+For a validated review handoff:
+
+```text
+Call design_ai_review_intake with the absolute local receipt path, the declared absolute target path, and the matching consumer. Report repository identity, existing changes, and every remaining approval. Do not read application source or begin implementation.
+```
+
 For homepage implementation or refactoring after a bundle is ready:
 
 ```text
@@ -170,6 +177,7 @@ Call design_ai_site_bundle_handoff with the absolute bundle directory and select
 - The default tools do not call external MCP servers.
 - Website Improvement MCP readiness tools inspect local workspace JSON only; the bundle handoff tool inspects a local verified bundle only.
 - `design_ai_site_bundle_handoff` returns a pending approval contract and never edits the target repository or calls an external service.
+- `design_ai_review_intake` reads only the receipt-declared root metadata and local Git state; it never reads application source or authorizes implementation.
 - `design_ai_prompt` and `design_ai_pack` are read-only unless `withLearning` is set.
 - `design_ai_learn_remember`, `design_ai_learn_feedback`, and `design_ai_learn_capture` write only the local learning profile, never the network, and only when called explicitly.
 - The server does not mutate target repositories.

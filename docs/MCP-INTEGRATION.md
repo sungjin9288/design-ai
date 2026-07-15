@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 23 tools, including the canonical read-only review workflow, self-validating review handoff, consumer validation receipt, shared start flow, supplied-HTML quality inspection, Korean product review packs, artifact operations, a Website Improvement bundle handoff, linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 24 tools, including the canonical read-only review workflow, self-validating review handoff, consumer validation receipt, target repository intake, shared start flow, supplied-HTML quality inspection, Korean product review packs, artifact operations, a Website Improvement bundle handoff, linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -91,6 +91,19 @@ The tool proves contract validation only. Consumer identity, transport,
 acceptance, target-repository intake, implementation, local writes, and external
 writes remain unverified. See [Review handoff validation
 receipt](REVIEW-HANDOFF-RECEIPT.md).
+
+### Target repository intake
+
+`design_ai_review_intake` accepts the absolute local receipt path, the
+receipt-declared absolute target path, and the matching consumer. The server reads
+and validates the exact receipt bytes before it reads supported root project
+metadata and local Git state, then returns
+`design-ai-target-repo-intake` v1. Consumer or path mismatch fails before target
+inspection; symbolic links are not followed.
+
+The result can be ready for scope review, need attention, or be blocked. None of
+those states authorizes source review or implementation. See [Target repository
+intake](REVIEW-INTAKE.md).
 
 ### Approval-gated website implementation handoff
 
