@@ -25,7 +25,7 @@ adoption.
 - [x] Unit, CLI, contract, help, dispatch, package-content, and shared smoke assertion tests pass.
 - [x] Package contents include the runner, validators, suite, five HTML fixtures, and four case studies.
 - [x] `npm run release:check` passed with 736 tests, 8 strict audits, 715 packaged files, a 0/0 documentation warning policy, and benchmark smoke through installed-bin plus one-shot `npm exec` paths.
-- [ ] Pull-request CI evidence will be recorded before merge.
+- [x] PR #39 passed audits and size budget, docs policy, package integrity, and unit tests before merge.
 
 ## Phase 782 - Korean product packs and Website Console quality review (implemented, unreleased)
 
