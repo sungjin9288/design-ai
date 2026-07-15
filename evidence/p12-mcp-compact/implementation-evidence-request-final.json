@@ -1,0 +1,86 @@
+{
+  "kind": "design-ai-implementation-evidence-request",
+  "schemaVersion": 1,
+  "consumer": "codex",
+  "implementationStartedAt": "2026-07-15T16:22:17.000Z",
+  "implementationCompletedAt": "2026-07-15T16:40:42.000Z",
+  "executedWork": [
+    { "statusEntry": " M CHANGELOG.md", "path": "CHANGELOG.md", "summary": "Documented the compact MCP pilot response and its measured transport evidence." },
+    { "statusEntry": " M README.ko.md", "path": "README.ko.md", "summary": "Added Korean usage guidance for compact P12 evidence over MCP." },
+    { "statusEntry": " M README.md", "path": "README.md", "summary": "Added English usage guidance for compact P12 evidence over MCP." },
+    { "statusEntry": " M cli/lib/mcp-server.mjs", "path": "cli/lib/mcp-server.mjs", "summary": "Exposed the optional compact review-pilot input and returned the validated summary only when requested." },
+    { "statusEntry": " M cli/lib/mcp-server.test.mjs", "path": "cli/lib/mcp-server.test.mjs", "summary": "Locked the public MCP schema for the optional compact boolean." },
+    { "statusEntry": " M cli/lib/pilot-evidence.mjs", "path": "cli/lib/pilot-evidence.mjs", "summary": "Added a direct compact summary that preserves exact source identities, metrics, claims, issues, and boundaries." },
+    { "statusEntry": " M cli/lib/pilot-evidence.test.mjs", "path": "cli/lib/pilot-evidence.test.mjs", "summary": "Proved oversized full evidence fails explicitly while compact evidence preserves identity below the transport limit." },
+    { "statusEntry": " M docs/MCP-INTEGRATION.md", "path": "docs/MCP-INTEGRATION.md", "summary": "Documented compact review-pilot integration and the backward-compatible full default." },
+    { "statusEntry": " M docs/PRODUCT-READINESS.md", "path": "docs/PRODUCT-READINESS.md", "summary": "Recorded local completion of the P12 MCP transport boundary with CI review still pending." },
+    { "statusEntry": " M docs/PRODUCT-SPECIALIZATION-PLAN.md", "path": "docs/PRODUCT-SPECIALIZATION-PLAN.md", "summary": "Updated specialization evidence with measured full and compact response sizes." },
+    { "statusEntry": " M docs/REAL-PILOT-EVIDENCE.ko.md", "path": "docs/REAL-PILOT-EVIDENCE.ko.md", "summary": "Added Korean operational guidance for requesting compact real-pilot evidence." },
+    { "statusEntry": " M docs/REAL-PILOT-EVIDENCE.md", "path": "docs/REAL-PILOT-EVIDENCE.md", "summary": "Added English operational guidance for requesting compact real-pilot evidence." },
+    { "statusEntry": " M docs/ROADMAP.md", "path": "docs/ROADMAP.md", "summary": "Closed the local compact MCP proof while retaining external review gates." },
+    { "statusEntry": " M docs/SESSION-LOG.md", "path": "docs/SESSION-LOG.md", "summary": "Recorded the exact fresh-process MCP proof and release verification." },
+    { "statusEntry": " M docs/case-studies/website-console-real-pilot.md", "path": "docs/case-studies/website-console-real-pilot.md", "summary": "Updated the case study with the large-chain compact transport requirement." },
+    { "statusEntry": "?? evidence/p12-mcp-compact/docs-check.log", "path": "evidence/p12-mcp-compact/docs-check.log", "summary": "Preserved the focused documentation build output." },
+    { "statusEntry": "?? evidence/p12-mcp-compact/focused-test.log", "path": "evidence/p12-mcp-compact/focused-test.log", "summary": "Preserved the 56-test focused verification output." },
+    { "statusEntry": "?? evidence/p12-mcp-compact/fresh-mcp-proof.json", "path": "evidence/p12-mcp-compact/fresh-mcp-proof.json", "summary": "Recorded the fresh stdio MCP process, full overflow, compact success, and source identity checks." },
+    { "statusEntry": "?? evidence/p12-mcp-compact/implementation-evidence-request-final.json", "path": "evidence/p12-mcp-compact/implementation-evidence-request-final.json", "summary": "Bound the implementation work, verification, observations, and risk record." },
+    { "statusEntry": "?? evidence/p12-mcp-compact/implementation-evidence.json", "path": "evidence/p12-mcp-compact/implementation-evidence.json", "summary": "Reserved the generated P11 evidence path before capturing the worktree." },
+    { "statusEntry": "?? evidence/p12-mcp-compact/implementation-scope-approval.json", "path": "evidence/p12-mcp-compact/implementation-scope-approval.json", "summary": "Preserved the immutable implementation scope approval." },
+    { "statusEntry": "?? evidence/p12-mcp-compact/implementation-scope-proposal.json", "path": "evidence/p12-mcp-compact/implementation-scope-proposal.json", "summary": "Preserved the immutable implementation scope proposal." },
+    { "statusEntry": "?? evidence/p12-mcp-compact/implementation-scope-request.json", "path": "evidence/p12-mcp-compact/implementation-scope-request.json", "summary": "Preserved the approved compact MCP implementation request." },
+    { "statusEntry": "?? evidence/p12-mcp-compact/pilot-summary.json", "path": "evidence/p12-mcp-compact/pilot-summary.json", "summary": "Preserved the exact compact P12 result returned by the fresh MCP process." },
+    { "statusEntry": "?? evidence/p12-mcp-compact/release-check.log", "path": "evidence/p12-mcp-compact/release-check.log", "summary": "Preserved the full release gate and installed-package smoke output." },
+    { "statusEntry": "?? evidence/p12-mcp-compact/target-repo-intake.json", "path": "evidence/p12-mcp-compact/target-repo-intake.json", "summary": "Preserved the clean c13f0f2 repository baseline used for scope approval." }
+  ],
+  "verificationResults": [
+    {
+      "command": "node --test cli/lib/pilot-evidence.test.mjs cli/lib/mcp-server.test.mjs",
+      "status": "pass",
+      "startedAt": "2026-07-15T16:23:00.000Z",
+      "completedAt": "2026-07-15T16:23:03.000Z",
+      "exitCode": 0,
+      "summary": "All 56 focused pilot-evidence and MCP contract tests passed.",
+      "artifacts": ["evidence/p12-mcp-compact/focused-test.log"]
+    },
+    {
+      "command": "npm run release:check",
+      "status": "pass",
+      "startedAt": "2026-07-15T16:24:06.000Z",
+      "completedAt": "2026-07-15T16:40:42.000Z",
+      "exitCode": 0,
+      "summary": "The full gate passed with 817 tests, 8 strict audits, 766 packaged files, warning-free docs, and installed-bin plus one-shot package smoke.",
+      "artifacts": ["evidence/p12-mcp-compact/release-check.log"]
+    }
+  ],
+  "observations": [
+    {
+      "id": "p12-compact-accessibility",
+      "category": "accessibility",
+      "status": "unverified",
+      "summary": "This transport-only change has no rendered interface; no new accessibility behavior was exercised.",
+      "artifacts": []
+    },
+    {
+      "id": "p12-compact-responsive",
+      "category": "responsive",
+      "status": "unverified",
+      "summary": "This transport-only change has no viewport-dependent behavior; no responsive check was applicable.",
+      "artifacts": []
+    },
+    {
+      "id": "p12-compact-browser",
+      "category": "browser",
+      "status": "unverified",
+      "summary": "Browser rendering was outside this MCP transport slice; the prior Website Console browser evidence remains unchanged.",
+      "artifacts": []
+    },
+    {
+      "id": "p12-compact-runtime",
+      "category": "runtime",
+      "status": "confirmed",
+      "summary": "A fresh stdio MCP process returned an explicit 452,923-byte full overflow and a 4,021-byte compact result with matching source hashes, byte counts, metrics, and claim boundaries.",
+      "artifacts": ["evidence/p12-mcp-compact/fresh-mcp-proof.json", "evidence/p12-mcp-compact/pilot-summary.json"]
+    }
+  ],
+  "remainingRisks": []
+}

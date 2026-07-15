@@ -1,0 +1,83 @@
+### Result
+{
+  "focused": "Handoff Report",
+  "outline": "solid",
+  "navScrollLeft": 631,
+  "navScrollMax": 631
+}
+### Ran Playwright code
+```js
+await page.evaluate('() => (({focused:document.activeElement.textContent.trim(),outline:getComputedStyle(document.activeElement).outlineStyle,navScrollLeft:document.querySelector(\'.nav-list\').scrollLeft,navScrollMax:document.querySelector(\'.nav-list\').scrollWidth-document.querySelector(\'.nav-list\').clientWidth}))');
+```
+### Ran Playwright code
+```js
+// Press Enter
+await page.keyboard.press('Enter');
+```
+### Page
+- Page URL: http://127.0.0.1:4173/
+- Page Title: design-ai Website Improvement Console
+### Snapshot
+- [Snapshot](.playwright-cli/page-2026-07-15T15-34-41-722Z.yml)
+### Result
+{
+  "activeLabel": "Handoff Report",
+  "heading": "Handoff Report",
+  "focused": "Handoff Report",
+  "outline": "solid"
+}
+### Ran Playwright code
+```js
+await page.evaluate('() => (({activeLabel:document.querySelector(\'[aria-current=page]\').textContent.trim(),heading:document.querySelector(\'.topbar h2\').textContent.trim(),focused:document.activeElement.textContent.trim(),outline:getComputedStyle(document.activeElement).outlineStyle}))');
+```
+### Result
+- [Screenshot of viewport](evidence/p12/browser/mobile-keyboard-focus.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as evidence/p12/browser/mobile-keyboard-focus.png
+await page.screenshot({
+  path: 'evidence/p12/browser/mobile-keyboard-focus.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+### Ran Playwright code
+```js
+// Press Shift+Tab
+await page.keyboard.press('Shift+Tab');
+```
+### Ran Playwright code
+```js
+// Press Enter
+await page.keyboard.press('Enter');
+```
+### Page
+- Page URL: http://127.0.0.1:4173/
+- Page Title: design-ai Website Improvement Console
+### Snapshot
+- [Snapshot](.playwright-cli/page-2026-07-15T15-34-49-787Z.yml)
+### Result
+{
+  "activeLabel": "Prompt Generator",
+  "focused": "Prompt Generator",
+  "bodyScrollWidth": 390,
+  "bodyClientWidth": 390
+}
+### Ran Playwright code
+```js
+await page.evaluate('() => (({activeLabel:document.querySelector(\'[aria-current=page]\').textContent.trim(),focused:document.activeElement.textContent.trim(),bodyScrollWidth:document.body.scrollWidth,bodyClientWidth:document.body.clientWidth}))');
+```
+### Error
+SyntaxError: Unexpected identifier 'page'
+### Result
+{
+  "reducedMotion": false,
+  "activeLabel": "Prompt Generator",
+  "focused": "Prompt Generator"
+}
+### Ran Playwright code
+```js
+await page.evaluate('() => (({reducedMotion:matchMedia(\'(prefers-reduced-motion: reduce)\').matches,activeLabel:document.querySelector(\'[aria-current=page]\').textContent.trim(),focused:document.activeElement.textContent.trim()}))');
+```
+### Result
+Total messages: 0 (Errors: 0, Warnings: 0)

@@ -346,6 +346,13 @@ test("design_ai_artifact exposes a closed mode enum", () => {
   assert.deepEqual(tool.inputSchema.required, ["brief", "mode"]);
 });
 
+test("design_ai_review_pilot exposes optional compact output", () => {
+  const tool = MCP_TOOLS.find((item) => item.name === "design_ai_review_pilot");
+  assert.equal(tool.inputSchema.properties.compact.type, "boolean");
+  assert.equal(tool.inputSchema.required.includes("compact"), false);
+  assert.match(tool.description, /compact/);
+});
+
 test("design_ai_route uses the shared route operation without spawning the CLI", async () => {
   let runCliCalled = false;
   const result = await callMcpTool(

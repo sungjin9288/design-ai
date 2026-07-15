@@ -16,6 +16,7 @@ import { runReviewIntake } from "../commands/review-intake.mjs";
 import { runReviewScope } from "../commands/review-scope.mjs";
 import { runReviewScopeApprove } from "../commands/review-scope-approve.mjs";
 import { runReviewEvidence } from "../commands/review-evidence.mjs";
+import { runReviewPilot } from "../commands/review-pilot.mjs";
 import { runReviewPack } from "../commands/review-pack.mjs";
 import { runBenchmark } from "../commands/benchmark.mjs";
 import { runVerifyBrowser } from "../commands/verify-browser.mjs";
@@ -62,6 +63,7 @@ const commands = {
   "review-scope": runReviewScope,
   "review-scope-approve": runReviewScopeApprove,
   "review-evidence": runReviewEvidence,
+  "review-pilot": runReviewPilot,
   "review-pack": runReviewPack,
   benchmark: runBenchmark,
   "verify-browser": runVerifyBrowser,
@@ -121,6 +123,7 @@ export const CANONICAL_COMMANDS = [
   "review-scope",
   "review-scope-approve",
   "review-evidence",
+  "review-pilot",
   "review-pack",
   "benchmark",
   "verify-browser",

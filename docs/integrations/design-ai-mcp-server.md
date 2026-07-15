@@ -2,7 +2,7 @@
 
 Use this guide when you want Claude Code or Codex to call design-ai as an MCP server instead of asking the agent to read files manually.
 
-The server is local, stdio-based, and deterministic. The current source candidate exposes 26 tools, including immutable implementation-scope proposal and separate approval, while retaining exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. Shared scope operations run in-process and leave commit, push, deployment, migration execution, and external writes separately gated.
+The server is local, stdio-based, and deterministic. The current source candidate exposes 28 tools, including immutable implementation-scope proposal, separate approval, implementation evidence, and bounded real-pilot evidence, while retaining exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. Shared scope and pilot operations run in-process and leave commit, push, deployment, migration execution, and external writes separately gated.
 
 ## What the server exposes
 

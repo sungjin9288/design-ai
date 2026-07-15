@@ -13,9 +13,9 @@ EXPECTED_COUNTS = {
     "install.skills": 21,
     "install.commands": 16,
     "install.agents": 4,
-    "mcp.tools": 27,
+    "mcp.tools": 28,
     "mcp.learningProfileWriteTools": 3,
-    "sdk.exports": 18,
+    "sdk.exports": 19,
     "sdk.learnMethods": 3,
 }
 

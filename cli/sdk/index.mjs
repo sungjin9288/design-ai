@@ -33,6 +33,7 @@ export { verifyReviewHandoff } from "./verify-review-handoff-adapter.mjs";
 export { reviewPack } from "./review-pack-adapter.mjs";
 export { learn } from "./learn-adapter.mjs";
 export { pack } from "./pack-adapter.mjs";
+export { recordPilotEvidence } from "./pilot-evidence-adapter.mjs";
 export { prompt } from "./prompt-adapter.mjs";
 export { recall } from "./recall-adapter.mjs";
 export { route, routes } from "./route-adapter.mjs";

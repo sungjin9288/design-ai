@@ -1,0 +1,226 @@
+{
+  "kind": "design-ai-target-repo-intake",
+  "schemaVersion": 1,
+  "status": "ready-for-scope-review",
+  "consumer": {
+    "name": "codex",
+    "receiptConsumerMatch": true,
+    "identity": "self-declared"
+  },
+  "receipt": {
+    "reference": "/private/tmp/design-ai-p12-dogfood/review-handoff-receipt.json",
+    "sha256": "2180d399a7ddd80bb9af813cd6a2b167ad75225f75c88e7107364f8af8b7c602",
+    "bytes": 113174,
+    "kind": "design-ai-review-handoff-receipt",
+    "schemaVersion": 1,
+    "status": "contract-validated",
+    "consumer": "codex",
+    "handoffSha256": "b18a3e084354daa768f1541c07a8842c9b21c8584fa9e97a04a39d0327d3c107",
+    "reviewWorkflowSha256": "b925a890e1cf98b186ce82fcac64e6e416ac4e0af6d7ae28762915f69bd934ea",
+    "remainingApprovals": [
+      "editing the target repository",
+      "starting browser or accessibility verification",
+      "publishing or deploying an implementation"
+    ]
+  },
+  "target": {
+    "declaredPath": "/Users/sungjin/dev/design",
+    "resolvedPath": "/Users/sungjin/dev/design",
+    "pathMatch": true,
+    "declaredRepositoryUrl": "https://github.com/sungjin9288/design-ai.git",
+    "observedRepositoryUrl": "https://github.com/sungjin9288/design-ai.git",
+    "repositoryUrlMatch": true
+  },
+  "project": {
+    "metadataStatus": "pass",
+    "manifest": "package.json",
+    "staticEntry": "",
+    "packageManager": "npm",
+    "framework": "Unknown",
+    "scripts": [
+      {
+        "name": "test",
+        "run": "npm run test"
+      },
+      {
+        "name": "audit",
+        "run": "npm run audit"
+      },
+      {
+        "name": "audit:strict",
+        "run": "npm run audit:strict"
+      },
+      {
+        "name": "audit:runner:self-test",
+        "run": "npm run audit:runner:self-test"
+      },
+      {
+        "name": "coverage:generate",
+        "run": "npm run coverage:generate"
+      },
+      {
+        "name": "coverage:check",
+        "run": "npm run coverage:check"
+      },
+      {
+        "name": "coverage:self-test",
+        "run": "npm run coverage:self-test"
+      },
+      {
+        "name": "capability:manifest:self-test",
+        "run": "npm run capability:manifest:self-test"
+      },
+      {
+        "name": "doctor:assertions:self-test",
+        "run": "npm run doctor:assertions:self-test"
+      },
+      {
+        "name": "smoke:assertions:self-test",
+        "run": "npm run smoke:assertions:self-test"
+      },
+      {
+        "name": "package:check",
+        "run": "npm run package:check"
+      },
+      {
+        "name": "package:smoke:self-test",
+        "run": "npm run package:smoke:self-test"
+      },
+      {
+        "name": "package:smoke",
+        "run": "npm run package:smoke"
+      },
+      {
+        "name": "registry:smoke",
+        "run": "npm run registry:smoke"
+      },
+      {
+        "name": "registry:smoke:self-test",
+        "run": "npm run registry:smoke:self-test"
+      },
+      {
+        "name": "release:metadata",
+        "run": "npm run release:metadata"
+      },
+      {
+        "name": "release:metadata:self-test",
+        "run": "npm run release:metadata:self-test"
+      },
+      {
+        "name": "ci:local:self-test",
+        "run": "npm run ci:local:self-test"
+      },
+      {
+        "name": "tokens:ant-design:self-test",
+        "run": "npm run tokens:ant-design:self-test"
+      },
+      {
+        "name": "release:self-test",
+        "run": "npm run release:self-test"
+      },
+      {
+        "name": "docs:check",
+        "run": "npm run docs:check"
+      },
+      {
+        "name": "release:preflight",
+        "run": "npm run release:preflight"
+      },
+      {
+        "name": "release:check",
+        "run": "npm run release:check"
+      },
+      {
+        "name": "ci:local",
+        "run": "npm run ci:local"
+      },
+      {
+        "name": "preview",
+        "run": "npm run preview"
+      }
+    ],
+    "startCommand": "npm run preview"
+  },
+  "git": {
+    "status": "pass",
+    "repository": true,
+    "root": "/Users/sungjin/dev/design",
+    "targetWithinRepository": true,
+    "branch": "codex/p12-real-pilot-evidence",
+    "clean": true,
+    "upstream": "",
+    "ahead": 0,
+    "behind": 0,
+    "remote": "https://github.com/sungjin9288/design-ai.git",
+    "remoteMatch": true,
+    "head": {
+      "hash": "799da9b",
+      "subject": "feat: 실제 파일럿 증빙 계약 추가 and exact-source P12 workflow 제공"
+    },
+    "changes": {
+      "total": 0,
+      "entries": [],
+      "truncated": false
+    }
+  },
+  "inspection": {
+    "scope": "root-metadata-and-git-state",
+    "metadataFilesRead": [
+      "package.json"
+    ],
+    "metadataEntriesInspected": [
+      "supported root lockfile",
+      "index.html existence"
+    ],
+    "applicationSourceFilesRead": [],
+    "gitCommands": [
+      "git rev-parse --is-inside-work-tree",
+      "git rev-parse --show-toplevel",
+      "git branch --show-current",
+      "git status --short",
+      "git rev-parse --abbrev-ref --symbolic-full-name @{u}",
+      "git config --get remote.origin.url",
+      "git log -1 --pretty=%h%x09%s"
+    ]
+  },
+  "issues": [
+    {
+      "level": "pass",
+      "id": "linked-project-ready",
+      "message": "Linked project metadata is ready for an operator-controlled preview start."
+    },
+    {
+      "level": "pass",
+      "id": "target-git-ready",
+      "message": "The target repository path, remote, branch, and working tree are ready for scope review."
+    }
+  ],
+  "remainingApprovals": [
+    "editing the target repository",
+    "starting browser or accessibility verification",
+    "publishing or deploying an implementation"
+  ],
+  "nextAction": {
+    "id": "implementation-scope-approval-required",
+    "status": "pending",
+    "summary": "Review the proposed files, scope, risks, and verification commands before implementation.",
+    "approvalRequiredBefore": [
+      "editing the target repository",
+      "starting browser or accessibility verification",
+      "publishing or deploying an implementation",
+      "implementation scope"
+    ],
+    "implementationAuthorized": false
+  },
+  "boundary": {
+    "mode": "read-only",
+    "localWrites": false,
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "networkCalls": false,
+    "previewStarted": false,
+    "applicationSourceRead": false,
+    "consumerIdentityVerified": false,
+    "implementationStarted": false
+  }
+}

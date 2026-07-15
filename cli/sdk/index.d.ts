@@ -1,7 +1,7 @@
 // Type declarations for the design-ai Agent SDK — Phase A (read-only).
 // Hand-written, zero-build: no TypeScript toolchain is required to produce or
 // ship these. They mirror the runtime shapes exercised by cli/sdk/index.test.mjs
-// (the semver anchor). The twelve exported names and their return-shape top-level
+// (the semver anchor). The manifest-declared exported names and their return-shape top-level
 // keys are the stable, semver-covered surface; deeper nested shapes follow the
 // same JSON the CLI's `--json` mode emits.
 //
@@ -648,6 +648,96 @@ export interface ApproveImplementationScopeOptions {
   confirmed: true;
 }
 
+export type PilotClaimClass = "real" | "synthetic" | "inferred" | "unverified";
+
+export interface PilotRecord {
+  kind: "design-ai-pilot-record";
+  schemaVersion: 1;
+  project: {
+    name: string;
+    repositoryUrl: string;
+    pilotClass: "internal-dogfood" | "external-pilot";
+  };
+  consent: {
+    status: "approved";
+    approver: string;
+    identity: "self-declared";
+    reference: string;
+    approvedAt: string;
+    evidenceCollection: true;
+    targetMutation: true;
+  };
+  timeline: {
+    pilotStartedAt: string;
+    firstUsefulArtifactAt: string;
+    implementationCompletedAt: string;
+  };
+  findingDecisions: Array<{
+    findingId: string;
+    decision: "accepted" | "rejected" | "unresolved";
+    summary: string;
+    reference: string;
+  }>;
+  approvalEvents: Array<{
+    gateId: ImplementationScopeGateId;
+    status: "approved" | "not-required" | "pending";
+    occurredAt: string;
+    reference: string;
+  }>;
+  outcome: {
+    implementationStatus: "complete" | "partial" | "blocked";
+    productionStatus: "not-deployed" | "deployed-unverified" | "production-verified";
+    feedback: {
+      status: "collected" | "not-collected";
+      summary: string;
+      reference: string;
+    };
+  };
+  claims: Array<{
+    class: PilotClaimClass;
+    statement: string;
+    reference: string;
+  }>;
+}
+
+export interface PilotEvidence {
+  kind: "design-ai-pilot-evidence";
+  schemaVersion: 1;
+  status: "evidence-complete" | "attention-required" | "blocked";
+  implementationEvidence: ReviewHandoffArtifact<unknown>;
+  reviewWorkflow: ReviewHandoffArtifact<ReviewWorkflow>;
+  record: ReviewHandoffArtifact<PilotRecord>;
+  project: PilotRecord["project"];
+  consent: PilotRecord["consent"];
+  metrics: {
+    timeToFirstUsefulArtifact: { milliseconds: number; startedAt: string; completedAt: string };
+    findingPrecision: { accepted: number; rejected: number; unresolved: number; evaluated: number; precision: number | null };
+    approvalFriction: { total: number; approved: number; notRequired: number; pending: number };
+    implementation: { status: PilotRecord["outcome"]["implementationStatus"]; evidenceStatus: string };
+    unresolvedRisk: { count: number; items: unknown[] };
+  };
+  claims: Record<PilotClaimClass, Array<{ statement: string; reference: string }>>;
+  issues: Array<{ level: "warn" | "fail"; id: string; message: string }>;
+  nextAction: { id: string; status: string; summary: string };
+  boundary: {
+    mode: "read-only-pilot-evidence";
+    localWrites: false;
+    targetRepoMutation: false;
+    externalWrites: false;
+    networkCalls: false;
+    identityVerified: false;
+    feedbackVerified: false;
+    adoptionEstablished: false;
+    productionQualityEstablished: false;
+  };
+}
+
+export interface RecordPilotEvidenceOptions {
+  implementationEvidenceRef: string;
+  reviewWorkflowRef: string;
+  recordRef: string;
+}
+
 export interface ProductReviewPackSummary {
   id: string;
   revision: number;
@@ -935,6 +1025,14 @@ export function approveImplementationScope(
   proposalSource: string,
   opts: ApproveImplementationScopeOptions,
 ): ImplementationScopeApproval;
+
+/** Bind exact P6 and P11 sources to one consented pilot record without making broader adoption claims. */
+export function recordPilotEvidence(
+  implementationEvidenceSource: string,
+  reviewWorkflowSource: string,
+  recordSource: string,
+  opts: RecordPilotEvidenceOptions,
+): PilotEvidence;
 
 /** Read one Korean product review pack, or list the available packs when id is omitted. */
 export function reviewPack(id?: string, opts?: Record<string, never>): ProductReviewPack | ProductReviewPackList;

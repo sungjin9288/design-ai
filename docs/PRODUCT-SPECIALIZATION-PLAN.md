@@ -410,7 +410,9 @@ filesystem and Git access are explicit operator boundaries.
 
 ### P12 - Real pilot and adoption proof
 
-Status: planned.
+Status: implemented in the current source; one consented internal dogfood chain is
+complete, while fresh-process MCP proof is blocked by the current response-size
+limit.
 
 Run the complete review-to-implementation chain on one consented real project.
 Measure time to first useful artifact, finding precision, approval friction,
@@ -423,6 +425,25 @@ Exit criteria:
 - The case study identifies real, synthetic, inferred, and unverified claims.
 - No adoption, outcome, or production-quality claim appears without source-backed
   pilot evidence.
+
+The implementation adds a strict `design-ai-pilot-record` v1 input and a derived
+`design-ai-pilot-evidence` v1 artifact. CLI `review-pilot`, SDK
+`recordPilotEvidence()`, MCP `design_ai_review_pilot`, and Website Console bind
+the exact P11 implementation evidence to its original P6 workflow and the
+operator's consented record. They derive the five measures above, preserve every
+approval gate and finding decision, and separate real, synthetic, inferred, and
+unverified claims. The operation reads only supplied sources and never establishes
+identity, feedback authenticity, external adoption, production quality, or
+business outcomes.
+
+The first internal run used the Website Console itself as the target. It produced
+a useful P6 artifact in 14 seconds, accepted one concrete navigation finding,
+completed the approved mobile-navigation change, and recorded no unresolved
+implementation risk. Website Console preserved and re-exported all 416,114 bytes
+of the imported pilot artifact. The final nested MCP response is 452,923 bytes and
+remains an explicit output-limit error. An opt-in compact view validates that full
+artifact first, then returns a 4,021-byte summary with matching source references,
+SHA-256 digests, byte counts, measures, issues, claims, next action, and boundaries.
 
 ## Quality targets
 

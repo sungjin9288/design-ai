@@ -21,6 +21,7 @@ import {
   proposeImplementationScope,
 } from "./implementation-scope.mjs";
 import { buildImplementationEvidenceFromFiles } from "./implementation-evidence.mjs";
+import { buildPilotEvidence, summarizePilotEvidence } from "./pilot-evidence.mjs";
 import { listProductReviewPacks, loadProductReviewPack } from "./product-review-pack.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
@@ -33,6 +34,7 @@ const SERVER_INSTRUCTIONS = [
   "Use design_ai_review_scope to bind an exact intake and scope request into an immutable proposal without reading application source.",
   "Use design_ai_approve_review_scope only after explicit human confirmation to authorize the proposal's listed selectors; release actions remain separately gated.",
   "Use design_ai_review_evidence to compare an approved baseline with local Git state and declared evidence artifacts without running verification or changing the target.",
+  "Use design_ai_review_pilot to bind exact P6 and P11 sources to one consented real-pilot record without claiming customer adoption or production quality.",
   "Use design_ai_start for a read-only route and design-contract plan; declared repositories, pages, and screenshots are not inspected and its next command is not executed.",
   "Use design_ai_inspect_html for a lower-level supplied-HTML quality report; unobserved runtime behavior remains unverified.",
   "Product review packs are explicit and never inferred from locale.",
@@ -284,6 +286,29 @@ export const MCP_TOOLS = [
         consumer: { type: "string", minLength: 1, description: "Consumer name matching the approval and request." },
       },
       required: ["approvalPath", "requestPath", "targetRoot", "consumer"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_review_pilot",
+    title: "Record bounded real-pilot evidence",
+    description: [
+      "Bind exact P11 implementation evidence, the linked P6 review workflow, and one consented pilot record into source-backed metrics and classified claims.",
+      "Set compact to true when large nested sources would exceed the MCP output limit; the compact view keeps source identities, metrics, issues, claims, and boundaries while omitting duplicated source bodies.",
+      "Read-only: writes nothing, changes no repository, calls no network, and does not independently establish identity, feedback, customer adoption, production quality, or business outcomes.",
+    ].join(" "),
+    inputSchema: {
+      type: "object",
+      properties: {
+        implementationEvidenceSource: { type: "string", minLength: 2, description: "Exact design-ai-implementation-evidence JSON source." },
+        implementationEvidenceRef: { type: "string", minLength: 1, description: "Human-readable implementation evidence reference." },
+        reviewWorkflowSource: { type: "string", minLength: 2, description: "Exact design-ai-review-workflow JSON source linked by the P9 intake." },
+        reviewWorkflowRef: { type: "string", minLength: 1, description: "Human-readable review workflow reference." },
+        recordSource: { type: "string", minLength: 2, description: "Exact design-ai-pilot-record JSON source." },
+        recordRef: { type: "string", minLength: 1, description: "Human-readable pilot record reference." },
+        compact: optionalBoolean("Return a compact validated view without duplicated nested source bodies."),
+      },
+      required: ["implementationEvidenceSource", "implementationEvidenceRef", "reviewWorkflowSource", "reviewWorkflowRef", "recordSource", "recordRef"],
       additionalProperties: false,
     },
   },
@@ -629,7 +654,7 @@ function jsonToolResult(payload) {
   const error = {
     kind: "design-ai-mcp-error",
     code: "OUTPUT_TOO_LARGE",
-    message: "The inspection report exceeds the MCP output limit. Narrow the supplied HTML and inspect smaller sections.",
+    message: "The MCP result exceeds the output limit. Request compact output when the tool supports it, or narrow the supplied input.",
     limitBytes: MAX_TOOL_OUTPUT_BYTES,
     actualBytes: bytes,
   };
@@ -934,6 +959,20 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
       consumer: input.consumer,
     });
     return jsonToolResult(payload);
+  }
+
+  if (name === "design_ai_review_pilot") {
+    const payload = buildPilotEvidence(
+      input.implementationEvidenceSource,
+      input.reviewWorkflowSource,
+      input.recordSource,
+      {
+        implementationEvidenceRef: input.implementationEvidenceRef,
+        reviewWorkflowRef: input.reviewWorkflowRef,
+        recordRef: input.recordRef,
+      },
+    );
+    return jsonToolResult(input.compact ? summarizePilotEvidence(payload) : payload);
   }
 
   if (name === "design_ai_review_pack") {

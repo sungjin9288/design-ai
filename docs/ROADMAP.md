@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 790 - Real pilot evidence (implemented, local verification complete)
+
+- [x] Added strict pilot-record and derived pilot-evidence v1 contracts over exact
+  P11 implementation evidence, original P6 workflow, and operator record sources.
+- [x] Added CLI `review-pilot`, typed SDK `recordPilotEvidence()`, in-process MCP
+  `design_ai_review_pilot`, and Website Console exact import/export and stage restore.
+- [x] Added derived first-value, finding-decision, approval-friction,
+  implementation, unresolved-risk, and four-class claim inventories.
+- [x] Kept identity, feedback authenticity, external adoption, production quality,
+  business outcomes, repository mutation, network calls, and release writes outside
+  the read-only evidence boundary.
+- [x] Added installed-bin and one-shot `npm exec` package smoke over all three exact
+  sources with unchanged-input and unchanged-target assertions.
+- [x] Completed one consented Website Console dogfood chain with a 14-second first
+  useful artifact, one accepted finding, complete P11 evidence, and no unresolved
+  implementation risk.
+- [x] Passed the full local release gate with 815 tests, all 8 strict audits,
+  warning-free docs, 766 packaged files, and installed-bin plus one-shot package
+  smoke.
+- [x] Verified desktop and mobile layout, keyboard focus restoration, 44-pixel
+  targets, reduced-motion detection, clean console output, and an exact 416,114-byte
+  Website Console import/export round trip.
+- [x] Published the internal case with real, synthetic, inferred, and unverified
+  claims kept separate.
+- [x] Added opt-in compact MCP output and passed a fresh stdio process proof: the
+  452,923-byte full response remains an explicit limit error, while the 4,021-byte
+  summary preserves all three source hashes, byte counts, measures, issues,
+  claims, next action, and safety boundaries.
+
 ## Phase 789 - Implementation evidence (implemented, unreleased)
 
 - [x] Added exact-source implementation-evidence request and result v1 contracts.

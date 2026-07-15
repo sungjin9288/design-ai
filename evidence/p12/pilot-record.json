@@ -1,0 +1,124 @@
+{
+  "kind": "design-ai-pilot-record",
+  "schemaVersion": 1,
+  "project": {
+    "name": "Design AI Website Console",
+    "repositoryUrl": "https://github.com/sungjin9288/design-ai.git",
+    "pilotClass": "internal-dogfood"
+  },
+  "consent": {
+    "status": "approved",
+    "approver": "project owner",
+    "identity": "self-declared",
+    "reference": "User authorized autonomous completion, evidence collection, and grouped commits in this Codex task",
+    "approvedAt": "2026-07-15T15:27:55.000Z",
+    "evidenceCollection": true,
+    "targetMutation": true
+  },
+  "timeline": {
+    "pilotStartedAt": "2026-07-15T15:27:56.000Z",
+    "firstUsefulArtifactAt": "2026-07-15T15:28:10.000Z",
+    "implementationCompletedAt": "2026-07-15T16:16:53.000Z"
+  },
+  "findingDecisions": [
+    {
+      "findingId": "runtime-evidence-not-collected",
+      "decision": "accepted",
+      "summary": "Collected desktop, mobile, keyboard, reduced-motion, screenshot, and console evidence for the runtime gap identified by the static review.",
+      "reference": "evidence/p12/browser/browser-verification.json"
+    }
+  ],
+  "approvalEvents": [
+    {
+      "gateId": "source-inspection",
+      "status": "approved",
+      "occurredAt": "2026-07-15T15:32:27.047Z",
+      "reference": "evidence/p12/implementation-scope-approval.json"
+    },
+    {
+      "gateId": "target-files",
+      "status": "approved",
+      "occurredAt": "2026-07-15T15:32:27.047Z",
+      "reference": "evidence/p12/implementation-scope-approval.json"
+    },
+    {
+      "gateId": "pre-existing-changes",
+      "status": "not-required",
+      "occurredAt": "",
+      "reference": "evidence/p12/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "dependency-changes",
+      "status": "not-required",
+      "occurredAt": "",
+      "reference": "evidence/p12/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "migration-files",
+      "status": "not-required",
+      "occurredAt": "",
+      "reference": "evidence/p12/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "generated-files",
+      "status": "approved",
+      "occurredAt": "2026-07-15T15:32:27.047Z",
+      "reference": "evidence/p12/implementation-scope-approval.json"
+    },
+    {
+      "gateId": "external-writes",
+      "status": "pending",
+      "occurredAt": "",
+      "reference": "evidence/p12/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "commit",
+      "status": "pending",
+      "occurredAt": "",
+      "reference": "evidence/p12/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "push",
+      "status": "pending",
+      "occurredAt": "",
+      "reference": "evidence/p12/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "deployment",
+      "status": "not-required",
+      "occurredAt": "",
+      "reference": "evidence/p12/implementation-scope-proposal.json"
+    }
+  ],
+  "outcome": {
+    "implementationStatus": "complete",
+    "productionStatus": "not-deployed",
+    "feedback": {
+      "status": "not-collected",
+      "summary": "This internal technical dogfood did not collect publishable external-user feedback.",
+      "reference": ""
+    }
+  },
+  "claims": [
+    {
+      "class": "real",
+      "statement": "The full P6 through P12 chain ran against the Design AI Website Console checkout and produced source-linked implementation and browser evidence.",
+      "reference": "evidence/p12/implementation-evidence.json"
+    },
+    {
+      "class": "synthetic",
+      "statement": "Package smoke separately exercises installed-bin and one-shot fixtures and is not counted as real pilot adoption.",
+      "reference": "evidence/p12/release-check.log"
+    },
+    {
+      "class": "inferred",
+      "statement": "The completed internal workflow suggests that the exact-source contract is operable for a bounded project improvement.",
+      "reference": "evidence/p12/pilot-evidence.json"
+    },
+    {
+      "class": "unverified",
+      "statement": "External adoption, respondent identity, production quality, deployment outcomes, and business impact remain unverified.",
+      "reference": "docs/case-studies/website-console-real-pilot.md"
+    }
+  ]
+}

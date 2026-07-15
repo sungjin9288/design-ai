@@ -1,0 +1,128 @@
+{
+  "kind": "design-ai-pilot-evidence-summary",
+  "schemaVersion": 1,
+  "status": "evidence-complete",
+  "sources": {
+    "implementationEvidence": {
+      "reference": "evidence/p12/implementation-evidence.json",
+      "sha256": "22d3674ddbc0c392374473d5376a3e4a242fc2607aa05110023b1f7034189170",
+      "bytes": 177521,
+      "kind": "design-ai-implementation-evidence",
+      "schemaVersion": 1,
+      "status": "evidence-complete"
+    },
+    "reviewWorkflow": {
+      "reference": "evidence/p12/review-workflow.json",
+      "sha256": "b925a890e1cf98b186ce82fcac64e6e416ac4e0af6d7ae28762915f69bd934ea",
+      "bytes": 22560,
+      "kind": "design-ai-review-workflow",
+      "schemaVersion": 1,
+      "status": "static-review-complete"
+    },
+    "record": {
+      "reference": "evidence/p12/pilot-record.json",
+      "sha256": "b05030c6af0ceaaa8d608dab6fb79b4372ea1cea1f6fa2ef964d25614bcda8fa",
+      "bytes": 4170,
+      "kind": "design-ai-pilot-record",
+      "schemaVersion": 1
+    }
+  },
+  "project": {
+    "name": "Design AI Website Console",
+    "repositoryUrl": "https://github.com/sungjin9288/design-ai.git",
+    "pilotClass": "internal-dogfood"
+  },
+  "consent": {
+    "status": "approved",
+    "approver": "project owner",
+    "identity": "self-declared",
+    "reference": "User authorized autonomous completion, evidence collection, and grouped commits in this Codex task",
+    "approvedAt": "2026-07-15T15:27:55.000Z",
+    "evidenceCollection": true,
+    "targetMutation": true
+  },
+  "metrics": {
+    "timeToFirstUsefulArtifact": {
+      "milliseconds": 14000,
+      "startedAt": "2026-07-15T15:27:56.000Z",
+      "completedAt": "2026-07-15T15:28:10.000Z"
+    },
+    "findingPrecision": {
+      "accepted": 1,
+      "rejected": 0,
+      "unresolved": 0,
+      "evaluated": 1,
+      "precision": 1
+    },
+    "approvalFriction": {
+      "total": 10,
+      "approved": 3,
+      "notRequired": 4,
+      "pending": 3
+    },
+    "implementation": {
+      "status": "complete",
+      "evidenceStatus": "evidence-complete"
+    },
+    "unresolvedRisk": {
+      "count": 0,
+      "items": []
+    }
+  },
+  "claims": {
+    "real": [
+      {
+        "statement": "The full P6 through P12 chain ran against the Design AI Website Console checkout and produced source-linked implementation and browser evidence.",
+        "reference": "evidence/p12/implementation-evidence.json"
+      }
+    ],
+    "synthetic": [
+      {
+        "statement": "Package smoke separately exercises installed-bin and one-shot fixtures and is not counted as real pilot adoption.",
+        "reference": "evidence/p12/release-check.log"
+      }
+    ],
+    "inferred": [
+      {
+        "statement": "The completed internal workflow suggests that the exact-source contract is operable for a bounded project improvement.",
+        "reference": "evidence/p12/pilot-evidence.json"
+      }
+    ],
+    "unverified": [
+      {
+        "statement": "External adoption, respondent identity, production quality, deployment outcomes, and business impact remain unverified.",
+        "reference": "docs/case-studies/website-console-real-pilot.md"
+      }
+    ]
+  },
+  "issues": [],
+  "nextAction": {
+    "id": "pilot-evidence-complete",
+    "status": "complete",
+    "summary": "The bounded pilot evidence is complete; broader adoption and production claims remain outside this contract."
+  },
+  "boundary": {
+    "mode": "read-only-pilot-evidence",
+    "localWrites": false,
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "networkCalls": false,
+    "identityVerified": false,
+    "feedbackVerified": false,
+    "adoptionEstablished": false,
+    "productionQualityEstablished": false
+  },
+  "representation": {
+    "mode": "compact",
+    "fullArtifactKind": "design-ai-pilot-evidence",
+    "fullArtifactSchemaVersion": 1,
+    "omittedFields": [
+      "implementationEvidence.source",
+      "implementationEvidence.value",
+      "reviewWorkflow.source",
+      "reviewWorkflow.value",
+      "record.source",
+      "record.value"
+    ]
+  }
+}

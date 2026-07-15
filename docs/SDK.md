@@ -1,14 +1,14 @@
 # Agent SDK reference
 
-> Status: current source candidate — 17 read-only exports plus the opt-in `learn.*` local-write namespace; published v5.0.0 has 9 read-only verbs
+> Status: current source candidate — 18 read-only exports plus the opt-in `learn.*` local-write namespace; published v5.0.0 has 9 read-only verbs
 
 `@design-ai/cli/sdk` lets an external Node.js program — an agent runtime, a build script, a custom tool — use design-ai's deterministic design capabilities as importable functions, without shelling out to the CLI or spawning the MCP server. It is a thin, curated adapter over the same `cli/lib` functions the CLI and MCP server already call, so a capability that ships in the CLI is instantly available to an SDK consumer.
 
 See [`AGENT-SDK.md`](AGENT-SDK.md) for the full design rationale, phased plan, and open questions. This page is the public reference for the shipped Phase A (read-only) and Phase B (local-write) surface.
 
-MCP parity: SDK `start()`, `reviewHtml()`, `reviewHandoff()`, `verifyReviewHandoff()`, `inspectHtml()`, `reviewPack()`, and `artifact()` map to `design_ai_start`, `design_ai_review_html`, `design_ai_review_handoff`, `design_ai_verify_review_handoff`, `design_ai_inspect_html`, `design_ai_review_pack`, and `design_ai_artifact`; `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
+MCP parity: SDK `start()`, `reviewHtml()`, `reviewHandoff()`, `verifyReviewHandoff()`, `recordPilotEvidence()`, `inspectHtml()`, `reviewPack()`, and `artifact()` map to `design_ai_start`, `design_ai_review_html`, `design_ai_review_handoff`, `design_ai_verify_review_handoff`, `design_ai_review_pilot`, `design_ai_inspect_html`, `design_ai_review_pack`, and `design_ai_artifact`; `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
 
-Filesystem boundary: Website Improvement linked-preview inspection and target repository intake remain CLI/MCP operations rather than SDK exports. Scope proposal and approval accept exact JSON strings, so `proposeImplementationScope()` and `approveImplementationScope()` add no general local-project filesystem access. The SDK has 18 current-source exports and exactly three opt-in local learning write methods.
+Filesystem boundary: Website Improvement linked-preview inspection, target repository intake, and implementation evidence remain CLI/MCP operations rather than SDK exports. Scope proposal, approval, and pilot evidence accept exact JSON strings, so `proposeImplementationScope()`, `approveImplementationScope()`, and `recordPilotEvidence()` add no general local-project filesystem access. The SDK has 19 current-source exports and exactly three opt-in local learning write methods.
 
 ## Install and import
 
@@ -19,7 +19,7 @@ npm install @design-ai/cli
 ```
 
 ```js
-import { approveImplementationScope, artifact, start, reviewHtml, reviewHandoff, verifyReviewHandoff, inspectHtml, proposeImplementationScope, reviewPack, route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
+import { approveImplementationScope, artifact, start, reviewHtml, reviewHandoff, verifyReviewHandoff, recordPilotEvidence, inspectHtml, proposeImplementationScope, reviewPack, route, prompt, pack, search, recall, check, routes, version } from "@design-ai/cli/sdk";
 ```
 
 Only the `./sdk` subpath is exported — `import "@design-ai/cli"` (the bare package root) is intentionally not exported, so importing the SDK is always an explicit `@design-ai/cli/sdk` import. `cli/lib/*` is internal and unstable; do not import it directly.
@@ -52,6 +52,25 @@ These functions bind exact P9 intake and request strings into an immutable
 proposal, then record explicit approval for that exact proposal. They do not read
 application source or perform target writes. See [Implementation scope
 approval](IMPLEMENTATION-SCOPE.md) for complete options and gate meaning.
+
+### `recordPilotEvidence()`
+
+Bind exact P11 implementation evidence, the original P6 review workflow, and one
+operator-authored pilot record. The result derives bounded pilot metrics and
+keeps real, synthetic, inferred, and unverified claims separate.
+
+```js
+recordPilotEvidence(implementationEvidenceSource, reviewWorkflowSource, recordSource, {
+  implementationEvidenceRef: "implementation-evidence.json",
+  reviewWorkflowRef: "review-workflow.json",
+  recordRef: "pilot-record.json",
+}): PilotEvidence
+```
+
+The adapter reads no path and performs no write or network call. It validates
+the exact supplied strings and does not establish identity, external adoption,
+feedback authenticity, or production quality. See [Real pilot
+evidence](REAL-PILOT-EVIDENCE.md).
 
 ### `start(brief, opts)`
 

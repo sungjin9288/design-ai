@@ -13,6 +13,7 @@
   var IMPLEMENTATION_SCOPE_PROPOSAL_KEY = "design-ai.website-console.implementation-scope-proposal";
   var IMPLEMENTATION_SCOPE_APPROVAL_KEY = "design-ai.website-console.implementation-scope-approval";
   var IMPLEMENTATION_EVIDENCE_KEY = "design-ai.website-console.implementation-evidence";
+  var PILOT_EVIDENCE_KEY = "design-ai.website-console.pilot-evidence";
   var BROWSER_VERIFICATION_KEY = "design-ai.website-console.browser-verification";
 
   var sourceBundleApi = window.DesignAiWebsiteConsoleSourceBundle;
@@ -89,6 +90,16 @@
     throw new Error("Website Console implementation-evidence contract failed to load.");
   }
   var normalizeImplementationEvidenceArtifact = implementationEvidenceApi.normalizeImplementationEvidence;
+  var pilotEvidenceApi = window.DesignAiWebsiteConsolePilotEvidence;
+  if (!pilotEvidenceApi || typeof pilotEvidenceApi.normalizePilotEvidence !== "function") {
+    var failedPilotApp = document.getElementById("app");
+    if (failedPilotApp) {
+      failedPilotApp.setAttribute("data-status", "error");
+      failedPilotApp.innerHTML = '<main id="main" class="loading-shell" tabindex="-1"><h1>Website Console unavailable</h1><p>Required local scripts did not load. Reload after updating the complete Website Console bundle.</p></main>';
+    }
+    throw new Error("Website Console pilot-evidence contract failed to load.");
+  }
+  var normalizePilotEvidenceArtifact = pilotEvidenceApi.normalizePilotEvidence;
 
   var auditCategories = [
     {
@@ -196,10 +207,13 @@
     ["handoff-report", "Final handoff report"],
   ];
 
-  var importedImplementationEvidence = loadImportedArtifact(
-    IMPLEMENTATION_EVIDENCE_KEY,
-    normalizeImplementationEvidenceArtifact,
-  );
+  var importedPilotEvidence = loadImportedArtifact(PILOT_EVIDENCE_KEY, normalizePilotEvidenceArtifact);
+  var importedImplementationEvidence = importedPilotEvidence
+    ? importedArtifact(
+      normalizeImplementationEvidenceArtifact(importedPilotEvidence.value.implementationEvidence.value),
+      importedPilotEvidence.value.implementationEvidence.source,
+    )
+    : loadImportedArtifact(IMPLEMENTATION_EVIDENCE_KEY, normalizeImplementationEvidenceArtifact);
   var importedScopeApproval = importedImplementationEvidence
     ? importedArtifact(
       normalizeImplementationScopeApproval(importedImplementationEvidence.value.approval.value),
@@ -218,7 +232,7 @@
       importedScopeProposal.value.intake.source,
     )
     : loadImportedArtifact(TARGET_REPO_INTAKE_KEY, normalizeTargetRepoIntake);
-  var importedReviewReceipt = loadImportedArtifact(
+  var importedReviewReceipt = importedPilotEvidence ? null : loadImportedArtifact(
     REVIEW_HANDOFF_RECEIPT_KEY,
     normalizeReviewHandoffReceipt,
   );
@@ -227,13 +241,18 @@
     importedTargetRepoIntake = null;
     localStorage.removeItem(TARGET_REPO_INTAKE_KEY);
   }
-  var importedReviewHandoff = importedReviewReceipt
+  var importedReviewHandoff = importedPilotEvidence ? null : importedReviewReceipt
     ? importedArtifact(
       normalizeReviewHandoff(importedReviewReceipt.value.handoff.value),
       importedReviewReceipt.value.handoff.source,
     )
     : loadImportedArtifact(REVIEW_HANDOFF_KEY, normalizeReviewHandoff);
-  var importedReviewWorkflow = importedReviewHandoff
+  var importedReviewWorkflow = importedPilotEvidence
+    ? importedArtifact(
+      normalizeReviewWorkflow(importedPilotEvidence.value.reviewWorkflow.value),
+      importedPilotEvidence.value.reviewWorkflow.source,
+    )
+    : importedReviewHandoff
     ? importedArtifact(
       normalizeReviewWorkflow(importedReviewHandoff.value.artifacts.reviewWorkflow.value),
       importedReviewHandoff.value.artifacts.reviewWorkflow.source,
@@ -241,6 +260,7 @@
     : loadImportedArtifact(REVIEW_WORKFLOW_KEY, normalizeReviewWorkflow);
   var appState = {
     workspace: loadWorkspace(),
+    pilotEvidence: importedPilotEvidence,
     implementationEvidence: importedImplementationEvidence,
     implementationScopeApproval: importedScopeApproval,
     implementationScopeProposal: importedScopeProposal,
@@ -713,6 +733,8 @@
   }
 
   function clearReviewWorkflowSession() {
+    appState.pilotEvidence = null;
+    saveImportedArtifact(PILOT_EVIDENCE_KEY, null);
     clearImplementationScopeProposalSession();
     appState.targetRepoIntake = null;
     saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
@@ -727,6 +749,8 @@
   }
 
   function clearReviewHandoffSession() {
+    appState.pilotEvidence = null;
+    saveImportedArtifact(PILOT_EVIDENCE_KEY, null);
     clearImplementationScopeProposalSession();
     appState.targetRepoIntake = null;
     saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
@@ -745,6 +769,8 @@
   }
 
   function clearReviewReceiptSession() {
+    appState.pilotEvidence = null;
+    saveImportedArtifact(PILOT_EVIDENCE_KEY, null);
     clearImplementationScopeProposalSession();
     appState.targetRepoIntake = null;
     saveImportedArtifact(TARGET_REPO_INTAKE_KEY, null);
@@ -780,6 +806,8 @@
   }
 
   function clearImplementationScopeApprovalSession() {
+    appState.pilotEvidence = null;
+    saveImportedArtifact(PILOT_EVIDENCE_KEY, null);
     appState.implementationEvidence = null;
     saveImportedArtifact(IMPLEMENTATION_EVIDENCE_KEY, null);
     appState.implementationScopeApproval = null;
@@ -797,6 +825,8 @@
   }
 
   function clearImplementationScopeProposalSession() {
+    appState.pilotEvidence = null;
+    saveImportedArtifact(PILOT_EVIDENCE_KEY, null);
     appState.implementationEvidence = null;
     saveImportedArtifact(IMPLEMENTATION_EVIDENCE_KEY, null);
     appState.implementationScopeApproval = null;
@@ -807,8 +837,19 @@
   }
 
   function clearImplementationEvidenceSession() {
+    appState.pilotEvidence = null;
+    saveImportedArtifact(PILOT_EVIDENCE_KEY, null);
     appState.implementationEvidence = null;
     saveImportedArtifact(IMPLEMENTATION_EVIDENCE_KEY, null);
+  }
+
+  function clearPilotEvidenceSession() {
+    appState.pilotEvidence = null;
+    saveImportedArtifact(PILOT_EVIDENCE_KEY, null);
+    appState.implementationEvidence = loadImportedArtifact(
+      IMPLEMENTATION_EVIDENCE_KEY,
+      normalizeImplementationEvidenceArtifact,
+    );
   }
 
   function isWorkspacePayload(value) {
@@ -956,7 +997,7 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import pilot evidence, implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
       "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
@@ -1125,6 +1166,7 @@
   }
 
   function renderQualityReview() {
+    var pilotEvidenceArtifact = appState.pilotEvidence;
     var implementationEvidenceArtifact = appState.implementationEvidence;
     var scopeApprovalArtifact = appState.implementationScopeApproval;
     var scopeProposalArtifact = appState.implementationScopeProposal;
@@ -1134,7 +1176,7 @@
     var reviewWorkflowArtifact = appState.reviewWorkflow;
     var qualityArtifact = appState.qualityReport;
     var browserArtifact = appState.browserVerification;
-    if (!implementationEvidenceArtifact && !scopeApprovalArtifact && !scopeProposalArtifact && !targetRepoIntakeArtifact
+    if (!pilotEvidenceArtifact && !implementationEvidenceArtifact && !scopeApprovalArtifact && !scopeProposalArtifact && !targetRepoIntakeArtifact
       && !reviewReceiptArtifact && !reviewHandoffArtifact
       && !reviewWorkflowArtifact && !qualityArtifact && !browserArtifact) {
       return panel("Import review evidence", "Import a canonical review workflow, quality-report JSON, or optional browser-verification JSON without changing either contract.", [
@@ -1144,8 +1186,10 @@
     }
 
     return [
-      implementationEvidenceArtifact
-        ? renderImplementationEvidence(implementationEvidenceArtifact.value)
+      pilotEvidenceArtifact
+        ? renderPilotEvidence(pilotEvidenceArtifact.value)
+        : implementationEvidenceArtifact
+          ? renderImplementationEvidence(implementationEvidenceArtifact.value)
         : scopeApprovalArtifact
           ? renderImplementationScopeApproval(scopeApprovalArtifact.value)
           : scopeProposalArtifact
@@ -1166,8 +1210,10 @@
         ? renderBrowserVerificationArtifact(browserArtifact.value)
         : panel("Browser verification", "Runtime evidence remains separate and optional.", "<div class=\"empty-state\">No browser-verification JSON imported. Static and runtime-unknown findings remain unchanged.</div>"),
       "<div class=\"button-row\">",
-      implementationEvidenceArtifact
-        ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-implementation-evidence\">Export original evidence JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-implementation-evidence\">Clear implementation evidence</button>"
+      pilotEvidenceArtifact
+        ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-pilot-evidence\">Export original pilot JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-pilot-evidence\">Clear pilot evidence</button>"
+        : implementationEvidenceArtifact
+          ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-implementation-evidence\">Export original evidence JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-implementation-evidence\">Clear implementation evidence</button>"
         : scopeApprovalArtifact
           ? "<button type=\"button\" class=\"button button--primary\" data-action=\"download-scope-approval\">Export original approval JSON</button><button type=\"button\" class=\"button button--danger\" data-action=\"clear-scope-approval\">Clear scope approval</button>"
           : scopeProposalArtifact
@@ -1188,6 +1234,25 @@
         : "",
       "</div>",
     ].join("");
+  }
+
+  function renderPilotEvidence(evidence) {
+    var precision = evidence.metrics.findingPrecision;
+    var approvals = evidence.metrics.approvalFriction;
+    var claims = ["real", "synthetic", "inferred", "unverified"].map(function (claimClass) {
+      return labelize(claimClass) + ": " + evidence.claims[claimClass][0].statement;
+    });
+    return panel("Real Pilot Evidence", "One consented pilot is linked to the exact P6 review and P11 implementation evidence. Customer adoption, identity, feedback, and production quality are not upgraded by this record.", [
+      "<div class=\"evidence-summary\" aria-label=\"Pilot evidence summary\">",
+      metric("Status", evidence.status, evidence.project.pilotClass),
+      metric("First useful artifact", evidence.metrics.timeToFirstUsefulArtifact.milliseconds + " ms", "Measured from recorded timestamps"),
+      metric("Finding review", precision.accepted + " accepted", precision.rejected + " rejected / " + precision.unresolved + " unresolved"),
+      metric("Approval gates", approvals.approved + " approved", approvals.pending + " pending"),
+      "</div>",
+      "<dl class=\"evidence-list\"><div><dt>Project</dt><dd>" + escapeHtml(evidence.project.name) + "</dd></div><div><dt>Repository</dt><dd><code>" + escapeHtml(evidence.project.repositoryUrl) + "</code></dd></div><div><dt>Consent</dt><dd>" + escapeHtml(evidence.consent.reference) + "</dd></div><div><dt>Implementation</dt><dd>" + escapeHtml(evidence.metrics.implementation.status) + "</dd></div></dl>",
+      "<div class=\"grid-2 start-details\"><div><h4>Claim classes</h4>" + renderStartList(claims, "No claims recorded.") + "</div><div><h4>Unresolved risk</h4>" + renderStartList(evidence.metrics.unresolvedRisk.items.map(function (item) { return item.severity + ": " + item.summary; }), "No unresolved implementation risk recorded.") + "</div></div>",
+      "<div class=\"graph-boundaries\" aria-label=\"Pilot evidence boundary\">" + qualityStatusBadge(evidence.status) + "<span class=\"pill\">Self-declared consent</span><span class=\"pill\">No identity proof</span><span class=\"pill\">No adoption claim</span><span class=\"pill\">No production-quality claim</span><span class=\"pill\">No writes</span></div>",
+    ].join(""));
   }
 
   function renderImplementationScopeProposal(proposal) {
@@ -3063,6 +3128,11 @@
       appState.activeTab = button.dataset.nav;
       localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
       render();
+      var activeButton = document.querySelector(".nav-button[aria-current='page']");
+      if (activeButton) {
+        activeButton.focus({ preventScroll: true });
+        activeButton.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
       return;
     }
 
@@ -3127,6 +3197,15 @@
       clearReviewReceiptSession();
       refreshQualityLink();
       setMessage("Validation receipt cleared. Original review handoff restored.");
+    } else if (action === "download-pilot-evidence") {
+      if (appState.pilotEvidence) {
+        downloadFile("design-ai-pilot-evidence.json", appState.pilotEvidence.rawJson, "application/json");
+        setMessage("Original pilot-evidence JSON exported without reformatting.");
+      }
+    } else if (action === "clear-pilot-evidence") {
+      clearPilotEvidenceSession();
+      refreshQualityLink();
+      setMessage("Pilot evidence cleared. Original implementation evidence restored.");
     } else if (action === "download-implementation-evidence") {
       if (appState.implementationEvidence) {
         downloadFile("design-ai-implementation-evidence.json", appState.implementationEvidence.rawJson, "application/json");
@@ -3367,6 +3446,56 @@
       try {
         var rawJson = String(reader.result || "");
         var parsed = JSON.parse(rawJson);
+        var importedPilotEvidence = normalizePilotEvidenceArtifact(parsed);
+        if (importedPilotEvidence) {
+          var pilotImplementationEvidence = normalizeImplementationEvidenceArtifact(
+            importedPilotEvidence.implementationEvidence.value,
+          );
+          var pilotApproval = normalizeImplementationScopeApproval(pilotImplementationEvidence.approval.value);
+          var pilotProposal = normalizeImplementationScopeProposal(pilotApproval.proposal.value);
+          var pilotWorkflow = normalizeReviewWorkflow(importedPilotEvidence.reviewWorkflow.value);
+          appState.pilotEvidence = importedArtifact(importedPilotEvidence, rawJson);
+          appState.implementationEvidence = importedArtifact(
+            pilotImplementationEvidence,
+            importedPilotEvidence.implementationEvidence.source,
+          );
+          appState.implementationScopeApproval = importedArtifact(
+            pilotApproval,
+            pilotImplementationEvidence.approval.source,
+          );
+          appState.implementationScopeProposal = importedArtifact(
+            pilotProposal,
+            pilotApproval.proposal.source,
+          );
+          appState.targetRepoIntake = importedArtifact(
+            normalizeTargetRepoIntake(pilotProposal.intake.value),
+            pilotProposal.intake.source,
+          );
+          appState.reviewReceipt = null;
+          appState.reviewHandoff = null;
+          appState.reviewWorkflow = importedArtifact(
+            pilotWorkflow,
+            importedPilotEvidence.reviewWorkflow.source,
+          );
+          appState.startPlan = normalizeStartPlan(pilotWorkflow.plan);
+          appState.qualityReport = importedArtifact(normalizeQualityReport(pilotWorkflow.report), "");
+          appState.browserVerification = null;
+          appState.activeTab = "quality";
+          localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
+          saveImportedArtifact(PILOT_EVIDENCE_KEY, appState.pilotEvidence);
+          saveImportedArtifact(IMPLEMENTATION_EVIDENCE_KEY, appState.implementationEvidence);
+          saveImportedArtifact(IMPLEMENTATION_SCOPE_APPROVAL_KEY, appState.implementationScopeApproval);
+          saveImportedArtifact(IMPLEMENTATION_SCOPE_PROPOSAL_KEY, appState.implementationScopeProposal);
+          saveImportedArtifact(TARGET_REPO_INTAKE_KEY, appState.targetRepoIntake);
+          saveImportedArtifact(REVIEW_HANDOFF_RECEIPT_KEY, null);
+          saveImportedArtifact(REVIEW_HANDOFF_KEY, null);
+          saveImportedArtifact(REVIEW_WORKFLOW_KEY, appState.reviewWorkflow);
+          refreshQualityLink();
+          setMessage("Pilot evidence imported. Exact P6 and P11 sources, consent, metrics, and claim boundaries preserved.");
+          return;
+        }
+        appState.pilotEvidence = null;
+        saveImportedArtifact(PILOT_EVIDENCE_KEY, null);
         var importedImplementationEvidence = normalizeImplementationEvidenceArtifact(parsed);
         if (importedImplementationEvidence) {
           var evidenceApproval = normalizeImplementationScopeApproval(importedImplementationEvidence.approval.value);

@@ -1,0 +1,6 @@
+
+> @design-ai/cli@5.0.0 package:check
+> python3 -B tools/audit/package-contents.py --self-test && python3 -B tools/audit/package-contents.py
+
+Package contents self-test passed
+Package contents check passed: @design-ai/cli@5.0.0, 766 files, packed 2.5 MB, unpacked 10.8 MB

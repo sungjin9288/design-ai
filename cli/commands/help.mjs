@@ -16,6 +16,7 @@ import { runReviewIntake } from "./review-intake.mjs";
 import { runReviewScope } from "./review-scope.mjs";
 import { runReviewScopeApprove } from "./review-scope-approve.mjs";
 import { runReviewEvidence } from "./review-evidence.mjs";
+import { runReviewPilot } from "./review-pilot.mjs";
 import { runReviewPack } from "./review-pack.mjs";
 import { runBenchmark } from "./benchmark.mjs";
 import { runVerifyBrowser } from "./verify-browser.mjs";
@@ -64,6 +65,7 @@ export const HELP_COMMANDS = [
   { topic: "review-scope", usage: "review-scope <target-intake.json> --request scope-request.json --consumer name [--json]", description: "Build an immutable implementation-scope proposal" },
   { topic: "review-scope-approve", usage: "review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes [--json]", description: "Approve one exact implementation-scope proposal" },
   { topic: "review-evidence", usage: "review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name [--json]", description: "Check implementation evidence against an approved baseline" },
+  { topic: "review-pilot", usage: "review-pilot <implementation-evidence.json> --workflow review-workflow.json --record pilot-record.json [--json]", description: "Build bounded evidence for one consented real pilot" },
   { topic: "review-pack", usage: "review-pack [id] [--json]", description: "List or print Korean product review packs" },
   { topic: "benchmark", usage: "benchmark [case-id] [--strict] [--json] | benchmark --list [--json]", description: "Run read-only product specialization regression proof" },
   { topic: "verify-browser", usage: "verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]", description: "Run an approved browser adapter and record normalized local evidence" },
@@ -124,6 +126,7 @@ const HELP_RUNNERS = {
   "review-scope": () => runReviewScope(["--help"]),
   "review-scope-approve": () => runReviewScopeApprove(["--help"]),
   "review-evidence": () => runReviewEvidence(["--help"]),
+  "review-pilot": () => runReviewPilot(["--help"]),
   "review-pack": () => runReviewPack(["--help"]),
   benchmark: () => runBenchmark(["--help"]),
   "verify-browser": () => runVerifyBrowser(["--help"]),

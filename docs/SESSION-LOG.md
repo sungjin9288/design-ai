@@ -5,6 +5,19 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 790 (unreleased)** — Added exact-source real-pilot evidence across CLI,
+  typed SDK, in-process MCP, and Website Console. It joins P11 implementation
+  evidence, the original P6 workflow, and one consented operator record; derives
+  first-value, finding, approval, implementation, and risk measures; and keeps
+  real, synthetic, inferred, and unverified claims separate. The operation stays
+  read-only and does not establish external adoption or production quality. The
+  first consented Website Console dogfood run reached a useful artifact in 14
+  seconds, accepted one finding, completed the approved mobile-navigation change,
+  and passed 815 tests, 8 strict audits, package smoke, and desktop/mobile browser
+  checks. Console import/export preserved all 416,114 source bytes. A fresh stdio
+  MCP process kept the 452,923-byte full response as an explicit limit error and
+  returned a 4,021-byte compact summary with matching source hashes, byte counts,
+  metrics, issues, claims, next action, and safety boundaries.
 - **Phase 789 (unreleased)** — Added exact-source implementation evidence across
   CLI, in-process MCP, and Website Console. The operation compares one approved
   baseline with current Git, hashes only declared regular evidence files, keeps

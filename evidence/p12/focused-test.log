@@ -1,0 +1,33 @@
+✔ source-bundle classic script exposes the focused frozen API (0.588167ms)
+✔ quality and browser contracts reject unknown shapes and preserve imported JSON bytes (2.868625ms)
+✔ start plan contract accepts read-only payloads and rejects forged execution (0.194792ms)
+✔ review workflow normalization preserves the exact linked read-only session (113.822042ms)
+✔ review handoff normalization revalidates embedded sources and pending delivery (46.456ms)
+✔ review handoff receipt normalization preserves exact nested handoff proof (48.617333ms)
+✔ target repo intake normalization preserves bounded receipt and repository evidence (66.68025ms)
+✔ source-bundle normalization preserves the provenance contract (0.135958ms)
+✔ source-bundle payload extractors accept only their owned shapes (0.110834ms)
+✔ source-bundle revalidation matrix preserves safety decisions (0.119667ms)
+✔ source-bundle JSON exports keep shape and do not mutate input (0.09925ms)
+✔ Website Console loads classic deferred scripts in dependency order (0.4165ms)
+✔ Website Console renders a visible failure for missing or partial contracts (2.737708ms)
+✔ Website Console uses deterministic fallback task ids (0.292167ms)
+✔ Website Console imports and labels linked preview readiness without claiming runtime verification (0.261875ms)
+✔ Website Console keeps quality and browser contracts separate and preserves raw exports (0.2815ms)
+✔ Website Console imports the review workflow before direct artifacts and preserves its envelope (0.368792ms)
+✔ Website Console imports review handoff first and keeps delivery pending (0.327125ms)
+✔ Website Console imports consumer receipt first and preserves exact receipt bytes (0.42425ms)
+✔ Website Console imports target intake first and keeps implementation unauthorized (0.351625ms)
+✔ Website Console imports scope approval before proposal and restores the prior stage (0.384083ms)
+✔ Website Console imports implementation evidence before approval and restores the approved stage (0.337958ms)
+✔ Website Console imports pilot evidence before P11 and restores exact implementation evidence (0.302542ms)
+✔ Website Console imports start JSON without claiming reference inspection or execution (0.244208ms)
+✔ Website Console keeps mobile section navigation compact and keyboard-stable (0.952833ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 352.229042

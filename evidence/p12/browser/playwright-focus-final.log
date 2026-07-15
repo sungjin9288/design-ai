@@ -1,0 +1,45 @@
+### Ran Playwright code
+```js
+await page.reload();
+```
+### Page
+- Page URL: http://127.0.0.1:4173/
+- Page Title: design-ai Website Improvement Console
+### Snapshot
+- [Snapshot](.playwright-cli/page-2026-07-15T15-36-28-957Z.yml)
+### Ran Playwright code
+```js
+// Press Enter
+await page.keyboard.press('Enter');
+```
+### Page
+- Page URL: http://127.0.0.1:4173/
+- Page Title: design-ai Website Improvement Console
+### Snapshot
+- [Snapshot](.playwright-cli/page-2026-07-15T15-36-37-133Z.yml)
+### Result
+{
+  "activeLabel": "Handoff Report",
+  "focused": "Handoff Report",
+  "outline": "rgb(79, 70, 229) solid 3px",
+  "outlineOffset": "2px",
+  "navScrollLeft": 632,
+  "consoleReady": "ready"
+}
+### Ran Playwright code
+```js
+await page.evaluate('() => (({activeLabel:document.querySelector(\'[aria-current=page]\').textContent.trim(),focused:document.activeElement.textContent.trim(),outline:getComputedStyle(document.activeElement).outline,outlineOffset:getComputedStyle(document.activeElement).outlineOffset,navScrollLeft:document.querySelector(\'.nav-list\').scrollLeft,consoleReady:document.querySelector(\'#app\').dataset.status}))');
+```
+### Result
+- [Screenshot of viewport](evidence/p12/browser/mobile-keyboard-focus.png)
+### Ran Playwright code
+```js
+// Screenshot viewport and save it as evidence/p12/browser/mobile-keyboard-focus.png
+await page.screenshot({
+  path: 'evidence/p12/browser/mobile-keyboard-focus.png',
+  scale: 'css',
+  type: 'png'
+});
+```
+### Result
+Total messages: 0 (Errors: 0, Warnings: 0)

@@ -1,0 +1,8 @@
+### Result
+{"heading":"Quality Review","panels":["Implementation Evidence","Review Session","Quality report","Browser verification"],"pilotStored":false,"implementationStored":true}
+### Ran Playwright code
+```js
+await (async (page) => { await page.getByRole('button', { name: 'Clear pilot evidence' }).click(); return page.evaluate(() => ({ heading: document.querySelector('.topbar h2')?.textContent?.trim(), panels: Array.from(document.querySelectorAll('.panel__header h3')).map((node) => node.textContent.trim()), pilotStored: Boolean(localStorage.getItem('design-ai.website-console.pilot-evidence')), implementationStored: Boolean(localStorage.getItem('design-ai.website-console.implementation-evidence')), message: document.querySelector('[role=status], .message')?.textContent?.trim() })); })(page);
+```
+### Result
+Total messages: 0 (Errors: 0, Warnings: 0)

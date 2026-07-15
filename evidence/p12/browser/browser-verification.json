@@ -1,0 +1,74 @@
+{
+  "kind": "design-ai-p12-browser-evidence",
+  "schemaVersion": 1,
+  "surface": "Design AI Website Console",
+  "url": "http://127.0.0.1:4173/",
+  "run": {
+    "startedAt": "2026-07-15T15:34:11.799Z",
+    "completedAt": "2026-07-15T15:36:37.133Z",
+    "tool": "Playwright CLI with Chrome"
+  },
+  "desktop": {
+    "viewport": [1440, 1000],
+    "bodyScrollWidth": 1440,
+    "bodyClientWidth": 1440,
+    "sidebarPosition": "sticky",
+    "navigationDisplay": "grid",
+    "screenshot": "evidence/p12/browser/desktop-1440.png"
+  },
+  "mobile": {
+    "viewport": [390, 844],
+    "bodyScrollWidth": 390,
+    "bodyClientWidth": 390,
+    "navigationDisplay": "flex",
+    "navigationHeight": 52,
+    "navigationClientWidth": 390,
+    "navigationScrollWidth": 1021,
+    "buttonHeight": 44,
+    "buttonRowTops": [129],
+    "mainTop": 387,
+    "firstPanelTop": 563,
+    "screenshots": [
+      "evidence/p12/browser/mobile-390.png",
+      "evidence/p12/browser/mobile-keyboard-focus.png"
+    ]
+  },
+  "keyboard": {
+    "lastNavigationTarget": "Handoff Report",
+    "lastNavigationScrollLeft": 632,
+    "focusRestoredAfterActivation": true,
+    "focusOutline": "rgb(79, 70, 229) solid 3px",
+    "focusOutlineOffset": "2px",
+    "focusContrastOnWhite": 6.29,
+    "focusContrastOnActiveSurface": 5.62,
+    "rapidActivations": 5,
+    "reverseNavigation": "Prompt Generator",
+    "reverseNavigationFocusRestored": true
+  },
+  "accessibility": {
+    "navigationNamesPresentInSnapshot": true,
+    "minimumTouchTarget": 44,
+    "reducedMotionPreferenceDetected": true,
+    "screenReaderSessionRun": false
+  },
+  "console": {
+    "errors": 0,
+    "warnings": 0
+  },
+  "pilotEvidenceRoundTrip": {
+    "inputBytes": 416114,
+    "storedBytes": 416114,
+    "exportedBytes": 416114,
+    "inputSha256": "0491b4f2ea369b102d3faffb4dffab0dad91c8c8e046120910ef663694af597a",
+    "storedSha256": "0491b4f2ea369b102d3faffb4dffab0dad91c8c8e046120910ef663694af597a",
+    "exportedSha256": "0491b4f2ea369b102d3faffb4dffab0dad91c8c8e046120910ef663694af597a",
+    "clearRestoredPanel": "Implementation Evidence",
+    "consoleErrors": 0
+  },
+  "boundary": {
+    "scope": "responsive navigation, keyboard focus, visible focus, layout overflow, and console health",
+    "manualScreenReaderBehavior": "unverified",
+    "externalNetwork": false,
+    "deployment": false
+  }
+}

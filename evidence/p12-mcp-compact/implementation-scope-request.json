@@ -1,0 +1,74 @@
+{
+  "kind": "design-ai-implementation-scope-request",
+  "schemaVersion": 1,
+  "objective": "Allow real P12 evidence to cross the MCP output boundary without dropping source identity, metrics, issues, or claim boundaries.",
+  "intendedBehavior": [
+    "Keep the existing full design_ai_review_pilot response as the backward-compatible default.",
+    "Return a compact validated summary when compact is true.",
+    "Preserve exact source references, SHA-256 digests, byte counts, derived metrics, issues, next action, consent, claims, and safety boundaries.",
+    "Keep compact output below the 220000-byte MCP limit for the real internal pilot chain."
+  ],
+  "files": {
+    "inspect": [
+      "cli/lib/pilot-evidence.mjs",
+      "cli/lib/pilot-evidence.test.mjs",
+      "cli/lib/mcp-server.mjs",
+      "cli/lib/mcp-server.test.mjs",
+      "README.md",
+      "README.ko.md",
+      "docs/REAL-PILOT-EVIDENCE.md",
+      "docs/REAL-PILOT-EVIDENCE.ko.md",
+      "docs/MCP-INTEGRATION.md",
+      "docs/case-studies/website-console-real-pilot.md",
+      "docs/PRODUCT-READINESS.md",
+      "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+      "docs/ROADMAP.md",
+      "docs/SESSION-LOG.md",
+      "CHANGELOG.md"
+    ],
+    "change": [
+      "cli/lib/pilot-evidence.mjs",
+      "cli/lib/pilot-evidence.test.mjs",
+      "cli/lib/mcp-server.mjs",
+      "cli/lib/mcp-server.test.mjs",
+      "README.md",
+      "README.ko.md",
+      "docs/REAL-PILOT-EVIDENCE.md",
+      "docs/REAL-PILOT-EVIDENCE.ko.md",
+      "docs/MCP-INTEGRATION.md",
+      "docs/case-studies/website-console-real-pilot.md",
+      "docs/PRODUCT-READINESS.md",
+      "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+      "docs/ROADMAP.md",
+      "docs/SESSION-LOG.md",
+      "CHANGELOG.md"
+    ],
+    "generated": [
+      "evidence/p12-mcp-compact/**"
+    ]
+  },
+  "dependencies": [],
+  "migrations": [],
+  "externalWrites": [
+    {
+      "system": "GitHub",
+      "action": "push branch",
+      "destination": "sungjin9288/design-ai"
+    }
+  ],
+  "verificationCommands": [
+    "node --test cli/lib/pilot-evidence.test.mjs cli/lib/mcp-server.test.mjs",
+    "npm run release:check"
+  ],
+  "risks": [
+    "A compact result could be mistaken for the full exact-source artifact unless its distinct kind and omitted fields are explicit.",
+    "Source references, SHA-256 digests, byte counts, and derived measures must remain identical to the validated full artifact.",
+    "The existing full response must remain the default for backward compatibility."
+  ],
+  "preExistingChanges": [],
+  "release": {
+    "commit": true,
+    "push": true,
+    "deployment": false
+  }
+}
