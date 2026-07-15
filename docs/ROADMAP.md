@@ -25,7 +25,7 @@ receive implementation, without reading application source or authorizing edits.
 - [x] `npm run release:check` passes with 778 tests, 8 strict audits, 739 packaged files, a 0/0 documentation warning policy, and installed-bin plus one-shot target-intake smoke.
 - [x] Website Console intake import, exact JSON export, clear, and receipt restore pass at 1440px and 390px with matching SHA-256, 44px minimum visible button targets, no horizontal overflow, and no console warnings or errors.
 - [x] A fresh Codex process called `design_ai_review_intake` through the configured local MCP server and returned exact path and remote matches, read-only mode, and false mutation, application-source-read, and implementation flags.
-- [ ] Pull-request CI and merge evidence are pending.
+- [x] PR #43 passed required CI run `29413686416` before merge.
 
 ## Phase 786 - Consumer validation receipt (implemented, unreleased)
 
