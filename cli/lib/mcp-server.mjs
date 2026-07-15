@@ -13,12 +13,14 @@ import { buildStartPayload } from "./start-operation.mjs";
 import { formatStartJson } from "./start.mjs";
 import { inspectHtml } from "./design-quality-inspector.mjs";
 import { buildReviewWorkflow } from "./review-workflow.mjs";
+import { buildReviewHandoff } from "./review-handoff.mjs";
 import { listProductReviewPacks, loadProductReviewPack } from "./product-review-pack.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
 const SERVER_INSTRUCTIONS = [
   "Use design-ai MCP tools for local, deterministic design expertise.",
   "Use design_ai_review_html to compose one canonical plan and static review without running a browser or writing files.",
+  "Use design_ai_review_handoff to prepare a self-validating, undelivered transfer for another agent.",
   "Use design_ai_start for a read-only route and design-contract plan; declared repositories, pages, and screenshots are not inspected and its next command is not executed.",
   "Use design_ai_inspect_html for a lower-level supplied-HTML quality report; unobserved runtime behavior remains unverified.",
   "Product review packs are explicit and never inferred from locale.",
@@ -152,6 +154,28 @@ export const MCP_TOOLS = [
       properties: {
         id: optionalString("Optional pack id. Omit to list available packs."),
       },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_review_handoff",
+    title: "Prepare a review handoff",
+    description: [
+      "Prepare a self-validating review transfer for Claude, Codex, or another named recipient.",
+      "Read-only: does not deliver the handoff, validate the consumer, edit a repository, or call an external service.",
+    ].join(" "),
+    inputSchema: {
+      type: "object",
+      properties: {
+        workflowSource: { type: "string", minLength: 2, description: "Exact review-workflow JSON source." },
+        workflowRef: { type: "string", minLength: 1, description: "Human-readable workflow source reference." },
+        recipient: { type: "string", minLength: 1, description: "Receiving agent or role." },
+        qualityReportSource: optionalString("Exact quality-report JSON used by browser verification."),
+        qualityReportRef: optionalString("Quality-report source reference."),
+        browserVerificationSource: optionalString("Exact browser-verification JSON source."),
+        browserVerificationRef: optionalString("Browser-verification source reference."),
+      },
+      required: ["workflowSource", "workflowRef", "recipient"],
       additionalProperties: false,
     },
   },
@@ -735,6 +759,18 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
       screenshots: input.screenshots,
       sourceRoot: DESIGN_AI_HOME,
       prefix: SYMLINK_PREFIX,
+    });
+    return jsonToolResult(payload);
+  }
+
+  if (name === "design_ai_review_handoff") {
+    const payload = buildReviewHandoff(input.workflowSource, {
+      workflowRef: input.workflowRef,
+      recipient: input.recipient,
+      qualityReportSource: input.qualityReportSource,
+      qualityReportRef: input.qualityReportRef,
+      browserVerificationSource: input.browserVerificationSource,
+      browserVerificationRef: input.browserVerificationRef,
     });
     return jsonToolResult(payload);
   }

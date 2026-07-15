@@ -198,10 +198,9 @@
     return typeof value === "string" && /^[a-f0-9]{64}$/.test(value);
   }
 
-  function reviewWorkflowDigest(value) {
+  function sha256Text(input) {
     // Workflow import is synchronous, so linkage validation uses a small local
     // SHA-256 implementation instead of weakening the contract or adding a dependency.
-    var input = JSON.stringify(value);
     var ascii = unescape(encodeURIComponent(input));
     var words = [];
     var hash = [
@@ -259,6 +258,10 @@
     return hash.map(function (part) {
       return ("00000000" + (part >>> 0).toString(16)).slice(-8);
     }).join("");
+  }
+
+  function reviewWorkflowDigest(value) {
+    return sha256Text(JSON.stringify(value));
   }
 
   function hasCanonicalReviewStages(stages) {
@@ -576,6 +579,116 @@
     return clone(value);
   }
 
+  function normalizeReviewHandoffArtifact(value, normalizeValue) {
+    if (!exactKeys(value, ["reference", "sha256", "bytes", "source", "value"])) return null;
+    if (!hasText(value.reference)
+      || !isDigest(value.sha256)
+      || !Number.isInteger(value.bytes)
+      || value.bytes < 1
+      || !hasText(value.source)) return null;
+    var sourceBytes = unescape(encodeURIComponent(value.source)).length;
+    if (sourceBytes !== value.bytes || sha256Text(value.source) !== value.sha256) return null;
+    var parsed;
+    try {
+      parsed = JSON.parse(value.source);
+    } catch (error) {
+      return null;
+    }
+    var normalized = normalizeValue(parsed);
+    if (!normalized
+      || JSON.stringify(normalized) !== JSON.stringify(value.value)
+      || JSON.stringify(parsed) !== JSON.stringify(value.value)) return null;
+    return clone(value);
+  }
+
+  function expectedReviewHandoffStages(hasBrowserVerification) {
+    return [
+      { id: "plan", status: "complete", artifactKind: "design-ai-start" },
+      { id: "static-review", status: "complete", artifactKind: "design-ai-quality-report" },
+      {
+        id: "browser-verification",
+        status: hasBrowserVerification ? "complete" : "not-run",
+        artifactKind: hasBrowserVerification ? "design-ai-browser-verification" : null,
+      },
+      { id: "implementation-handoff", status: "prepared", artifactKind: "design-ai-review-handoff" },
+    ];
+  }
+
+  function normalizeReviewHandoff(value) {
+    if (!exactKeys(value, [
+      "kind", "schemaVersion", "status", "recipient", "artifacts", "linkage", "stages", "nextAction", "boundary",
+    ])) return null;
+    if (value.kind !== "design-ai-review-handoff" || value.schemaVersion !== 1) return null;
+    if (!exactKeys(value.recipient, ["name", "delivery", "consumerValidation"])
+      || !hasText(value.recipient.name)
+      || value.recipient.delivery !== "not-delivered"
+      || value.recipient.consumerValidation !== "pending") return null;
+    if (!exactKeys(value.artifacts, ["reviewWorkflow", "qualityReport", "browserVerification"])) return null;
+
+    var workflowArtifact = normalizeReviewHandoffArtifact(value.artifacts.reviewWorkflow, normalizeReviewWorkflow);
+    if (!workflowArtifact) return null;
+    var hasBrowserVerification = value.artifacts.browserVerification !== null;
+    if ((value.artifacts.qualityReport !== null) !== hasBrowserVerification) return null;
+    var qualityArtifact = null;
+    var browserArtifact = null;
+    if (hasBrowserVerification) {
+      qualityArtifact = normalizeReviewHandoffArtifact(value.artifacts.qualityReport, normalizeQualityReport);
+      browserArtifact = normalizeReviewHandoffArtifact(
+        value.artifacts.browserVerification,
+        normalizeBrowserVerification,
+      );
+      if (!qualityArtifact || !browserArtifact) return null;
+    }
+
+    var expectedStatus = hasBrowserVerification ? "browser-evidence-prepared" : "static-evidence-prepared";
+    if (value.status !== expectedStatus) return null;
+    if (!exactKeys(value.linkage, [
+      "status", "reviewWorkflowArtifactSha256", "qualityReportArtifactSha256",
+      "browserVerificationArtifactSha256", "qualityReportArtifactMatch",
+      "browserSourceReportMatch", "viewportCoverage",
+    ]) || value.linkage.status !== "pass") return null;
+    if (value.linkage.reviewWorkflowArtifactSha256 !== reviewWorkflowDigest(workflowArtifact.value)
+      || value.linkage.qualityReportArtifactSha256 !== workflowArtifact.value.linkage.reportSha256) return null;
+
+    if (hasBrowserVerification) {
+      var declaredViewports = workflowArtifact.value.report.context.viewports.slice().sort();
+      var observedViewports = browserArtifact.value.viewports.map(function (viewport) {
+        return viewport.name;
+      }).sort();
+      if (JSON.stringify(qualityArtifact.value) !== JSON.stringify(workflowArtifact.value.report)
+        || browserArtifact.value.sourceReport.sha256 !== qualityArtifact.sha256
+        || JSON.stringify(observedViewports) !== JSON.stringify(declaredViewports)
+        || value.linkage.browserVerificationArtifactSha256 !== reviewWorkflowDigest(browserArtifact.value)
+        || value.linkage.qualityReportArtifactMatch !== true
+        || value.linkage.browserSourceReportMatch !== true
+        || value.linkage.viewportCoverage !== "pass") return null;
+    } else if (value.linkage.browserVerificationArtifactSha256 !== null
+      || value.linkage.qualityReportArtifactMatch !== null
+      || value.linkage.browserSourceReportMatch !== null
+      || value.linkage.viewportCoverage !== "not-run") return null;
+
+    var expectedStages = expectedReviewHandoffStages(hasBrowserVerification);
+    if (JSON.stringify(value.stages) !== JSON.stringify(expectedStages)) return null;
+    if (!exactKeys(value.nextAction, ["id", "status", "summary", "approvalRequiredBefore"])
+      || value.nextAction.id !== "consumer-validation-required"
+      || value.nextAction.status !== "pending"
+      || !hasText(value.nextAction.summary)
+      || !isTextArray(value.nextAction.approvalRequiredBefore, true)) return null;
+    var browserVerificationPassed = hasBrowserVerification
+      && browserArtifact.value.summary.status === "pass";
+    var expectedApprovals = workflowArtifact.value.nextAction.approvalRequiredBefore.filter(function (requirement) {
+      return !browserVerificationPassed || !requirement.toLowerCase().includes("browser");
+    });
+    if (JSON.stringify(value.nextAction.approvalRequiredBefore) !== JSON.stringify(expectedApprovals)) return null;
+    if (!exactKeys(value.boundary, ["mode", "localWrites", "targetRepoMutation", "externalWrites", "deliveryPerformed"])
+      || value.boundary.mode !== "read-only"
+      || value.boundary.localWrites !== false
+      || value.boundary.targetRepoMutation !== false
+      || value.boundary.externalWrites !== false
+      || value.boundary.deliveryPerformed !== false) return null;
+    return clone(value);
+  }
+
   function buildImportedArtifactJson(value, rawJson) {
     var raw = String(rawJson || "");
     if (raw) {
@@ -601,6 +714,7 @@
     buildSourceBundleRevalidationGateJson: buildSourceBundleRevalidationGateJson,
     normalizeQualityReport: normalizeQualityReport,
     normalizeReviewWorkflow: normalizeReviewWorkflow,
+    normalizeReviewHandoff: normalizeReviewHandoff,
     normalizeBrowserVerification: normalizeBrowserVerification,
     buildImportedArtifactJson: buildImportedArtifactJson,
   });

@@ -253,6 +253,38 @@ test("reviewHtml() return-shape keys and linked read-only boundary are pinned", 
   assert.equal(result.boundary.externalWrites, false);
 });
 
+test("reviewHandoff() return-shape keeps transfer, validation, and writes pending", () => {
+  const workflow = sdk.reviewHtml(
+    "<!doctype html><html lang=\"ko\"><body><button>저장</button></body></html>",
+    {
+      sourceRef: "settings.html",
+      brief: "Review Korean settings",
+      locale: "ko-KR",
+      viewports: ["mobile"],
+      generatedAt: "2026-07-15T00:00:00.000Z",
+    },
+  );
+  const result = sdk.reviewHandoff(JSON.stringify(workflow, null, 2), {
+    workflowRef: "review-workflow.json",
+    recipient: "claude",
+  });
+
+  assert.deepEqual(Object.keys(result), [
+    "kind",
+    "schemaVersion",
+    "status",
+    "recipient",
+    "artifacts",
+    "linkage",
+    "stages",
+    "nextAction",
+    "boundary",
+  ]);
+  assert.equal(result.recipient.delivery, "not-delivered");
+  assert.equal(result.recipient.consumerValidation, "pending");
+  assert.equal(result.boundary.deliveryPerformed, false);
+});
+
 test("reviewPack() exposes the shipped read-only Korean review registry", () => {
   const list = sdk.reviewPack();
   const pack = sdk.reviewPack("korean-commerce");

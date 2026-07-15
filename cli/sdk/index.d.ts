@@ -348,6 +348,91 @@ export interface ReviewWorkflow {
   };
 }
 
+export interface ReviewHandoffOptions {
+  workflowRef: string;
+  recipient: string;
+  qualityReportSource?: string;
+  qualityReportRef?: string;
+  browserVerificationSource?: string;
+  browserVerificationRef?: string;
+}
+
+export interface ReviewHandoffArtifact<T> {
+  reference: string;
+  sha256: string;
+  bytes: number;
+  source: string;
+  value: T;
+}
+
+export interface BrowserVerification {
+  kind: "design-ai-browser-verification";
+  schemaVersion: 1;
+  sourceReport: { path: string; sha256: string; postRunDigestMatch: true };
+  approval: { status: "approved"; reference: string };
+  run: {
+    id: string;
+    url: string;
+    startedAt: string;
+    completedAt: string;
+    tool: { name: string; version: string };
+  };
+  boundary: Record<string, unknown>;
+  viewports: Array<{ name: string; width: number; height: number }>;
+  probes: Array<Record<string, unknown>>;
+  findings: Array<Record<string, unknown>>;
+  summary: {
+    status: "pass" | "fail" | "unverified";
+    passed: number;
+    failed: number;
+    unverified: number;
+    nextAction: string;
+  };
+}
+
+export interface ReviewHandoff {
+  kind: "design-ai-review-handoff";
+  schemaVersion: 1;
+  status: "static-evidence-prepared" | "browser-evidence-prepared";
+  recipient: {
+    name: string;
+    delivery: "not-delivered";
+    consumerValidation: "pending";
+  };
+  artifacts: {
+    reviewWorkflow: ReviewHandoffArtifact<ReviewWorkflow>;
+    qualityReport: ReviewHandoffArtifact<DesignQualityReport> | null;
+    browserVerification: ReviewHandoffArtifact<BrowserVerification> | null;
+  };
+  linkage: {
+    status: "pass";
+    reviewWorkflowArtifactSha256: string;
+    qualityReportArtifactSha256: string;
+    browserVerificationArtifactSha256: string | null;
+    qualityReportArtifactMatch: true | null;
+    browserSourceReportMatch: true | null;
+    viewportCoverage: "pass" | "not-run";
+  };
+  stages: Array<{
+    id: "plan" | "static-review" | "browser-verification" | "implementation-handoff";
+    status: "complete" | "not-run" | "prepared";
+    artifactKind: "design-ai-start" | "design-ai-quality-report" | "design-ai-browser-verification" | "design-ai-review-handoff" | null;
+  }>;
+  nextAction: {
+    id: "consumer-validation-required";
+    status: "pending";
+    summary: string;
+    approvalRequiredBefore: string[];
+  };
+  boundary: {
+    mode: "read-only";
+    localWrites: false;
+    targetRepoMutation: false;
+    externalWrites: false;
+    deliveryPerformed: false;
+  };
+}
+
 export interface ProductReviewPackSummary {
   id: string;
   revision: number;
@@ -616,6 +701,9 @@ export function inspectHtml(source: string, opts: InspectHtmlOptions): DesignQua
 
 /** Compose one canonical plan and static HTML review without writing files or running a browser. */
 export function reviewHtml(source: string, opts: ReviewHtmlOptions): ReviewWorkflow;
+
+/** Prepare a self-validating review handoff without delivery, implementation, or writes. */
+export function reviewHandoff(workflowSource: string, opts: ReviewHandoffOptions): ReviewHandoff;
 
 /** Read one Korean product review pack, or list the available packs when id is omitted. */
 export function reviewPack(id?: string, opts?: Record<string, never>): ProductReviewPack | ProductReviewPackList;

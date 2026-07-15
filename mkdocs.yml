@@ -99,6 +99,7 @@ plugins:
             Product specialization benchmarks: 제품 전문화 벤치마크
             Quality contract: 품질 계약
             Canonical review workflow: 표준 디자인 리뷰 워크플로우
+            Review evidence handoff: 리뷰 근거 인계
             Agent Development: 에이전트 개발
             Website Improvement: 웹사이트 개선
             Overview: 개요
@@ -183,6 +184,7 @@ nav:
       - Product specialization benchmarks: docs/BENCHMARKS.md
       - Quality contract: docs/DESIGN-QUALITY-CONTRACT.md
       - Canonical review workflow: docs/REVIEW-WORKFLOW.md
+      - Review evidence handoff: docs/REVIEW-HANDOFF.md
   - Agent Development: docs/AGENT-DEVELOPMENT.md
   - Agent SDK:
       - Reference: docs/SDK.md

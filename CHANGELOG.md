@@ -5,6 +5,8 @@ User-facing release notes for design-ai. Versions follow semver.
 ## Unreleased
 
 ### Added
+- Added `design-ai review-handoff`, SDK `reviewHandoff()`, MCP `design_ai_review_handoff`, and Website Console handoff import over one shared read-only operation.
+- Added exact source-byte envelopes, optional quality/browser evidence linkage, named but undelivered recipients, pending consumer validation, and prepared implementation-handoff stages to `design-ai-review-handoff` v1.
 - Added the canonical `design-ai review`, SDK `reviewHtml()`, and MCP `design_ai_review_html` workflow over one shared read-only operation.
 - Added exact source-byte identity, nested start and quality contracts, SHA-256 artifact linkage, ordered review stages, and a pending human decision to the `design-ai-review-workflow` v1 contract.
 - Added Website Console review-session import, original-byte export, nested artifact rendering, and a responsive semantic stage timeline.
@@ -22,6 +24,8 @@ User-facing release notes for design-ai. Versions follow semver.
 - Added a Website Console Start tab that validates and persists the canonical start JSON, displays declared references without claiming inspection, copies the next command and design contract, and exports the unchanged payload.
 
 ### Changed
+- The current source capability contract grows from 21 to 22 MCP tools and from 14 to 15 SDK exports while retaining exactly three opt-in learning-profile write tools.
+- Review sessions can now be prepared for another agent without claiming transport, acceptance, target-repository inspection, or implementation.
 - The current source capability contract grows from 20 to 21 MCP tools and from 13 to 14 SDK exports while retaining exactly three opt-in learning-profile write tools.
 - Existing HTML review now has one canonical entry point; browser verification and implementation remain separate approval-gated stages.
 - Product specialization proof is explicitly `synthetic-fixture` evidence with `adoptionClaim: none`; it reports false negatives, false positives, and missing required uncertainty without an aggregate quality score.
@@ -33,6 +37,8 @@ User-facing release notes for design-ai. Versions follow semver.
 - Packed-tarball and public-registry smoke now require the start payload to preserve an embedded design contract and empty performed local-write, target-mutation, and external-action arrays.
 
 ### Verified
+- `npm run release:check` passed for the P7 review evidence handoff with 760 tests, 8 strict audits, 728 packaged files, a 0/0 documentation warning policy, SDK import smoke, and installed-bin plus one-shot handoff smoke.
+- Website Console handoff import and original-byte export passed at 1440px and 390px with no horizontal overflow, undersized visible buttons, console warnings, or console errors; exported SHA-256 matched the imported file.
 - `npm run release:check` passed for the P6 canonical review workflow with 749 tests, 8 strict audits, 722 packaged files, a 0/0 documentation warning policy, SDK import smoke, and canonical review smoke through installed-bin plus one-shot `npm exec` paths.
 - `npm run release:check` passed for the P5 product specialization benchmark with 736 tests, 8 strict audits, 715 packaged files, a 0/0 documentation warning policy, and `design-ai benchmark --strict --json` smoke through installed-bin plus one-shot `npm exec` paths.
 - `npm run release:check` passed for the approval-gated browser verification runner with 706 tests, 8 strict audits, 682 packaged files, a warning-free documentation build, and functional browser sidecar smoke through installed-bin plus one-shot `npm exec` paths.

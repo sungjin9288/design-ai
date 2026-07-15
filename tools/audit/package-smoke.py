@@ -91,6 +91,7 @@ from smoke_assertions import (
     assert_prompt_markdown_component_spec,
     assert_ranked_search_determinism,
     assert_ranked_search_json,
+    assert_review_handoff_json,
     assert_review_workflow_json,
     assert_route_catalog_json,
     assert_route_explain_human_output,
@@ -789,7 +790,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
-  check, inspectHtml, learn, pack, prompt, recall, reviewHtml,
+  check, inspectHtml, learn, pack, prompt, recall, reviewHandoff, reviewHtml,
   reviewPack, route, routes, search, version,
 } from "@design-ai/cli/sdk";
 
@@ -876,6 +877,30 @@ if (review1.boundary.localWrites
   || review1.boundary.targetRepoMutation
   || review1.boundary.externalWrites) {
   throw new Error("reviewHtml() changed the read-only boundary");
+}
+
+const reviewWorkflowSource = JSON.stringify(review1, null, 2);
+const handoffOptions = {
+  workflowRef: "sdk-review-workflow.json",
+  recipient: "package-smoke-agent",
+};
+const handoff1 = reviewHandoff(reviewWorkflowSource, handoffOptions);
+const handoff2 = reviewHandoff(reviewWorkflowSource, handoffOptions);
+if (JSON.stringify(handoff1) !== JSON.stringify(handoff2)) {
+  throw new Error("reviewHandoff() not deterministic");
+}
+if (handoff1.kind !== "design-ai-review-handoff"
+  || handoff1.status !== "static-evidence-prepared"
+  || handoff1.recipient.delivery !== "not-delivered"
+  || handoff1.recipient.consumerValidation !== "pending") {
+  throw new Error("reviewHandoff() changed the pending transfer contract");
+}
+if (handoff1.artifacts.reviewWorkflow.source !== reviewWorkflowSource
+  || handoff1.boundary.deliveryPerformed
+  || handoff1.boundary.localWrites
+  || handoff1.boundary.targetRepoMutation
+  || handoff1.boundary.externalWrites) {
+  throw new Error("reviewHandoff() lost source bytes or changed its boundary");
 }
 
 const reviewPacks = reviewPack();
@@ -8214,7 +8239,7 @@ def assert_review_smoke(
     env: dict[str, str],
     cwd: Path | None = None,
     context: str,
-) -> None:
+) -> str:
     before = source_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
     assert_review_workflow_json(
@@ -8225,6 +8250,29 @@ def assert_review_smoke(
     )
     if source_path.read_bytes() != before:
         raise SystemExit(f"{context}: review changed the selected source file")
+    return result.stdout
+
+
+def assert_review_handoff_smoke(
+    cmd: list[str],
+    workflow_path: Path,
+    *,
+    recipient: str,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    before = workflow_path.read_bytes()
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_review_handoff_json(
+        result.stdout,
+        workflow_path,
+        recipient=recipient,
+        context=context,
+        cmd=cmd,
+    )
+    if workflow_path.read_bytes() != before:
+        raise SystemExit(f"{context}: review-handoff changed its source workflow")
 
 
 def write_inspect_fixture(file_path: Path) -> None:
@@ -21704,7 +21752,8 @@ def smoke_tarball(tarball: Path) -> None:
         installed_inspect_source = tmp_root / "installed-inspect-source.html"
         installed_quality_report = tmp_root / "installed-quality-report.json"
         write_inspect_fixture(installed_inspect_source)
-        assert_review_smoke(
+        installed_review_workflow = tmp_root / "installed-review-workflow.json"
+        installed_review_source = assert_review_smoke(
             [
                 str(bin_path),
                 "review",
@@ -21720,6 +21769,21 @@ def smoke_tarball(tarball: Path) -> None:
             installed_inspect_source,
             env=smoke_env,
             context="package smoke installed bin canonical review",
+        )
+        installed_review_workflow.write_text(installed_review_source, encoding="utf-8")
+        assert_review_handoff_smoke(
+            [
+                str(bin_path),
+                "review-handoff",
+                str(installed_review_workflow),
+                "--recipient",
+                "package-smoke-agent",
+                "--json",
+            ],
+            installed_review_workflow,
+            recipient="package-smoke-agent",
+            env=smoke_env,
+            context="package smoke installed bin review handoff",
         )
         assert_inspect_smoke(
             [
@@ -23248,7 +23312,8 @@ def smoke_tarball(tarball: Path) -> None:
         npx_inspect_source = npx_root / "npx-inspect-source.html"
         npx_quality_report = npx_root / "npx-quality-report.json"
         write_inspect_fixture(npx_inspect_source)
-        assert_review_smoke(
+        npx_review_workflow = npx_root / "npx-review-workflow.json"
+        npx_review_source = assert_review_smoke(
             npm_exec_cmd(
                 tarball,
                 "review",
@@ -23265,6 +23330,22 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec canonical review",
+        )
+        npx_review_workflow.write_text(npx_review_source, encoding="utf-8")
+        assert_review_handoff_smoke(
+            npm_exec_cmd(
+                tarball,
+                "review-handoff",
+                str(npx_review_workflow),
+                "--recipient",
+                "package-smoke-agent",
+                "--json",
+            ),
+            npx_review_workflow,
+            recipient="package-smoke-agent",
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec review handoff",
         )
         assert_inspect_smoke(
             npm_exec_cmd(
