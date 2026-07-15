@@ -23,7 +23,7 @@
   and responsive rendering pass at 1440px and 390px with matching SHA-256, 44px
   minimum visible button targets, no horizontal overflow, and no console warnings
   or errors.
-- [ ] Record PR CI and merge evidence after they pass.
+- [x] PR #45 passed required CI run `29424169441` before merge.
 
 ## Phase 788 - Implementation scope approval (implemented, unreleased)
 
