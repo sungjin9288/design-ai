@@ -23,7 +23,7 @@ implemented.
 ### Verification target
 - [x] Focused core, CLI, SDK, MCP, Console, help, capability, and smoke assertion tests pass.
 - [x] `npm run release:check` passes with 760 tests, 8 strict audits, 728 packaged files, SDK import smoke, installed-bin and one-shot handoff smoke, and a 0/0 documentation warning policy.
-- [ ] Pull-request CI evidence will be recorded before merge.
+- [x] PR #41 passed required CI run `29405311672` before merge.
 
 ## Phase 784 - Canonical review workflow (implemented, unreleased)
 
