@@ -60,12 +60,13 @@ and push remain separate recorded release actions.
 
 ## Remaining risk
 
-The complete nested P12 response is 416,019 bytes when returned by MCP. A fresh MCP
-process correctly rejects it because the transport limit is 220,000 bytes. CLI,
-SDK, package smoke, and Website Console prove the underlying contract, but fresh
-MCP transport is not complete. The next slice will add a compact response that
-keeps exact source hashes, derived measures, issues, and claim boundaries without
-repeating nested source bodies.
+The final nested P12 MCP response is 452,923 bytes, so the default full response
+still returns an explicit `OUTPUT_TOO_LARGE` error at the 220,000-byte boundary.
+A fresh stdio process verified that `compact: true` returns 4,021 bytes with all
+three source hashes and byte counts unchanged, plus the same measures, issues,
+claims, next action, and safety boundaries. Integrators must request compact mode
+for large chains and retrieve the referenced full artifacts separately when they
+need nested source bodies.
 
 ## Claim boundary
 

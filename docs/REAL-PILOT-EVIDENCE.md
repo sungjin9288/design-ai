@@ -110,7 +110,27 @@ const evidence = recordPilotEvidence(
 ```
 
 MCP tool `design_ai_review_pilot` accepts the same three exact JSON strings and
-references. Website Console accepts the resulting evidence, verifies its source
+references. Large chains should set `compact: true`:
+
+```json
+{
+  "implementationEvidenceSource": "<exact P11 JSON>",
+  "implementationEvidenceRef": "implementation-evidence.json",
+  "reviewWorkflowSource": "<exact P6 JSON>",
+  "reviewWorkflowRef": "review-workflow.json",
+  "recordSource": "<exact pilot record JSON>",
+  "recordRef": "pilot-record.json",
+  "compact": true
+}
+```
+
+The compact result has kind `design-ai-pilot-evidence-summary`. It validates the
+full contract first, then omits only the three duplicated `source` and `value`
+bodies. Source references, SHA-256 digests, byte counts, consent, metrics, claims,
+issues, next action, and safety boundaries remain present. The default remains the
+full artifact for backward compatibility.
+
+Website Console accepts the resulting full evidence, verifies its source
 bytes and digests, exports the original bytes unchanged, and restores P11 through
 P6 when the pilot artifact is cleared.
 
@@ -137,4 +157,3 @@ linkage drift must be repaired before the artifact is used.
 - [ ] Runtime, accessibility, keyboard, and responsive proof remains explicit.
 - [ ] Real, synthetic, inferred, and unverified claims are separated.
 - [ ] Commit, push, deployment, and external writes retain their own gates.
-

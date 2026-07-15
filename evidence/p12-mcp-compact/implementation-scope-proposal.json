@@ -1,0 +1,481 @@
+{
+  "kind": "design-ai-implementation-scope-proposal",
+  "schemaVersion": 1,
+  "status": "approval-pending",
+  "consumer": {
+    "name": "codex",
+    "intakeConsumerMatch": true,
+    "identity": "self-declared"
+  },
+  "intake": {
+    "reference": "/private/tmp/design-ai-p12-mcp-compact/target-repo-intake.json",
+    "sha256": "526710b10cc621988dbf61e6e03d831864ef50a6e05d60101d16c7d630748096",
+    "bytes": 6334,
+    "source": "{\n  \"kind\": \"design-ai-target-repo-intake\",\n  \"schemaVersion\": 1,\n  \"status\": \"ready-for-scope-review\",\n  \"consumer\": {\n    \"name\": \"codex\",\n    \"receiptConsumerMatch\": true,\n    \"identity\": \"self-declared\"\n  },\n  \"receipt\": {\n    \"reference\": \"/Users/sungjin/dev/design/evidence/p12/review-handoff-receipt.json\",\n    \"sha256\": \"2180d399a7ddd80bb9af813cd6a2b167ad75225f75c88e7107364f8af8b7c602\",\n    \"bytes\": 113174,\n    \"kind\": \"design-ai-review-handoff-receipt\",\n    \"schemaVersion\": 1,\n    \"status\": \"contract-validated\",\n    \"consumer\": \"codex\",\n    \"handoffSha256\": \"b18a3e084354daa768f1541c07a8842c9b21c8584fa9e97a04a39d0327d3c107\",\n    \"reviewWorkflowSha256\": \"b925a890e1cf98b186ce82fcac64e6e416ac4e0af6d7ae28762915f69bd934ea\",\n    \"remainingApprovals\": [\n      \"editing the target repository\",\n      \"starting browser or accessibility verification\",\n      \"publishing or deploying an implementation\"\n    ]\n  },\n  \"target\": {\n    \"declaredPath\": \"/Users/sungjin/dev/design\",\n    \"resolvedPath\": \"/Users/sungjin/dev/design\",\n    \"pathMatch\": true,\n    \"declaredRepositoryUrl\": \"https://github.com/sungjin9288/design-ai.git\",\n    \"observedRepositoryUrl\": \"https://github.com/sungjin9288/design-ai.git\",\n    \"repositoryUrlMatch\": true\n  },\n  \"project\": {\n    \"metadataStatus\": \"pass\",\n    \"manifest\": \"package.json\",\n    \"staticEntry\": \"\",\n    \"packageManager\": \"npm\",\n    \"framework\": \"Unknown\",\n    \"scripts\": [\n      {\n        \"name\": \"test\",\n        \"run\": \"npm run test\"\n      },\n      {\n        \"name\": \"audit\",\n        \"run\": \"npm run audit\"\n      },\n      {\n        \"name\": \"audit:strict\",\n        \"run\": \"npm run audit:strict\"\n      },\n      {\n        \"name\": \"audit:runner:self-test\",\n        \"run\": \"npm run audit:runner:self-test\"\n      },\n      {\n        \"name\": \"coverage:generate\",\n        \"run\": \"npm run coverage:generate\"\n      },\n      {\n        \"name\": \"coverage:check\",\n        \"run\": \"npm run coverage:check\"\n      },\n      {\n        \"name\": \"coverage:self-test\",\n        \"run\": \"npm run coverage:self-test\"\n      },\n      {\n        \"name\": \"capability:manifest:self-test\",\n        \"run\": \"npm run capability:manifest:self-test\"\n      },\n      {\n        \"name\": \"doctor:assertions:self-test\",\n        \"run\": \"npm run doctor:assertions:self-test\"\n      },\n      {\n        \"name\": \"smoke:assertions:self-test\",\n        \"run\": \"npm run smoke:assertions:self-test\"\n      },\n      {\n        \"name\": \"package:check\",\n        \"run\": \"npm run package:check\"\n      },\n      {\n        \"name\": \"package:smoke:self-test\",\n        \"run\": \"npm run package:smoke:self-test\"\n      },\n      {\n        \"name\": \"package:smoke\",\n        \"run\": \"npm run package:smoke\"\n      },\n      {\n        \"name\": \"registry:smoke\",\n        \"run\": \"npm run registry:smoke\"\n      },\n      {\n        \"name\": \"registry:smoke:self-test\",\n        \"run\": \"npm run registry:smoke:self-test\"\n      },\n      {\n        \"name\": \"release:metadata\",\n        \"run\": \"npm run release:metadata\"\n      },\n      {\n        \"name\": \"release:metadata:self-test\",\n        \"run\": \"npm run release:metadata:self-test\"\n      },\n      {\n        \"name\": \"ci:local:self-test\",\n        \"run\": \"npm run ci:local:self-test\"\n      },\n      {\n        \"name\": \"tokens:ant-design:self-test\",\n        \"run\": \"npm run tokens:ant-design:self-test\"\n      },\n      {\n        \"name\": \"release:self-test\",\n        \"run\": \"npm run release:self-test\"\n      },\n      {\n        \"name\": \"docs:check\",\n        \"run\": \"npm run docs:check\"\n      },\n      {\n        \"name\": \"release:preflight\",\n        \"run\": \"npm run release:preflight\"\n      },\n      {\n        \"name\": \"release:check\",\n        \"run\": \"npm run release:check\"\n      },\n      {\n        \"name\": \"ci:local\",\n        \"run\": \"npm run ci:local\"\n      },\n      {\n        \"name\": \"preview\",\n        \"run\": \"npm run preview\"\n      }\n    ],\n    \"startCommand\": \"npm run preview\"\n  },\n  \"git\": {\n    \"status\": \"pass\",\n    \"repository\": true,\n    \"root\": \"/Users/sungjin/dev/design\",\n    \"targetWithinRepository\": true,\n    \"branch\": \"codex/p12-real-pilot-evidence\",\n    \"clean\": true,\n    \"upstream\": \"\",\n    \"ahead\": 0,\n    \"behind\": 0,\n    \"remote\": \"https://github.com/sungjin9288/design-ai.git\",\n    \"remoteMatch\": true,\n    \"head\": {\n      \"hash\": \"c13f0f2\",\n      \"subject\": \"feat: Website Console 실파일럿 완성 and responsive navigation evidence 강화\"\n    },\n    \"changes\": {\n      \"total\": 0,\n      \"entries\": [],\n      \"truncated\": false\n    }\n  },\n  \"inspection\": {\n    \"scope\": \"root-metadata-and-git-state\",\n    \"metadataFilesRead\": [\n      \"package.json\"\n    ],\n    \"metadataEntriesInspected\": [\n      \"supported root lockfile\",\n      \"index.html existence\"\n    ],\n    \"applicationSourceFilesRead\": [],\n    \"gitCommands\": [\n      \"git rev-parse --is-inside-work-tree\",\n      \"git rev-parse --show-toplevel\",\n      \"git branch --show-current\",\n      \"git status --short\",\n      \"git rev-parse --abbrev-ref --symbolic-full-name @{u}\",\n      \"git config --get remote.origin.url\",\n      \"git log -1 --pretty=%h%x09%s\"\n    ]\n  },\n  \"issues\": [\n    {\n      \"level\": \"pass\",\n      \"id\": \"linked-project-ready\",\n      \"message\": \"Linked project metadata is ready for an operator-controlled preview start.\"\n    },\n    {\n      \"level\": \"pass\",\n      \"id\": \"target-git-ready\",\n      \"message\": \"The target repository path, remote, branch, and working tree are ready for scope review.\"\n    }\n  ],\n  \"remainingApprovals\": [\n    \"editing the target repository\",\n    \"starting browser or accessibility verification\",\n    \"publishing or deploying an implementation\"\n  ],\n  \"nextAction\": {\n    \"id\": \"implementation-scope-approval-required\",\n    \"status\": \"pending\",\n    \"summary\": \"Review the proposed files, scope, risks, and verification commands before implementation.\",\n    \"approvalRequiredBefore\": [\n      \"editing the target repository\",\n      \"starting browser or accessibility verification\",\n      \"publishing or deploying an implementation\",\n      \"implementation scope\"\n    ],\n    \"implementationAuthorized\": false\n  },\n  \"boundary\": {\n    \"mode\": \"read-only\",\n    \"localWrites\": false,\n    \"targetRepoMutation\": false,\n    \"externalWrites\": false,\n    \"networkCalls\": false,\n    \"previewStarted\": false,\n    \"applicationSourceRead\": false,\n    \"consumerIdentityVerified\": false,\n    \"implementationStarted\": false\n  }\n}\n",
+    "value": {
+      "kind": "design-ai-target-repo-intake",
+      "schemaVersion": 1,
+      "status": "ready-for-scope-review",
+      "consumer": {
+        "name": "codex",
+        "receiptConsumerMatch": true,
+        "identity": "self-declared"
+      },
+      "receipt": {
+        "reference": "/Users/sungjin/dev/design/evidence/p12/review-handoff-receipt.json",
+        "sha256": "2180d399a7ddd80bb9af813cd6a2b167ad75225f75c88e7107364f8af8b7c602",
+        "bytes": 113174,
+        "kind": "design-ai-review-handoff-receipt",
+        "schemaVersion": 1,
+        "status": "contract-validated",
+        "consumer": "codex",
+        "handoffSha256": "b18a3e084354daa768f1541c07a8842c9b21c8584fa9e97a04a39d0327d3c107",
+        "reviewWorkflowSha256": "b925a890e1cf98b186ce82fcac64e6e416ac4e0af6d7ae28762915f69bd934ea",
+        "remainingApprovals": [
+          "editing the target repository",
+          "starting browser or accessibility verification",
+          "publishing or deploying an implementation"
+        ]
+      },
+      "target": {
+        "declaredPath": "/Users/sungjin/dev/design",
+        "resolvedPath": "/Users/sungjin/dev/design",
+        "pathMatch": true,
+        "declaredRepositoryUrl": "https://github.com/sungjin9288/design-ai.git",
+        "observedRepositoryUrl": "https://github.com/sungjin9288/design-ai.git",
+        "repositoryUrlMatch": true
+      },
+      "project": {
+        "metadataStatus": "pass",
+        "manifest": "package.json",
+        "staticEntry": "",
+        "packageManager": "npm",
+        "framework": "Unknown",
+        "scripts": [
+          {
+            "name": "test",
+            "run": "npm run test"
+          },
+          {
+            "name": "audit",
+            "run": "npm run audit"
+          },
+          {
+            "name": "audit:strict",
+            "run": "npm run audit:strict"
+          },
+          {
+            "name": "audit:runner:self-test",
+            "run": "npm run audit:runner:self-test"
+          },
+          {
+            "name": "coverage:generate",
+            "run": "npm run coverage:generate"
+          },
+          {
+            "name": "coverage:check",
+            "run": "npm run coverage:check"
+          },
+          {
+            "name": "coverage:self-test",
+            "run": "npm run coverage:self-test"
+          },
+          {
+            "name": "capability:manifest:self-test",
+            "run": "npm run capability:manifest:self-test"
+          },
+          {
+            "name": "doctor:assertions:self-test",
+            "run": "npm run doctor:assertions:self-test"
+          },
+          {
+            "name": "smoke:assertions:self-test",
+            "run": "npm run smoke:assertions:self-test"
+          },
+          {
+            "name": "package:check",
+            "run": "npm run package:check"
+          },
+          {
+            "name": "package:smoke:self-test",
+            "run": "npm run package:smoke:self-test"
+          },
+          {
+            "name": "package:smoke",
+            "run": "npm run package:smoke"
+          },
+          {
+            "name": "registry:smoke",
+            "run": "npm run registry:smoke"
+          },
+          {
+            "name": "registry:smoke:self-test",
+            "run": "npm run registry:smoke:self-test"
+          },
+          {
+            "name": "release:metadata",
+            "run": "npm run release:metadata"
+          },
+          {
+            "name": "release:metadata:self-test",
+            "run": "npm run release:metadata:self-test"
+          },
+          {
+            "name": "ci:local:self-test",
+            "run": "npm run ci:local:self-test"
+          },
+          {
+            "name": "tokens:ant-design:self-test",
+            "run": "npm run tokens:ant-design:self-test"
+          },
+          {
+            "name": "release:self-test",
+            "run": "npm run release:self-test"
+          },
+          {
+            "name": "docs:check",
+            "run": "npm run docs:check"
+          },
+          {
+            "name": "release:preflight",
+            "run": "npm run release:preflight"
+          },
+          {
+            "name": "release:check",
+            "run": "npm run release:check"
+          },
+          {
+            "name": "ci:local",
+            "run": "npm run ci:local"
+          },
+          {
+            "name": "preview",
+            "run": "npm run preview"
+          }
+        ],
+        "startCommand": "npm run preview"
+      },
+      "git": {
+        "status": "pass",
+        "repository": true,
+        "root": "/Users/sungjin/dev/design",
+        "targetWithinRepository": true,
+        "branch": "codex/p12-real-pilot-evidence",
+        "clean": true,
+        "upstream": "",
+        "ahead": 0,
+        "behind": 0,
+        "remote": "https://github.com/sungjin9288/design-ai.git",
+        "remoteMatch": true,
+        "head": {
+          "hash": "c13f0f2",
+          "subject": "feat: Website Console 실파일럿 완성 and responsive navigation evidence 강화"
+        },
+        "changes": {
+          "total": 0,
+          "entries": [],
+          "truncated": false
+        }
+      },
+      "inspection": {
+        "scope": "root-metadata-and-git-state",
+        "metadataFilesRead": [
+          "package.json"
+        ],
+        "metadataEntriesInspected": [
+          "supported root lockfile",
+          "index.html existence"
+        ],
+        "applicationSourceFilesRead": [],
+        "gitCommands": [
+          "git rev-parse --is-inside-work-tree",
+          "git rev-parse --show-toplevel",
+          "git branch --show-current",
+          "git status --short",
+          "git rev-parse --abbrev-ref --symbolic-full-name @{u}",
+          "git config --get remote.origin.url",
+          "git log -1 --pretty=%h%x09%s"
+        ]
+      },
+      "issues": [
+        {
+          "level": "pass",
+          "id": "linked-project-ready",
+          "message": "Linked project metadata is ready for an operator-controlled preview start."
+        },
+        {
+          "level": "pass",
+          "id": "target-git-ready",
+          "message": "The target repository path, remote, branch, and working tree are ready for scope review."
+        }
+      ],
+      "remainingApprovals": [
+        "editing the target repository",
+        "starting browser or accessibility verification",
+        "publishing or deploying an implementation"
+      ],
+      "nextAction": {
+        "id": "implementation-scope-approval-required",
+        "status": "pending",
+        "summary": "Review the proposed files, scope, risks, and verification commands before implementation.",
+        "approvalRequiredBefore": [
+          "editing the target repository",
+          "starting browser or accessibility verification",
+          "publishing or deploying an implementation",
+          "implementation scope"
+        ],
+        "implementationAuthorized": false
+      },
+      "boundary": {
+        "mode": "read-only",
+        "localWrites": false,
+        "targetRepoMutation": false,
+        "externalWrites": false,
+        "networkCalls": false,
+        "previewStarted": false,
+        "applicationSourceRead": false,
+        "consumerIdentityVerified": false,
+        "implementationStarted": false
+      }
+    }
+  },
+  "request": {
+    "reference": "/private/tmp/design-ai-p12-mcp-compact/implementation-scope-request.json",
+    "sha256": "178ffe0fccb7b1b7b90bba99a70c7b6354d06e6266c1ef40a6bb6acc30f6dc8f",
+    "bytes": 2603,
+    "source": "{\n  \"kind\": \"design-ai-implementation-scope-request\",\n  \"schemaVersion\": 1,\n  \"objective\": \"Allow real P12 evidence to cross the MCP output boundary without dropping source identity, metrics, issues, or claim boundaries.\",\n  \"intendedBehavior\": [\n    \"Keep the existing full design_ai_review_pilot response as the backward-compatible default.\",\n    \"Return a compact validated summary when compact is true.\",\n    \"Preserve exact source references, SHA-256 digests, byte counts, derived metrics, issues, next action, consent, claims, and safety boundaries.\",\n    \"Keep compact output below the 220000-byte MCP limit for the real internal pilot chain.\"\n  ],\n  \"files\": {\n    \"inspect\": [\n      \"cli/lib/pilot-evidence.mjs\",\n      \"cli/lib/pilot-evidence.test.mjs\",\n      \"cli/lib/mcp-server.mjs\",\n      \"cli/lib/mcp-server.test.mjs\",\n      \"README.md\",\n      \"README.ko.md\",\n      \"docs/REAL-PILOT-EVIDENCE.md\",\n      \"docs/REAL-PILOT-EVIDENCE.ko.md\",\n      \"docs/MCP-INTEGRATION.md\",\n      \"docs/case-studies/website-console-real-pilot.md\",\n      \"docs/PRODUCT-READINESS.md\",\n      \"docs/PRODUCT-SPECIALIZATION-PLAN.md\",\n      \"docs/ROADMAP.md\",\n      \"docs/SESSION-LOG.md\",\n      \"CHANGELOG.md\"\n    ],\n    \"change\": [\n      \"cli/lib/pilot-evidence.mjs\",\n      \"cli/lib/pilot-evidence.test.mjs\",\n      \"cli/lib/mcp-server.mjs\",\n      \"cli/lib/mcp-server.test.mjs\",\n      \"README.md\",\n      \"README.ko.md\",\n      \"docs/REAL-PILOT-EVIDENCE.md\",\n      \"docs/REAL-PILOT-EVIDENCE.ko.md\",\n      \"docs/MCP-INTEGRATION.md\",\n      \"docs/case-studies/website-console-real-pilot.md\",\n      \"docs/PRODUCT-READINESS.md\",\n      \"docs/PRODUCT-SPECIALIZATION-PLAN.md\",\n      \"docs/ROADMAP.md\",\n      \"docs/SESSION-LOG.md\",\n      \"CHANGELOG.md\"\n    ],\n    \"generated\": [\n      \"evidence/p12-mcp-compact/**\"\n    ]\n  },\n  \"dependencies\": [],\n  \"migrations\": [],\n  \"externalWrites\": [\n    {\n      \"system\": \"GitHub\",\n      \"action\": \"push branch\",\n      \"destination\": \"sungjin9288/design-ai\"\n    }\n  ],\n  \"verificationCommands\": [\n    \"node --test cli/lib/pilot-evidence.test.mjs cli/lib/mcp-server.test.mjs\",\n    \"npm run release:check\"\n  ],\n  \"risks\": [\n    \"A compact result could be mistaken for the full exact-source artifact unless its distinct kind and omitted fields are explicit.\",\n    \"Source references, SHA-256 digests, byte counts, and derived measures must remain identical to the validated full artifact.\",\n    \"The existing full response must remain the default for backward compatibility.\"\n  ],\n  \"preExistingChanges\": [],\n  \"release\": {\n    \"commit\": true,\n    \"push\": true,\n    \"deployment\": false\n  }\n}\n",
+    "value": {
+      "kind": "design-ai-implementation-scope-request",
+      "schemaVersion": 1,
+      "objective": "Allow real P12 evidence to cross the MCP output boundary without dropping source identity, metrics, issues, or claim boundaries.",
+      "intendedBehavior": [
+        "Keep the existing full design_ai_review_pilot response as the backward-compatible default.",
+        "Return a compact validated summary when compact is true.",
+        "Preserve exact source references, SHA-256 digests, byte counts, derived metrics, issues, next action, consent, claims, and safety boundaries.",
+        "Keep compact output below the 220000-byte MCP limit for the real internal pilot chain."
+      ],
+      "files": {
+        "inspect": [
+          "cli/lib/pilot-evidence.mjs",
+          "cli/lib/pilot-evidence.test.mjs",
+          "cli/lib/mcp-server.mjs",
+          "cli/lib/mcp-server.test.mjs",
+          "README.md",
+          "README.ko.md",
+          "docs/REAL-PILOT-EVIDENCE.md",
+          "docs/REAL-PILOT-EVIDENCE.ko.md",
+          "docs/MCP-INTEGRATION.md",
+          "docs/case-studies/website-console-real-pilot.md",
+          "docs/PRODUCT-READINESS.md",
+          "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+          "docs/ROADMAP.md",
+          "docs/SESSION-LOG.md",
+          "CHANGELOG.md"
+        ],
+        "change": [
+          "cli/lib/pilot-evidence.mjs",
+          "cli/lib/pilot-evidence.test.mjs",
+          "cli/lib/mcp-server.mjs",
+          "cli/lib/mcp-server.test.mjs",
+          "README.md",
+          "README.ko.md",
+          "docs/REAL-PILOT-EVIDENCE.md",
+          "docs/REAL-PILOT-EVIDENCE.ko.md",
+          "docs/MCP-INTEGRATION.md",
+          "docs/case-studies/website-console-real-pilot.md",
+          "docs/PRODUCT-READINESS.md",
+          "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+          "docs/ROADMAP.md",
+          "docs/SESSION-LOG.md",
+          "CHANGELOG.md"
+        ],
+        "generated": [
+          "evidence/p12-mcp-compact/**"
+        ]
+      },
+      "dependencies": [],
+      "migrations": [],
+      "externalWrites": [
+        {
+          "system": "GitHub",
+          "action": "push branch",
+          "destination": "sungjin9288/design-ai"
+        }
+      ],
+      "verificationCommands": [
+        "node --test cli/lib/pilot-evidence.test.mjs cli/lib/mcp-server.test.mjs",
+        "npm run release:check"
+      ],
+      "risks": [
+        "A compact result could be mistaken for the full exact-source artifact unless its distinct kind and omitted fields are explicit.",
+        "Source references, SHA-256 digests, byte counts, and derived measures must remain identical to the validated full artifact.",
+        "The existing full response must remain the default for backward compatibility."
+      ],
+      "preExistingChanges": [],
+      "release": {
+        "commit": true,
+        "push": true,
+        "deployment": false
+      }
+    }
+  },
+  "linkage": {
+    "status": "pass",
+    "intakeSha256": "526710b10cc621988dbf61e6e03d831864ef50a6e05d60101d16c7d630748096",
+    "requestSha256": "178ffe0fccb7b1b7b90bba99a70c7b6354d06e6266c1ef40a6bb6acc30f6dc8f",
+    "scopeDigest": "a3d9447050b5e52f0cbed9c74a0a02b6cce385a3349339973f2f6e14ca88e181"
+  },
+  "baseline": {
+    "targetPath": "/Users/sungjin/dev/design",
+    "repositoryUrl": "https://github.com/sungjin9288/design-ai.git",
+    "branch": "codex/p12-real-pilot-evidence",
+    "head": "c13f0f2",
+    "worktreeChanges": []
+  },
+  "scope": {
+    "objective": "Allow real P12 evidence to cross the MCP output boundary without dropping source identity, metrics, issues, or claim boundaries.",
+    "intendedBehavior": [
+      "Keep the existing full design_ai_review_pilot response as the backward-compatible default.",
+      "Return a compact validated summary when compact is true.",
+      "Preserve exact source references, SHA-256 digests, byte counts, derived metrics, issues, next action, consent, claims, and safety boundaries.",
+      "Keep compact output below the 220000-byte MCP limit for the real internal pilot chain."
+    ],
+    "files": {
+      "inspect": [
+        "cli/lib/pilot-evidence.mjs",
+        "cli/lib/pilot-evidence.test.mjs",
+        "cli/lib/mcp-server.mjs",
+        "cli/lib/mcp-server.test.mjs",
+        "README.md",
+        "README.ko.md",
+        "docs/REAL-PILOT-EVIDENCE.md",
+        "docs/REAL-PILOT-EVIDENCE.ko.md",
+        "docs/MCP-INTEGRATION.md",
+        "docs/case-studies/website-console-real-pilot.md",
+        "docs/PRODUCT-READINESS.md",
+        "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+        "docs/ROADMAP.md",
+        "docs/SESSION-LOG.md",
+        "CHANGELOG.md"
+      ],
+      "change": [
+        "cli/lib/pilot-evidence.mjs",
+        "cli/lib/pilot-evidence.test.mjs",
+        "cli/lib/mcp-server.mjs",
+        "cli/lib/mcp-server.test.mjs",
+        "README.md",
+        "README.ko.md",
+        "docs/REAL-PILOT-EVIDENCE.md",
+        "docs/REAL-PILOT-EVIDENCE.ko.md",
+        "docs/MCP-INTEGRATION.md",
+        "docs/case-studies/website-console-real-pilot.md",
+        "docs/PRODUCT-READINESS.md",
+        "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+        "docs/ROADMAP.md",
+        "docs/SESSION-LOG.md",
+        "CHANGELOG.md"
+      ],
+      "generated": [
+        "evidence/p12-mcp-compact/**"
+      ]
+    },
+    "dependencies": [],
+    "migrations": [],
+    "externalWrites": [
+      {
+        "system": "GitHub",
+        "action": "push branch",
+        "destination": "sungjin9288/design-ai"
+      }
+    ],
+    "verificationCommands": [
+      "node --test cli/lib/pilot-evidence.test.mjs cli/lib/mcp-server.test.mjs",
+      "npm run release:check"
+    ],
+    "risks": [
+      "A compact result could be mistaken for the full exact-source artifact unless its distinct kind and omitted fields are explicit.",
+      "Source references, SHA-256 digests, byte counts, and derived measures must remain identical to the validated full artifact.",
+      "The existing full response must remain the default for backward compatibility."
+    ],
+    "release": {
+      "commit": true,
+      "push": true,
+      "deployment": false
+    }
+  },
+  "approvalGates": [
+    {
+      "id": "source-inspection",
+      "status": "pending",
+      "summary": "Read only the approved file selectors during implementation."
+    },
+    {
+      "id": "target-files",
+      "status": "pending",
+      "summary": "Mutate only the approved change and generated-file selectors."
+    },
+    {
+      "id": "pre-existing-changes",
+      "status": "not-required",
+      "summary": "Respect the recorded ownership and handling of every pre-existing change."
+    },
+    {
+      "id": "dependency-changes",
+      "status": "not-required",
+      "summary": "Apply only the declared dependency changes; installation and network access remain separate."
+    },
+    {
+      "id": "migration-files",
+      "status": "not-required",
+      "summary": "Create or edit only declared migration files; running external-state migrations remains separate."
+    },
+    {
+      "id": "generated-files",
+      "status": "pending",
+      "summary": "Write only the declared generated-file selectors."
+    },
+    {
+      "id": "external-writes",
+      "status": "pending",
+      "summary": "External writes require a separate explicit approval and execution record."
+    },
+    {
+      "id": "commit",
+      "status": "pending",
+      "summary": "Creating a commit requires a separate explicit gate."
+    },
+    {
+      "id": "push",
+      "status": "pending",
+      "summary": "Pushing changes requires a separate explicit gate."
+    },
+    {
+      "id": "deployment",
+      "status": "not-required",
+      "summary": "Deployment requires a separate explicit gate."
+    }
+  ],
+  "issues": [
+    {
+      "level": "pass",
+      "id": "scope-ready-for-approval",
+      "message": "Repository identity, file selectors, verification, risks, and existing-change ownership are ready for human approval."
+    }
+  ],
+  "nextAction": {
+    "id": "human-scope-approval-required",
+    "status": "pending",
+    "summary": "Review the immutable proposal and record a separate approval before reading or changing application source.",
+    "implementationAuthorized": false
+  },
+  "boundary": {
+    "mode": "read-only",
+    "localWrites": false,
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "networkCalls": false,
+    "applicationSourceRead": false,
+    "scopeApproved": false,
+    "implementationStarted": false
+  }
+}

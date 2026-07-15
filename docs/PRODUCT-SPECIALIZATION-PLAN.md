@@ -439,11 +439,11 @@ business outcomes.
 The first internal run used the Website Console itself as the target. It produced
 a useful P6 artifact in 14 seconds, accepted one concrete navigation finding,
 completed the approved mobile-navigation change, and recorded no unresolved
-implementation risk. The full P12 JSON is 416,114 bytes. Website Console preserves
-and re-exports those bytes exactly, but a fresh MCP process rejects the full nested
-response at its 220,000-byte output boundary. The next implementation slice is a
-compact MCP view that retains exact source hashes, derived measures, issues, and
-claim boundaries without duplicating every nested source body.
+implementation risk. Website Console preserved and re-exported all 416,114 bytes
+of the imported pilot artifact. The final nested MCP response is 452,923 bytes and
+remains an explicit output-limit error. An opt-in compact view validates that full
+artifact first, then returns a 4,021-byte summary with matching source references,
+SHA-256 digests, byte counts, measures, issues, claims, next action, and boundaries.
 
 ## Quality targets
 

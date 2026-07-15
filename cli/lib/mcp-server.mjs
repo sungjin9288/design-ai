@@ -21,7 +21,7 @@ import {
   proposeImplementationScope,
 } from "./implementation-scope.mjs";
 import { buildImplementationEvidenceFromFiles } from "./implementation-evidence.mjs";
-import { buildPilotEvidence } from "./pilot-evidence.mjs";
+import { buildPilotEvidence, summarizePilotEvidence } from "./pilot-evidence.mjs";
 import { listProductReviewPacks, loadProductReviewPack } from "./product-review-pack.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
@@ -294,6 +294,7 @@ export const MCP_TOOLS = [
     title: "Record bounded real-pilot evidence",
     description: [
       "Bind exact P11 implementation evidence, the linked P6 review workflow, and one consented pilot record into source-backed metrics and classified claims.",
+      "Set compact to true when large nested sources would exceed the MCP output limit; the compact view keeps source identities, metrics, issues, claims, and boundaries while omitting duplicated source bodies.",
       "Read-only: writes nothing, changes no repository, calls no network, and does not independently establish identity, feedback, customer adoption, production quality, or business outcomes.",
     ].join(" "),
     inputSchema: {
@@ -305,6 +306,7 @@ export const MCP_TOOLS = [
         reviewWorkflowRef: { type: "string", minLength: 1, description: "Human-readable review workflow reference." },
         recordSource: { type: "string", minLength: 2, description: "Exact design-ai-pilot-record JSON source." },
         recordRef: { type: "string", minLength: 1, description: "Human-readable pilot record reference." },
+        compact: optionalBoolean("Return a compact validated view without duplicated nested source bodies."),
       },
       required: ["implementationEvidenceSource", "implementationEvidenceRef", "reviewWorkflowSource", "reviewWorkflowRef", "recordSource", "recordRef"],
       additionalProperties: false,
@@ -652,7 +654,7 @@ function jsonToolResult(payload) {
   const error = {
     kind: "design-ai-mcp-error",
     code: "OUTPUT_TOO_LARGE",
-    message: "The inspection report exceeds the MCP output limit. Narrow the supplied HTML and inspect smaller sections.",
+    message: "The MCP result exceeds the output limit. Request compact output when the tool supports it, or narrow the supplied input.",
     limitBytes: MAX_TOOL_OUTPUT_BYTES,
     actualBytes: bytes,
   };
@@ -970,7 +972,7 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
         recordRef: input.recordRef,
       },
     );
-    return jsonToolResult(payload);
+    return jsonToolResult(input.compact ? summarizePilotEvidence(payload) : payload);
   }
 
   if (name === "design_ai_review_pack") {

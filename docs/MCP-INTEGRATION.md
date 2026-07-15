@@ -131,8 +131,11 @@ writes. See [Implementation evidence](IMPLEMENTATION-REVIEW-EVIDENCE.md).
 `design_ai_review_pilot` accepts exact P11 implementation-evidence, original P6
 workflow, and pilot-record JSON strings plus their references. It derives one
 bounded pilot artifact without reading a path, mutating a repository, calling a
-network, or establishing customer adoption or production quality. See [Real
-pilot evidence](REAL-PILOT-EVIDENCE.md).
+network, or establishing customer adoption or production quality. Set
+`compact: true` for large chains. The compact summary validates the full artifact
+and keeps source references, SHA-256 identities, byte counts, metrics, claims,
+issues, next action, and boundaries while omitting duplicated nested source
+bodies. See [Real pilot evidence](REAL-PILOT-EVIDENCE.md).
 
 ### Approval-gated website implementation handoff
 

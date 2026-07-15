@@ -14,10 +14,10 @@ For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
   first consented Website Console dogfood run reached a useful artifact in 14
   seconds, accepted one finding, completed the approved mobile-navigation change,
   and passed 815 tests, 8 strict audits, package smoke, and desktop/mobile browser
-  checks. Console import/export preserved all 416,114 source bytes. A fresh MCP
-  process exposed one remaining transport gap: the full nested response is 416,019
-  bytes and exceeds the 220,000-byte output boundary, so compact MCP output remains
-  the final Phase 790 task.
+  checks. Console import/export preserved all 416,114 source bytes. A fresh stdio
+  MCP process kept the 452,923-byte full response as an explicit limit error and
+  returned a 4,021-byte compact summary with matching source hashes, byte counts,
+  metrics, issues, claims, next action, and safety boundaries.
 - **Phase 789 (unreleased)** — Added exact-source implementation evidence across
   CLI, in-process MCP, and Website Console. The operation compares one approved
   baseline with current Git, hashes only declared regular evidence files, keeps

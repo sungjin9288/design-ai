@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase 790 - Real pilot evidence (implemented, MCP transport fix in progress)
+## Phase 790 - Real pilot evidence (implemented, local verification complete)
 
 - [x] Added strict pilot-record and derived pilot-evidence v1 contracts over exact
   P11 implementation evidence, original P6 workflow, and operator record sources.
@@ -24,8 +24,10 @@
   Website Console import/export round trip.
 - [x] Published the internal case with real, synthetic, inferred, and unverified
   claims kept separate.
-- [ ] Add a compact MCP response below the 220,000-byte output boundary and pass a
-  fresh-process MCP proof without weakening exact source identity.
+- [x] Added opt-in compact MCP output and passed a fresh stdio process proof: the
+  452,923-byte full response remains an explicit limit error, while the 4,021-byte
+  summary preserves all three source hashes, byte counts, measures, issues,
+  claims, next action, and safety boundaries.
 
 ## Phase 789 - Implementation evidence (implemented, unreleased)
 

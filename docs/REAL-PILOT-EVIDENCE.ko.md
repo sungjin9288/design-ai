@@ -93,7 +93,13 @@ design-ai review-pilot implementation-evidence.json \
 ## SDK와 MCP
 
 SDK `recordPilotEvidence()`와 MCP `design_ai_review_pilot`도 같은 세 JSON
-원문과 참조를 받습니다. Website Console은 결과의 바이트와 해시를 다시
+원문과 참조를 받습니다. 중첩 원본이 큰 MCP 호출은 `compact: true`를
+사용합니다. compact 결과의 kind는 `design-ai-pilot-evidence-summary`이며,
+전체 계약을 먼저 검증한 뒤 중복된 세 `source`와 `value` 본문만 생략합니다.
+원본 참조, SHA-256, 바이트 수, 동의, 지표, 주장, 이슈, 다음 행동, 안전 경계는
+그대로 남습니다. 호환성을 위해 기본값은 full artifact입니다.
+
+Website Console은 full 결과의 바이트와 해시를 다시
 검증하고 원문을 그대로 내보내며, 파일럿을 지우면 P11부터 P6까지의 원본
 단계를 복원합니다.
 
@@ -119,4 +125,3 @@ SDK `recordPilotEvidence()`와 MCP `design_ai_review_pilot`도 같은 세 JSON
 - [ ] runtime, 접근성, 키보드, 반응형 증빙 상태가 명확합니다.
 - [ ] 실제·합성·추론·미확인 주장을 분리했습니다.
 - [ ] commit, push, deployment, external write의 별도 gate를 유지합니다.
-

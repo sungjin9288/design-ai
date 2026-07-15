@@ -71,6 +71,52 @@ export function buildPilotEvidence(implementationEvidenceSource, reviewWorkflowS
   });
 }
 
+function compactSource(artifact) {
+  const source = {
+    reference: artifact.reference,
+    sha256: artifact.sha256,
+    bytes: artifact.bytes,
+    kind: artifact.value.kind,
+    schemaVersion: artifact.value.schemaVersion,
+  };
+  if (typeof artifact.value.status === "string") source.status = artifact.value.status;
+  return source;
+}
+
+export function summarizePilotEvidence(evidence) {
+  const value = validatePilotEvidence(evidence);
+  return {
+    kind: "design-ai-pilot-evidence-summary",
+    schemaVersion: 1,
+    status: value.status,
+    sources: {
+      implementationEvidence: compactSource(value.implementationEvidence),
+      reviewWorkflow: compactSource(value.reviewWorkflow),
+      record: compactSource(value.record),
+    },
+    project: structuredClone(value.project),
+    consent: structuredClone(value.consent),
+    metrics: structuredClone(value.metrics),
+    claims: structuredClone(value.claims),
+    issues: structuredClone(value.issues),
+    nextAction: structuredClone(value.nextAction),
+    boundary: structuredClone(value.boundary),
+    representation: {
+      mode: "compact",
+      fullArtifactKind: value.kind,
+      fullArtifactSchemaVersion: value.schemaVersion,
+      omittedFields: [
+        "implementationEvidence.source",
+        "implementationEvidence.value",
+        "reviewWorkflow.source",
+        "reviewWorkflow.value",
+        "record.source",
+        "record.value",
+      ],
+    },
+  };
+}
+
 function readInput(file, cwd) {
   const absolute = realpathSync(path.resolve(cwd, file));
   return { source: readFileSync(absolute, "utf8"), reference: absolute };

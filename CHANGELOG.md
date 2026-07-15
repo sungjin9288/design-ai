@@ -34,13 +34,18 @@ User-facing release notes for design-ai. Versions follow semver.
 - Added a Website Console Start tab that validates and persists the canonical start JSON, displays declared references without claiming inspection, copies the next command and design contract, and exports the unchanged payload.
 
 ### Changed
+- `design_ai_review_pilot` now accepts opt-in `compact: true` for large exact-source
+  chains. It validates the full P12 artifact first, then keeps source identities,
+  consent, metrics, claims, issues, next action, and safety boundaries while
+  omitting duplicated nested source bodies. The backward-compatible default remains
+  the full artifact.
 - Website Console mobile section navigation now stays in one horizontally
   scrollable 44-pixel row, restores focus after tab activation, and uses a solid
   focus outline with at least 5.62:1 contrast on its active surface.
 - Added a consented Website Console real-pilot case with exact first-value,
   decision, approval, implementation, browser, package, and claim-boundary
-  evidence. The case records the remaining fresh-process MCP output-size blocker
-  instead of claiming a completed transport proof.
+  evidence. A fresh-process MCP proof records both the explicit full-output limit
+  and the verified compact response.
 - The current source capability contract grows from 27 to 28 MCP tools and from 18 to 19 SDK exports while retaining exactly three opt-in learning-profile write tools.
 - Pilot evidence remains read-only and bounded; identity, feedback authenticity, external adoption, production quality, business outcomes, commit, push, deployment, and external writes are not established by the contract.
 - The current source capability contract grows from 26 to 27 MCP tools while the SDK remains at 18 exports and exactly three opt-in learning-profile write tools.

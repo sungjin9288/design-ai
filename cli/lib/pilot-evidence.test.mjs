@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -10,7 +11,7 @@ import { buildImplementationEvidence } from "./implementation-evidence.mjs";
 import { callMcpTool } from "./mcp-server.mjs";
 import { approveImplementationScope, proposeImplementationScope } from "./implementation-scope.mjs";
 import { PACKAGE_ROOT, SYMLINK_PREFIX } from "./paths.mjs";
-import { buildPilotEvidence, parsePilotEvidenceArgs } from "./pilot-evidence.mjs";
+import { buildPilotEvidence, parsePilotEvidenceArgs, summarizePilotEvidence } from "./pilot-evidence.mjs";
 import { validatePilotEvidence } from "./pilot-evidence-contract.mjs";
 import { validatePilotRecord } from "./pilot-record-contract.mjs";
 import { buildReviewHandoff } from "./review-handoff.mjs";
@@ -274,6 +275,51 @@ test("SDK and MCP preserve the same read-only pilot evidence contract", async ()
     assert.equal(runCliCalled, false);
     assert.deepEqual(mcpEvidence, sdkEvidence);
     assert.equal(mcpEvidence.boundary.targetRepoMutation, false);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("MCP compact pilot evidence preserves identity and fits the transport boundary", async () => {
+  const fixture = completePilot();
+  try {
+    const implementationEvidenceSource = `${JSON.stringify(fixture.evidence)}${" ".repeat(140_000)}`;
+    const sources = {
+      implementationEvidenceSource,
+      reviewWorkflowSource: JSON.stringify(fixture.workflow),
+      recordSource: JSON.stringify(fixture.record),
+    };
+    const refs = {
+      implementationEvidenceRef: "implementation-evidence.json",
+      reviewWorkflowRef: "review-workflow.json",
+      recordRef: "pilot-record.json",
+    };
+    const fullEvidence = buildPilotEvidence(
+      sources.implementationEvidenceSource,
+      sources.reviewWorkflowSource,
+      sources.recordSource,
+      refs,
+    );
+    const fullResult = await callMcpTool("design_ai_review_pilot", { ...sources, ...refs });
+    const compactResult = await callMcpTool("design_ai_review_pilot", { ...sources, ...refs, compact: true });
+    const fullError = JSON.parse(fullResult.content[0].text);
+    const compact = JSON.parse(compactResult.content[0].text);
+
+    assert.equal(fullResult.isError, true);
+    assert.equal(fullError.code, "OUTPUT_TOO_LARGE");
+    assert.equal(compactResult.isError, false);
+    assert.equal(compact.kind, "design-ai-pilot-evidence-summary");
+    assert.equal(compact.status, fullEvidence.status);
+    assert.deepEqual(compact.metrics, fullEvidence.metrics);
+    assert.deepEqual(compact.claims, fullEvidence.claims);
+    assert.equal(compact.sources.implementationEvidence.sha256, createHash("sha256").update(implementationEvidenceSource).digest("hex"));
+    assert.equal(compact.sources.implementationEvidence.bytes, Buffer.byteLength(implementationEvidenceSource));
+    assert.equal(compact.representation.mode, "compact");
+    assert.equal(compactResult.content[0].text.includes('"source":'), false);
+    assert.ok(Buffer.byteLength(compactResult.content[0].text) < 220_000);
+
+    const directSummary = summarizePilotEvidence(fullEvidence);
+    assert.deepEqual(compact, directSummary);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
   }

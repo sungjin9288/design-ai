@@ -1,0 +1,85 @@
+{
+  "kind": "design-ai-p12-compact-mcp-proof",
+  "schemaVersion": 1,
+  "status": "pass",
+  "process": {
+    "command": "/Users/sungjin/.local/share/mise/installs/node/24.13.1/bin/node cli/bin/design-ai-mcp.mjs",
+    "exitCode": 0,
+    "stderr": "",
+    "freshProcess": true
+  },
+  "protocolVersion": "2025-11-25",
+  "toolCount": 28,
+  "pilotTool": {
+    "listed": true,
+    "compactInputType": "boolean"
+  },
+  "fullResponse": {
+    "isError": true,
+    "code": "OUTPUT_TOO_LARGE",
+    "limitBytes": 220000,
+    "actualBytes": 452923
+  },
+  "compactResponse": {
+    "isError": false,
+    "kind": "design-ai-pilot-evidence-summary",
+    "status": "evidence-complete",
+    "bytes": 4021,
+    "belowLimit": true,
+    "sourceHashesMatch": true,
+    "sourceBytes": {
+      "implementationEvidence": 177521,
+      "reviewWorkflow": 22560,
+      "record": 4170
+    },
+    "metrics": {
+      "timeToFirstUsefulArtifact": {
+        "milliseconds": 14000,
+        "startedAt": "2026-07-15T15:27:56.000Z",
+        "completedAt": "2026-07-15T15:28:10.000Z"
+      },
+      "findingPrecision": {
+        "accepted": 1,
+        "rejected": 0,
+        "unresolved": 0,
+        "evaluated": 1,
+        "precision": 1
+      },
+      "approvalFriction": {
+        "total": 10,
+        "approved": 3,
+        "notRequired": 4,
+        "pending": 3
+      },
+      "implementation": {
+        "status": "complete",
+        "evidenceStatus": "evidence-complete"
+      },
+      "unresolvedRisk": {
+        "count": 0,
+        "items": []
+      }
+    },
+    "issueCount": 0,
+    "omittedFields": [
+      "implementationEvidence.source",
+      "implementationEvidence.value",
+      "reviewWorkflow.source",
+      "reviewWorkflow.value",
+      "record.source",
+      "record.value"
+    ],
+    "responseSha256": "1537490f51c5bc777d3e338bdc438976133594bca686657ba56c89a87311f194"
+  },
+  "boundary": {
+    "mode": "read-only-pilot-evidence",
+    "localWrites": false,
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "networkCalls": false,
+    "identityVerified": false,
+    "feedbackVerified": false,
+    "adoptionEstablished": false,
+    "productionQualityEstablished": false
+  }
+}
