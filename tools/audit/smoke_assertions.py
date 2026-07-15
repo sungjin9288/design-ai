@@ -196,6 +196,7 @@ EXPECTED_HELP_TOPICS = (
     "review-scope",
     "review-scope-approve",
     "review-evidence",
+    "review-pilot",
     "review-pack",
     "benchmark",
     "verify-browser",
@@ -255,6 +256,7 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "review-scope": "design-ai review-scope <target-intake.json> --request scope-request.json --consumer name [--json]",
     "review-scope-approve": "design-ai review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes [--json]",
     "review-evidence": "design-ai review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name [--json]",
+    "review-pilot": "design-ai review-pilot <implementation-evidence.json> --workflow review-workflow.json --record pilot-record.json [--json]",
     "review-pack": "design-ai review-pack [id] [--json]",
     "benchmark": "design-ai benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
     "verify-browser": "design-ai verify-browser <quality-report.json> --url loopback-url --target-root path --adapter executable --approval-ref text --yes [--json]",
@@ -357,6 +359,12 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "design-ai review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name",
         "reads the two explicit JSON files, local Git metadata, and declared evidence artifacts only",
         "does not run tests, commit, push, deploy, use the network, or read application source",
+    ),
+    "review-pilot": (
+        "Usage:",
+        "design-ai review-pilot <implementation-evidence.json> --workflow review-workflow.json --record pilot-record.json",
+        "reads three explicit JSON files only",
+        "does not establish customer adoption or production quality",
     ),
     "review-pack": (
         "Usage:",
@@ -554,6 +562,7 @@ EXPECTED_MAIN_HELP_FRAGMENTS = (
     "review-scope <target-intake.json> --request scope-request.json --consumer name",
     "review-scope-approve <scope-proposal.json> --approver name --approval-ref text --approved-at ISO --yes",
     "review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name",
+    "review-pilot <implementation-evidence.json> --workflow review-workflow.json --record pilot-record.json",
     "benchmark [case-id] [--strict] [--json]",
     "examples [query]",
     "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
@@ -4940,6 +4949,68 @@ def assert_implementation_evidence_json(
             raise SystemExit(f"implementation evidence after {context} expanded {field}")
 
 
+def assert_pilot_evidence_json(
+    raw: str,
+    implementation_evidence_path: Path,
+    review_workflow_path: Path,
+    record_path: Path,
+    *,
+    context: str,
+    cmd: list[str],
+) -> None:
+    assert_no_ansi(raw, cmd)
+    try:
+        evidence = json.loads(raw)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"failed to parse pilot evidence after {context}") from error
+
+    if (
+        evidence.get("kind") != "design-ai-pilot-evidence"
+        or evidence.get("schemaVersion") != 1
+        or evidence.get("status") != "attention-required"
+    ):
+        raise SystemExit(f"pilot evidence after {context} changed identity or expected incomplete-proof status")
+    for field, source_path in (
+        ("implementationEvidence", implementation_evidence_path),
+        ("reviewWorkflow", review_workflow_path),
+        ("record", record_path),
+    ):
+        source = source_path.read_text(encoding="utf-8")
+        artifact = evidence.get(field, {})
+        if (
+            artifact.get("reference") != str(source_path.resolve())
+            or artifact.get("source") != source
+            or artifact.get("sha256") != hashlib.sha256(source.encode("utf-8")).hexdigest()
+            or artifact.get("bytes") != len(source.encode("utf-8"))
+            or artifact.get("value") != json.loads(source)
+        ):
+            raise SystemExit(f"pilot evidence after {context} changed {field} source identity")
+    metrics = evidence.get("metrics", {})
+    if (
+        metrics.get("timeToFirstUsefulArtifact", {}).get("milliseconds") != 30_000
+        or metrics.get("findingPrecision", {}).get("unresolved") != 0
+        or metrics.get("approvalFriction", {}).get("pending") != 3
+        or metrics.get("implementation") != {"status": "partial", "evidenceStatus": "attention-required"}
+    ):
+        raise SystemExit(f"pilot evidence after {context} changed derived metrics")
+    if set(evidence.get("claims", {})) != {"real", "synthetic", "inferred", "unverified"}:
+        raise SystemExit(f"pilot evidence after {context} lost explicit claim classes")
+    if not any(issue.get("id") == "pilot-implementation-evidence-incomplete" for issue in evidence.get("issues", [])):
+        raise SystemExit(f"pilot evidence after {context} hid incomplete P11 proof")
+    if evidence.get("boundary") != {
+        "mode": "read-only-pilot-evidence",
+        "localWrites": False,
+        "targetRepoMutation": False,
+        "externalWrites": False,
+        "networkCalls": False,
+        "identityVerified": False,
+        "feedbackVerified": False,
+        "adoptionEstablished": False,
+        "productionQualityEstablished": False,
+    }:
+        raise SystemExit(f"pilot evidence after {context} expanded its claim or mutation boundary")
+
+
 def assert_specialization_benchmark_json(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -5867,6 +5938,8 @@ def passing_main_help_output() -> str:
         "    Approve one exact implementation-scope proposal",
         "  review-evidence <scope-approval.json> --request evidence-request.json --target-root path --consumer name [--json]",
         "    Check implementation evidence against an approved baseline",
+        "  review-pilot <implementation-evidence.json> --workflow review-workflow.json --record pilot-record.json [--json]",
+        "    Build bounded evidence for one consented real pilot",
         "  benchmark [case-id] [--strict] [--json] | benchmark --list [--json]",
         "    Run read-only product specialization regression proof",
         "  examples [query] [--route id] [--limit N] [--json]                     Find worked examples for a route or query",

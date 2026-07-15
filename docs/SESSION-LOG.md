@@ -5,6 +5,12 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 790 (unreleased)** — Added exact-source real-pilot evidence across CLI,
+  typed SDK, in-process MCP, and Website Console. It joins P11 implementation
+  evidence, the original P6 workflow, and one consented operator record; derives
+  first-value, finding, approval, implementation, and risk measures; and keeps
+  real, synthetic, inferred, and unverified claims separate. The operation stays
+  read-only and does not establish external adoption or production quality.
 - **Phase 789 (unreleased)** — Added exact-source implementation evidence across
   CLI, in-process MCP, and Website Console. The operation compares one approved
   baseline with current Git, hashes only declared regular evidence files, keeps

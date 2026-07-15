@@ -618,13 +618,15 @@ test("Website Console loads classic deferred scripts in dependency order", () =>
   const contractIndex = html.indexOf('<script src="./source-bundle.js" defer></script>');
   const scopeIndex = html.indexOf('<script src="./implementation-scope.js" defer></script>');
   const evidenceIndex = html.indexOf('<script src="./implementation-evidence.js" defer></script>');
+  const pilotIndex = html.indexOf('<script src="./pilot-evidence.js" defer></script>');
   const appIndex = html.indexOf('<script src="./app.js" defer></script>');
 
   assert.equal(existsSync(path.join(CONSOLE_ROOT, "source-bundle.js")), true);
   assert.equal(existsSync(path.join(CONSOLE_ROOT, "implementation-scope.js")), true);
   assert.equal(existsSync(path.join(CONSOLE_ROOT, "implementation-evidence.js")), true);
+  assert.equal(existsSync(path.join(CONSOLE_ROOT, "pilot-evidence.js")), true);
   assert.equal(existsSync(path.join(CONSOLE_ROOT, "app.js")), true);
-  assert.ok(contractIndex >= 0 && contractIndex < scopeIndex && scopeIndex < evidenceIndex && evidenceIndex < appIndex);
+  assert.ok(contractIndex >= 0 && contractIndex < scopeIndex && scopeIndex < evidenceIndex && evidenceIndex < pilotIndex && pilotIndex < appIndex);
 });
 
 test("Website Console renders a visible failure for missing or partial contracts", () => {
@@ -668,7 +670,7 @@ test("Website Console imports and labels linked preview readiness without claimi
   const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
 
   assert.match(appSource, /website-improvement-linked-preview/);
-  assert.match(appSource, /Import implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
+  assert.match(appSource, /Import pilot evidence, implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
   assert.match(appSource, /No process started by design-ai/);
   assert.match(appSource, /A configured URL is not browser verification/);
   assert.match(appSource, /Linked preview readiness JSON imported\. Report tab opened\./);
@@ -781,6 +783,21 @@ test("Website Console imports implementation evidence before approval and restor
   assert.match(appSource, /Commit pending/);
   assert.match(appSource, /Push pending/);
   assert.match(appSource, /Deployment pending/);
+});
+
+test("Website Console imports pilot evidence before P11 and restores exact implementation evidence", () => {
+  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const pilotImport = "var importedPilotEvidence = normalizePilotEvidenceArtifact(parsed);";
+  const evidenceImport = "var importedImplementationEvidence = normalizeImplementationEvidenceArtifact(parsed);";
+
+  assert.ok(appSource.indexOf(pilotImport) < appSource.indexOf(evidenceImport));
+  assert.match(appSource, /Real Pilot Evidence/);
+  assert.match(appSource, /Exact P6 and P11 sources, consent, metrics, and claim boundaries preserved/);
+  assert.match(appSource, /Original pilot-evidence JSON exported without reformatting/);
+  assert.match(appSource, /Pilot evidence cleared\. Original implementation evidence restored\./);
+  assert.match(appSource, /No identity proof/);
+  assert.match(appSource, /No adoption claim/);
+  assert.match(appSource, /No production-quality claim/);
 });
 
 test("Website Console imports start JSON without claiming reference inspection or execution", () => {

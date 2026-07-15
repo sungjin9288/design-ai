@@ -73,6 +73,7 @@ from smoke_assertions import (
     assert_implementation_scope_approval_json,
     assert_implementation_scope_proposal_json,
     assert_implementation_evidence_json,
+    assert_pilot_evidence_json,
     assert_specialization_benchmark_json,
     assert_install_doctor_lifecycle_output,
     assert_install_output,
@@ -8545,6 +8546,51 @@ def assert_implementation_evidence_smoke(
     return result.stdout
 
 
+def assert_pilot_evidence_smoke(
+    cmd: list[str],
+    implementation_evidence_path: Path,
+    review_workflow_path: Path,
+    record_path: Path,
+    target_root: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> str:
+    sources_before = {
+        file_path: file_path.read_bytes()
+        for file_path in (implementation_evidence_path, review_workflow_path, record_path)
+    }
+    status_before = subprocess.run(
+        ["git", "status", "--short", "--untracked-files=all"],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout
+    result = run_plain(cmd, cwd=cwd, env=env)
+    assert_pilot_evidence_json(
+        result.stdout,
+        implementation_evidence_path,
+        review_workflow_path,
+        record_path,
+        context=context,
+        cmd=cmd,
+    )
+    if any(file_path.read_bytes() != source for file_path, source in sources_before.items()):
+        raise SystemExit(f"{context}: review-pilot changed an input artifact")
+    status_after = subprocess.run(
+        ["git", "status", "--short", "--untracked-files=all"],
+        cwd=target_root,
+        text=True,
+        capture_output=True,
+        check=True,
+    ).stdout
+    if status_after != status_before:
+        raise SystemExit(f"{context}: review-pilot changed the target repository")
+    return result.stdout
+
+
 def write_implementation_scope_request(file_path: Path) -> None:
     file_path.write_text(
         json.dumps(
@@ -8620,6 +8666,74 @@ def write_implementation_evidence_request(file_path: Path, target_root: Path) ->
         ) + "\n",
         encoding="utf-8",
     )
+
+
+def write_pilot_record(
+    file_path: Path,
+    review_workflow_path: Path,
+    approval_path: Path,
+    implementation_evidence_path: Path,
+) -> None:
+    workflow = json.loads(review_workflow_path.read_text(encoding="utf-8"))
+    approval = json.loads(approval_path.read_text(encoding="utf-8"))
+    implementation_evidence = json.loads(implementation_evidence_path.read_text(encoding="utf-8"))
+    record = {
+        "kind": "design-ai-pilot-record",
+        "schemaVersion": 1,
+        "project": {
+            "name": "Package smoke project",
+            "repositoryUrl": implementation_evidence["observed"]["repositoryUrl"],
+            "pilotClass": "internal-dogfood",
+        },
+        "consent": {
+            "status": "approved",
+            "approver": "package-smoke-owner",
+            "identity": "self-declared",
+            "reference": "package-smoke-confirmation",
+            "approvedAt": "2026-07-15T12:00:00.000Z",
+            "evidenceCollection": True,
+            "targetMutation": True,
+        },
+        "timeline": {
+            "pilotStartedAt": "2026-07-15T12:00:00.000Z",
+            "firstUsefulArtifactAt": "2026-07-15T12:00:30.000Z",
+            "implementationCompletedAt": "2026-07-15T12:02:00.000Z",
+        },
+        "findingDecisions": [
+            {
+                "findingId": finding["id"],
+                "decision": "accepted",
+                "summary": "The package smoke pilot retained this finding.",
+                "reference": "package smoke finding review",
+            }
+            for finding in workflow["report"]["findings"]
+        ],
+        "approvalEvents": [
+            {
+                "gateId": gate["id"],
+                "status": gate["status"],
+                "occurredAt": "2026-07-15T12:00:00.000Z" if gate["status"] == "approved" else "",
+                "reference": "package-smoke-confirmation" if gate["status"] == "approved" else "implementation scope gate record",
+            }
+            for gate in approval["approvalGates"]
+        ],
+        "outcome": {
+            "implementationStatus": "partial",
+            "productionStatus": "not-deployed",
+            "feedback": {
+                "status": "not-collected",
+                "summary": "No user feedback is claimed by package smoke.",
+                "reference": "",
+            },
+        },
+        "claims": [
+            {"class": "real", "statement": "The command used a real temporary Git checkout.", "reference": "implementation-evidence.json"},
+            {"class": "synthetic", "statement": "The target content is a package smoke fixture.", "reference": "package-smoke.py"},
+            {"class": "inferred", "statement": "Contract parity suggests the packaged workflow is operable.", "reference": "package smoke result"},
+            {"class": "unverified", "statement": "Customer adoption and production outcomes are not established.", "reference": "pilot boundary"},
+        ],
+    }
+    file_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
 
 
 def write_inspect_fixture(file_path: Path) -> None:
@@ -23882,7 +23996,7 @@ def smoke_tarball(tarball: Path) -> None:
         )
         implementation_evidence_request = tmp_root / "implementation-evidence-request.json"
         write_implementation_evidence_request(implementation_evidence_request, target_repo_intake_root)
-        assert_implementation_evidence_smoke(
+        installed_implementation_evidence_source = assert_implementation_evidence_smoke(
             [
                 str(bin_path),
                 "review-evidence",
@@ -23902,7 +24016,12 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin implementation evidence",
         )
-        assert_implementation_evidence_smoke(
+        installed_implementation_evidence = tmp_root / "installed-implementation-evidence.json"
+        installed_implementation_evidence.write_text(
+            installed_implementation_evidence_source,
+            encoding="utf-8",
+        )
+        npx_implementation_evidence_source = assert_implementation_evidence_smoke(
             npm_exec_cmd(
                 tarball,
                 "review-evidence",
@@ -23922,6 +24041,61 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec implementation evidence",
+        )
+        npx_implementation_evidence = tmp_root / "npx-implementation-evidence.json"
+        npx_implementation_evidence.write_text(npx_implementation_evidence_source, encoding="utf-8")
+
+        installed_pilot_record = tmp_root / "installed-pilot-record.json"
+        write_pilot_record(
+            installed_pilot_record,
+            installed_review_workflow,
+            installed_scope_approval,
+            installed_implementation_evidence,
+        )
+        assert_pilot_evidence_smoke(
+            [
+                str(bin_path),
+                "review-pilot",
+                str(installed_implementation_evidence),
+                "--workflow",
+                str(installed_review_workflow),
+                "--record",
+                str(installed_pilot_record),
+                "--json",
+            ],
+            installed_implementation_evidence,
+            installed_review_workflow,
+            installed_pilot_record,
+            target_repo_intake_root,
+            env=smoke_env,
+            context="package smoke installed bin pilot evidence",
+        )
+
+        npx_pilot_record = tmp_root / "npx-pilot-record.json"
+        write_pilot_record(
+            npx_pilot_record,
+            npx_review_workflow,
+            npx_scope_approval,
+            npx_implementation_evidence,
+        )
+        assert_pilot_evidence_smoke(
+            npm_exec_cmd(
+                tarball,
+                "review-pilot",
+                str(npx_implementation_evidence),
+                "--workflow",
+                str(npx_review_workflow),
+                "--record",
+                str(npx_pilot_record),
+                "--json",
+            ),
+            npx_implementation_evidence,
+            npx_review_workflow,
+            npx_pilot_record,
+            target_repo_intake_root,
+            cwd=npx_root,
+            env=npx_env,
+            context="package smoke npm exec pilot evidence",
         )
         assert_inspect_smoke(
             npm_exec_cmd(

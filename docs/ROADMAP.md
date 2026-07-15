@@ -1,5 +1,21 @@
 # Roadmap
 
+## Phase 790 - Real pilot evidence (implemented, verification in progress)
+
+- [x] Added strict pilot-record and derived pilot-evidence v1 contracts over exact
+  P11 implementation evidence, original P6 workflow, and operator record sources.
+- [x] Added CLI `review-pilot`, typed SDK `recordPilotEvidence()`, in-process MCP
+  `design_ai_review_pilot`, and Website Console exact import/export and stage restore.
+- [x] Added derived first-value, finding-decision, approval-friction,
+  implementation, unresolved-risk, and four-class claim inventories.
+- [x] Kept identity, feedback authenticity, external adoption, production quality,
+  business outcomes, repository mutation, network calls, and release writes outside
+  the read-only evidence boundary.
+- [x] Added installed-bin and one-shot `npm exec` package smoke over all three exact
+  sources with unchanged-input and unchanged-target assertions.
+- [ ] Complete the full release gate, fresh MCP process proof, desktop/mobile
+  Website Console proof, and one consented internal dogfood case study.
+
 ## Phase 789 - Implementation evidence (implemented, unreleased)
 
 - [x] Added exact-source implementation-evidence request and result v1 contracts.

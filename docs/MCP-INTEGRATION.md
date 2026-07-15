@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 26 tools, including target intake, immutable scope proposal, separate scope approval, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 28 tools, including target intake, scope approval, implementation evidence, real-pilot evidence, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -125,6 +125,14 @@ It compares local Git state with the approved baseline and hashes only declared
 evidence artifacts. It does not run tests, read application source, mutate the
 target, or authorize commit, push, deployment, migration execution, or external
 writes. See [Implementation evidence](IMPLEMENTATION-REVIEW-EVIDENCE.md).
+
+### Real pilot evidence
+
+`design_ai_review_pilot` accepts exact P11 implementation-evidence, original P6
+workflow, and pilot-record JSON strings plus their references. It derives one
+bounded pilot artifact without reading a path, mutating a repository, calling a
+network, or establishing customer adoption or production quality. See [Real
+pilot evidence](REAL-PILOT-EVIDENCE.md).
 
 ### Approval-gated website implementation handoff
 

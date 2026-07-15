@@ -5,6 +5,8 @@ User-facing release notes for design-ai. Versions follow semver.
 ## Unreleased
 
 ### Added
+- Added CLI `design-ai review-pilot`, SDK `recordPilotEvidence()`, MCP `design_ai_review_pilot`, and Website Console import over one exact-source real-pilot evidence operation.
+- Added strict `design-ai-pilot-record` and derived `design-ai-pilot-evidence` v1 contracts for consent, first-value time, finding decisions, approval friction, implementation completion, unresolved risk, and real/synthetic/inferred/unverified claim separation.
 - Added CLI `design-ai review-evidence`, MCP `design_ai_review_evidence`, and Website Console import over one read-only implementation-evidence operation.
 - Added exact-source implementation-evidence request and result v1 contracts that compare the approved Git baseline, enumerate every current changed file, preserve failed or missing verification, and hash only declared regular evidence files.
 - Added CLI `design-ai review-scope` and `review-scope-approve`, SDK `proposeImplementationScope()` and `approveImplementationScope()`, MCP `design_ai_review_scope` and `design_ai_approve_review_scope`, and Website Console proposal/approval import over shared exact-source contracts.
@@ -32,6 +34,8 @@ User-facing release notes for design-ai. Versions follow semver.
 - Added a Website Console Start tab that validates and persists the canonical start JSON, displays declared references without claiming inspection, copies the next command and design contract, and exports the unchanged payload.
 
 ### Changed
+- The current source capability contract grows from 27 to 28 MCP tools and from 18 to 19 SDK exports while retaining exactly three opt-in learning-profile write tools.
+- Pilot evidence remains read-only and bounded; identity, feedback authenticity, external adoption, production quality, business outcomes, commit, push, deployment, and external writes are not established by the contract.
 - The current source capability contract grows from 26 to 27 MCP tools while the SDK remains at 18 exports and exactly three opt-in learning-profile write tools.
 - Implementation evidence remains pre-commit and read-only; commit, push, deployment, migration execution, network calls, and external writes stay separately gated.
 - The current source capability contract grows from 24 to 26 MCP tools and from 16 to 18 SDK exports while retaining exactly three opt-in learning-profile write tools.
