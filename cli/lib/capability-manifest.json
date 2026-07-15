@@ -83,6 +83,7 @@
       "design_ai_review_html",
       "design_ai_review_pack",
       "design_ai_review_handoff",
+      "design_ai_verify_review_handoff",
       "design_ai_prompt",
       "design_ai_artifact",
       "design_ai_pack",
@@ -122,6 +123,7 @@
       "routes",
       "search",
       "start",
+      "verifyReviewHandoff",
       "version"
     ],
     "learnMethods": [

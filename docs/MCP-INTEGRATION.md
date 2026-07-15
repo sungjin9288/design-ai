@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 22 tools, including the canonical read-only review workflow, self-validating review handoff, shared start flow, supplied-HTML quality inspection, Korean product review packs, artifact operations, a Website Improvement bundle handoff, linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 23 tools, including the canonical read-only review workflow, self-validating review handoff, consumer validation receipt, shared start flow, supplied-HTML quality inspection, Korean product review packs, artifact operations, a Website Improvement bundle handoff, linked-code preview inspection, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -79,6 +79,18 @@ must be supplied together and pass source-byte, semantic, and viewport linkage.
 The result stays `not-delivered` with consumer validation pending. The tool does
 not inspect a target repository, write a local file, call an external transport,
 or start implementation. See [Review evidence handoff](REVIEW-HANDOFF.md).
+
+### Review handoff validation receipt
+
+`design_ai_verify_review_handoff` maps to CLI `design-ai review-handoff-verify`
+and SDK `verifyReviewHandoff()`. It accepts the exact handoff JSON, its reference,
+and a consumer name that must match the handoff recipient. The result preserves
+the exact source bytes and emits a separate consumer validation receipt.
+
+The tool proves contract validation only. Consumer identity, transport,
+acceptance, target-repository intake, implementation, local writes, and external
+writes remain unverified. See [Review handoff validation
+receipt](REVIEW-HANDOFF-RECEIPT.md).
 
 ### Approval-gated website implementation handoff
 

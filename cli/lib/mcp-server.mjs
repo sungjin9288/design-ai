@@ -14,6 +14,7 @@ import { formatStartJson } from "./start.mjs";
 import { inspectHtml } from "./design-quality-inspector.mjs";
 import { buildReviewWorkflow } from "./review-workflow.mjs";
 import { buildReviewHandoff } from "./review-handoff.mjs";
+import { verifyReviewHandoff } from "./review-handoff-receipt.mjs";
 import { listProductReviewPacks, loadProductReviewPack } from "./product-review-pack.mjs";
 
 const PROTOCOL_VERSION = "2025-11-25";
@@ -21,6 +22,7 @@ const SERVER_INSTRUCTIONS = [
   "Use design-ai MCP tools for local, deterministic design expertise.",
   "Use design_ai_review_html to compose one canonical plan and static review without running a browser or writing files.",
   "Use design_ai_review_handoff to prepare a self-validating, undelivered transfer for another agent.",
+  "Use design_ai_verify_review_handoff to validate an exact transfer and emit a bounded consumer receipt.",
   "Use design_ai_start for a read-only route and design-contract plan; declared repositories, pages, and screenshots are not inspected and its next command is not executed.",
   "Use design_ai_inspect_html for a lower-level supplied-HTML quality report; unobserved runtime behavior remains unverified.",
   "Product review packs are explicit and never inferred from locale.",
@@ -176,6 +178,24 @@ export const MCP_TOOLS = [
         browserVerificationRef: optionalString("Browser-verification source reference."),
       },
       required: ["workflowSource", "workflowRef", "recipient"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "design_ai_verify_review_handoff",
+    title: "Validate a review handoff",
+    description: [
+      "Validate the exact bytes and evidence linkage of a review handoff for its named consumer.",
+      "Read-only: proves contract validation only; it does not verify identity, transport, acceptance, repository intake, or implementation.",
+    ].join(" "),
+    inputSchema: {
+      type: "object",
+      properties: {
+        handoffSource: { type: "string", minLength: 2, description: "Exact review-handoff JSON source." },
+        handoffRef: { type: "string", minLength: 1, description: "Human-readable handoff source reference." },
+        consumer: { type: "string", minLength: 1, description: "Receiving agent or role; must match the handoff recipient." },
+      },
+      required: ["handoffSource", "handoffRef", "consumer"],
       additionalProperties: false,
     },
   },
@@ -771,6 +791,14 @@ export async function callMcpTool(name, input = {}, runCli = runDesignAiCli) {
       qualityReportRef: input.qualityReportRef,
       browserVerificationSource: input.browserVerificationSource,
       browserVerificationRef: input.browserVerificationRef,
+    });
+    return jsonToolResult(payload);
+  }
+
+  if (name === "design_ai_verify_review_handoff") {
+    const payload = verifyReviewHandoff(input.handoffSource, {
+      handoffRef: input.handoffRef,
+      consumer: input.consumer,
     });
     return jsonToolResult(payload);
   }

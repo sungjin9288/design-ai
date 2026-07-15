@@ -298,6 +298,33 @@ write an evidence file, edit code, run implementation tests, commit, push, deplo
 or call an external service. Those actions belong to the receiving workflow under
 its own permissions and evidence.
 
+## P8 - Consumer validation receipt
+
+Status: implemented in the current source, pending release.
+
+P8 closes the next trust gap without adding transport. CLI
+`design-ai review-handoff-verify`, SDK `verifyReviewHandoff()`, MCP
+`design_ai_verify_review_handoff`, and Website Console validate the exact handoff
+bytes for the named consumer and emit `design-ai-review-handoff-receipt` v1.
+
+The receipt preserves the source, digest, parsed handoff, evidence summary, and
+remaining approvals. The consumer name must match the handoff recipient, but the
+identity remains self-declared. Target-repository intake stays pending and
+implementation remains unauthorized.
+
+Exit criteria:
+
+- Changed source bytes, digest drift, evidence drift, approval drift, or consumer mismatch fail validation.
+- CLI, SDK, MCP, and Website Console use the same receipt contract and preserve exact source bytes.
+- Installed package and one-shot `npm exec` paths validate both handoff and receipt.
+- Fresh Claude and Codex subprocesses discover and call the receipt MCP tool without editing the repository.
+- Full release checks, browser QA, pull-request CI, and merge evidence are recorded before completion.
+
+P8 does not verify who the consumer is, how a file was transported, whether the
+consumer accepted the work, whether a target repository was inspected, or whether
+implementation began. Those claims require separate evidence from the receiving
+workflow.
+
 ## Quality targets
 
 These are targets for the specialization program, not claims about the current

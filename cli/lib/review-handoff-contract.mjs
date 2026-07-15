@@ -76,6 +76,11 @@ function validateArtifact(artifact, field, validateValue) {
   validateValue(artifact.value);
 }
 
+export function validateReviewHandoffArtifact(artifact, field = "review handoff artifact") {
+  validateArtifact(artifact, field, validateReviewHandoff);
+  return artifact;
+}
+
 function expectedStages(hasBrowserVerification) {
   return [
     { id: "plan", status: "complete", artifactKind: "design-ai-start" },

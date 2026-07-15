@@ -110,7 +110,7 @@ the handoff is cleared.
 
 Before implementation, the receiving agent or reviewer must:
 
-1. Validate the handoff contract again.
+1. Validate the handoff contract again with `design-ai review-handoff-verify`.
 2. Read confirmed and unverified findings separately.
 3. Confirm that the named recipient and requested scope are still correct.
 4. Obtain any approvals listed in `nextAction.approvalRequiredBefore`.
@@ -119,3 +119,6 @@ Before implementation, the receiving agent or reviewer must:
 Only then can a separate implementation workflow begin. Design AI does not claim
 delivery, acceptance, target-repository inspection, code changes, tests, commits,
 pushes, deployment, or external writes through this handoff.
+
+See [Review handoff validation receipt](REVIEW-HANDOFF-RECEIPT.md) for the CLI,
+SDK, MCP, and Website Console validation flow.

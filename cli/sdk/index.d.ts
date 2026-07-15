@@ -433,6 +433,49 @@ export interface ReviewHandoff {
   };
 }
 
+export interface VerifyReviewHandoffOptions {
+  handoffRef: string;
+  consumer: string;
+}
+
+export interface ReviewHandoffReceipt {
+  kind: "design-ai-review-handoff-receipt";
+  schemaVersion: 1;
+  status: "contract-validated";
+  consumer: {
+    name: string;
+    expectedRecipient: string;
+    recipientMatch: true;
+    identity: "self-declared";
+    contractValidation: "pass";
+    acceptance: "not-claimed";
+  };
+  handoff: ReviewHandoffArtifact<ReviewHandoff>;
+  evidence: {
+    qualityStatus: DesignQualityStatus;
+    confirmedFindings: number;
+    unverifiedFindings: number;
+    browserStatus: "not-run" | "pass" | "fail" | "unverified";
+  };
+  remainingApprovals: string[];
+  nextAction: {
+    id: "target-repo-intake-required";
+    status: "pending";
+    summary: string;
+    implementationAuthorized: false;
+  };
+  boundary: {
+    mode: "read-only";
+    localWrites: false;
+    targetRepoMutation: false;
+    externalWrites: false;
+    transportVerified: false;
+    consumerIdentityVerified: false;
+    acceptanceRecorded: false;
+    implementationStarted: false;
+  };
+}
+
 export interface ProductReviewPackSummary {
   id: string;
   revision: number;
@@ -704,6 +747,9 @@ export function reviewHtml(source: string, opts: ReviewHtmlOptions): ReviewWorkf
 
 /** Prepare a self-validating review handoff without delivery, implementation, or writes. */
 export function reviewHandoff(workflowSource: string, opts: ReviewHandoffOptions): ReviewHandoff;
+
+/** Validate exact handoff bytes and return a bounded consumer receipt. */
+export function verifyReviewHandoff(handoffSource: string, opts: VerifyReviewHandoffOptions): ReviewHandoffReceipt;
 
 /** Read one Korean product review pack, or list the available packs when id is omitted. */
 export function reviewPack(id?: string, opts?: Record<string, never>): ProductReviewPack | ProductReviewPackList;
