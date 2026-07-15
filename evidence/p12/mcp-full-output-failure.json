@@ -1,0 +1,19 @@
+{
+  "kind": "design-ai-p12-mcp-transport-evidence",
+  "schemaVersion": 1,
+  "status": "blocked",
+  "process": "fresh stdio MCP process",
+  "tool": "design_ai_review_pilot",
+  "result": {
+    "code": "OUTPUT_TOO_LARGE",
+    "limitBytes": 220000,
+    "actualBytes": 416019
+  },
+  "boundary": {
+    "contractValidatedBeforeTransport": true,
+    "freshProcessProofComplete": false,
+    "externalNetwork": false,
+    "targetRepoMutation": false
+  },
+  "nextAction": "Return a compact validated view that preserves exact source identities, derived metrics, issues, and claim boundaries."
+}

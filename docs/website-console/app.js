@@ -3128,6 +3128,11 @@
       appState.activeTab = button.dataset.nav;
       localStorage.setItem(ACTIVE_TAB_KEY, appState.activeTab);
       render();
+      var activeButton = document.querySelector(".nav-button[aria-current='page']");
+      if (activeButton) {
+        activeButton.focus({ preventScroll: true });
+        activeButton.scrollIntoView({ block: "nearest", inline: "nearest" });
+      }
       return;
     }
 

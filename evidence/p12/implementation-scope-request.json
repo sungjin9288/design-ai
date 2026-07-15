@@ -1,0 +1,62 @@
+{
+  "kind": "design-ai-implementation-scope-request",
+  "schemaVersion": 1,
+  "objective": "Keep Website Console navigation compact on mobile so the active work surface remains visible in the first viewport.",
+  "intendedBehavior": [
+    "Render the mobile section navigation as one horizontally scrollable row.",
+    "Keep every navigation target at least 44 pixels tall with visible focus and restore focus to the active tab after navigation.",
+    "Preserve the existing desktop sidebar and all navigation behavior."
+  ],
+  "files": {
+    "inspect": [
+      "docs/website-console/app.js",
+      "docs/website-console/styles.css",
+      "docs/website-console/source-bundle.test.mjs",
+      "docs/case-studies/website-console-real-pilot.md",
+      "docs/PRODUCT-READINESS.md",
+      "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+      "docs/ROADMAP.md",
+      "docs/SESSION-LOG.md",
+      "CHANGELOG.md",
+      "mkdocs.yml"
+    ],
+    "change": [
+      "docs/website-console/app.js",
+      "docs/website-console/styles.css",
+      "docs/website-console/source-bundle.test.mjs",
+      "docs/case-studies/website-console-real-pilot.md",
+      "docs/PRODUCT-READINESS.md",
+      "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+      "docs/ROADMAP.md",
+      "docs/SESSION-LOG.md",
+      "CHANGELOG.md",
+      "mkdocs.yml"
+    ],
+    "generated": [
+      "evidence/p12/**"
+    ]
+  },
+  "dependencies": [],
+  "migrations": [],
+  "externalWrites": [
+    {
+      "system": "GitHub",
+      "action": "push branch",
+      "destination": "sungjin9288/design-ai"
+    }
+  ],
+  "verificationCommands": [
+    "node --test docs/website-console/source-bundle.test.mjs",
+    "npm run release:check"
+  ],
+  "risks": [
+    "A horizontal row can hide later destinations unless native scrolling remains available to touch, trackpad, and keyboard users.",
+    "Long section labels must stay legible without shrinking the 44 pixel touch target."
+  ],
+  "preExistingChanges": [],
+  "release": {
+    "commit": true,
+    "push": true,
+    "deployment": false
+  }
+}

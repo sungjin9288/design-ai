@@ -195,6 +195,7 @@ nav:
       - Implementation scope approval: docs/IMPLEMENTATION-SCOPE.md
       - Implementation evidence: docs/IMPLEMENTATION-REVIEW-EVIDENCE.md
       - Real pilot evidence: docs/REAL-PILOT-EVIDENCE.md
+      - Website Console real pilot: docs/case-studies/website-console-real-pilot.md
   - Agent Development: docs/AGENT-DEVELOPMENT.md
   - Agent SDK:
       - Reference: docs/SDK.md

@@ -410,7 +410,9 @@ filesystem and Git access are explicit operator boundaries.
 
 ### P12 - Real pilot and adoption proof
 
-Status: implemented in the current source; internal dogfood proof pending.
+Status: implemented in the current source; one consented internal dogfood chain is
+complete, while fresh-process MCP proof is blocked by the current response-size
+limit.
 
 Run the complete review-to-implementation chain on one consented real project.
 Measure time to first useful artifact, finding precision, approval friction,
@@ -433,6 +435,15 @@ approval gate and finding decision, and separate real, synthetic, inferred, and
 unverified claims. The operation reads only supplied sources and never establishes
 identity, feedback authenticity, external adoption, production quality, or
 business outcomes.
+
+The first internal run used the Website Console itself as the target. It produced
+a useful P6 artifact in 14 seconds, accepted one concrete navigation finding,
+completed the approved mobile-navigation change, and recorded no unresolved
+implementation risk. The full P12 JSON is 416,114 bytes. Website Console preserves
+and re-exports those bytes exactly, but a fresh MCP process rejects the full nested
+response at its 220,000-byte output boundary. The next implementation slice is a
+compact MCP view that retains exact source hashes, derived measures, issues, and
+claim boundaries without duplicating every nested source body.
 
 ## Quality targets
 

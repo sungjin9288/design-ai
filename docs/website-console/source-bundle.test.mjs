@@ -810,3 +810,18 @@ test("Website Console imports start JSON without claiming reference inspection o
   assert.match(appSource, /No target mutation/);
   assert.doesNotMatch(appSource, /data-action="execute-start/);
 });
+
+test("Website Console keeps mobile section navigation compact and keyboard-stable", () => {
+  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const styles = readFileSync(path.join(CONSOLE_ROOT, "styles.css"), "utf8");
+  const responsive = styles.slice(styles.indexOf("@media (max-width: 980px)"));
+
+  assert.match(responsive, /\.nav-list \{[\s\S]*display: flex;/);
+  assert.match(responsive, /\.nav-list \{[\s\S]*overflow-x: auto;/);
+  assert.match(responsive, /\.nav-list li \{[\s\S]*flex: 0 0 auto;/);
+  assert.match(responsive, /\.nav-button \{[\s\S]*min-height: 44px;/);
+  assert.match(responsive, /\.nav-button \{[\s\S]*white-space: nowrap;/);
+  assert.match(styles, /outline: 3px solid var\(--accent\);/);
+  assert.match(appSource, /activeButton\.focus\(\{ preventScroll: true \}\)/);
+  assert.match(appSource, /activeButton\.scrollIntoView\(\{ block: "nearest", inline: "nearest" \}\)/);
+});

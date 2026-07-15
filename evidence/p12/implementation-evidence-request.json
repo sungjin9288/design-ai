@@ -1,0 +1,265 @@
+{
+  "kind": "design-ai-implementation-evidence-request",
+  "schemaVersion": 1,
+  "consumer": "codex",
+  "implementationStartedAt": "2026-07-15T15:32:28.000Z",
+  "implementationCompletedAt": "2026-07-15T16:16:53.000Z",
+  "executedWork": [
+    {
+      "statusEntry": " M CHANGELOG.md",
+      "path": "CHANGELOG.md",
+      "summary": "Recorded source-linked P12 dogfood evidence: CHANGELOG.md"
+    },
+    {
+      "statusEntry": " M docs/PRODUCT-READINESS.md",
+      "path": "docs/PRODUCT-READINESS.md",
+      "summary": "Updated source readiness with the completed dogfood and explicit MCP transport blocker."
+    },
+    {
+      "statusEntry": " M docs/PRODUCT-SPECIALIZATION-PLAN.md",
+      "path": "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+      "summary": "Updated P12 specialization evidence and the compact MCP follow-up."
+    },
+    {
+      "statusEntry": " M docs/ROADMAP.md",
+      "path": "docs/ROADMAP.md",
+      "summary": "Closed verified Phase 790 dogfood checks and kept fresh MCP transport pending."
+    },
+    {
+      "statusEntry": " M docs/SESSION-LOG.md",
+      "path": "docs/SESSION-LOG.md",
+      "summary": "Recorded measured dogfood outcomes and the remaining transport gap."
+    },
+    {
+      "statusEntry": " M docs/website-console/app.js",
+      "path": "docs/website-console/app.js",
+      "summary": "Restored keyboard focus to the active Website Console navigation target after rerender."
+    },
+    {
+      "statusEntry": " M docs/website-console/source-bundle.test.mjs",
+      "path": "docs/website-console/source-bundle.test.mjs",
+      "summary": "Locked responsive navigation, focus restoration, and focus-ring behavior with focused tests."
+    },
+    {
+      "statusEntry": " M docs/website-console/styles.css",
+      "path": "docs/website-console/styles.css",
+      "summary": "Kept responsive navigation in one scrollable row and raised the focus ring to AA contrast."
+    },
+    {
+      "statusEntry": " M mkdocs.yml",
+      "path": "mkdocs.yml",
+      "summary": "Added the real-pilot case to the documentation navigation."
+    },
+    {
+      "statusEntry": "?? docs/case-studies/website-console-real-pilot.md",
+      "path": "docs/case-studies/website-console-real-pilot.md",
+      "summary": "Published the claim-bounded internal pilot case with measured evidence."
+    },
+    {
+      "statusEntry": "?? evidence/p12/browser/browser-verification.json",
+      "path": "evidence/p12/browser/browser-verification.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/browser/browser-verification.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/browser/desktop-1440.png",
+      "path": "evidence/p12/browser/desktop-1440.png",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/browser/desktop-1440.png"
+    },
+    {
+      "statusEntry": "?? evidence/p12/browser/mobile-390.png",
+      "path": "evidence/p12/browser/mobile-390.png",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/browser/mobile-390.png"
+    },
+    {
+      "statusEntry": "?? evidence/p12/browser/mobile-keyboard-focus.png",
+      "path": "evidence/p12/browser/mobile-keyboard-focus.png",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/browser/mobile-keyboard-focus.png"
+    },
+    {
+      "statusEntry": "?? evidence/p12/browser/playwright-focus-final.log",
+      "path": "evidence/p12/browser/playwright-focus-final.log",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/browser/playwright-focus-final.log"
+    },
+    {
+      "statusEntry": "?? evidence/p12/browser/playwright-keyboard.log",
+      "path": "evidence/p12/browser/playwright-keyboard.log",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/browser/playwright-keyboard.log"
+    },
+    {
+      "statusEntry": "?? evidence/p12/browser/playwright-layout.log",
+      "path": "evidence/p12/browser/playwright-layout.log",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/browser/playwright-layout.log"
+    },
+    {
+      "statusEntry": "?? evidence/p12/browser/playwright-pilot-console.log",
+      "path": "evidence/p12/browser/playwright-pilot-console.log",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/browser/playwright-pilot-console.log"
+    },
+    {
+      "statusEntry": "?? evidence/p12/browser/playwright-reduced-motion.log",
+      "path": "evidence/p12/browser/playwright-reduced-motion.log",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/browser/playwright-reduced-motion.log"
+    },
+    {
+      "statusEntry": "?? evidence/p12/docs-check-final.log",
+      "path": "evidence/p12/docs-check-final.log",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/docs-check-final.log"
+    },
+    {
+      "statusEntry": "?? evidence/p12/focused-test.log",
+      "path": "evidence/p12/focused-test.log",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/focused-test.log"
+    },
+    {
+      "statusEntry": "?? evidence/p12/implementation-evidence-request.json",
+      "path": "evidence/p12/implementation-evidence-request.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/implementation-evidence-request.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/implementation-evidence.json",
+      "path": "evidence/p12/implementation-evidence.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/implementation-evidence.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/implementation-scope-approval.json",
+      "path": "evidence/p12/implementation-scope-approval.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/implementation-scope-approval.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/implementation-scope-proposal.json",
+      "path": "evidence/p12/implementation-scope-proposal.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/implementation-scope-proposal.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/implementation-scope-request.json",
+      "path": "evidence/p12/implementation-scope-request.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/implementation-scope-request.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/mcp-full-output-failure.json",
+      "path": "evidence/p12/mcp-full-output-failure.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/mcp-full-output-failure.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/package-check-final.log",
+      "path": "evidence/p12/package-check-final.log",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/package-check-final.log"
+    },
+    {
+      "statusEntry": "?? evidence/p12/pilot-evidence.json",
+      "path": "evidence/p12/pilot-evidence.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/pilot-evidence.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/pilot-record.json",
+      "path": "evidence/p12/pilot-record.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/pilot-record.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/release-check.log",
+      "path": "evidence/p12/release-check.log",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/release-check.log"
+    },
+    {
+      "statusEntry": "?? evidence/p12/review-handoff-receipt.json",
+      "path": "evidence/p12/review-handoff-receipt.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/review-handoff-receipt.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/review-handoff.json",
+      "path": "evidence/p12/review-handoff.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/review-handoff.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/review-workflow.json",
+      "path": "evidence/p12/review-workflow.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/review-workflow.json"
+    },
+    {
+      "statusEntry": "?? evidence/p12/target-repo-intake.json",
+      "path": "evidence/p12/target-repo-intake.json",
+      "summary": "Recorded source-linked P12 dogfood evidence: evidence/p12/target-repo-intake.json"
+    }
+  ],
+  "verificationResults": [
+    {
+      "command": "node --test docs/website-console/source-bundle.test.mjs",
+      "status": "pass",
+      "startedAt": "2026-07-15T15:49:36.000Z",
+      "completedAt": "2026-07-15T15:49:36.000Z",
+      "exitCode": 0,
+      "summary": "All 25 Website Console focused contract tests passed.",
+      "artifacts": [
+        "evidence/p12/focused-test.log"
+      ]
+    },
+    {
+      "command": "npm run release:check",
+      "status": "pass",
+      "startedAt": "2026-07-15T15:37:49.000Z",
+      "completedAt": "2026-07-15T16:14:50.000Z",
+      "exitCode": 0,
+      "summary": "The full release gate passed with 815 tests, 8 strict audits, 766 packaged files, warning-free docs, and installed-bin plus one-shot package smoke.",
+      "artifacts": [
+        "evidence/p12/release-check.log"
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "id": "p12-navigation-accessibility",
+      "category": "accessibility",
+      "status": "confirmed",
+      "summary": "Keyboard navigation reaches every tab, scrolls the last tab into view, restores focus after activation, retains a 3px focus ring above 5.6:1 contrast, and keeps 44px targets.",
+      "artifacts": [
+        "evidence/p12/browser/browser-verification.json",
+        "evidence/p12/browser/mobile-keyboard-focus.png",
+        "evidence/p12/browser/playwright-focus-final.log"
+      ]
+    },
+    {
+      "id": "p12-navigation-responsive",
+      "category": "responsive",
+      "status": "confirmed",
+      "summary": "Desktop retains the sticky grid sidebar; 390px mobile uses one 52px scrollable navigation row with no body overflow and visible work content in the first viewport.",
+      "artifacts": [
+        "evidence/p12/browser/browser-verification.json",
+        "evidence/p12/browser/desktop-1440.png",
+        "evidence/p12/browser/mobile-390.png",
+        "evidence/p12/browser/playwright-layout.log"
+      ]
+    },
+    {
+      "id": "p12-navigation-browser",
+      "category": "browser",
+      "status": "confirmed",
+      "summary": "Chrome Playwright runs completed with zero console errors and warnings, five repeated activations, reverse keyboard navigation, and reduced-motion preference enabled.",
+      "artifacts": [
+        "evidence/p12/browser/browser-verification.json",
+        "evidence/p12/browser/playwright-keyboard.log",
+        "evidence/p12/browser/playwright-reduced-motion.log"
+      ]
+    },
+    {
+      "id": "p12-console-original-round-trip",
+      "category": "browser",
+      "status": "confirmed",
+      "summary": "Website Console preserved and re-exported all 416,114 P12 source bytes with an unchanged SHA-256, then restored P11 after clear.",
+      "artifacts": [
+        "evidence/p12/browser/browser-verification.json",
+        "evidence/p12/browser/playwright-pilot-console.log"
+      ]
+    },
+    {
+      "id": "p12-final-package-and-docs",
+      "category": "runtime",
+      "status": "confirmed",
+      "summary": "After the case study count was corrected, package inventory passed at 766 files and MkDocs passed with zero warnings and errors.",
+      "artifacts": [
+        "evidence/p12/package-check-final.log",
+        "evidence/p12/docs-check-final.log"
+      ]
+    }
+  ],
+  "remainingRisks": []
+}

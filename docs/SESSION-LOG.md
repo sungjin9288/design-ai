@@ -10,7 +10,14 @@ For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
   evidence, the original P6 workflow, and one consented operator record; derives
   first-value, finding, approval, implementation, and risk measures; and keeps
   real, synthetic, inferred, and unverified claims separate. The operation stays
-  read-only and does not establish external adoption or production quality.
+  read-only and does not establish external adoption or production quality. The
+  first consented Website Console dogfood run reached a useful artifact in 14
+  seconds, accepted one finding, completed the approved mobile-navigation change,
+  and passed 815 tests, 8 strict audits, package smoke, and desktop/mobile browser
+  checks. Console import/export preserved all 416,114 source bytes. A fresh MCP
+  process exposed one remaining transport gap: the full nested response is 416,019
+  bytes and exceeds the 220,000-byte output boundary, so compact MCP output remains
+  the final Phase 790 task.
 - **Phase 789 (unreleased)** — Added exact-source implementation evidence across
   CLI, in-process MCP, and Website Console. The operation compares one approved
   baseline with current Git, hashes only declared regular evidence files, keeps

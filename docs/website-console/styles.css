@@ -61,7 +61,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 a:focus-visible {
-  outline: 3px solid rgba(79, 70, 229, 0.35);
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -1095,7 +1095,25 @@ td input {
   }
 
   .nav-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    gap: 4px;
+    margin-right: -16px;
+    margin-left: -16px;
+    padding: 0 16px 8px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+    scroll-snap-type: inline proximity;
+  }
+
+  .nav-list li {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .nav-button {
+    width: auto;
+    white-space: nowrap;
   }
 
   .main {
@@ -1126,10 +1144,6 @@ td input {
   .button,
   .nav-button {
     min-height: 44px;
-  }
-
-  .nav-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .nav-count {

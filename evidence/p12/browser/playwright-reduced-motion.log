@@ -1,0 +1,14 @@
+### Ran Playwright code
+```js
+await (async (page) => { await page.emulateMedia({ reducedMotion: 'reduce' }); })(page);
+```
+### Result
+{
+  "reducedMotion": true,
+  "activeLabel": "Prompt Generator",
+  "focused": "Prompt Generator"
+}
+### Ran Playwright code
+```js
+await page.evaluate('() => (({reducedMotion:matchMedia(\'(prefers-reduced-motion: reduce)\').matches,activeLabel:document.querySelector(\'[aria-current=page]\').textContent.trim(),focused:document.activeElement.textContent.trim()}))');
+```

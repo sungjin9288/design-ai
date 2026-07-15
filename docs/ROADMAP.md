@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase 790 - Real pilot evidence (implemented, verification in progress)
+## Phase 790 - Real pilot evidence (implemented, MCP transport fix in progress)
 
 - [x] Added strict pilot-record and derived pilot-evidence v1 contracts over exact
   P11 implementation evidence, original P6 workflow, and operator record sources.
@@ -13,8 +13,19 @@
   the read-only evidence boundary.
 - [x] Added installed-bin and one-shot `npm exec` package smoke over all three exact
   sources with unchanged-input and unchanged-target assertions.
-- [ ] Complete the full release gate, fresh MCP process proof, desktop/mobile
-  Website Console proof, and one consented internal dogfood case study.
+- [x] Completed one consented Website Console dogfood chain with a 14-second first
+  useful artifact, one accepted finding, complete P11 evidence, and no unresolved
+  implementation risk.
+- [x] Passed the full local release gate with 815 tests, all 8 strict audits,
+  warning-free docs, 766 packaged files, and installed-bin plus one-shot package
+  smoke.
+- [x] Verified desktop and mobile layout, keyboard focus restoration, 44-pixel
+  targets, reduced-motion detection, clean console output, and an exact 416,114-byte
+  Website Console import/export round trip.
+- [x] Published the internal case with real, synthetic, inferred, and unverified
+  claims kept separate.
+- [ ] Add a compact MCP response below the 220,000-byte output boundary and pass a
+  fresh-process MCP proof without weakening exact source identity.
 
 ## Phase 789 - Implementation evidence (implemented, unreleased)
 
