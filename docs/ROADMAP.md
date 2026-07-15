@@ -25,7 +25,7 @@ claim.
 - [x] Website Console receipt import, export, clear, and handoff restore pass at 1440px and 390px with exact exported SHA-256, 44px minimum visible button targets, no horizontal overflow, and no console warnings or errors.
 - [x] A fresh Codex process calls `design_ai_verify_review_handoff` through the configured local MCP server and returns the bounded receipt.
 - [ ] Fresh Claude MCP invocation remains blocked before tool execution because the organization has disabled Claude Code subscription access. The configured server itself reports connected; no Claude receipt claim is made.
-- [ ] Required pull-request CI and merge evidence.
+- [x] PR #42 passed required CI run `29408587642` before merge.
 
 ## Phase 785 - Review evidence handoff (implemented, unreleased)
 
