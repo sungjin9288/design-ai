@@ -70,6 +70,10 @@ handoff. It validates exact contracts and finding-id sets, records SHA-256 evide
 and publishes case studies without an aggregate quality score or a real customer
 adoption claim.
 
+The [P16 readiness record](https://github.com/sungjin9288/design-ai/blob/main/evidence/p16/operations-readiness.md)
+links the merged operating guide, lifecycle labels, main CI, Pages deployment,
+desktop/mobile checks, and the unchanged zero-participation claim boundary.
+
 This document separates shipped product scope from future product ideas so the roadmap does not imply that every possible AI feature is already complete.
 
 ## TL;DR
