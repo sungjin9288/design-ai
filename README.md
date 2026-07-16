@@ -1,18 +1,29 @@
 # Design AI
 
-[![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
-[![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/)
-[![Knowledge files](https://img.shields.io/badge/knowledge-97-blue)](knowledge/PRINCIPLES.md)
-[![Examples](https://img.shields.io/badge/examples-226-blue)](examples/README.md)
-[![Skills](https://img.shields.io/badge/skills-21-blue)](skills/README.md)
+<section class="design-ai-home-hero">
+  <p class="design-ai-home-lead"><strong>Design decisions your coding agent can explain, implement, and verify.</strong></p>
+  <p>Give Claude Code, Codex, Cursor, or Aider a structured design practice with accessibility, Korean-market depth, human approval gates, and exact evidence from brief to implementation.</p>
+  <p class="design-ai-home-actions">
+    <a class="design-ai-home-action design-ai-home-action--primary" href="https://sungjin9288.github.io/design-ai/docs/QUICKSTART/">Start in 5 minutes</a>
+    <a class="design-ai-home-action" href="https://sungjin9288.github.io/design-ai/docs/DISTRIBUTION/">Install v5.1.0</a>
+  </p>
+  <p class="design-ai-home-proof"><span>21 expert skills</span><span>29 MCP tools</span><span>20 SDK exports</span><span>WCAG AA by default</span></p>
+</section>
+
+<div class="design-ai-home-badges">
+  <a href="https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml"><img alt="Audit passing" src="https://img.shields.io/badge/audit-passing-brightgreen"></a>
+  <a href="https://sungjin9288.github.io/design-ai/"><img alt="Documentation live" src="https://img.shields.io/badge/docs-live-indigo"></a>
+  <a href="https://github.com/sungjin9288/design-ai/blob/main/knowledge/PRINCIPLES.md"><img alt="97 knowledge files" src="https://img.shields.io/badge/knowledge-97-blue"></a>
+  <a href="https://github.com/sungjin9288/design-ai/tree/main/examples"><img alt="226 examples" src="https://img.shields.io/badge/examples-226-blue"></a>
+</div>
 
 > 🇺🇸 English / [🇰🇷 한국어](https://github.com/sungjin9288/design-ai/blob/main/README.ko.md)
 
-A model-agnostic design knowledge base + skill system. Drop it in front of any AI coding agent (Claude Code, Codex CLI, Cursor, Aider) and it becomes a senior product designer with 20+ years of experience — opinionated, accessible-by-default, Korean-market-fluent.
-
 > **Not a model. Not a fine-tune.** A structured corpus of design expertise + agent-ready instructions that turn a general-purpose LLM into an expert.
 
-> **Distribution status, checked 2026-07-16:** GitHub Release `v5.1.0` and `@design-ai/cli@5.1.0` are public. npm `latest` points to `5.1.0`, the package carries SLSA provenance from GitHub Actions Trusted Publishing, and the publish workflow's public registry smoke passed. The Homebrew formula is pinned to the same tag and passed temporary-tap source install plus formula test. GitHub Pages docs are live, and `sungjin.design-ai-vscode@0.4.1` remains public on the VS Code Marketplace. See [`docs/external-status.md`](docs/external-status.md).
+**v5.1.0 is public.** npm Trusted Publishing, SLSA provenance, GitHub Release,
+Homebrew install/test, and public registry smoke are verified. See the
+[`external publication status`](docs/external-status.md) for exact evidence.
 
 ## Coverage at a glance
 

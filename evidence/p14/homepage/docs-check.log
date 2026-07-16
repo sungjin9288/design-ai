@@ -1,0 +1,19 @@
+
+> @design-ai/cli@5.1.0 docs:check
+> python3 -B tools/audit/local-ci.py --docs-only
+
+
+Docs workflow policy check passed
+
+$ python3 -m mkdocs --version
+python -m mkdocs, version 1.6.1 from /Users/sungjin/.local/share/mise/installs/python/3.12.12/lib/python3.12/site-packages/mkdocs (Python 3.12)
+
+$ ./tools/build-docs.sh
+[0;34mℹ[0m  Populated /Users/sungjin/dev/design/site-src with 13 entries
+[0;32m✓[0m  Now run: mkdocs serve  (or mkdocs build)
+
+$ python3 -m mkdocs build --clean
+
+MkDocs warning policy passed: 0/0 refs-only warning(s)
+
+Docs-only MkDocs policy check passed

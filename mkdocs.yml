@@ -199,6 +199,7 @@ nav:
       - Website Console real pilot: docs/case-studies/website-console-real-pilot.md
       - Verified design iteration: docs/REVIEW-COMPARISON.md
       - Comparison case study: docs/case-studies/verified-design-iteration.md
+      - Documentation homepage pilot: docs/case-studies/documentation-homepage-pilot.md
   - Agent Development: docs/AGENT-DEVELOPMENT.md
   - Agent SDK:
       - Reference: docs/SDK.md

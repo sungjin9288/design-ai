@@ -1,0 +1,321 @@
+{
+  "kind": "design-ai-implementation-evidence-request",
+  "schemaVersion": 1,
+  "consumer": "codex-homepage-implementer",
+  "implementationStartedAt": "2026-07-16T09:53:14.000Z",
+  "implementationCompletedAt": "2026-07-16T10:26:31.000Z",
+  "executedWork": [
+    {
+      "statusEntry": " M README.ko.md",
+      "path": "README.ko.md",
+      "summary": "Applied the same first-value hierarchy and natural product copy to the Korean homepage."
+    },
+    {
+      "statusEntry": " M README.md",
+      "path": "README.md",
+      "summary": "Reframed the English documentation homepage around a clear first-value path and compact proof."
+    },
+    {
+      "statusEntry": " M docs/PRODUCT-READINESS.md",
+      "path": "docs/PRODUCT-READINESS.md",
+      "summary": "Aligned product readiness with the completed internal homepage pilot and unverified external participation."
+    },
+    {
+      "statusEntry": " M docs/PRODUCT-SPECIALIZATION-PLAN.md",
+      "path": "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+      "summary": "Recorded the improved comparison and retained external-adoption gates."
+    },
+    {
+      "statusEntry": " M docs/ROADMAP.md",
+      "path": "docs/ROADMAP.md",
+      "summary": "Closed the verified homepage pilot item without closing the external pilot item."
+    },
+    {
+      "statusEntry": " M docs/SESSION-LOG.md",
+      "path": "docs/SESSION-LOG.md",
+      "summary": "Added the measured homepage pilot result to the durable phase history."
+    },
+    {
+      "statusEntry": " M docs/site-overrides/extra.css",
+      "path": "docs/site-overrides/extra.css",
+      "summary": "Added responsive hero, action, proof, focus, and font-delivery styles with reduced-motion behavior."
+    },
+    {
+      "statusEntry": " M docs/site-overrides/main.html",
+      "path": "docs/site-overrides/main.html",
+      "summary": "Shortened the localized announcement and made the skip-link heading focusable."
+    },
+    {
+      "statusEntry": " M mkdocs.yml",
+      "path": "mkdocs.yml",
+      "summary": "Added the documentation homepage pilot to the published navigation."
+    },
+    {
+      "statusEntry": "?? docs/case-studies/documentation-homepage-pilot.md",
+      "path": "docs/case-studies/documentation-homepage-pilot.md",
+      "summary": "Documented the owner-consented P6-P13 pilot, measured outcomes, evidence, and claim boundary."
+    },
+    {
+      "statusEntry": "?? docs/site-overrides/partials/header.html",
+      "path": "docs/site-overrides/partials/header.html",
+      "summary": "Added localized programmatic names to the Material drawer and search toggles."
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/.gitattributes",
+      "path": "evidence/p14/homepage/.gitattributes",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/.gitattributes"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/baseline-browser-qa.md",
+      "path": "evidence/p14/homepage/baseline-browser-qa.md",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/baseline-browser-qa.md"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/baseline-desktop.png",
+      "path": "evidence/p14/homepage/baseline-desktop.png",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/baseline-desktop.png"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/baseline-mobile.png",
+      "path": "evidence/p14/homepage/baseline-mobile.png",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/baseline-mobile.png"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/baseline-quality-report.json",
+      "path": "evidence/p14/homepage/baseline-quality-report.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/baseline-quality-report.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/baseline-review.json",
+      "path": "evidence/p14/homepage/baseline-review.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/baseline-review.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/baseline.html",
+      "path": "evidence/p14/homepage/baseline.html",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/baseline.html"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/candidate-browser-qa.md",
+      "path": "evidence/p14/homepage/candidate-browser-qa.md",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/candidate-browser-qa.md"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/candidate-console.log",
+      "path": "evidence/p14/homepage/candidate-console.log",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/candidate-console.log"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/candidate-desktop.png",
+      "path": "evidence/p14/homepage/candidate-desktop.png",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/candidate-desktop.png"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/candidate-ko-mobile.png",
+      "path": "evidence/p14/homepage/candidate-ko-mobile.png",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/candidate-ko-mobile.png"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/candidate-mobile.png",
+      "path": "evidence/p14/homepage/candidate-mobile.png",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/candidate-mobile.png"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/candidate-quality-report.json",
+      "path": "evidence/p14/homepage/candidate-quality-report.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/candidate-quality-report.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/candidate-review.json",
+      "path": "evidence/p14/homepage/candidate-review.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/candidate-review.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/candidate.html",
+      "path": "evidence/p14/homepage/candidate.html",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/candidate.html"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/docs-check.log",
+      "path": "evidence/p14/homepage/docs-check.log",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/docs-check.log"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/implementation-evidence-request.json",
+      "path": "evidence/p14/homepage/implementation-evidence-request.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/implementation-evidence-request.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/implementation-evidence.json",
+      "path": "evidence/p14/homepage/implementation-evidence.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/implementation-evidence.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/implementation-scope-approval.json",
+      "path": "evidence/p14/homepage/implementation-scope-approval.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/implementation-scope-approval.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/implementation-scope-proposal.json",
+      "path": "evidence/p14/homepage/implementation-scope-proposal.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/implementation-scope-proposal.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/implementation-scope-request.json",
+      "path": "evidence/p14/homepage/implementation-scope-request.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/implementation-scope-request.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/mkdocs-build.log",
+      "path": "evidence/p14/homepage/mkdocs-build.log",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/mkdocs-build.log"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/pilot-evidence.json",
+      "path": "evidence/p14/homepage/pilot-evidence.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/pilot-evidence.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/pilot-record.json",
+      "path": "evidence/p14/homepage/pilot-record.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/pilot-record.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/release-check.log",
+      "path": "evidence/p14/homepage/release-check.log",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/release-check.log"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/release-metadata.log",
+      "path": "evidence/p14/homepage/release-metadata.log",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/release-metadata.log"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/review-comparison-verification.log",
+      "path": "evidence/p14/homepage/review-comparison-verification.log",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/review-comparison-verification.log"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/review-comparison.json",
+      "path": "evidence/p14/homepage/review-comparison.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/review-comparison.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/review-handoff-receipt.json",
+      "path": "evidence/p14/homepage/review-handoff-receipt.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/review-handoff-receipt.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/review-handoff.json",
+      "path": "evidence/p14/homepage/review-handoff.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/review-handoff.json"
+    },
+    {
+      "statusEntry": "?? evidence/p14/homepage/target-repo-intake.json",
+      "path": "evidence/p14/homepage/target-repo-intake.json",
+      "summary": "Preserved source-linked P14 homepage evidence: evidence/p14/homepage/target-repo-intake.json"
+    }
+  ],
+  "verificationResults": [
+    {
+      "command": "python3 -m mkdocs build --clean",
+      "status": "pass",
+      "startedAt": "2026-07-16T10:16:41.000Z",
+      "completedAt": "2026-07-16T10:17:08.000Z",
+      "exitCode": 0,
+      "summary": "The English and Korean documentation site built successfully from the final local source.",
+      "artifacts": [
+        "evidence/p14/homepage/mkdocs-build.log"
+      ]
+    },
+    {
+      "command": "npm run docs:check",
+      "status": "pass",
+      "startedAt": "2026-07-16T10:17:08.000Z",
+      "completedAt": "2026-07-16T10:17:37.000Z",
+      "exitCode": 0,
+      "summary": "The documentation workflow and 0/0 refs-only warning policy passed.",
+      "artifacts": [
+        "evidence/p14/homepage/docs-check.log"
+      ]
+    },
+    {
+      "command": "npm run release:metadata",
+      "status": "pass",
+      "startedAt": "2026-07-16T10:17:37.000Z",
+      "completedAt": "2026-07-16T10:17:37.000Z",
+      "exitCode": 0,
+      "summary": "Release metadata remained aligned at v5.1.0 with eight audits and the 2026-07 changelog entry.",
+      "artifacts": [
+        "evidence/p14/homepage/release-metadata.log"
+      ]
+    },
+    {
+      "command": "npm run release:check",
+      "status": "pass",
+      "startedAt": "2026-07-16T10:17:53.000Z",
+      "completedAt": "2026-07-16T10:26:31.000Z",
+      "exitCode": 0,
+      "summary": "The full gate passed with 832 tests, eight strict audits, 776 packaged files, documentation policy checks, installed-bin smoke, and one-shot npm exec smoke.",
+      "artifacts": [
+        "evidence/p14/homepage/release-check.log"
+      ]
+    },
+    {
+      "command": "design-ai review-compare evidence/p14/homepage/baseline-quality-report.json --candidate evidence/p14/homepage/candidate-quality-report.json --json",
+      "status": "pass",
+      "startedAt": "2026-07-16T10:17:37.000Z",
+      "completedAt": "2026-07-16T10:17:37.000Z",
+      "exitCode": 0,
+      "summary": "The public v5.1.0 CLI reproduced an improved comparison with two resolved findings and no persistent, introduced, or uncertain finding.",
+      "artifacts": [
+        "evidence/p14/homepage/review-comparison-verification.log"
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "id": "homepage-accessibility",
+      "category": "accessibility",
+      "status": "confirmed",
+      "summary": "Localized control names, skip-link focus, 49.59-pixel actions, a three-pixel focus outline, and CTA contrast ratios of 6.86:1 and 16.07:1 were confirmed.",
+      "artifacts": [
+        "evidence/p14/homepage/candidate-browser-qa.md",
+        "evidence/p14/homepage/candidate-desktop.png"
+      ]
+    },
+    {
+      "id": "homepage-responsive",
+      "category": "responsive",
+      "status": "confirmed",
+      "summary": "English desktop, English mobile, and Korean mobile captures have no horizontal overflow and keep the complete action hero in the first viewport.",
+      "artifacts": [
+        "evidence/p14/homepage/candidate-browser-qa.md",
+        "evidence/p14/homepage/candidate-desktop.png",
+        "evidence/p14/homepage/candidate-mobile.png",
+        "evidence/p14/homepage/candidate-ko-mobile.png"
+      ]
+    },
+    {
+      "id": "homepage-browser",
+      "category": "browser",
+      "status": "confirmed",
+      "summary": "Five search cycles, five drawer cycles, keyboard skip navigation, and reduced-motion checks passed; the local sitemap warning remains recorded.",
+      "artifacts": [
+        "evidence/p14/homepage/candidate-browser-qa.md",
+        "evidence/p14/homepage/candidate-console.log"
+      ]
+    },
+    {
+      "id": "homepage-comparison",
+      "category": "runtime",
+      "status": "confirmed",
+      "summary": "The exact-source P13 comparison resolves both P1 findings and reports no persistent, introduced, or uncertain finding.",
+      "artifacts": [
+        "evidence/p14/homepage/review-comparison.json",
+        "evidence/p14/homepage/review-comparison-verification.log"
+      ]
+    }
+  ],
+  "remainingRisks": []
+}

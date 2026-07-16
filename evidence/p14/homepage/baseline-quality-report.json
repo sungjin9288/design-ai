@@ -1,0 +1,220 @@
+{
+  "kind": "design-ai-quality-report",
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-16T10:15:00.000Z",
+  "subject": {
+    "name": "design-ai documentation homepage",
+    "type": "page",
+    "source": "documentation-homepage"
+  },
+  "context": {
+    "brief": "Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.",
+    "routeId": "design-engineering-review",
+    "locale": "en",
+    "viewports": [
+      "mobile",
+      "desktop"
+    ]
+  },
+  "boundary": {
+    "mode": "local-evidence-write",
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "localEvidenceWrites": true,
+    "localEvidencePath": "evidence/p14/homepage",
+    "notes": [
+      "The report records only local P14 evidence produced from the approved homepage pilot.",
+      "Repository mutation, deployment, and external adoption claims remain outside this report."
+    ]
+  },
+  "sources": [
+    {
+      "kind": "code",
+      "reference": "evidence/p14/homepage/baseline.html",
+      "observation": "Captured the rendered documentation homepage before the approved implementation."
+    },
+    {
+      "kind": "screenshot",
+      "reference": "evidence/p14/homepage/baseline-desktop.png",
+      "observation": "Captured the 1440 by 900 desktop baseline."
+    },
+    {
+      "kind": "screenshot",
+      "reference": "evidence/p14/homepage/baseline-mobile.png",
+      "observation": "Captured the 390 by 844 mobile baseline."
+    },
+    {
+      "kind": "runtime",
+      "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+      "observation": "Recorded first-viewport, accessibility, responsive, and console observations from the local baseline."
+    }
+  ],
+  "lenses": [
+    {
+      "id": "purpose-frequency",
+      "status": "fail",
+      "summary": "The first viewport explains distribution status before giving a first-time visitor a clear install or quickstart action.",
+      "evidence": [
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/baseline-desktop.png",
+          "observation": "The badges and long release paragraph occupy the primary content area without a prominent next action."
+        },
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/baseline-mobile.png",
+          "observation": "The mobile first viewport does not expose a clear install or quickstart command."
+        }
+      ]
+    },
+    {
+      "id": "response",
+      "status": "unverified",
+      "summary": "The baseline capture did not verify repeated search or navigation response.",
+      "evidence": [
+        {
+          "kind": "runtime",
+          "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+          "observation": "No repeated-action sequence was retained for the baseline."
+        }
+      ]
+    },
+    {
+      "id": "spatial-continuity",
+      "status": "unverified",
+      "summary": "The baseline capture did not establish focus continuity through the skip link and primary action.",
+      "evidence": [
+        {
+          "kind": "runtime",
+          "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+          "observation": "Keyboard destination continuity was not proven before implementation."
+        }
+      ]
+    },
+    {
+      "id": "interruptibility",
+      "status": "unverified",
+      "summary": "The baseline capture did not exercise repeated open and dismiss cycles.",
+      "evidence": [
+        {
+          "kind": "runtime",
+          "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+          "observation": "Search and drawer interruption behavior remained unverified."
+        }
+      ]
+    },
+    {
+      "id": "timing-cohesion",
+      "status": "unverified",
+      "summary": "The baseline capture did not verify reduced-motion behavior.",
+      "evidence": [
+        {
+          "kind": "runtime",
+          "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+          "observation": "No reduced-motion profile was retained for the baseline."
+        }
+      ]
+    },
+    {
+      "id": "performance",
+      "status": "fail",
+      "summary": "The baseline console recorded a failed Pretendard font request and the local language sitemap warning.",
+      "evidence": [
+        {
+          "kind": "runtime",
+          "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+          "observation": "The browser console recorded a 403 response from the previous Pretendard CDN URL and a local /ko/sitemap.xml 404."
+        }
+      ]
+    },
+    {
+      "id": "accessibility",
+      "status": "fail",
+      "summary": "Static inspection confirmed an unnamed search toggle input.",
+      "evidence": [
+        {
+          "kind": "code",
+          "reference": "evidence/p14/homepage/baseline-review.json",
+          "observation": "The canonical static review found one P1 accessible-name defect."
+        }
+      ]
+    },
+    {
+      "id": "responsive-resilience",
+      "status": "warning",
+      "summary": "The baseline did not overflow, but the mobile first viewport buried the next action below release status content.",
+      "evidence": [
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/baseline-mobile.png",
+          "observation": "The 390 by 844 viewport renders without horizontal overflow while withholding the primary action from the first view."
+        }
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "homepage-first-value-path-buried",
+      "lens": "purpose-frequency",
+      "severity": "p1",
+      "status": "confirmed",
+      "title": "Expose one clear first-value path in the first viewport",
+      "location": "README.md#design-ai",
+      "before": "Badges and release status lead the page without a prominent install or quickstart action.",
+      "after": "Lead with a concise product promise, one primary quickstart action, one distribution action, and compact proof.",
+      "why": "A first-time visitor must understand the product and reach a verified starting path without scanning release metadata.",
+      "evidence": [
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/baseline-desktop.png",
+          "observation": "The desktop baseline contains no prominent first-value action."
+        },
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/baseline-mobile.png",
+          "observation": "The mobile baseline hides the first useful action below the first viewport."
+        }
+      ],
+      "verification": [
+        "Confirm the product promise and primary quickstart action are visible in the first desktop and mobile viewports.",
+        "Confirm the primary action points to the verified quickstart documentation path."
+      ]
+    },
+    {
+      "id": "missing-accessible-name-input-91-2",
+      "lens": "accessibility",
+      "severity": "p1",
+      "status": "confirmed",
+      "title": "Give the input control a programmatic name",
+      "location": "evidence/p14/homepage/baseline.html:91",
+      "before": "The input control has no associated label or supported accessible-name attribute.",
+      "after": "Associate a visible label, or provide an accurate aria-label or aria-labelledby reference.",
+      "why": "Screen-reader and voice-control users need a stable programmatic name for every interactive control.",
+      "evidence": [
+        {
+          "kind": "code",
+          "reference": "evidence/p14/homepage/baseline-review.json",
+          "observation": "Static inspection found the search toggle input without a programmatic name."
+        }
+      ],
+      "verification": [
+        "Inspect the accessibility tree and confirm the control exposes the intended name.",
+        "Reach the control by keyboard and confirm its visible focus indicator remains present."
+      ]
+    }
+  ],
+  "summary": {
+    "status": "fail",
+    "confirmedFindings": 2,
+    "unverifiedFindings": 0,
+    "blockingFindings": 0,
+    "nextAction": "Implement the approved first-value path and accessible header controls, then collect browser evidence at both declared viewports."
+  },
+  "approval": {
+    "status": "pending",
+    "requiredBefore": [
+      "editing the target repository",
+      "publishing or deploying the implementation"
+    ]
+  }
+}

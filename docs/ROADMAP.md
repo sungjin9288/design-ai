@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase 792 - Public release complete, adoption evidence in progress (v5.1.0)
+## Phase 792 - Public release and internal homepage pilot complete (v5.1.0)
 
 - [x] Chose a backward-compatible minor release: the P6-P13 surfaces are additive
   and preserve the existing CLI, SDK, MCP, learning-write, and permission contracts.
@@ -14,7 +14,7 @@
   and GitHub Release run `29485715193`.
 - [x] Refreshed the Homebrew formula against the published tag archive and passed
   Ruby syntax, Homebrew style, temporary-tap source install, and formula test.
-- [ ] Run the documentation homepage through baseline, approved implementation,
+- [x] Run the documentation homepage through baseline, approved implementation,
   candidate, browser, and exact review-comparison evidence.
 - [ ] Prepare three consent-gated external pilot slots without claiming adoption
   before another project owner actually participates.
@@ -28,6 +28,9 @@
   registry smoke. GitHub Release `v5.1.0` is public with a digest-attested package
   asset. The Homebrew source archive SHA-256 is
   `66bf42c34ad1bf65f7db0a644353094a5fba715720f108549f69b3f0580b22b1`.
+- The documentation homepage internal pilot resolves both confirmed P1 findings,
+  adds no persistent, introduced, or uncertain finding, and preserves the local
+  multilingual sitemap 404 as a performance warning rather than hiding it.
 
 ### Versions
 
@@ -42,7 +45,8 @@
 
 ### What's still ahead
 
-- One documentation-homepage pilot and three consent-gated external pilot slots.
+- Three consent-gated external pilot slots and real owner participation. A
+  prepared slot is not adoption evidence.
 
 ## Phase 791 - Verified design iteration (merged in PR #47)
 

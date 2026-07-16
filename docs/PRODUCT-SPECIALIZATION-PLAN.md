@@ -488,8 +488,8 @@ with matching source identities and unchanged read-only boundaries.
 
 ### P14 - Public release and real adoption evidence
 
-Status: v5.1.0 public distribution complete; homepage and consent-gated external
-pilot evidence in progress.
+Status: v5.1.0 public distribution and the internal documentation homepage pilot
+complete; consent-gated external participation remains unverified.
 
 Publish the complete P6-P13 workflow before adding another contract. Then run the
 same review-to-comparison path against the public documentation homepage and
@@ -502,7 +502,9 @@ Exit criteria:
 - npm `latest`, GitHub Release, and Homebrew resolve to the same verified v5.1.0
   package identity; GitHub Pages remains available.
 - The documentation homepage pilot preserves baseline, approved implementation,
-  candidate, browser, release, and comparison evidence.
+  candidate, browser, release, and comparison evidence. Its exact comparison is
+  `improved`, with two P1 findings resolved and no persistent, introduced, or
+  uncertain findings; the local sitemap warning remains explicit.
 - Three external pilot slots have explicit owner consent, data boundaries, target
   paths, measures, and stop conditions before any project is inspected.
 - At least one pilot belongs to another project owner before any external-adoption

@@ -1,0 +1,3 @@
+# Captured pages and the full release transcript preserve their exact source bytes.
+*.html -text -diff -whitespace
+release-check.log -text -diff -whitespace

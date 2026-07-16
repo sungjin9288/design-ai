@@ -1,0 +1,648 @@
+{
+  "kind": "design-ai-implementation-scope-approval",
+  "schemaVersion": 1,
+  "status": "approved-for-implementation",
+  "proposal": {
+    "reference": "/private/tmp/design-ai-p14-homepage/implementation-scope-proposal.json",
+    "sha256": "2713796ed9fd6a8b9b070a374fd9ae6fdf8acca6022ef1043071056e9d4a11d1",
+    "bytes": 28428,
+    "source": "{\n  \"kind\": \"design-ai-implementation-scope-proposal\",\n  \"schemaVersion\": 1,\n  \"status\": \"approval-pending\",\n  \"consumer\": {\n    \"name\": \"codex-homepage-implementer\",\n    \"intakeConsumerMatch\": true,\n    \"identity\": \"self-declared\"\n  },\n  \"intake\": {\n    \"reference\": \"/private/tmp/design-ai-p14-homepage/target-repo-intake.json\",\n    \"sha256\": \"747e160685284021ad76072c2eb51a64cb1c6e6e63627e4925b5d471770082a2\",\n    \"bytes\": 6359,\n    \"source\": \"{\\n  \\\"kind\\\": \\\"design-ai-target-repo-intake\\\",\\n  \\\"schemaVersion\\\": 1,\\n  \\\"status\\\": \\\"ready-for-scope-review\\\",\\n  \\\"consumer\\\": {\\n    \\\"name\\\": \\\"codex-homepage-implementer\\\",\\n    \\\"receiptConsumerMatch\\\": true,\\n    \\\"identity\\\": \\\"self-declared\\\"\\n  },\\n  \\\"receipt\\\": {\\n    \\\"reference\\\": \\\"/private/tmp/design-ai-p14-homepage/review-handoff-receipt.json\\\",\\n    \\\"sha256\\\": \\\"1a415907354535b90c796d9051626744e2ec3d58314c532f4c4ea3d9f07749b7\\\",\\n    \\\"bytes\\\": 119097,\\n    \\\"kind\\\": \\\"design-ai-review-handoff-receipt\\\",\\n    \\\"schemaVersion\\\": 1,\\n    \\\"status\\\": \\\"contract-validated\\\",\\n    \\\"consumer\\\": \\\"codex-homepage-implementer\\\",\\n    \\\"handoffSha256\\\": \\\"b85eb9a1a8841cae1202292e511528f282d98a49354ee80ad734e5532094b898\\\",\\n    \\\"reviewWorkflowSha256\\\": \\\"7e8d4ae9e8a81111ca14f31deab4d6b940990bceed26a8e1948cbed296f52090\\\",\\n    \\\"remainingApprovals\\\": [\\n      \\\"editing the target repository\\\",\\n      \\\"starting browser or accessibility verification\\\",\\n      \\\"publishing or deploying an implementation\\\"\\n    ]\\n  },\\n  \\\"target\\\": {\\n    \\\"declaredPath\\\": \\\"/Users/sungjin/dev/design\\\",\\n    \\\"resolvedPath\\\": \\\"/Users/sungjin/dev/design\\\",\\n    \\\"pathMatch\\\": true,\\n    \\\"declaredRepositoryUrl\\\": \\\"https://github.com/sungjin9288/design-ai\\\",\\n    \\\"observedRepositoryUrl\\\": \\\"https://github.com/sungjin9288/design-ai.git\\\",\\n    \\\"repositoryUrlMatch\\\": true\\n  },\\n  \\\"project\\\": {\\n    \\\"metadataStatus\\\": \\\"pass\\\",\\n    \\\"manifest\\\": \\\"package.json\\\",\\n    \\\"staticEntry\\\": \\\"\\\",\\n    \\\"packageManager\\\": \\\"npm\\\",\\n    \\\"framework\\\": \\\"Unknown\\\",\\n    \\\"scripts\\\": [\\n      {\\n        \\\"name\\\": \\\"test\\\",\\n        \\\"run\\\": \\\"npm run test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"audit\\\",\\n        \\\"run\\\": \\\"npm run audit\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"audit:strict\\\",\\n        \\\"run\\\": \\\"npm run audit:strict\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"audit:runner:self-test\\\",\\n        \\\"run\\\": \\\"npm run audit:runner:self-test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"coverage:generate\\\",\\n        \\\"run\\\": \\\"npm run coverage:generate\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"coverage:check\\\",\\n        \\\"run\\\": \\\"npm run coverage:check\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"coverage:self-test\\\",\\n        \\\"run\\\": \\\"npm run coverage:self-test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"capability:manifest:self-test\\\",\\n        \\\"run\\\": \\\"npm run capability:manifest:self-test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"doctor:assertions:self-test\\\",\\n        \\\"run\\\": \\\"npm run doctor:assertions:self-test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"smoke:assertions:self-test\\\",\\n        \\\"run\\\": \\\"npm run smoke:assertions:self-test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"package:check\\\",\\n        \\\"run\\\": \\\"npm run package:check\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"package:smoke:self-test\\\",\\n        \\\"run\\\": \\\"npm run package:smoke:self-test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"package:smoke\\\",\\n        \\\"run\\\": \\\"npm run package:smoke\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"registry:smoke\\\",\\n        \\\"run\\\": \\\"npm run registry:smoke\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"registry:smoke:self-test\\\",\\n        \\\"run\\\": \\\"npm run registry:smoke:self-test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"release:metadata\\\",\\n        \\\"run\\\": \\\"npm run release:metadata\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"release:metadata:self-test\\\",\\n        \\\"run\\\": \\\"npm run release:metadata:self-test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"ci:local:self-test\\\",\\n        \\\"run\\\": \\\"npm run ci:local:self-test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"tokens:ant-design:self-test\\\",\\n        \\\"run\\\": \\\"npm run tokens:ant-design:self-test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"release:self-test\\\",\\n        \\\"run\\\": \\\"npm run release:self-test\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"docs:check\\\",\\n        \\\"run\\\": \\\"npm run docs:check\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"release:preflight\\\",\\n        \\\"run\\\": \\\"npm run release:preflight\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"release:check\\\",\\n        \\\"run\\\": \\\"npm run release:check\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"ci:local\\\",\\n        \\\"run\\\": \\\"npm run ci:local\\\"\\n      },\\n      {\\n        \\\"name\\\": \\\"preview\\\",\\n        \\\"run\\\": \\\"npm run preview\\\"\\n      }\\n    ],\\n    \\\"startCommand\\\": \\\"npm run preview\\\"\\n  },\\n  \\\"git\\\": {\\n    \\\"status\\\": \\\"pass\\\",\\n    \\\"repository\\\": true,\\n    \\\"root\\\": \\\"/Users/sungjin/dev/design\\\",\\n    \\\"targetWithinRepository\\\": true,\\n    \\\"branch\\\": \\\"codex/p14-homepage-pilot\\\",\\n    \\\"clean\\\": true,\\n    \\\"upstream\\\": \\\"\\\",\\n    \\\"ahead\\\": 0,\\n    \\\"behind\\\": 0,\\n    \\\"remote\\\": \\\"https://github.com/sungjin9288/design-ai.git\\\",\\n    \\\"remoteMatch\\\": true,\\n    \\\"head\\\": {\\n      \\\"hash\\\": \\\"38f3b65\\\",\\n      \\\"subject\\\": \\\"docs: v5.1.0 공개 배포 증빙 확정 and publication truth alignment (#49)\\\"\\n    },\\n    \\\"changes\\\": {\\n      \\\"total\\\": 0,\\n      \\\"entries\\\": [],\\n      \\\"truncated\\\": false\\n    }\\n  },\\n  \\\"inspection\\\": {\\n    \\\"scope\\\": \\\"root-metadata-and-git-state\\\",\\n    \\\"metadataFilesRead\\\": [\\n      \\\"package.json\\\"\\n    ],\\n    \\\"metadataEntriesInspected\\\": [\\n      \\\"supported root lockfile\\\",\\n      \\\"index.html existence\\\"\\n    ],\\n    \\\"applicationSourceFilesRead\\\": [],\\n    \\\"gitCommands\\\": [\\n      \\\"git rev-parse --is-inside-work-tree\\\",\\n      \\\"git rev-parse --show-toplevel\\\",\\n      \\\"git branch --show-current\\\",\\n      \\\"git status --short\\\",\\n      \\\"git rev-parse --abbrev-ref --symbolic-full-name @{u}\\\",\\n      \\\"git config --get remote.origin.url\\\",\\n      \\\"git log -1 --pretty=%h%x09%s\\\"\\n    ]\\n  },\\n  \\\"issues\\\": [\\n    {\\n      \\\"level\\\": \\\"pass\\\",\\n      \\\"id\\\": \\\"linked-project-ready\\\",\\n      \\\"message\\\": \\\"Linked project metadata is ready for an operator-controlled preview start.\\\"\\n    },\\n    {\\n      \\\"level\\\": \\\"pass\\\",\\n      \\\"id\\\": \\\"target-git-ready\\\",\\n      \\\"message\\\": \\\"The target repository path, remote, branch, and working tree are ready for scope review.\\\"\\n    }\\n  ],\\n  \\\"remainingApprovals\\\": [\\n    \\\"editing the target repository\\\",\\n    \\\"starting browser or accessibility verification\\\",\\n    \\\"publishing or deploying an implementation\\\"\\n  ],\\n  \\\"nextAction\\\": {\\n    \\\"id\\\": \\\"implementation-scope-approval-required\\\",\\n    \\\"status\\\": \\\"pending\\\",\\n    \\\"summary\\\": \\\"Review the proposed files, scope, risks, and verification commands before implementation.\\\",\\n    \\\"approvalRequiredBefore\\\": [\\n      \\\"editing the target repository\\\",\\n      \\\"starting browser or accessibility verification\\\",\\n      \\\"publishing or deploying an implementation\\\",\\n      \\\"implementation scope\\\"\\n    ],\\n    \\\"implementationAuthorized\\\": false\\n  },\\n  \\\"boundary\\\": {\\n    \\\"mode\\\": \\\"read-only\\\",\\n    \\\"localWrites\\\": false,\\n    \\\"targetRepoMutation\\\": false,\\n    \\\"externalWrites\\\": false,\\n    \\\"networkCalls\\\": false,\\n    \\\"previewStarted\\\": false,\\n    \\\"applicationSourceRead\\\": false,\\n    \\\"consumerIdentityVerified\\\": false,\\n    \\\"implementationStarted\\\": false\\n  }\\n}\\n\",\n    \"value\": {\n      \"kind\": \"design-ai-target-repo-intake\",\n      \"schemaVersion\": 1,\n      \"status\": \"ready-for-scope-review\",\n      \"consumer\": {\n        \"name\": \"codex-homepage-implementer\",\n        \"receiptConsumerMatch\": true,\n        \"identity\": \"self-declared\"\n      },\n      \"receipt\": {\n        \"reference\": \"/private/tmp/design-ai-p14-homepage/review-handoff-receipt.json\",\n        \"sha256\": \"1a415907354535b90c796d9051626744e2ec3d58314c532f4c4ea3d9f07749b7\",\n        \"bytes\": 119097,\n        \"kind\": \"design-ai-review-handoff-receipt\",\n        \"schemaVersion\": 1,\n        \"status\": \"contract-validated\",\n        \"consumer\": \"codex-homepage-implementer\",\n        \"handoffSha256\": \"b85eb9a1a8841cae1202292e511528f282d98a49354ee80ad734e5532094b898\",\n        \"reviewWorkflowSha256\": \"7e8d4ae9e8a81111ca14f31deab4d6b940990bceed26a8e1948cbed296f52090\",\n        \"remainingApprovals\": [\n          \"editing the target repository\",\n          \"starting browser or accessibility verification\",\n          \"publishing or deploying an implementation\"\n        ]\n      },\n      \"target\": {\n        \"declaredPath\": \"/Users/sungjin/dev/design\",\n        \"resolvedPath\": \"/Users/sungjin/dev/design\",\n        \"pathMatch\": true,\n        \"declaredRepositoryUrl\": \"https://github.com/sungjin9288/design-ai\",\n        \"observedRepositoryUrl\": \"https://github.com/sungjin9288/design-ai.git\",\n        \"repositoryUrlMatch\": true\n      },\n      \"project\": {\n        \"metadataStatus\": \"pass\",\n        \"manifest\": \"package.json\",\n        \"staticEntry\": \"\",\n        \"packageManager\": \"npm\",\n        \"framework\": \"Unknown\",\n        \"scripts\": [\n          {\n            \"name\": \"test\",\n            \"run\": \"npm run test\"\n          },\n          {\n            \"name\": \"audit\",\n            \"run\": \"npm run audit\"\n          },\n          {\n            \"name\": \"audit:strict\",\n            \"run\": \"npm run audit:strict\"\n          },\n          {\n            \"name\": \"audit:runner:self-test\",\n            \"run\": \"npm run audit:runner:self-test\"\n          },\n          {\n            \"name\": \"coverage:generate\",\n            \"run\": \"npm run coverage:generate\"\n          },\n          {\n            \"name\": \"coverage:check\",\n            \"run\": \"npm run coverage:check\"\n          },\n          {\n            \"name\": \"coverage:self-test\",\n            \"run\": \"npm run coverage:self-test\"\n          },\n          {\n            \"name\": \"capability:manifest:self-test\",\n            \"run\": \"npm run capability:manifest:self-test\"\n          },\n          {\n            \"name\": \"doctor:assertions:self-test\",\n            \"run\": \"npm run doctor:assertions:self-test\"\n          },\n          {\n            \"name\": \"smoke:assertions:self-test\",\n            \"run\": \"npm run smoke:assertions:self-test\"\n          },\n          {\n            \"name\": \"package:check\",\n            \"run\": \"npm run package:check\"\n          },\n          {\n            \"name\": \"package:smoke:self-test\",\n            \"run\": \"npm run package:smoke:self-test\"\n          },\n          {\n            \"name\": \"package:smoke\",\n            \"run\": \"npm run package:smoke\"\n          },\n          {\n            \"name\": \"registry:smoke\",\n            \"run\": \"npm run registry:smoke\"\n          },\n          {\n            \"name\": \"registry:smoke:self-test\",\n            \"run\": \"npm run registry:smoke:self-test\"\n          },\n          {\n            \"name\": \"release:metadata\",\n            \"run\": \"npm run release:metadata\"\n          },\n          {\n            \"name\": \"release:metadata:self-test\",\n            \"run\": \"npm run release:metadata:self-test\"\n          },\n          {\n            \"name\": \"ci:local:self-test\",\n            \"run\": \"npm run ci:local:self-test\"\n          },\n          {\n            \"name\": \"tokens:ant-design:self-test\",\n            \"run\": \"npm run tokens:ant-design:self-test\"\n          },\n          {\n            \"name\": \"release:self-test\",\n            \"run\": \"npm run release:self-test\"\n          },\n          {\n            \"name\": \"docs:check\",\n            \"run\": \"npm run docs:check\"\n          },\n          {\n            \"name\": \"release:preflight\",\n            \"run\": \"npm run release:preflight\"\n          },\n          {\n            \"name\": \"release:check\",\n            \"run\": \"npm run release:check\"\n          },\n          {\n            \"name\": \"ci:local\",\n            \"run\": \"npm run ci:local\"\n          },\n          {\n            \"name\": \"preview\",\n            \"run\": \"npm run preview\"\n          }\n        ],\n        \"startCommand\": \"npm run preview\"\n      },\n      \"git\": {\n        \"status\": \"pass\",\n        \"repository\": true,\n        \"root\": \"/Users/sungjin/dev/design\",\n        \"targetWithinRepository\": true,\n        \"branch\": \"codex/p14-homepage-pilot\",\n        \"clean\": true,\n        \"upstream\": \"\",\n        \"ahead\": 0,\n        \"behind\": 0,\n        \"remote\": \"https://github.com/sungjin9288/design-ai.git\",\n        \"remoteMatch\": true,\n        \"head\": {\n          \"hash\": \"38f3b65\",\n          \"subject\": \"docs: v5.1.0 공개 배포 증빙 확정 and publication truth alignment (#49)\"\n        },\n        \"changes\": {\n          \"total\": 0,\n          \"entries\": [],\n          \"truncated\": false\n        }\n      },\n      \"inspection\": {\n        \"scope\": \"root-metadata-and-git-state\",\n        \"metadataFilesRead\": [\n          \"package.json\"\n        ],\n        \"metadataEntriesInspected\": [\n          \"supported root lockfile\",\n          \"index.html existence\"\n        ],\n        \"applicationSourceFilesRead\": [],\n        \"gitCommands\": [\n          \"git rev-parse --is-inside-work-tree\",\n          \"git rev-parse --show-toplevel\",\n          \"git branch --show-current\",\n          \"git status --short\",\n          \"git rev-parse --abbrev-ref --symbolic-full-name @{u}\",\n          \"git config --get remote.origin.url\",\n          \"git log -1 --pretty=%h%x09%s\"\n        ]\n      },\n      \"issues\": [\n        {\n          \"level\": \"pass\",\n          \"id\": \"linked-project-ready\",\n          \"message\": \"Linked project metadata is ready for an operator-controlled preview start.\"\n        },\n        {\n          \"level\": \"pass\",\n          \"id\": \"target-git-ready\",\n          \"message\": \"The target repository path, remote, branch, and working tree are ready for scope review.\"\n        }\n      ],\n      \"remainingApprovals\": [\n        \"editing the target repository\",\n        \"starting browser or accessibility verification\",\n        \"publishing or deploying an implementation\"\n      ],\n      \"nextAction\": {\n        \"id\": \"implementation-scope-approval-required\",\n        \"status\": \"pending\",\n        \"summary\": \"Review the proposed files, scope, risks, and verification commands before implementation.\",\n        \"approvalRequiredBefore\": [\n          \"editing the target repository\",\n          \"starting browser or accessibility verification\",\n          \"publishing or deploying an implementation\",\n          \"implementation scope\"\n        ],\n        \"implementationAuthorized\": false\n      },\n      \"boundary\": {\n        \"mode\": \"read-only\",\n        \"localWrites\": false,\n        \"targetRepoMutation\": false,\n        \"externalWrites\": false,\n        \"networkCalls\": false,\n        \"previewStarted\": false,\n        \"applicationSourceRead\": false,\n        \"consumerIdentityVerified\": false,\n        \"implementationStarted\": false\n      }\n    }\n  },\n  \"request\": {\n    \"reference\": \"/private/tmp/design-ai-p14-homepage/implementation-scope-request.json\",\n    \"sha256\": \"2005c436dea7e3f9ccb58152f1d3a4ce4bcca27b994f790a6637d2f4882a12e0\",\n    \"bytes\": 3309,\n    \"source\": \"{\\n  \\\"kind\\\": \\\"design-ai-implementation-scope-request\\\",\\n  \\\"schemaVersion\\\": 1,\\n  \\\"objective\\\": \\\"Help first-time users understand design-ai and reach a verified install or quickstart path from the documentation homepage first viewport.\\\",\\n  \\\"intendedBehavior\\\": [\\n    \\\"Replace the dense README opening with a concise product promise, primary quickstart action, secondary install action, and bounded proof points in English and Korean.\\\",\\n    \\\"Keep detailed distribution evidence available through the existing external status document without placing the full release record in the first viewport.\\\",\\n    \\\"Give the Material navigation and search toggles programmatic names without changing their existing interaction behavior.\\\",\\n    \\\"Load the pinned Pretendard dynamic subset from the maintained npm CDN path and preserve system-font fallbacks.\\\",\\n    \\\"Preserve desktop and mobile navigation, language switching, search, theme switching, source links, and documentation content below the opening section.\\\"\\n  ],\\n  \\\"files\\\": {\\n    \\\"inspect\\\": [\\n      \\\"README.md\\\",\\n      \\\"README.ko.md\\\",\\n      \\\"docs/site-overrides/extra.css\\\",\\n      \\\"docs/site-overrides/main.html\\\",\\n      \\\"docs/site-overrides/partials/header.html\\\",\\n      \\\"mkdocs.yml\\\",\\n      \\\"knowledge/patterns/interface-craft.md\\\",\\n      \\\"knowledge/patterns/landing-hero-design.md\\\",\\n      \\\"knowledge/a11y/keyboard-and-focus.md\\\",\\n      \\\"docs/PRODUCT-READINESS.md\\\",\\n      \\\"docs/PRODUCT-SPECIALIZATION-PLAN.md\\\",\\n      \\\"docs/ROADMAP.md\\\",\\n      \\\"docs/SESSION-LOG.md\\\",\\n      \\\"docs/case-studies/documentation-homepage-pilot.md\\\",\\n      \\\"evidence/p14/homepage/**\\\"\\n    ],\\n    \\\"change\\\": [\\n      \\\"README.md\\\",\\n      \\\"README.ko.md\\\",\\n      \\\"docs/site-overrides/extra.css\\\",\\n      \\\"docs/site-overrides/main.html\\\",\\n      \\\"docs/site-overrides/partials/header.html\\\",\\n      \\\"mkdocs.yml\\\",\\n      \\\"docs/case-studies/documentation-homepage-pilot.md\\\",\\n      \\\"docs/PRODUCT-READINESS.md\\\",\\n      \\\"docs/PRODUCT-SPECIALIZATION-PLAN.md\\\",\\n      \\\"docs/ROADMAP.md\\\",\\n      \\\"docs/SESSION-LOG.md\\\"\\n    ],\\n    \\\"generated\\\": [\\n      \\\"evidence/p14/homepage/**\\\"\\n    ]\\n  },\\n  \\\"dependencies\\\": [],\\n  \\\"migrations\\\": [],\\n  \\\"externalWrites\\\": [\\n    {\\n      \\\"system\\\": \\\"GitHub\\\",\\n      \\\"action\\\": \\\"push branch and merge pull request\\\",\\n      \\\"destination\\\": \\\"sungjin9288/design-ai\\\"\\n    },\\n    {\\n      \\\"system\\\": \\\"GitHub Pages\\\",\\n      \\\"action\\\": \\\"deploy documentation after merge\\\",\\n      \\\"destination\\\": \\\"https://sungjin9288.github.io/design-ai/\\\"\\n    }\\n  ],\\n  \\\"verificationCommands\\\": [\\n    \\\"python3 -m mkdocs build --clean\\\",\\n    \\\"npm run docs:check\\\",\\n    \\\"npm run release:metadata\\\",\\n    \\\"npm run release:check\\\",\\n    \\\"design-ai review-compare evidence/p14/homepage/baseline-quality-report.json --candidate evidence/p14/homepage/candidate-quality-report.json --json\\\"\\n  ],\\n  \\\"risks\\\": [\\n    \\\"README HTML must remain useful on GitHub where repository CSS is unavailable.\\\",\\n    \\\"A shorter first viewport must not hide release evidence or overstate external adoption.\\\",\\n    \\\"Theme partial overrides can drift when MkDocs Material changes, so the override must stay minimal and source-compatible.\\\",\\n    \\\"External font delivery can fail, so system fallbacks must remain complete and the browser check must record network errors.\\\"\\n  ],\\n  \\\"preExistingChanges\\\": [],\\n  \\\"release\\\": {\\n    \\\"commit\\\": true,\\n    \\\"push\\\": true,\\n    \\\"deployment\\\": true\\n  }\\n}\\n\",\n    \"value\": {\n      \"kind\": \"design-ai-implementation-scope-request\",\n      \"schemaVersion\": 1,\n      \"objective\": \"Help first-time users understand design-ai and reach a verified install or quickstart path from the documentation homepage first viewport.\",\n      \"intendedBehavior\": [\n        \"Replace the dense README opening with a concise product promise, primary quickstart action, secondary install action, and bounded proof points in English and Korean.\",\n        \"Keep detailed distribution evidence available through the existing external status document without placing the full release record in the first viewport.\",\n        \"Give the Material navigation and search toggles programmatic names without changing their existing interaction behavior.\",\n        \"Load the pinned Pretendard dynamic subset from the maintained npm CDN path and preserve system-font fallbacks.\",\n        \"Preserve desktop and mobile navigation, language switching, search, theme switching, source links, and documentation content below the opening section.\"\n      ],\n      \"files\": {\n        \"inspect\": [\n          \"README.md\",\n          \"README.ko.md\",\n          \"docs/site-overrides/extra.css\",\n          \"docs/site-overrides/main.html\",\n          \"docs/site-overrides/partials/header.html\",\n          \"mkdocs.yml\",\n          \"knowledge/patterns/interface-craft.md\",\n          \"knowledge/patterns/landing-hero-design.md\",\n          \"knowledge/a11y/keyboard-and-focus.md\",\n          \"docs/PRODUCT-READINESS.md\",\n          \"docs/PRODUCT-SPECIALIZATION-PLAN.md\",\n          \"docs/ROADMAP.md\",\n          \"docs/SESSION-LOG.md\",\n          \"docs/case-studies/documentation-homepage-pilot.md\",\n          \"evidence/p14/homepage/**\"\n        ],\n        \"change\": [\n          \"README.md\",\n          \"README.ko.md\",\n          \"docs/site-overrides/extra.css\",\n          \"docs/site-overrides/main.html\",\n          \"docs/site-overrides/partials/header.html\",\n          \"mkdocs.yml\",\n          \"docs/case-studies/documentation-homepage-pilot.md\",\n          \"docs/PRODUCT-READINESS.md\",\n          \"docs/PRODUCT-SPECIALIZATION-PLAN.md\",\n          \"docs/ROADMAP.md\",\n          \"docs/SESSION-LOG.md\"\n        ],\n        \"generated\": [\n          \"evidence/p14/homepage/**\"\n        ]\n      },\n      \"dependencies\": [],\n      \"migrations\": [],\n      \"externalWrites\": [\n        {\n          \"system\": \"GitHub\",\n          \"action\": \"push branch and merge pull request\",\n          \"destination\": \"sungjin9288/design-ai\"\n        },\n        {\n          \"system\": \"GitHub Pages\",\n          \"action\": \"deploy documentation after merge\",\n          \"destination\": \"https://sungjin9288.github.io/design-ai/\"\n        }\n      ],\n      \"verificationCommands\": [\n        \"python3 -m mkdocs build --clean\",\n        \"npm run docs:check\",\n        \"npm run release:metadata\",\n        \"npm run release:check\",\n        \"design-ai review-compare evidence/p14/homepage/baseline-quality-report.json --candidate evidence/p14/homepage/candidate-quality-report.json --json\"\n      ],\n      \"risks\": [\n        \"README HTML must remain useful on GitHub where repository CSS is unavailable.\",\n        \"A shorter first viewport must not hide release evidence or overstate external adoption.\",\n        \"Theme partial overrides can drift when MkDocs Material changes, so the override must stay minimal and source-compatible.\",\n        \"External font delivery can fail, so system fallbacks must remain complete and the browser check must record network errors.\"\n      ],\n      \"preExistingChanges\": [],\n      \"release\": {\n        \"commit\": true,\n        \"push\": true,\n        \"deployment\": true\n      }\n    }\n  },\n  \"linkage\": {\n    \"status\": \"pass\",\n    \"intakeSha256\": \"747e160685284021ad76072c2eb51a64cb1c6e6e63627e4925b5d471770082a2\",\n    \"requestSha256\": \"2005c436dea7e3f9ccb58152f1d3a4ce4bcca27b994f790a6637d2f4882a12e0\",\n    \"scopeDigest\": \"c801ba9aff02e3d81869218e68bfc7b74f923942ed89c2300d447f2fc4838f46\"\n  },\n  \"baseline\": {\n    \"targetPath\": \"/Users/sungjin/dev/design\",\n    \"repositoryUrl\": \"https://github.com/sungjin9288/design-ai\",\n    \"branch\": \"codex/p14-homepage-pilot\",\n    \"head\": \"38f3b65\",\n    \"worktreeChanges\": []\n  },\n  \"scope\": {\n    \"objective\": \"Help first-time users understand design-ai and reach a verified install or quickstart path from the documentation homepage first viewport.\",\n    \"intendedBehavior\": [\n      \"Replace the dense README opening with a concise product promise, primary quickstart action, secondary install action, and bounded proof points in English and Korean.\",\n      \"Keep detailed distribution evidence available through the existing external status document without placing the full release record in the first viewport.\",\n      \"Give the Material navigation and search toggles programmatic names without changing their existing interaction behavior.\",\n      \"Load the pinned Pretendard dynamic subset from the maintained npm CDN path and preserve system-font fallbacks.\",\n      \"Preserve desktop and mobile navigation, language switching, search, theme switching, source links, and documentation content below the opening section.\"\n    ],\n    \"files\": {\n      \"inspect\": [\n        \"README.md\",\n        \"README.ko.md\",\n        \"docs/site-overrides/extra.css\",\n        \"docs/site-overrides/main.html\",\n        \"docs/site-overrides/partials/header.html\",\n        \"mkdocs.yml\",\n        \"knowledge/patterns/interface-craft.md\",\n        \"knowledge/patterns/landing-hero-design.md\",\n        \"knowledge/a11y/keyboard-and-focus.md\",\n        \"docs/PRODUCT-READINESS.md\",\n        \"docs/PRODUCT-SPECIALIZATION-PLAN.md\",\n        \"docs/ROADMAP.md\",\n        \"docs/SESSION-LOG.md\",\n        \"docs/case-studies/documentation-homepage-pilot.md\",\n        \"evidence/p14/homepage/**\"\n      ],\n      \"change\": [\n        \"README.md\",\n        \"README.ko.md\",\n        \"docs/site-overrides/extra.css\",\n        \"docs/site-overrides/main.html\",\n        \"docs/site-overrides/partials/header.html\",\n        \"mkdocs.yml\",\n        \"docs/case-studies/documentation-homepage-pilot.md\",\n        \"docs/PRODUCT-READINESS.md\",\n        \"docs/PRODUCT-SPECIALIZATION-PLAN.md\",\n        \"docs/ROADMAP.md\",\n        \"docs/SESSION-LOG.md\"\n      ],\n      \"generated\": [\n        \"evidence/p14/homepage/**\"\n      ]\n    },\n    \"dependencies\": [],\n    \"migrations\": [],\n    \"externalWrites\": [\n      {\n        \"system\": \"GitHub\",\n        \"action\": \"push branch and merge pull request\",\n        \"destination\": \"sungjin9288/design-ai\"\n      },\n      {\n        \"system\": \"GitHub Pages\",\n        \"action\": \"deploy documentation after merge\",\n        \"destination\": \"https://sungjin9288.github.io/design-ai/\"\n      }\n    ],\n    \"verificationCommands\": [\n      \"python3 -m mkdocs build --clean\",\n      \"npm run docs:check\",\n      \"npm run release:metadata\",\n      \"npm run release:check\",\n      \"design-ai review-compare evidence/p14/homepage/baseline-quality-report.json --candidate evidence/p14/homepage/candidate-quality-report.json --json\"\n    ],\n    \"risks\": [\n      \"README HTML must remain useful on GitHub where repository CSS is unavailable.\",\n      \"A shorter first viewport must not hide release evidence or overstate external adoption.\",\n      \"Theme partial overrides can drift when MkDocs Material changes, so the override must stay minimal and source-compatible.\",\n      \"External font delivery can fail, so system fallbacks must remain complete and the browser check must record network errors.\"\n    ],\n    \"release\": {\n      \"commit\": true,\n      \"push\": true,\n      \"deployment\": true\n    }\n  },\n  \"approvalGates\": [\n    {\n      \"id\": \"source-inspection\",\n      \"status\": \"pending\",\n      \"summary\": \"Read only the approved file selectors during implementation.\"\n    },\n    {\n      \"id\": \"target-files\",\n      \"status\": \"pending\",\n      \"summary\": \"Mutate only the approved change and generated-file selectors.\"\n    },\n    {\n      \"id\": \"pre-existing-changes\",\n      \"status\": \"not-required\",\n      \"summary\": \"Respect the recorded ownership and handling of every pre-existing change.\"\n    },\n    {\n      \"id\": \"dependency-changes\",\n      \"status\": \"not-required\",\n      \"summary\": \"Apply only the declared dependency changes; installation and network access remain separate.\"\n    },\n    {\n      \"id\": \"migration-files\",\n      \"status\": \"not-required\",\n      \"summary\": \"Create or edit only declared migration files; running external-state migrations remains separate.\"\n    },\n    {\n      \"id\": \"generated-files\",\n      \"status\": \"pending\",\n      \"summary\": \"Write only the declared generated-file selectors.\"\n    },\n    {\n      \"id\": \"external-writes\",\n      \"status\": \"pending\",\n      \"summary\": \"External writes require a separate explicit approval and execution record.\"\n    },\n    {\n      \"id\": \"commit\",\n      \"status\": \"pending\",\n      \"summary\": \"Creating a commit requires a separate explicit gate.\"\n    },\n    {\n      \"id\": \"push\",\n      \"status\": \"pending\",\n      \"summary\": \"Pushing changes requires a separate explicit gate.\"\n    },\n    {\n      \"id\": \"deployment\",\n      \"status\": \"pending\",\n      \"summary\": \"Deployment requires a separate explicit gate.\"\n    }\n  ],\n  \"issues\": [\n    {\n      \"level\": \"pass\",\n      \"id\": \"scope-ready-for-approval\",\n      \"message\": \"Repository identity, file selectors, verification, risks, and existing-change ownership are ready for human approval.\"\n    }\n  ],\n  \"nextAction\": {\n    \"id\": \"human-scope-approval-required\",\n    \"status\": \"pending\",\n    \"summary\": \"Review the immutable proposal and record a separate approval before reading or changing application source.\",\n    \"implementationAuthorized\": false\n  },\n  \"boundary\": {\n    \"mode\": \"read-only\",\n    \"localWrites\": false,\n    \"targetRepoMutation\": false,\n    \"externalWrites\": false,\n    \"networkCalls\": false,\n    \"applicationSourceRead\": false,\n    \"scopeApproved\": false,\n    \"implementationStarted\": false\n  }\n}\n",
+    "value": {
+      "kind": "design-ai-implementation-scope-proposal",
+      "schemaVersion": 1,
+      "status": "approval-pending",
+      "consumer": {
+        "name": "codex-homepage-implementer",
+        "intakeConsumerMatch": true,
+        "identity": "self-declared"
+      },
+      "intake": {
+        "reference": "/private/tmp/design-ai-p14-homepage/target-repo-intake.json",
+        "sha256": "747e160685284021ad76072c2eb51a64cb1c6e6e63627e4925b5d471770082a2",
+        "bytes": 6359,
+        "source": "{\n  \"kind\": \"design-ai-target-repo-intake\",\n  \"schemaVersion\": 1,\n  \"status\": \"ready-for-scope-review\",\n  \"consumer\": {\n    \"name\": \"codex-homepage-implementer\",\n    \"receiptConsumerMatch\": true,\n    \"identity\": \"self-declared\"\n  },\n  \"receipt\": {\n    \"reference\": \"/private/tmp/design-ai-p14-homepage/review-handoff-receipt.json\",\n    \"sha256\": \"1a415907354535b90c796d9051626744e2ec3d58314c532f4c4ea3d9f07749b7\",\n    \"bytes\": 119097,\n    \"kind\": \"design-ai-review-handoff-receipt\",\n    \"schemaVersion\": 1,\n    \"status\": \"contract-validated\",\n    \"consumer\": \"codex-homepage-implementer\",\n    \"handoffSha256\": \"b85eb9a1a8841cae1202292e511528f282d98a49354ee80ad734e5532094b898\",\n    \"reviewWorkflowSha256\": \"7e8d4ae9e8a81111ca14f31deab4d6b940990bceed26a8e1948cbed296f52090\",\n    \"remainingApprovals\": [\n      \"editing the target repository\",\n      \"starting browser or accessibility verification\",\n      \"publishing or deploying an implementation\"\n    ]\n  },\n  \"target\": {\n    \"declaredPath\": \"/Users/sungjin/dev/design\",\n    \"resolvedPath\": \"/Users/sungjin/dev/design\",\n    \"pathMatch\": true,\n    \"declaredRepositoryUrl\": \"https://github.com/sungjin9288/design-ai\",\n    \"observedRepositoryUrl\": \"https://github.com/sungjin9288/design-ai.git\",\n    \"repositoryUrlMatch\": true\n  },\n  \"project\": {\n    \"metadataStatus\": \"pass\",\n    \"manifest\": \"package.json\",\n    \"staticEntry\": \"\",\n    \"packageManager\": \"npm\",\n    \"framework\": \"Unknown\",\n    \"scripts\": [\n      {\n        \"name\": \"test\",\n        \"run\": \"npm run test\"\n      },\n      {\n        \"name\": \"audit\",\n        \"run\": \"npm run audit\"\n      },\n      {\n        \"name\": \"audit:strict\",\n        \"run\": \"npm run audit:strict\"\n      },\n      {\n        \"name\": \"audit:runner:self-test\",\n        \"run\": \"npm run audit:runner:self-test\"\n      },\n      {\n        \"name\": \"coverage:generate\",\n        \"run\": \"npm run coverage:generate\"\n      },\n      {\n        \"name\": \"coverage:check\",\n        \"run\": \"npm run coverage:check\"\n      },\n      {\n        \"name\": \"coverage:self-test\",\n        \"run\": \"npm run coverage:self-test\"\n      },\n      {\n        \"name\": \"capability:manifest:self-test\",\n        \"run\": \"npm run capability:manifest:self-test\"\n      },\n      {\n        \"name\": \"doctor:assertions:self-test\",\n        \"run\": \"npm run doctor:assertions:self-test\"\n      },\n      {\n        \"name\": \"smoke:assertions:self-test\",\n        \"run\": \"npm run smoke:assertions:self-test\"\n      },\n      {\n        \"name\": \"package:check\",\n        \"run\": \"npm run package:check\"\n      },\n      {\n        \"name\": \"package:smoke:self-test\",\n        \"run\": \"npm run package:smoke:self-test\"\n      },\n      {\n        \"name\": \"package:smoke\",\n        \"run\": \"npm run package:smoke\"\n      },\n      {\n        \"name\": \"registry:smoke\",\n        \"run\": \"npm run registry:smoke\"\n      },\n      {\n        \"name\": \"registry:smoke:self-test\",\n        \"run\": \"npm run registry:smoke:self-test\"\n      },\n      {\n        \"name\": \"release:metadata\",\n        \"run\": \"npm run release:metadata\"\n      },\n      {\n        \"name\": \"release:metadata:self-test\",\n        \"run\": \"npm run release:metadata:self-test\"\n      },\n      {\n        \"name\": \"ci:local:self-test\",\n        \"run\": \"npm run ci:local:self-test\"\n      },\n      {\n        \"name\": \"tokens:ant-design:self-test\",\n        \"run\": \"npm run tokens:ant-design:self-test\"\n      },\n      {\n        \"name\": \"release:self-test\",\n        \"run\": \"npm run release:self-test\"\n      },\n      {\n        \"name\": \"docs:check\",\n        \"run\": \"npm run docs:check\"\n      },\n      {\n        \"name\": \"release:preflight\",\n        \"run\": \"npm run release:preflight\"\n      },\n      {\n        \"name\": \"release:check\",\n        \"run\": \"npm run release:check\"\n      },\n      {\n        \"name\": \"ci:local\",\n        \"run\": \"npm run ci:local\"\n      },\n      {\n        \"name\": \"preview\",\n        \"run\": \"npm run preview\"\n      }\n    ],\n    \"startCommand\": \"npm run preview\"\n  },\n  \"git\": {\n    \"status\": \"pass\",\n    \"repository\": true,\n    \"root\": \"/Users/sungjin/dev/design\",\n    \"targetWithinRepository\": true,\n    \"branch\": \"codex/p14-homepage-pilot\",\n    \"clean\": true,\n    \"upstream\": \"\",\n    \"ahead\": 0,\n    \"behind\": 0,\n    \"remote\": \"https://github.com/sungjin9288/design-ai.git\",\n    \"remoteMatch\": true,\n    \"head\": {\n      \"hash\": \"38f3b65\",\n      \"subject\": \"docs: v5.1.0 공개 배포 증빙 확정 and publication truth alignment (#49)\"\n    },\n    \"changes\": {\n      \"total\": 0,\n      \"entries\": [],\n      \"truncated\": false\n    }\n  },\n  \"inspection\": {\n    \"scope\": \"root-metadata-and-git-state\",\n    \"metadataFilesRead\": [\n      \"package.json\"\n    ],\n    \"metadataEntriesInspected\": [\n      \"supported root lockfile\",\n      \"index.html existence\"\n    ],\n    \"applicationSourceFilesRead\": [],\n    \"gitCommands\": [\n      \"git rev-parse --is-inside-work-tree\",\n      \"git rev-parse --show-toplevel\",\n      \"git branch --show-current\",\n      \"git status --short\",\n      \"git rev-parse --abbrev-ref --symbolic-full-name @{u}\",\n      \"git config --get remote.origin.url\",\n      \"git log -1 --pretty=%h%x09%s\"\n    ]\n  },\n  \"issues\": [\n    {\n      \"level\": \"pass\",\n      \"id\": \"linked-project-ready\",\n      \"message\": \"Linked project metadata is ready for an operator-controlled preview start.\"\n    },\n    {\n      \"level\": \"pass\",\n      \"id\": \"target-git-ready\",\n      \"message\": \"The target repository path, remote, branch, and working tree are ready for scope review.\"\n    }\n  ],\n  \"remainingApprovals\": [\n    \"editing the target repository\",\n    \"starting browser or accessibility verification\",\n    \"publishing or deploying an implementation\"\n  ],\n  \"nextAction\": {\n    \"id\": \"implementation-scope-approval-required\",\n    \"status\": \"pending\",\n    \"summary\": \"Review the proposed files, scope, risks, and verification commands before implementation.\",\n    \"approvalRequiredBefore\": [\n      \"editing the target repository\",\n      \"starting browser or accessibility verification\",\n      \"publishing or deploying an implementation\",\n      \"implementation scope\"\n    ],\n    \"implementationAuthorized\": false\n  },\n  \"boundary\": {\n    \"mode\": \"read-only\",\n    \"localWrites\": false,\n    \"targetRepoMutation\": false,\n    \"externalWrites\": false,\n    \"networkCalls\": false,\n    \"previewStarted\": false,\n    \"applicationSourceRead\": false,\n    \"consumerIdentityVerified\": false,\n    \"implementationStarted\": false\n  }\n}\n",
+        "value": {
+          "kind": "design-ai-target-repo-intake",
+          "schemaVersion": 1,
+          "status": "ready-for-scope-review",
+          "consumer": {
+            "name": "codex-homepage-implementer",
+            "receiptConsumerMatch": true,
+            "identity": "self-declared"
+          },
+          "receipt": {
+            "reference": "/private/tmp/design-ai-p14-homepage/review-handoff-receipt.json",
+            "sha256": "1a415907354535b90c796d9051626744e2ec3d58314c532f4c4ea3d9f07749b7",
+            "bytes": 119097,
+            "kind": "design-ai-review-handoff-receipt",
+            "schemaVersion": 1,
+            "status": "contract-validated",
+            "consumer": "codex-homepage-implementer",
+            "handoffSha256": "b85eb9a1a8841cae1202292e511528f282d98a49354ee80ad734e5532094b898",
+            "reviewWorkflowSha256": "7e8d4ae9e8a81111ca14f31deab4d6b940990bceed26a8e1948cbed296f52090",
+            "remainingApprovals": [
+              "editing the target repository",
+              "starting browser or accessibility verification",
+              "publishing or deploying an implementation"
+            ]
+          },
+          "target": {
+            "declaredPath": "/Users/sungjin/dev/design",
+            "resolvedPath": "/Users/sungjin/dev/design",
+            "pathMatch": true,
+            "declaredRepositoryUrl": "https://github.com/sungjin9288/design-ai",
+            "observedRepositoryUrl": "https://github.com/sungjin9288/design-ai.git",
+            "repositoryUrlMatch": true
+          },
+          "project": {
+            "metadataStatus": "pass",
+            "manifest": "package.json",
+            "staticEntry": "",
+            "packageManager": "npm",
+            "framework": "Unknown",
+            "scripts": [
+              {
+                "name": "test",
+                "run": "npm run test"
+              },
+              {
+                "name": "audit",
+                "run": "npm run audit"
+              },
+              {
+                "name": "audit:strict",
+                "run": "npm run audit:strict"
+              },
+              {
+                "name": "audit:runner:self-test",
+                "run": "npm run audit:runner:self-test"
+              },
+              {
+                "name": "coverage:generate",
+                "run": "npm run coverage:generate"
+              },
+              {
+                "name": "coverage:check",
+                "run": "npm run coverage:check"
+              },
+              {
+                "name": "coverage:self-test",
+                "run": "npm run coverage:self-test"
+              },
+              {
+                "name": "capability:manifest:self-test",
+                "run": "npm run capability:manifest:self-test"
+              },
+              {
+                "name": "doctor:assertions:self-test",
+                "run": "npm run doctor:assertions:self-test"
+              },
+              {
+                "name": "smoke:assertions:self-test",
+                "run": "npm run smoke:assertions:self-test"
+              },
+              {
+                "name": "package:check",
+                "run": "npm run package:check"
+              },
+              {
+                "name": "package:smoke:self-test",
+                "run": "npm run package:smoke:self-test"
+              },
+              {
+                "name": "package:smoke",
+                "run": "npm run package:smoke"
+              },
+              {
+                "name": "registry:smoke",
+                "run": "npm run registry:smoke"
+              },
+              {
+                "name": "registry:smoke:self-test",
+                "run": "npm run registry:smoke:self-test"
+              },
+              {
+                "name": "release:metadata",
+                "run": "npm run release:metadata"
+              },
+              {
+                "name": "release:metadata:self-test",
+                "run": "npm run release:metadata:self-test"
+              },
+              {
+                "name": "ci:local:self-test",
+                "run": "npm run ci:local:self-test"
+              },
+              {
+                "name": "tokens:ant-design:self-test",
+                "run": "npm run tokens:ant-design:self-test"
+              },
+              {
+                "name": "release:self-test",
+                "run": "npm run release:self-test"
+              },
+              {
+                "name": "docs:check",
+                "run": "npm run docs:check"
+              },
+              {
+                "name": "release:preflight",
+                "run": "npm run release:preflight"
+              },
+              {
+                "name": "release:check",
+                "run": "npm run release:check"
+              },
+              {
+                "name": "ci:local",
+                "run": "npm run ci:local"
+              },
+              {
+                "name": "preview",
+                "run": "npm run preview"
+              }
+            ],
+            "startCommand": "npm run preview"
+          },
+          "git": {
+            "status": "pass",
+            "repository": true,
+            "root": "/Users/sungjin/dev/design",
+            "targetWithinRepository": true,
+            "branch": "codex/p14-homepage-pilot",
+            "clean": true,
+            "upstream": "",
+            "ahead": 0,
+            "behind": 0,
+            "remote": "https://github.com/sungjin9288/design-ai.git",
+            "remoteMatch": true,
+            "head": {
+              "hash": "38f3b65",
+              "subject": "docs: v5.1.0 공개 배포 증빙 확정 and publication truth alignment (#49)"
+            },
+            "changes": {
+              "total": 0,
+              "entries": [],
+              "truncated": false
+            }
+          },
+          "inspection": {
+            "scope": "root-metadata-and-git-state",
+            "metadataFilesRead": [
+              "package.json"
+            ],
+            "metadataEntriesInspected": [
+              "supported root lockfile",
+              "index.html existence"
+            ],
+            "applicationSourceFilesRead": [],
+            "gitCommands": [
+              "git rev-parse --is-inside-work-tree",
+              "git rev-parse --show-toplevel",
+              "git branch --show-current",
+              "git status --short",
+              "git rev-parse --abbrev-ref --symbolic-full-name @{u}",
+              "git config --get remote.origin.url",
+              "git log -1 --pretty=%h%x09%s"
+            ]
+          },
+          "issues": [
+            {
+              "level": "pass",
+              "id": "linked-project-ready",
+              "message": "Linked project metadata is ready for an operator-controlled preview start."
+            },
+            {
+              "level": "pass",
+              "id": "target-git-ready",
+              "message": "The target repository path, remote, branch, and working tree are ready for scope review."
+            }
+          ],
+          "remainingApprovals": [
+            "editing the target repository",
+            "starting browser or accessibility verification",
+            "publishing or deploying an implementation"
+          ],
+          "nextAction": {
+            "id": "implementation-scope-approval-required",
+            "status": "pending",
+            "summary": "Review the proposed files, scope, risks, and verification commands before implementation.",
+            "approvalRequiredBefore": [
+              "editing the target repository",
+              "starting browser or accessibility verification",
+              "publishing or deploying an implementation",
+              "implementation scope"
+            ],
+            "implementationAuthorized": false
+          },
+          "boundary": {
+            "mode": "read-only",
+            "localWrites": false,
+            "targetRepoMutation": false,
+            "externalWrites": false,
+            "networkCalls": false,
+            "previewStarted": false,
+            "applicationSourceRead": false,
+            "consumerIdentityVerified": false,
+            "implementationStarted": false
+          }
+        }
+      },
+      "request": {
+        "reference": "/private/tmp/design-ai-p14-homepage/implementation-scope-request.json",
+        "sha256": "2005c436dea7e3f9ccb58152f1d3a4ce4bcca27b994f790a6637d2f4882a12e0",
+        "bytes": 3309,
+        "source": "{\n  \"kind\": \"design-ai-implementation-scope-request\",\n  \"schemaVersion\": 1,\n  \"objective\": \"Help first-time users understand design-ai and reach a verified install or quickstart path from the documentation homepage first viewport.\",\n  \"intendedBehavior\": [\n    \"Replace the dense README opening with a concise product promise, primary quickstart action, secondary install action, and bounded proof points in English and Korean.\",\n    \"Keep detailed distribution evidence available through the existing external status document without placing the full release record in the first viewport.\",\n    \"Give the Material navigation and search toggles programmatic names without changing their existing interaction behavior.\",\n    \"Load the pinned Pretendard dynamic subset from the maintained npm CDN path and preserve system-font fallbacks.\",\n    \"Preserve desktop and mobile navigation, language switching, search, theme switching, source links, and documentation content below the opening section.\"\n  ],\n  \"files\": {\n    \"inspect\": [\n      \"README.md\",\n      \"README.ko.md\",\n      \"docs/site-overrides/extra.css\",\n      \"docs/site-overrides/main.html\",\n      \"docs/site-overrides/partials/header.html\",\n      \"mkdocs.yml\",\n      \"knowledge/patterns/interface-craft.md\",\n      \"knowledge/patterns/landing-hero-design.md\",\n      \"knowledge/a11y/keyboard-and-focus.md\",\n      \"docs/PRODUCT-READINESS.md\",\n      \"docs/PRODUCT-SPECIALIZATION-PLAN.md\",\n      \"docs/ROADMAP.md\",\n      \"docs/SESSION-LOG.md\",\n      \"docs/case-studies/documentation-homepage-pilot.md\",\n      \"evidence/p14/homepage/**\"\n    ],\n    \"change\": [\n      \"README.md\",\n      \"README.ko.md\",\n      \"docs/site-overrides/extra.css\",\n      \"docs/site-overrides/main.html\",\n      \"docs/site-overrides/partials/header.html\",\n      \"mkdocs.yml\",\n      \"docs/case-studies/documentation-homepage-pilot.md\",\n      \"docs/PRODUCT-READINESS.md\",\n      \"docs/PRODUCT-SPECIALIZATION-PLAN.md\",\n      \"docs/ROADMAP.md\",\n      \"docs/SESSION-LOG.md\"\n    ],\n    \"generated\": [\n      \"evidence/p14/homepage/**\"\n    ]\n  },\n  \"dependencies\": [],\n  \"migrations\": [],\n  \"externalWrites\": [\n    {\n      \"system\": \"GitHub\",\n      \"action\": \"push branch and merge pull request\",\n      \"destination\": \"sungjin9288/design-ai\"\n    },\n    {\n      \"system\": \"GitHub Pages\",\n      \"action\": \"deploy documentation after merge\",\n      \"destination\": \"https://sungjin9288.github.io/design-ai/\"\n    }\n  ],\n  \"verificationCommands\": [\n    \"python3 -m mkdocs build --clean\",\n    \"npm run docs:check\",\n    \"npm run release:metadata\",\n    \"npm run release:check\",\n    \"design-ai review-compare evidence/p14/homepage/baseline-quality-report.json --candidate evidence/p14/homepage/candidate-quality-report.json --json\"\n  ],\n  \"risks\": [\n    \"README HTML must remain useful on GitHub where repository CSS is unavailable.\",\n    \"A shorter first viewport must not hide release evidence or overstate external adoption.\",\n    \"Theme partial overrides can drift when MkDocs Material changes, so the override must stay minimal and source-compatible.\",\n    \"External font delivery can fail, so system fallbacks must remain complete and the browser check must record network errors.\"\n  ],\n  \"preExistingChanges\": [],\n  \"release\": {\n    \"commit\": true,\n    \"push\": true,\n    \"deployment\": true\n  }\n}\n",
+        "value": {
+          "kind": "design-ai-implementation-scope-request",
+          "schemaVersion": 1,
+          "objective": "Help first-time users understand design-ai and reach a verified install or quickstart path from the documentation homepage first viewport.",
+          "intendedBehavior": [
+            "Replace the dense README opening with a concise product promise, primary quickstart action, secondary install action, and bounded proof points in English and Korean.",
+            "Keep detailed distribution evidence available through the existing external status document without placing the full release record in the first viewport.",
+            "Give the Material navigation and search toggles programmatic names without changing their existing interaction behavior.",
+            "Load the pinned Pretendard dynamic subset from the maintained npm CDN path and preserve system-font fallbacks.",
+            "Preserve desktop and mobile navigation, language switching, search, theme switching, source links, and documentation content below the opening section."
+          ],
+          "files": {
+            "inspect": [
+              "README.md",
+              "README.ko.md",
+              "docs/site-overrides/extra.css",
+              "docs/site-overrides/main.html",
+              "docs/site-overrides/partials/header.html",
+              "mkdocs.yml",
+              "knowledge/patterns/interface-craft.md",
+              "knowledge/patterns/landing-hero-design.md",
+              "knowledge/a11y/keyboard-and-focus.md",
+              "docs/PRODUCT-READINESS.md",
+              "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+              "docs/ROADMAP.md",
+              "docs/SESSION-LOG.md",
+              "docs/case-studies/documentation-homepage-pilot.md",
+              "evidence/p14/homepage/**"
+            ],
+            "change": [
+              "README.md",
+              "README.ko.md",
+              "docs/site-overrides/extra.css",
+              "docs/site-overrides/main.html",
+              "docs/site-overrides/partials/header.html",
+              "mkdocs.yml",
+              "docs/case-studies/documentation-homepage-pilot.md",
+              "docs/PRODUCT-READINESS.md",
+              "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+              "docs/ROADMAP.md",
+              "docs/SESSION-LOG.md"
+            ],
+            "generated": [
+              "evidence/p14/homepage/**"
+            ]
+          },
+          "dependencies": [],
+          "migrations": [],
+          "externalWrites": [
+            {
+              "system": "GitHub",
+              "action": "push branch and merge pull request",
+              "destination": "sungjin9288/design-ai"
+            },
+            {
+              "system": "GitHub Pages",
+              "action": "deploy documentation after merge",
+              "destination": "https://sungjin9288.github.io/design-ai/"
+            }
+          ],
+          "verificationCommands": [
+            "python3 -m mkdocs build --clean",
+            "npm run docs:check",
+            "npm run release:metadata",
+            "npm run release:check",
+            "design-ai review-compare evidence/p14/homepage/baseline-quality-report.json --candidate evidence/p14/homepage/candidate-quality-report.json --json"
+          ],
+          "risks": [
+            "README HTML must remain useful on GitHub where repository CSS is unavailable.",
+            "A shorter first viewport must not hide release evidence or overstate external adoption.",
+            "Theme partial overrides can drift when MkDocs Material changes, so the override must stay minimal and source-compatible.",
+            "External font delivery can fail, so system fallbacks must remain complete and the browser check must record network errors."
+          ],
+          "preExistingChanges": [],
+          "release": {
+            "commit": true,
+            "push": true,
+            "deployment": true
+          }
+        }
+      },
+      "linkage": {
+        "status": "pass",
+        "intakeSha256": "747e160685284021ad76072c2eb51a64cb1c6e6e63627e4925b5d471770082a2",
+        "requestSha256": "2005c436dea7e3f9ccb58152f1d3a4ce4bcca27b994f790a6637d2f4882a12e0",
+        "scopeDigest": "c801ba9aff02e3d81869218e68bfc7b74f923942ed89c2300d447f2fc4838f46"
+      },
+      "baseline": {
+        "targetPath": "/Users/sungjin/dev/design",
+        "repositoryUrl": "https://github.com/sungjin9288/design-ai",
+        "branch": "codex/p14-homepage-pilot",
+        "head": "38f3b65",
+        "worktreeChanges": []
+      },
+      "scope": {
+        "objective": "Help first-time users understand design-ai and reach a verified install or quickstart path from the documentation homepage first viewport.",
+        "intendedBehavior": [
+          "Replace the dense README opening with a concise product promise, primary quickstart action, secondary install action, and bounded proof points in English and Korean.",
+          "Keep detailed distribution evidence available through the existing external status document without placing the full release record in the first viewport.",
+          "Give the Material navigation and search toggles programmatic names without changing their existing interaction behavior.",
+          "Load the pinned Pretendard dynamic subset from the maintained npm CDN path and preserve system-font fallbacks.",
+          "Preserve desktop and mobile navigation, language switching, search, theme switching, source links, and documentation content below the opening section."
+        ],
+        "files": {
+          "inspect": [
+            "README.md",
+            "README.ko.md",
+            "docs/site-overrides/extra.css",
+            "docs/site-overrides/main.html",
+            "docs/site-overrides/partials/header.html",
+            "mkdocs.yml",
+            "knowledge/patterns/interface-craft.md",
+            "knowledge/patterns/landing-hero-design.md",
+            "knowledge/a11y/keyboard-and-focus.md",
+            "docs/PRODUCT-READINESS.md",
+            "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+            "docs/ROADMAP.md",
+            "docs/SESSION-LOG.md",
+            "docs/case-studies/documentation-homepage-pilot.md",
+            "evidence/p14/homepage/**"
+          ],
+          "change": [
+            "README.md",
+            "README.ko.md",
+            "docs/site-overrides/extra.css",
+            "docs/site-overrides/main.html",
+            "docs/site-overrides/partials/header.html",
+            "mkdocs.yml",
+            "docs/case-studies/documentation-homepage-pilot.md",
+            "docs/PRODUCT-READINESS.md",
+            "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+            "docs/ROADMAP.md",
+            "docs/SESSION-LOG.md"
+          ],
+          "generated": [
+            "evidence/p14/homepage/**"
+          ]
+        },
+        "dependencies": [],
+        "migrations": [],
+        "externalWrites": [
+          {
+            "system": "GitHub",
+            "action": "push branch and merge pull request",
+            "destination": "sungjin9288/design-ai"
+          },
+          {
+            "system": "GitHub Pages",
+            "action": "deploy documentation after merge",
+            "destination": "https://sungjin9288.github.io/design-ai/"
+          }
+        ],
+        "verificationCommands": [
+          "python3 -m mkdocs build --clean",
+          "npm run docs:check",
+          "npm run release:metadata",
+          "npm run release:check",
+          "design-ai review-compare evidence/p14/homepage/baseline-quality-report.json --candidate evidence/p14/homepage/candidate-quality-report.json --json"
+        ],
+        "risks": [
+          "README HTML must remain useful on GitHub where repository CSS is unavailable.",
+          "A shorter first viewport must not hide release evidence or overstate external adoption.",
+          "Theme partial overrides can drift when MkDocs Material changes, so the override must stay minimal and source-compatible.",
+          "External font delivery can fail, so system fallbacks must remain complete and the browser check must record network errors."
+        ],
+        "release": {
+          "commit": true,
+          "push": true,
+          "deployment": true
+        }
+      },
+      "approvalGates": [
+        {
+          "id": "source-inspection",
+          "status": "pending",
+          "summary": "Read only the approved file selectors during implementation."
+        },
+        {
+          "id": "target-files",
+          "status": "pending",
+          "summary": "Mutate only the approved change and generated-file selectors."
+        },
+        {
+          "id": "pre-existing-changes",
+          "status": "not-required",
+          "summary": "Respect the recorded ownership and handling of every pre-existing change."
+        },
+        {
+          "id": "dependency-changes",
+          "status": "not-required",
+          "summary": "Apply only the declared dependency changes; installation and network access remain separate."
+        },
+        {
+          "id": "migration-files",
+          "status": "not-required",
+          "summary": "Create or edit only declared migration files; running external-state migrations remains separate."
+        },
+        {
+          "id": "generated-files",
+          "status": "pending",
+          "summary": "Write only the declared generated-file selectors."
+        },
+        {
+          "id": "external-writes",
+          "status": "pending",
+          "summary": "External writes require a separate explicit approval and execution record."
+        },
+        {
+          "id": "commit",
+          "status": "pending",
+          "summary": "Creating a commit requires a separate explicit gate."
+        },
+        {
+          "id": "push",
+          "status": "pending",
+          "summary": "Pushing changes requires a separate explicit gate."
+        },
+        {
+          "id": "deployment",
+          "status": "pending",
+          "summary": "Deployment requires a separate explicit gate."
+        }
+      ],
+      "issues": [
+        {
+          "level": "pass",
+          "id": "scope-ready-for-approval",
+          "message": "Repository identity, file selectors, verification, risks, and existing-change ownership are ready for human approval."
+        }
+      ],
+      "nextAction": {
+        "id": "human-scope-approval-required",
+        "status": "pending",
+        "summary": "Review the immutable proposal and record a separate approval before reading or changing application source.",
+        "implementationAuthorized": false
+      },
+      "boundary": {
+        "mode": "read-only",
+        "localWrites": false,
+        "targetRepoMutation": false,
+        "externalWrites": false,
+        "networkCalls": false,
+        "applicationSourceRead": false,
+        "scopeApproved": false,
+        "implementationStarted": false
+      }
+    }
+  },
+  "approver": {
+    "name": "repository-owner",
+    "identity": "self-declared",
+    "reference": "Codex task instruction: proceed with all remaining P14 work without additional approval",
+    "approvedAt": "2026-07-16T09:53:13.000Z"
+  },
+  "decision": {
+    "status": "approved",
+    "proposalSha256": "2713796ed9fd6a8b9b070a374fd9ae6fdf8acca6022ef1043071056e9d4a11d1",
+    "scopeDigest": "c801ba9aff02e3d81869218e68bfc7b74f923942ed89c2300d447f2fc4838f46",
+    "authorizedGateIds": [
+      "source-inspection",
+      "target-files",
+      "generated-files"
+    ],
+    "remainingGateIds": [
+      "external-writes",
+      "commit",
+      "push",
+      "deployment"
+    ]
+  },
+  "authorization": {
+    "targetPath": "/Users/sungjin/dev/design",
+    "repositoryUrl": "https://github.com/sungjin9288/design-ai",
+    "branch": "codex/p14-homepage-pilot",
+    "head": "38f3b65",
+    "files": {
+      "inspect": [
+        "README.md",
+        "README.ko.md",
+        "docs/site-overrides/extra.css",
+        "docs/site-overrides/main.html",
+        "docs/site-overrides/partials/header.html",
+        "mkdocs.yml",
+        "knowledge/patterns/interface-craft.md",
+        "knowledge/patterns/landing-hero-design.md",
+        "knowledge/a11y/keyboard-and-focus.md",
+        "docs/PRODUCT-READINESS.md",
+        "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+        "docs/ROADMAP.md",
+        "docs/SESSION-LOG.md",
+        "docs/case-studies/documentation-homepage-pilot.md",
+        "evidence/p14/homepage/**"
+      ],
+      "change": [
+        "README.md",
+        "README.ko.md",
+        "docs/site-overrides/extra.css",
+        "docs/site-overrides/main.html",
+        "docs/site-overrides/partials/header.html",
+        "mkdocs.yml",
+        "docs/case-studies/documentation-homepage-pilot.md",
+        "docs/PRODUCT-READINESS.md",
+        "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+        "docs/ROADMAP.md",
+        "docs/SESSION-LOG.md"
+      ],
+      "generated": [
+        "evidence/p14/homepage/**"
+      ]
+    },
+    "expiresOnDrift": true
+  },
+  "approvalGates": [
+    {
+      "id": "source-inspection",
+      "status": "approved",
+      "summary": "Read only the approved file selectors during implementation."
+    },
+    {
+      "id": "target-files",
+      "status": "approved",
+      "summary": "Mutate only the approved change and generated-file selectors."
+    },
+    {
+      "id": "pre-existing-changes",
+      "status": "not-required",
+      "summary": "Respect the recorded ownership and handling of every pre-existing change."
+    },
+    {
+      "id": "dependency-changes",
+      "status": "not-required",
+      "summary": "Apply only the declared dependency changes; installation and network access remain separate."
+    },
+    {
+      "id": "migration-files",
+      "status": "not-required",
+      "summary": "Create or edit only declared migration files; running external-state migrations remains separate."
+    },
+    {
+      "id": "generated-files",
+      "status": "approved",
+      "summary": "Write only the declared generated-file selectors."
+    },
+    {
+      "id": "external-writes",
+      "status": "pending",
+      "summary": "External writes require a separate explicit approval and execution record."
+    },
+    {
+      "id": "commit",
+      "status": "pending",
+      "summary": "Creating a commit requires a separate explicit gate."
+    },
+    {
+      "id": "push",
+      "status": "pending",
+      "summary": "Pushing changes requires a separate explicit gate."
+    },
+    {
+      "id": "deployment",
+      "status": "pending",
+      "summary": "Deployment requires a separate explicit gate."
+    }
+  ],
+  "nextAction": {
+    "id": "implementation-evidence-required",
+    "status": "ready",
+    "summary": "Implement only the approved selectors, stop on baseline drift, and record P11 evidence before any release action.",
+    "implementationAuthorized": true,
+    "approvalRequiredBefore": [
+      "external-writes",
+      "commit",
+      "push",
+      "deployment"
+    ]
+  },
+  "boundary": {
+    "mode": "scope-approved",
+    "localWrites": false,
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "networkCalls": false,
+    "applicationSourceRead": false,
+    "scopeApproved": true,
+    "implementationStarted": false,
+    "sourceReadAuthorized": true,
+    "targetMutationAuthorized": true,
+    "externalWritesAuthorized": false,
+    "commitAuthorized": false,
+    "pushAuthorized": false,
+    "deploymentAuthorized": false
+  }
+}
