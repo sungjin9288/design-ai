@@ -54,10 +54,12 @@ jobs:
           python3 -m py_compile tools/migrations/*.py
           python3 -m py_compile tools/preview/*.py
 
-      - name: Validate external pilot intake
+      - name: Validate external pilot intake and operations
         run: |
           npm run external-pilot:intake-self-test
           npm run external-pilot:intake-check
+          npm run external-pilot:operations-self-test
+          npm run external-pilot:operations-check
 
       - name: Verify total knowledge size budget
         run: |

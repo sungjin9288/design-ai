@@ -17,6 +17,9 @@ Use the [External design pilot Issue Form](https://github.com/sungjin9288/design
 Read the [program guide](https://sungjin9288.github.io/design-ai/docs/EXTERNAL-PILOT-PROGRAM/)
 before applying. It defines eligibility, data boundaries, measurement, stop
 conditions, and the distinction between intake and consent.
+The [operations guide](https://sungjin9288.github.io/design-ai/docs/EXTERNAL-PILOT-OPERATIONS/)
+defines candidate status, the marketing-page first slot, browser evidence, and
+the repeated-problem product decision gate.
 
 ## Public issue boundary
 

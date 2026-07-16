@@ -5,6 +5,16 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 795 (external marketing pilot operations readiness)** — Prepared the P16
+  operating path without adding a product surface. The first slot is one public
+  marketing page and real CTA or core flow. Candidate Issues move through one of
+  five lifecycle labels, while direct invitation targets and messages remain
+  private and only aggregate counts enter the repository. Separate owner consent,
+  the public `@design-ai/cli@5.1.0` P6-P13 chain, two required browser viewports,
+  owner-approved publication, seven fixed problem keys, and the two-distinct-owner
+  capability threshold are now explicit and machine-checked. Direct outreach has
+  not started, so no candidate, consent, external result, feedback, repeated
+  problem, or adoption evidence is claimed.
 - **Phase 794 (external pilot recruitment activation)** — Merged the privacy-safe
   P15 GitHub Issue Form and deterministic boundary validator in PR #55. The live
   default-branch form exposes all three prepared segments, keeps public repository

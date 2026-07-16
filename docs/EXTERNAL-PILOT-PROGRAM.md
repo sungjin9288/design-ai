@@ -32,6 +32,11 @@ records the three available segments and the zero-participant claim boundary at
 publication.
 The [P15 recruitment plan](PILOT-RECRUITMENT-PLAN.md) defines the public intake
 funnel and its completion checks.
+The [P16 operations guide](EXTERNAL-PILOT-OPERATIONS.md) defines private outreach,
+candidate lifecycle labels, separate consent, the marketing-site first slot,
+browser proof, and the repeated-problem decision rule. Its
+[aggregate status](pilots/external/recruitment-status.md) contains no candidate
+identity or private message content.
 
 ## Entry gate
 
@@ -45,8 +50,11 @@ Start a pilot only when all of these statements are true:
    of the design-ai evidence bundle.
 
 Use the [recruitment](pilots/external/recruitment-message.md),
+[Korean-first direct invitation](pilots/external/direct-invitation-ko.md),
 [consent](pilots/external/owner-consent-template.md), and
-[measurement](pilots/external/measurement-template.md) templates. Store private
+[measurement](pilots/external/measurement-template.md) templates. Classify a
+completed pilot with the
+[problem hypothesis template](pilots/external/hypothesis-template.md). Store private
 contact details outside this repository. The retained consent record needs only a
 participant-chosen role or handle, authority statement, approved scope, data
 boundary, canonical UTC time, and source reference.
