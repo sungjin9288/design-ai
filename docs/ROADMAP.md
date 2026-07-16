@@ -15,8 +15,11 @@
 - [x] Connected the validator to `release:self-test` and required PR audit paths.
 - [x] Created `external-pilot` and `pilot:intake` repository labels with an explicit
   no-consent intake boundary.
-- [ ] Merge and render the Issue Form from the default branch, then publish the
-  source-controlled recruitment issue.
+- [x] Merged PR #55, rendered the Issue Form from the default branch, published
+  recruitment issue #56, and verified the linked P15 plan on GitHub Pages.
+- [x] Recorded successful main Audit run `29498762177`, Pages run `29498762066`,
+  the default-branch form source digest, and the live rendered surfaces in
+  `evidence/p15/recruitment-launch.md`.
 
 ### Boundary
 

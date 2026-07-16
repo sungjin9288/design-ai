@@ -14,7 +14,8 @@ participant, project, consent, result, feedback, or adoption evidence.
 ## Use
 
 1. Run `npm run external-pilot:check` in the design-ai repository.
-2. Send the recruitment message or use the public
+2. Share the public [recruitment issue](https://github.com/sungjin9288/design-ai/issues/56),
+   send the recruitment message, or use the public
    [Issue Form](https://github.com/sungjin9288/design-ai/issues/new?template=external-pilot.yml)
    without adding private contact data here.
 3. Create a separate owner consent record for the selected project.
@@ -26,3 +27,6 @@ participant, project, consent, result, feedback, or adoption evidence.
 Do not edit `program.json` to suggest that a slot ran. A real pilot gets a new
 source-linked evidence directory; the launch inventory remains the pre-participation
 baseline.
+
+The P15 launch proof is recorded in
+[the source-controlled launch record](https://github.com/sungjin9288/design-ai/blob/main/evidence/p15/recruitment-launch.md).

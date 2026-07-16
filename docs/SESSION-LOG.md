@@ -5,6 +5,17 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 794 (external pilot recruitment activation)** — Merged the privacy-safe
+  P15 GitHub Issue Form and deterministic boundary validator in PR #55. The live
+  default-branch form exposes all three prepared segments, keeps public repository
+  references optional, requires owner-authority, privacy, intake-only, and separate
+  consent acknowledgements, and applies `external-pilot` plus `pilot:intake` labels.
+  Public recruitment issue #56 links the form and published program guide. Main
+  Audit run `29498762177` and Pages run `29498762066` passed, and the deployed P15
+  plan renders at its public URL. The canonical inventory remains three
+  `awaiting-owner` slots with zero participants, consent records, results, or
+  adoption evidence; the next capability still requires the same problem in two
+  completed independent pilot records from distinct owners.
 - **Phase 793 (public Pages proof and external pilot launch framework)** — Fixed
   the deployed documentation site's project-path drift and locale sitemap 404 in
   PR #51. Required CI run `29492331845` and Pages run `29492452008` passed. Public
