@@ -488,7 +488,8 @@ with matching source identities and unchanged read-only boundaries.
 
 ### P14 - Public release and real adoption evidence
 
-Status: v5.1.0 release candidate preparation in progress.
+Status: v5.1.0 public distribution complete; homepage and consent-gated external
+pilot evidence in progress.
 
 Publish the complete P6-P13 workflow before adding another contract. Then run the
 same review-to-comparison path against the public documentation homepage and

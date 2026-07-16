@@ -12,17 +12,13 @@ See `README.md` for the short version, [`docs/ROADMAP.md`](ROADMAP.md)
 for the full phase log, and [`docs/PRODUCT-READINESS.md`](PRODUCT-READINESS.md)
 for the current completion boundary.
 
-## Status detail (published v5.0.0, v5.1.0 release candidate)
+## Status detail (published v5.1.0)
 
-Published **v5.0.0** is the public baseline. Public npm publish, provenance-backed GitHub
-Actions release, public registry smoke, Website Console MCP readiness, workspace
-learning restore/eval coverage, handoff bundle verification, and 90%+
-component coverage are complete.
-
-The package and plugin manifests now identify the additive P6-P13 source as a
-**v5.1.0 release candidate**. It is not public until the exact tag passes this
-gate, npm Trusted Publishing, public registry smoke, GitHub Release, and Homebrew
-formula verification. Until then, installation status remains v5.0.0.
+Published **v5.1.0** is the public baseline. The exact release tree passed the
+full gate and PR CI. The tag then passed npm Trusted Publishing, SLSA provenance,
+public registry smoke, GitHub Release, and Homebrew formula verification. The
+public package exposes the additive P6-P13 workflow with 29 MCP tools and 20 SDK
+exports while preserving the existing permission boundaries.
 
 Core design consulting workflows are released and locally verifiable. The website
 improvement control tower is available as a zero-dependency static Web App at
@@ -115,7 +111,7 @@ The corpus has been audited under CI checks since v1.7. It currently runs 8 audi
 
 All 8 pass on every commit to `main`.
 
-## Reproducible gate structure (v5.0.0)
+## Reproducible gate structure (v5.1.0)
 
 `npm run release:preflight` runs every non-publishing gate except packed-tarball
 execution smoke:

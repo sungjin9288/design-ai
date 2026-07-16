@@ -9,7 +9,7 @@ design-ai can also run as its own local stdio MCP server. Use this when you want
 | Mode | What connects | Use when |
 | --- | --- | --- |
 | design-ai uses external MCPs | Claude/Codex loads Figma, GitHub, Slack, Notion, or Linear MCP servers; design-ai skills use those tools when available. | You need live product workflow context or write-back to external tools. |
-| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; the current source candidate exposes 29 tools, including verified review comparison, target intake, scope approval, implementation evidence, real-pilot evidence, and exactly three opt-in local learning-write tools. Published v5.0.0 remains at 17 tools. | You want agents to call design-ai through MCP without manually opening repo files. |
+| design-ai as an MCP server | Claude/Codex loads `design-ai mcp`; published v5.1.0 exposes 29 tools, including verified review comparison, target intake, scope approval, implementation evidence, real-pilot evidence, and exactly three opt-in local learning-write tools. | You want agents to call design-ai through MCP without manually opening repo files. |
 
 ## What MCP enables for design-ai
 
@@ -153,7 +153,7 @@ bodies. See [Real pilot evidence](REAL-PILOT-EVIDENCE.md).
 
 ### Approval-gated website implementation handoff
 
-The v5.0.0 source candidate adds `design_ai_site_bundle_handoff`. It verifies a local Website Improvement bundle through the existing CLI boundary and returns a target-repo prompt plus a `pending-human-approval` contract. The call is read-only: it does not contact an external MCP, edit the target repository, install dependencies, deploy, commit, or push.
+Published v5.0.0 added `design_ai_site_bundle_handoff`. It verifies a local Website Improvement bundle through the existing CLI boundary and returns a target-repo prompt plus a `pending-human-approval` contract. The call is read-only: it does not contact an external MCP, edit the target repository, install dependencies, deploy, commit, or push.
 
 ```json
 {

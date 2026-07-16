@@ -45,19 +45,19 @@ brew untap sungjin9288/design-ai
 
 3. **Commit + tag**:
    ```bash
-   git tag v4.55.0
-   git push origin v4.55.0
+   git tag v5.1.0
+   git push origin v5.1.0
    ```
 
 4. **Generate Homebrew tarball**:
    ```bash
-   gh release create v4.55.0 --generate-notes
+   gh release create v5.1.0 --generate-notes
    ```
    (Or wait for GitHub Releases to auto-create from the tag.)
 
 5. **Get tarball SHA256**:
    ```bash
-   curl -sL https://github.com/sungjin9288/design-ai/archive/refs/tags/v4.55.0.tar.gz | shasum -a 256
+   curl -sL https://github.com/sungjin9288/design-ai/archive/refs/tags/v5.1.0.tar.gz | shasum -a 256
    ```
 
 6. **Update `Formula/design-ai.rb`**:
@@ -65,10 +65,16 @@ brew untap sungjin9288/design-ai
    - Replace `sha256` with the value from step 5.
    - Bump `version`.
 
-7. **Test locally**:
+7. **Test locally** in a temporary tap. Homebrew 6 rejects formula files that
+   are not inside a tap:
    ```bash
-   brew install --build-from-source ./Formula/design-ai.rb
-   brew test design-ai
+   brew tap-new --no-git designai/release-validation
+   TAP_DIR=$(brew --repo designai/release-validation)
+   cp Formula/design-ai.rb "$TAP_DIR/Formula/design-ai.rb"
+   brew install --build-from-source designai/release-validation/design-ai
+   brew test designai/release-validation/design-ai
+   brew uninstall design-ai
+   brew untap designai/release-validation
    ```
 
 8. **Commit + push** the formula update.
