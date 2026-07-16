@@ -1,0 +1,5 @@
+
+> @design-ai/cli@5.1.0 release:metadata
+> python3 -B tools/audit/release-metadata.py
+
+Release metadata check passed: v5.1.0, 8 audits, CHANGELOG 2026-07

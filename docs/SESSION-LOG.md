@@ -5,7 +5,7 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
-- **Phase 792 (v5.1.0 public release complete; adoption evidence in progress)** —
+- **Phase 792 (v5.1.0 public release and internal homepage pilot complete)** —
   Grouped the complete P6-P13 review-to-verified-iteration workflow into one
   additive minor release. The exact release tree passed 832 tests, all 8 strict
   audits, package smoke, PR #48 CI, main Audit run `29485559867`, and Docs run
@@ -13,7 +13,13 @@ For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
   SLSA provenance and public registry smoke; GitHub Release run `29485715193`
   published the matching tag and digest-attested package asset. The Homebrew
   formula passed syntax, style, temporary-tap source install, and formula test.
-  Homepage and consent-gated external pilot evidence remain separate work.
+  The owner-consented documentation homepage pilot then ran the complete P6-P13
+  chain. Its exact comparison is `improved`: the buried first-value path and
+  unnamed search control are resolved, five repeated search and drawer cycles
+  pass, English and Korean 390-pixel views have no horizontal overflow, and both
+  CTA contrast ratios clear WCAG AA. The local `/ko/sitemap.xml` 404 remains an
+  explicit performance warning. External participation and adoption remain
+  unverified until another project owner consents and takes part.
 - **Phase 791 (merged in PR #47)** — Added verified before-and-after design comparison
   across CLI, typed SDK, in-process MCP, and Website Console. The exact-source
   contract requires matching subject and review context, records every lens

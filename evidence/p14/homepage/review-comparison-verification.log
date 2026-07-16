@@ -1,0 +1,537 @@
+{
+  "kind": "design-ai-review-comparison",
+  "schemaVersion": 1,
+  "status": "improved",
+  "baseline": {
+    "reference": "/Users/sungjin/dev/design/evidence/p14/homepage/baseline-quality-report.json",
+    "sha256": "b7dd64bb09011bf71f493bf53990d512cce9d14892c6e36b3bafe2acf17c6ee9",
+    "bytes": 8329,
+    "source": "{\n  \"kind\": \"design-ai-quality-report\",\n  \"schemaVersion\": 1,\n  \"generatedAt\": \"2026-07-16T10:15:00.000Z\",\n  \"subject\": {\n    \"name\": \"design-ai documentation homepage\",\n    \"type\": \"page\",\n    \"source\": \"documentation-homepage\"\n  },\n  \"context\": {\n    \"brief\": \"Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.\",\n    \"routeId\": \"design-engineering-review\",\n    \"locale\": \"en\",\n    \"viewports\": [\n      \"mobile\",\n      \"desktop\"\n    ]\n  },\n  \"boundary\": {\n    \"mode\": \"local-evidence-write\",\n    \"targetRepoMutation\": false,\n    \"externalWrites\": false,\n    \"localEvidenceWrites\": true,\n    \"localEvidencePath\": \"evidence/p14/homepage\",\n    \"notes\": [\n      \"The report records only local P14 evidence produced from the approved homepage pilot.\",\n      \"Repository mutation, deployment, and external adoption claims remain outside this report.\"\n    ]\n  },\n  \"sources\": [\n    {\n      \"kind\": \"code\",\n      \"reference\": \"evidence/p14/homepage/baseline.html\",\n      \"observation\": \"Captured the rendered documentation homepage before the approved implementation.\"\n    },\n    {\n      \"kind\": \"screenshot\",\n      \"reference\": \"evidence/p14/homepage/baseline-desktop.png\",\n      \"observation\": \"Captured the 1440 by 900 desktop baseline.\"\n    },\n    {\n      \"kind\": \"screenshot\",\n      \"reference\": \"evidence/p14/homepage/baseline-mobile.png\",\n      \"observation\": \"Captured the 390 by 844 mobile baseline.\"\n    },\n    {\n      \"kind\": \"runtime\",\n      \"reference\": \"evidence/p14/homepage/baseline-browser-qa.md\",\n      \"observation\": \"Recorded first-viewport, accessibility, responsive, and console observations from the local baseline.\"\n    }\n  ],\n  \"lenses\": [\n    {\n      \"id\": \"purpose-frequency\",\n      \"status\": \"fail\",\n      \"summary\": \"The first viewport explains distribution status before giving a first-time visitor a clear install or quickstart action.\",\n      \"evidence\": [\n        {\n          \"kind\": \"screenshot\",\n          \"reference\": \"evidence/p14/homepage/baseline-desktop.png\",\n          \"observation\": \"The badges and long release paragraph occupy the primary content area without a prominent next action.\"\n        },\n        {\n          \"kind\": \"screenshot\",\n          \"reference\": \"evidence/p14/homepage/baseline-mobile.png\",\n          \"observation\": \"The mobile first viewport does not expose a clear install or quickstart command.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"response\",\n      \"status\": \"unverified\",\n      \"summary\": \"The baseline capture did not verify repeated search or navigation response.\",\n      \"evidence\": [\n        {\n          \"kind\": \"runtime\",\n          \"reference\": \"evidence/p14/homepage/baseline-browser-qa.md\",\n          \"observation\": \"No repeated-action sequence was retained for the baseline.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"spatial-continuity\",\n      \"status\": \"unverified\",\n      \"summary\": \"The baseline capture did not establish focus continuity through the skip link and primary action.\",\n      \"evidence\": [\n        {\n          \"kind\": \"runtime\",\n          \"reference\": \"evidence/p14/homepage/baseline-browser-qa.md\",\n          \"observation\": \"Keyboard destination continuity was not proven before implementation.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"interruptibility\",\n      \"status\": \"unverified\",\n      \"summary\": \"The baseline capture did not exercise repeated open and dismiss cycles.\",\n      \"evidence\": [\n        {\n          \"kind\": \"runtime\",\n          \"reference\": \"evidence/p14/homepage/baseline-browser-qa.md\",\n          \"observation\": \"Search and drawer interruption behavior remained unverified.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"timing-cohesion\",\n      \"status\": \"unverified\",\n      \"summary\": \"The baseline capture did not verify reduced-motion behavior.\",\n      \"evidence\": [\n        {\n          \"kind\": \"runtime\",\n          \"reference\": \"evidence/p14/homepage/baseline-browser-qa.md\",\n          \"observation\": \"No reduced-motion profile was retained for the baseline.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"performance\",\n      \"status\": \"fail\",\n      \"summary\": \"The baseline console recorded a failed Pretendard font request and the local language sitemap warning.\",\n      \"evidence\": [\n        {\n          \"kind\": \"runtime\",\n          \"reference\": \"evidence/p14/homepage/baseline-browser-qa.md\",\n          \"observation\": \"The browser console recorded a 403 response from the previous Pretendard CDN URL and a local /ko/sitemap.xml 404.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"accessibility\",\n      \"status\": \"fail\",\n      \"summary\": \"Static inspection confirmed an unnamed search toggle input.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"evidence/p14/homepage/baseline-review.json\",\n          \"observation\": \"The canonical static review found one P1 accessible-name defect.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"responsive-resilience\",\n      \"status\": \"warning\",\n      \"summary\": \"The baseline did not overflow, but the mobile first viewport buried the next action below release status content.\",\n      \"evidence\": [\n        {\n          \"kind\": \"screenshot\",\n          \"reference\": \"evidence/p14/homepage/baseline-mobile.png\",\n          \"observation\": \"The 390 by 844 viewport renders without horizontal overflow while withholding the primary action from the first view.\"\n        }\n      ]\n    }\n  ],\n  \"findings\": [\n    {\n      \"id\": \"homepage-first-value-path-buried\",\n      \"lens\": \"purpose-frequency\",\n      \"severity\": \"p1\",\n      \"status\": \"confirmed\",\n      \"title\": \"Expose one clear first-value path in the first viewport\",\n      \"location\": \"README.md#design-ai\",\n      \"before\": \"Badges and release status lead the page without a prominent install or quickstart action.\",\n      \"after\": \"Lead with a concise product promise, one primary quickstart action, one distribution action, and compact proof.\",\n      \"why\": \"A first-time visitor must understand the product and reach a verified starting path without scanning release metadata.\",\n      \"evidence\": [\n        {\n          \"kind\": \"screenshot\",\n          \"reference\": \"evidence/p14/homepage/baseline-desktop.png\",\n          \"observation\": \"The desktop baseline contains no prominent first-value action.\"\n        },\n        {\n          \"kind\": \"screenshot\",\n          \"reference\": \"evidence/p14/homepage/baseline-mobile.png\",\n          \"observation\": \"The mobile baseline hides the first useful action below the first viewport.\"\n        }\n      ],\n      \"verification\": [\n        \"Confirm the product promise and primary quickstart action are visible in the first desktop and mobile viewports.\",\n        \"Confirm the primary action points to the verified quickstart documentation path.\"\n      ]\n    },\n    {\n      \"id\": \"missing-accessible-name-input-91-2\",\n      \"lens\": \"accessibility\",\n      \"severity\": \"p1\",\n      \"status\": \"confirmed\",\n      \"title\": \"Give the input control a programmatic name\",\n      \"location\": \"evidence/p14/homepage/baseline.html:91\",\n      \"before\": \"The input control has no associated label or supported accessible-name attribute.\",\n      \"after\": \"Associate a visible label, or provide an accurate aria-label or aria-labelledby reference.\",\n      \"why\": \"Screen-reader and voice-control users need a stable programmatic name for every interactive control.\",\n      \"evidence\": [\n        {\n          \"kind\": \"code\",\n          \"reference\": \"evidence/p14/homepage/baseline-review.json\",\n          \"observation\": \"Static inspection found the search toggle input without a programmatic name.\"\n        }\n      ],\n      \"verification\": [\n        \"Inspect the accessibility tree and confirm the control exposes the intended name.\",\n        \"Reach the control by keyboard and confirm its visible focus indicator remains present.\"\n      ]\n    }\n  ],\n  \"summary\": {\n    \"status\": \"fail\",\n    \"confirmedFindings\": 2,\n    \"unverifiedFindings\": 0,\n    \"blockingFindings\": 0,\n    \"nextAction\": \"Implement the approved first-value path and accessible header controls, then collect browser evidence at both declared viewports.\"\n  },\n  \"approval\": {\n    \"status\": \"pending\",\n    \"requiredBefore\": [\n      \"editing the target repository\",\n      \"publishing or deploying the implementation\"\n    ]\n  }\n}\n",
+    "value": {
+      "kind": "design-ai-quality-report",
+      "schemaVersion": 1,
+      "generatedAt": "2026-07-16T10:15:00.000Z",
+      "subject": {
+        "name": "design-ai documentation homepage",
+        "type": "page",
+        "source": "documentation-homepage"
+      },
+      "context": {
+        "brief": "Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.",
+        "routeId": "design-engineering-review",
+        "locale": "en",
+        "viewports": [
+          "mobile",
+          "desktop"
+        ]
+      },
+      "boundary": {
+        "mode": "local-evidence-write",
+        "targetRepoMutation": false,
+        "externalWrites": false,
+        "localEvidenceWrites": true,
+        "localEvidencePath": "evidence/p14/homepage",
+        "notes": [
+          "The report records only local P14 evidence produced from the approved homepage pilot.",
+          "Repository mutation, deployment, and external adoption claims remain outside this report."
+        ]
+      },
+      "sources": [
+        {
+          "kind": "code",
+          "reference": "evidence/p14/homepage/baseline.html",
+          "observation": "Captured the rendered documentation homepage before the approved implementation."
+        },
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/baseline-desktop.png",
+          "observation": "Captured the 1440 by 900 desktop baseline."
+        },
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/baseline-mobile.png",
+          "observation": "Captured the 390 by 844 mobile baseline."
+        },
+        {
+          "kind": "runtime",
+          "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+          "observation": "Recorded first-viewport, accessibility, responsive, and console observations from the local baseline."
+        }
+      ],
+      "lenses": [
+        {
+          "id": "purpose-frequency",
+          "status": "fail",
+          "summary": "The first viewport explains distribution status before giving a first-time visitor a clear install or quickstart action.",
+          "evidence": [
+            {
+              "kind": "screenshot",
+              "reference": "evidence/p14/homepage/baseline-desktop.png",
+              "observation": "The badges and long release paragraph occupy the primary content area without a prominent next action."
+            },
+            {
+              "kind": "screenshot",
+              "reference": "evidence/p14/homepage/baseline-mobile.png",
+              "observation": "The mobile first viewport does not expose a clear install or quickstart command."
+            }
+          ]
+        },
+        {
+          "id": "response",
+          "status": "unverified",
+          "summary": "The baseline capture did not verify repeated search or navigation response.",
+          "evidence": [
+            {
+              "kind": "runtime",
+              "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+              "observation": "No repeated-action sequence was retained for the baseline."
+            }
+          ]
+        },
+        {
+          "id": "spatial-continuity",
+          "status": "unverified",
+          "summary": "The baseline capture did not establish focus continuity through the skip link and primary action.",
+          "evidence": [
+            {
+              "kind": "runtime",
+              "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+              "observation": "Keyboard destination continuity was not proven before implementation."
+            }
+          ]
+        },
+        {
+          "id": "interruptibility",
+          "status": "unverified",
+          "summary": "The baseline capture did not exercise repeated open and dismiss cycles.",
+          "evidence": [
+            {
+              "kind": "runtime",
+              "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+              "observation": "Search and drawer interruption behavior remained unverified."
+            }
+          ]
+        },
+        {
+          "id": "timing-cohesion",
+          "status": "unverified",
+          "summary": "The baseline capture did not verify reduced-motion behavior.",
+          "evidence": [
+            {
+              "kind": "runtime",
+              "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+              "observation": "No reduced-motion profile was retained for the baseline."
+            }
+          ]
+        },
+        {
+          "id": "performance",
+          "status": "fail",
+          "summary": "The baseline console recorded a failed Pretendard font request and the local language sitemap warning.",
+          "evidence": [
+            {
+              "kind": "runtime",
+              "reference": "evidence/p14/homepage/baseline-browser-qa.md",
+              "observation": "The browser console recorded a 403 response from the previous Pretendard CDN URL and a local /ko/sitemap.xml 404."
+            }
+          ]
+        },
+        {
+          "id": "accessibility",
+          "status": "fail",
+          "summary": "Static inspection confirmed an unnamed search toggle input.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "evidence/p14/homepage/baseline-review.json",
+              "observation": "The canonical static review found one P1 accessible-name defect."
+            }
+          ]
+        },
+        {
+          "id": "responsive-resilience",
+          "status": "warning",
+          "summary": "The baseline did not overflow, but the mobile first viewport buried the next action below release status content.",
+          "evidence": [
+            {
+              "kind": "screenshot",
+              "reference": "evidence/p14/homepage/baseline-mobile.png",
+              "observation": "The 390 by 844 viewport renders without horizontal overflow while withholding the primary action from the first view."
+            }
+          ]
+        }
+      ],
+      "findings": [
+        {
+          "id": "homepage-first-value-path-buried",
+          "lens": "purpose-frequency",
+          "severity": "p1",
+          "status": "confirmed",
+          "title": "Expose one clear first-value path in the first viewport",
+          "location": "README.md#design-ai",
+          "before": "Badges and release status lead the page without a prominent install or quickstart action.",
+          "after": "Lead with a concise product promise, one primary quickstart action, one distribution action, and compact proof.",
+          "why": "A first-time visitor must understand the product and reach a verified starting path without scanning release metadata.",
+          "evidence": [
+            {
+              "kind": "screenshot",
+              "reference": "evidence/p14/homepage/baseline-desktop.png",
+              "observation": "The desktop baseline contains no prominent first-value action."
+            },
+            {
+              "kind": "screenshot",
+              "reference": "evidence/p14/homepage/baseline-mobile.png",
+              "observation": "The mobile baseline hides the first useful action below the first viewport."
+            }
+          ],
+          "verification": [
+            "Confirm the product promise and primary quickstart action are visible in the first desktop and mobile viewports.",
+            "Confirm the primary action points to the verified quickstart documentation path."
+          ]
+        },
+        {
+          "id": "missing-accessible-name-input-91-2",
+          "lens": "accessibility",
+          "severity": "p1",
+          "status": "confirmed",
+          "title": "Give the input control a programmatic name",
+          "location": "evidence/p14/homepage/baseline.html:91",
+          "before": "The input control has no associated label or supported accessible-name attribute.",
+          "after": "Associate a visible label, or provide an accurate aria-label or aria-labelledby reference.",
+          "why": "Screen-reader and voice-control users need a stable programmatic name for every interactive control.",
+          "evidence": [
+            {
+              "kind": "code",
+              "reference": "evidence/p14/homepage/baseline-review.json",
+              "observation": "Static inspection found the search toggle input without a programmatic name."
+            }
+          ],
+          "verification": [
+            "Inspect the accessibility tree and confirm the control exposes the intended name.",
+            "Reach the control by keyboard and confirm its visible focus indicator remains present."
+          ]
+        }
+      ],
+      "summary": {
+        "status": "fail",
+        "confirmedFindings": 2,
+        "unverifiedFindings": 0,
+        "blockingFindings": 0,
+        "nextAction": "Implement the approved first-value path and accessible header controls, then collect browser evidence at both declared viewports."
+      },
+      "approval": {
+        "status": "pending",
+        "requiredBefore": [
+          "editing the target repository",
+          "publishing or deploying the implementation"
+        ]
+      }
+    }
+  },
+  "candidate": {
+    "reference": "/Users/sungjin/dev/design/evidence/p14/homepage/candidate-quality-report.json",
+    "sha256": "07f8c632491789d407b3ac894c8265955d5494f630483f1e8b527c153da70a34",
+    "bytes": 6925,
+    "source": "{\n  \"kind\": \"design-ai-quality-report\",\n  \"schemaVersion\": 1,\n  \"generatedAt\": \"2026-07-16T10:16:00.000Z\",\n  \"subject\": {\n    \"name\": \"design-ai documentation homepage\",\n    \"type\": \"page\",\n    \"source\": \"documentation-homepage\"\n  },\n  \"context\": {\n    \"brief\": \"Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.\",\n    \"routeId\": \"design-engineering-review\",\n    \"locale\": \"en\",\n    \"viewports\": [\n      \"mobile\",\n      \"desktop\"\n    ]\n  },\n  \"boundary\": {\n    \"mode\": \"local-evidence-write\",\n    \"targetRepoMutation\": false,\n    \"externalWrites\": false,\n    \"localEvidenceWrites\": true,\n    \"localEvidencePath\": \"evidence/p14/homepage\",\n    \"notes\": [\n      \"The report records only local P14 evidence produced from the approved homepage pilot.\",\n      \"Repository mutation, deployment, and external adoption claims remain outside this report.\"\n    ]\n  },\n  \"sources\": [\n    {\n      \"kind\": \"code\",\n      \"reference\": \"evidence/p14/homepage/candidate.html\",\n      \"observation\": \"Captured the rendered documentation homepage after the approved implementation.\"\n    },\n    {\n      \"kind\": \"screenshot\",\n      \"reference\": \"evidence/p14/homepage/candidate-desktop.png\",\n      \"observation\": \"Captured the 1440 by 900 desktop candidate.\"\n    },\n    {\n      \"kind\": \"screenshot\",\n      \"reference\": \"evidence/p14/homepage/candidate-mobile.png\",\n      \"observation\": \"Captured the 390 by 844 English mobile candidate.\"\n    },\n    {\n      \"kind\": \"screenshot\",\n      \"reference\": \"evidence/p14/homepage/candidate-ko-mobile.png\",\n      \"observation\": \"Captured the 390 by 844 Korean mobile candidate.\"\n    },\n    {\n      \"kind\": \"runtime\",\n      \"reference\": \"evidence/p14/homepage/candidate-browser-qa.md\",\n      \"observation\": \"Recorded responsive, keyboard, repeated-action, reduced-motion, contrast, and console observations.\"\n    }\n  ],\n  \"lenses\": [\n    {\n      \"id\": \"purpose-frequency\",\n      \"status\": \"pass\",\n      \"summary\": \"The first viewport states the product promise and exposes quickstart and distribution actions before detailed release content.\",\n      \"evidence\": [\n        {\n          \"kind\": \"screenshot\",\n          \"reference\": \"evidence/p14/homepage/candidate-desktop.png\",\n          \"observation\": \"The full hero and both actions end at 657 px in the 900 px desktop viewport.\"\n        },\n        {\n          \"kind\": \"screenshot\",\n          \"reference\": \"evidence/p14/homepage/candidate-mobile.png\",\n          \"observation\": \"The full hero and both actions end at 714 px in the 844 px mobile viewport.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"response\",\n      \"status\": \"pass\",\n      \"summary\": \"Search and navigation respond consistently across repeated keyboard and pointer cycles.\",\n      \"evidence\": [\n        {\n          \"kind\": \"runtime\",\n          \"reference\": \"evidence/p14/homepage/candidate-browser-qa.md\",\n          \"observation\": \"Five search open-dismiss cycles and five drawer open-dismiss cycles completed without a stale state.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"spatial-continuity\",\n      \"status\": \"pass\",\n      \"summary\": \"The skip link moves focus to the page heading and the next keyboard step reaches the primary action in document order.\",\n      \"evidence\": [\n        {\n          \"kind\": \"accessibility\",\n          \"reference\": \"evidence/p14/homepage/candidate-browser-qa.md\",\n          \"observation\": \"Keyboard inspection confirmed skip-link destination, visible focus, and stable heading-to-action order.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"interruptibility\",\n      \"status\": \"pass\",\n      \"summary\": \"Search and drawer overlays can be opened and dismissed repeatedly without trapping input or leaving overlays active.\",\n      \"evidence\": [\n        {\n          \"kind\": \"runtime\",\n          \"reference\": \"evidence/p14/homepage/candidate-browser-qa.md\",\n          \"observation\": \"Every repeated open-dismiss cycle returned to the page state.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"timing-cohesion\",\n      \"status\": \"pass\",\n      \"summary\": \"The hero introduces no blocking motion and honors reduced-motion settings.\",\n      \"evidence\": [\n        {\n          \"kind\": \"runtime\",\n          \"reference\": \"evidence/p14/homepage/candidate-browser-qa.md\",\n          \"observation\": \"The reduced-motion profile reported zero-second hero and action animation and transition durations.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"performance\",\n      \"status\": \"warning\",\n      \"summary\": \"The Pretendard request succeeds, while the local multilingual build still logs the pre-existing /ko/sitemap.xml 404.\",\n      \"evidence\": [\n        {\n          \"kind\": \"runtime\",\n          \"reference\": \"evidence/p14/homepage/candidate-browser-qa.md\",\n          \"observation\": \"The previous font 403 is gone; the local sitemap warning remains visible and is not treated as resolved.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"accessibility\",\n      \"status\": \"pass\",\n      \"summary\": \"Header controls have programmatic names, the skip link reaches a focusable heading, controls meet target size, and CTA contrast clears WCAG AA.\",\n      \"evidence\": [\n        {\n          \"kind\": \"accessibility\",\n          \"reference\": \"evidence/p14/homepage/candidate-browser-qa.md\",\n          \"observation\": \"Primary CTA contrast is 6.86 to 1, secondary CTA contrast is 16.07 to 1, action heights are 49.59 px, and focus uses a 3 px outline.\"\n        },\n        {\n          \"kind\": \"code\",\n          \"reference\": \"evidence/p14/homepage/candidate-review.json\",\n          \"observation\": \"Static inspection reports no supported HTML accessibility findings.\"\n        }\n      ]\n    },\n    {\n      \"id\": \"responsive-resilience\",\n      \"status\": \"pass\",\n      \"summary\": \"The English desktop, English mobile, and Korean mobile pages avoid horizontal overflow and keep the full action hero in the first viewport.\",\n      \"evidence\": [\n        {\n          \"kind\": \"screenshot\",\n          \"reference\": \"evidence/p14/homepage/candidate-mobile.png\",\n          \"observation\": \"The English 390 px viewport has matching document and viewport widths.\"\n        },\n        {\n          \"kind\": \"screenshot\",\n          \"reference\": \"evidence/p14/homepage/candidate-ko-mobile.png\",\n          \"observation\": \"The Korean 390 px viewport has matching document and viewport widths and preserves both actions.\"\n        }\n      ]\n    }\n  ],\n  \"findings\": [],\n  \"summary\": {\n    \"status\": \"warning\",\n    \"confirmedFindings\": 0,\n    \"unverifiedFindings\": 0,\n    \"blockingFindings\": 0,\n    \"nextAction\": \"Preserve the local sitemap warning as an explicit limitation and verify the deployed Pages URL before making a public homepage quality claim.\"\n  },\n  \"approval\": {\n    \"status\": \"pending\",\n    \"requiredBefore\": [\n      \"publishing or deploying the implementation\",\n      \"claiming external adoption or production quality\"\n    ]\n  }\n}\n",
+    "value": {
+      "kind": "design-ai-quality-report",
+      "schemaVersion": 1,
+      "generatedAt": "2026-07-16T10:16:00.000Z",
+      "subject": {
+        "name": "design-ai documentation homepage",
+        "type": "page",
+        "source": "documentation-homepage"
+      },
+      "context": {
+        "brief": "Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.",
+        "routeId": "design-engineering-review",
+        "locale": "en",
+        "viewports": [
+          "mobile",
+          "desktop"
+        ]
+      },
+      "boundary": {
+        "mode": "local-evidence-write",
+        "targetRepoMutation": false,
+        "externalWrites": false,
+        "localEvidenceWrites": true,
+        "localEvidencePath": "evidence/p14/homepage",
+        "notes": [
+          "The report records only local P14 evidence produced from the approved homepage pilot.",
+          "Repository mutation, deployment, and external adoption claims remain outside this report."
+        ]
+      },
+      "sources": [
+        {
+          "kind": "code",
+          "reference": "evidence/p14/homepage/candidate.html",
+          "observation": "Captured the rendered documentation homepage after the approved implementation."
+        },
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/candidate-desktop.png",
+          "observation": "Captured the 1440 by 900 desktop candidate."
+        },
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/candidate-mobile.png",
+          "observation": "Captured the 390 by 844 English mobile candidate."
+        },
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/candidate-ko-mobile.png",
+          "observation": "Captured the 390 by 844 Korean mobile candidate."
+        },
+        {
+          "kind": "runtime",
+          "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+          "observation": "Recorded responsive, keyboard, repeated-action, reduced-motion, contrast, and console observations."
+        }
+      ],
+      "lenses": [
+        {
+          "id": "purpose-frequency",
+          "status": "pass",
+          "summary": "The first viewport states the product promise and exposes quickstart and distribution actions before detailed release content.",
+          "evidence": [
+            {
+              "kind": "screenshot",
+              "reference": "evidence/p14/homepage/candidate-desktop.png",
+              "observation": "The full hero and both actions end at 657 px in the 900 px desktop viewport."
+            },
+            {
+              "kind": "screenshot",
+              "reference": "evidence/p14/homepage/candidate-mobile.png",
+              "observation": "The full hero and both actions end at 714 px in the 844 px mobile viewport."
+            }
+          ]
+        },
+        {
+          "id": "response",
+          "status": "pass",
+          "summary": "Search and navigation respond consistently across repeated keyboard and pointer cycles.",
+          "evidence": [
+            {
+              "kind": "runtime",
+              "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+              "observation": "Five search open-dismiss cycles and five drawer open-dismiss cycles completed without a stale state."
+            }
+          ]
+        },
+        {
+          "id": "spatial-continuity",
+          "status": "pass",
+          "summary": "The skip link moves focus to the page heading and the next keyboard step reaches the primary action in document order.",
+          "evidence": [
+            {
+              "kind": "accessibility",
+              "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+              "observation": "Keyboard inspection confirmed skip-link destination, visible focus, and stable heading-to-action order."
+            }
+          ]
+        },
+        {
+          "id": "interruptibility",
+          "status": "pass",
+          "summary": "Search and drawer overlays can be opened and dismissed repeatedly without trapping input or leaving overlays active.",
+          "evidence": [
+            {
+              "kind": "runtime",
+              "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+              "observation": "Every repeated open-dismiss cycle returned to the page state."
+            }
+          ]
+        },
+        {
+          "id": "timing-cohesion",
+          "status": "pass",
+          "summary": "The hero introduces no blocking motion and honors reduced-motion settings.",
+          "evidence": [
+            {
+              "kind": "runtime",
+              "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+              "observation": "The reduced-motion profile reported zero-second hero and action animation and transition durations."
+            }
+          ]
+        },
+        {
+          "id": "performance",
+          "status": "warning",
+          "summary": "The Pretendard request succeeds, while the local multilingual build still logs the pre-existing /ko/sitemap.xml 404.",
+          "evidence": [
+            {
+              "kind": "runtime",
+              "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+              "observation": "The previous font 403 is gone; the local sitemap warning remains visible and is not treated as resolved."
+            }
+          ]
+        },
+        {
+          "id": "accessibility",
+          "status": "pass",
+          "summary": "Header controls have programmatic names, the skip link reaches a focusable heading, controls meet target size, and CTA contrast clears WCAG AA.",
+          "evidence": [
+            {
+              "kind": "accessibility",
+              "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+              "observation": "Primary CTA contrast is 6.86 to 1, secondary CTA contrast is 16.07 to 1, action heights are 49.59 px, and focus uses a 3 px outline."
+            },
+            {
+              "kind": "code",
+              "reference": "evidence/p14/homepage/candidate-review.json",
+              "observation": "Static inspection reports no supported HTML accessibility findings."
+            }
+          ]
+        },
+        {
+          "id": "responsive-resilience",
+          "status": "pass",
+          "summary": "The English desktop, English mobile, and Korean mobile pages avoid horizontal overflow and keep the full action hero in the first viewport.",
+          "evidence": [
+            {
+              "kind": "screenshot",
+              "reference": "evidence/p14/homepage/candidate-mobile.png",
+              "observation": "The English 390 px viewport has matching document and viewport widths."
+            },
+            {
+              "kind": "screenshot",
+              "reference": "evidence/p14/homepage/candidate-ko-mobile.png",
+              "observation": "The Korean 390 px viewport has matching document and viewport widths and preserves both actions."
+            }
+          ]
+        }
+      ],
+      "findings": [],
+      "summary": {
+        "status": "warning",
+        "confirmedFindings": 0,
+        "unverifiedFindings": 0,
+        "blockingFindings": 0,
+        "nextAction": "Preserve the local sitemap warning as an explicit limitation and verify the deployed Pages URL before making a public homepage quality claim."
+      },
+      "approval": {
+        "status": "pending",
+        "requiredBefore": [
+          "publishing or deploying the implementation",
+          "claiming external adoption or production quality"
+        ]
+      }
+    }
+  },
+  "context": {
+    "subject": {
+      "name": "design-ai documentation homepage",
+      "type": "page",
+      "source": "documentation-homepage"
+    },
+    "brief": "Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.",
+    "routeId": "design-engineering-review",
+    "locale": "en",
+    "viewports": [
+      "mobile",
+      "desktop"
+    ]
+  },
+  "lensTransitions": [
+    {
+      "id": "purpose-frequency",
+      "before": "fail",
+      "after": "pass",
+      "change": "improved"
+    },
+    {
+      "id": "response",
+      "before": "unverified",
+      "after": "pass",
+      "change": "evidence-gained"
+    },
+    {
+      "id": "spatial-continuity",
+      "before": "unverified",
+      "after": "pass",
+      "change": "evidence-gained"
+    },
+    {
+      "id": "interruptibility",
+      "before": "unverified",
+      "after": "pass",
+      "change": "evidence-gained"
+    },
+    {
+      "id": "timing-cohesion",
+      "before": "unverified",
+      "after": "pass",
+      "change": "evidence-gained"
+    },
+    {
+      "id": "performance",
+      "before": "fail",
+      "after": "warning",
+      "change": "improved"
+    },
+    {
+      "id": "accessibility",
+      "before": "fail",
+      "after": "pass",
+      "change": "improved"
+    },
+    {
+      "id": "responsive-resilience",
+      "before": "warning",
+      "after": "pass",
+      "change": "improved"
+    }
+  ],
+  "findings": {
+    "resolved": [
+      {
+        "id": "homepage-first-value-path-buried",
+        "lens": "purpose-frequency",
+        "beforeStatus": "confirmed",
+        "beforeSeverity": "p1",
+        "afterLensStatus": "pass",
+        "reason": "The finding is absent and its candidate lens passes."
+      },
+      {
+        "id": "missing-accessible-name-input-91-2",
+        "lens": "accessibility",
+        "beforeStatus": "confirmed",
+        "beforeSeverity": "p1",
+        "afterLensStatus": "pass",
+        "reason": "The finding is absent and its candidate lens passes."
+      }
+    ],
+    "persistent": [],
+    "introduced": [],
+    "uncertain": []
+  },
+  "summary": {
+    "status": "improved",
+    "resolved": 2,
+    "persistent": 0,
+    "introduced": 0,
+    "uncertain": 0,
+    "nextAction": "Preserve this comparison with implementation evidence; broader production claims remain separate."
+  },
+  "approval": {
+    "status": "pending",
+    "requiredBefore": [
+      "target repository mutation",
+      "commit",
+      "push",
+      "deployment",
+      "external writes"
+    ]
+  },
+  "boundary": {
+    "mode": "read-only-review-comparison",
+    "localWrites": false,
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "networkCalls": false,
+    "boundedImprovementEstablished": true,
+    "productionQualityEstablished": false,
+    "adoptionEstablished": false
+  }
+}

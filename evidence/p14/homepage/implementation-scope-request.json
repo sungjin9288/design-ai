@@ -1,0 +1,80 @@
+{
+  "kind": "design-ai-implementation-scope-request",
+  "schemaVersion": 1,
+  "objective": "Help first-time users understand design-ai and reach a verified install or quickstart path from the documentation homepage first viewport.",
+  "intendedBehavior": [
+    "Replace the dense README opening with a concise product promise, primary quickstart action, secondary install action, and bounded proof points in English and Korean.",
+    "Keep detailed distribution evidence available through the existing external status document without placing the full release record in the first viewport.",
+    "Give the Material navigation and search toggles programmatic names without changing their existing interaction behavior.",
+    "Load the pinned Pretendard dynamic subset from the maintained npm CDN path and preserve system-font fallbacks.",
+    "Preserve desktop and mobile navigation, language switching, search, theme switching, source links, and documentation content below the opening section."
+  ],
+  "files": {
+    "inspect": [
+      "README.md",
+      "README.ko.md",
+      "docs/site-overrides/extra.css",
+      "docs/site-overrides/main.html",
+      "docs/site-overrides/partials/header.html",
+      "mkdocs.yml",
+      "knowledge/patterns/interface-craft.md",
+      "knowledge/patterns/landing-hero-design.md",
+      "knowledge/a11y/keyboard-and-focus.md",
+      "docs/PRODUCT-READINESS.md",
+      "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+      "docs/ROADMAP.md",
+      "docs/SESSION-LOG.md",
+      "docs/case-studies/documentation-homepage-pilot.md",
+      "evidence/p14/homepage/**"
+    ],
+    "change": [
+      "README.md",
+      "README.ko.md",
+      "docs/site-overrides/extra.css",
+      "docs/site-overrides/main.html",
+      "docs/site-overrides/partials/header.html",
+      "mkdocs.yml",
+      "docs/case-studies/documentation-homepage-pilot.md",
+      "docs/PRODUCT-READINESS.md",
+      "docs/PRODUCT-SPECIALIZATION-PLAN.md",
+      "docs/ROADMAP.md",
+      "docs/SESSION-LOG.md"
+    ],
+    "generated": [
+      "evidence/p14/homepage/**"
+    ]
+  },
+  "dependencies": [],
+  "migrations": [],
+  "externalWrites": [
+    {
+      "system": "GitHub",
+      "action": "push branch and merge pull request",
+      "destination": "sungjin9288/design-ai"
+    },
+    {
+      "system": "GitHub Pages",
+      "action": "deploy documentation after merge",
+      "destination": "https://sungjin9288.github.io/design-ai/"
+    }
+  ],
+  "verificationCommands": [
+    "python3 -m mkdocs build --clean",
+    "npm run docs:check",
+    "npm run release:metadata",
+    "npm run release:check",
+    "design-ai review-compare evidence/p14/homepage/baseline-quality-report.json --candidate evidence/p14/homepage/candidate-quality-report.json --json"
+  ],
+  "risks": [
+    "README HTML must remain useful on GitHub where repository CSS is unavailable.",
+    "A shorter first viewport must not hide release evidence or overstate external adoption.",
+    "Theme partial overrides can drift when MkDocs Material changes, so the override must stay minimal and source-compatible.",
+    "External font delivery can fail, so system fallbacks must remain complete and the browser check must record network errors."
+  ],
+  "preExistingChanges": [],
+  "release": {
+    "commit": true,
+    "push": true,
+    "deployment": true
+  }
+}

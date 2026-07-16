@@ -1,0 +1,130 @@
+{
+  "kind": "design-ai-pilot-record",
+  "schemaVersion": 1,
+  "project": {
+    "name": "design-ai documentation homepage",
+    "repositoryUrl": "https://github.com/sungjin9288/design-ai.git",
+    "pilotClass": "internal-dogfood"
+  },
+  "consent": {
+    "status": "approved",
+    "approver": "repository owner",
+    "identity": "self-declared",
+    "reference": "User authorized autonomous completion, evidence collection, grouped commit, push, and deployment in this Codex task",
+    "approvedAt": "2026-07-16T09:53:13.000Z",
+    "evidenceCollection": true,
+    "targetMutation": true
+  },
+  "timeline": {
+    "pilotStartedAt": "2026-07-16T09:53:13.000Z",
+    "firstUsefulArtifactAt": "2026-07-16T09:53:13.000Z",
+    "implementationCompletedAt": "2026-07-16T10:26:31.000Z"
+  },
+  "findingDecisions": [
+    {
+      "findingId": "missing-accessible-name-input-91-2",
+      "decision": "accepted",
+      "summary": "Added localized programmatic names to the Material navigation and search toggles and verified keyboard focus behavior.",
+      "reference": "evidence/p14/homepage/candidate-browser-qa.md"
+    },
+    {
+      "findingId": "runtime-evidence-not-collected",
+      "decision": "accepted",
+      "summary": "Collected desktop, English mobile, Korean mobile, repeated-action, reduced-motion, contrast, focus, and console evidence.",
+      "reference": "evidence/p14/homepage/candidate-browser-qa.md"
+    }
+  ],
+  "approvalEvents": [
+    {
+      "gateId": "source-inspection",
+      "status": "approved",
+      "occurredAt": "2026-07-16T09:53:13.000Z",
+      "reference": "evidence/p14/homepage/implementation-scope-approval.json"
+    },
+    {
+      "gateId": "target-files",
+      "status": "approved",
+      "occurredAt": "2026-07-16T09:53:13.000Z",
+      "reference": "evidence/p14/homepage/implementation-scope-approval.json"
+    },
+    {
+      "gateId": "pre-existing-changes",
+      "status": "not-required",
+      "occurredAt": "",
+      "reference": "evidence/p14/homepage/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "dependency-changes",
+      "status": "not-required",
+      "occurredAt": "",
+      "reference": "evidence/p14/homepage/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "migration-files",
+      "status": "not-required",
+      "occurredAt": "",
+      "reference": "evidence/p14/homepage/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "generated-files",
+      "status": "approved",
+      "occurredAt": "2026-07-16T09:53:13.000Z",
+      "reference": "evidence/p14/homepage/implementation-scope-approval.json"
+    },
+    {
+      "gateId": "external-writes",
+      "status": "pending",
+      "occurredAt": "",
+      "reference": "evidence/p14/homepage/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "commit",
+      "status": "pending",
+      "occurredAt": "",
+      "reference": "evidence/p14/homepage/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "push",
+      "status": "pending",
+      "occurredAt": "",
+      "reference": "evidence/p14/homepage/implementation-scope-proposal.json"
+    },
+    {
+      "gateId": "deployment",
+      "status": "pending",
+      "occurredAt": "",
+      "reference": "evidence/p14/homepage/implementation-scope-proposal.json"
+    }
+  ],
+  "outcome": {
+    "implementationStatus": "complete",
+    "productionStatus": "not-deployed",
+    "feedback": {
+      "status": "not-collected",
+      "summary": "This internal technical pilot did not collect publishable external-user feedback.",
+      "reference": ""
+    }
+  },
+  "claims": [
+    {
+      "class": "real",
+      "statement": "The owner-consented P6 through P13 workflow ran against the design-ai documentation homepage and produced source-linked implementation and browser evidence.",
+      "reference": "evidence/p14/homepage/implementation-evidence.json"
+    },
+    {
+      "class": "synthetic",
+      "statement": "The package and one-shot smoke fixtures verify distribution behavior and are not counted as real pilot adoption.",
+      "reference": "evidence/p14/homepage/release-check.log"
+    },
+    {
+      "class": "inferred",
+      "statement": "The exact comparison suggests that the public review workflow can guide one bounded documentation improvement under recorded controls.",
+      "reference": "evidence/p14/homepage/review-comparison.json"
+    },
+    {
+      "class": "unverified",
+      "statement": "External adoption, respondent identity, customer feedback, business impact, broader production quality, and manual screen-reader behavior remain unverified.",
+      "reference": "docs/case-studies/documentation-homepage-pilot.md"
+    }
+  ]
+}

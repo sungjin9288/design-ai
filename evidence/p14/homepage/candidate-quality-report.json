@@ -1,0 +1,185 @@
+{
+  "kind": "design-ai-quality-report",
+  "schemaVersion": 1,
+  "generatedAt": "2026-07-16T10:16:00.000Z",
+  "subject": {
+    "name": "design-ai documentation homepage",
+    "type": "page",
+    "source": "documentation-homepage"
+  },
+  "context": {
+    "brief": "Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.",
+    "routeId": "design-engineering-review",
+    "locale": "en",
+    "viewports": [
+      "mobile",
+      "desktop"
+    ]
+  },
+  "boundary": {
+    "mode": "local-evidence-write",
+    "targetRepoMutation": false,
+    "externalWrites": false,
+    "localEvidenceWrites": true,
+    "localEvidencePath": "evidence/p14/homepage",
+    "notes": [
+      "The report records only local P14 evidence produced from the approved homepage pilot.",
+      "Repository mutation, deployment, and external adoption claims remain outside this report."
+    ]
+  },
+  "sources": [
+    {
+      "kind": "code",
+      "reference": "evidence/p14/homepage/candidate.html",
+      "observation": "Captured the rendered documentation homepage after the approved implementation."
+    },
+    {
+      "kind": "screenshot",
+      "reference": "evidence/p14/homepage/candidate-desktop.png",
+      "observation": "Captured the 1440 by 900 desktop candidate."
+    },
+    {
+      "kind": "screenshot",
+      "reference": "evidence/p14/homepage/candidate-mobile.png",
+      "observation": "Captured the 390 by 844 English mobile candidate."
+    },
+    {
+      "kind": "screenshot",
+      "reference": "evidence/p14/homepage/candidate-ko-mobile.png",
+      "observation": "Captured the 390 by 844 Korean mobile candidate."
+    },
+    {
+      "kind": "runtime",
+      "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+      "observation": "Recorded responsive, keyboard, repeated-action, reduced-motion, contrast, and console observations."
+    }
+  ],
+  "lenses": [
+    {
+      "id": "purpose-frequency",
+      "status": "pass",
+      "summary": "The first viewport states the product promise and exposes quickstart and distribution actions before detailed release content.",
+      "evidence": [
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/candidate-desktop.png",
+          "observation": "The full hero and both actions end at 657 px in the 900 px desktop viewport."
+        },
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/candidate-mobile.png",
+          "observation": "The full hero and both actions end at 714 px in the 844 px mobile viewport."
+        }
+      ]
+    },
+    {
+      "id": "response",
+      "status": "pass",
+      "summary": "Search and navigation respond consistently across repeated keyboard and pointer cycles.",
+      "evidence": [
+        {
+          "kind": "runtime",
+          "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+          "observation": "Five search open-dismiss cycles and five drawer open-dismiss cycles completed without a stale state."
+        }
+      ]
+    },
+    {
+      "id": "spatial-continuity",
+      "status": "pass",
+      "summary": "The skip link moves focus to the page heading and the next keyboard step reaches the primary action in document order.",
+      "evidence": [
+        {
+          "kind": "accessibility",
+          "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+          "observation": "Keyboard inspection confirmed skip-link destination, visible focus, and stable heading-to-action order."
+        }
+      ]
+    },
+    {
+      "id": "interruptibility",
+      "status": "pass",
+      "summary": "Search and drawer overlays can be opened and dismissed repeatedly without trapping input or leaving overlays active.",
+      "evidence": [
+        {
+          "kind": "runtime",
+          "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+          "observation": "Every repeated open-dismiss cycle returned to the page state."
+        }
+      ]
+    },
+    {
+      "id": "timing-cohesion",
+      "status": "pass",
+      "summary": "The hero introduces no blocking motion and honors reduced-motion settings.",
+      "evidence": [
+        {
+          "kind": "runtime",
+          "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+          "observation": "The reduced-motion profile reported zero-second hero and action animation and transition durations."
+        }
+      ]
+    },
+    {
+      "id": "performance",
+      "status": "warning",
+      "summary": "The Pretendard request succeeds, while the local multilingual build still logs the pre-existing /ko/sitemap.xml 404.",
+      "evidence": [
+        {
+          "kind": "runtime",
+          "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+          "observation": "The previous font 403 is gone; the local sitemap warning remains visible and is not treated as resolved."
+        }
+      ]
+    },
+    {
+      "id": "accessibility",
+      "status": "pass",
+      "summary": "Header controls have programmatic names, the skip link reaches a focusable heading, controls meet target size, and CTA contrast clears WCAG AA.",
+      "evidence": [
+        {
+          "kind": "accessibility",
+          "reference": "evidence/p14/homepage/candidate-browser-qa.md",
+          "observation": "Primary CTA contrast is 6.86 to 1, secondary CTA contrast is 16.07 to 1, action heights are 49.59 px, and focus uses a 3 px outline."
+        },
+        {
+          "kind": "code",
+          "reference": "evidence/p14/homepage/candidate-review.json",
+          "observation": "Static inspection reports no supported HTML accessibility findings."
+        }
+      ]
+    },
+    {
+      "id": "responsive-resilience",
+      "status": "pass",
+      "summary": "The English desktop, English mobile, and Korean mobile pages avoid horizontal overflow and keep the full action hero in the first viewport.",
+      "evidence": [
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/candidate-mobile.png",
+          "observation": "The English 390 px viewport has matching document and viewport widths."
+        },
+        {
+          "kind": "screenshot",
+          "reference": "evidence/p14/homepage/candidate-ko-mobile.png",
+          "observation": "The Korean 390 px viewport has matching document and viewport widths and preserves both actions."
+        }
+      ]
+    }
+  ],
+  "findings": [],
+  "summary": {
+    "status": "warning",
+    "confirmedFindings": 0,
+    "unverifiedFindings": 0,
+    "blockingFindings": 0,
+    "nextAction": "Preserve the local sitemap warning as an explicit limitation and verify the deployed Pages URL before making a public homepage quality claim."
+  },
+  "approval": {
+    "status": "pending",
+    "requiredBefore": [
+      "publishing or deploying the implementation",
+      "claiming external adoption or production quality"
+    ]
+  }
+}

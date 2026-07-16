@@ -1,18 +1,29 @@
 # Design AI
 
-[![Audit](https://img.shields.io/badge/audit-passing-brightgreen)](https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml)
-[![Docs](https://img.shields.io/badge/docs-live-indigo)](https://sungjin9288.github.io/design-ai/ko/)
-[![Knowledge files](https://img.shields.io/badge/knowledge-97-blue)](knowledge/PRINCIPLES.md)
-[![Examples](https://img.shields.io/badge/examples-226-blue)](examples/README.md)
-[![Skills](https://img.shields.io/badge/skills-21-blue)](skills/README.md)
+<section class="design-ai-home-hero">
+  <p class="design-ai-home-lead"><strong>코딩 에이전트가 설명하고, 구현하고, 검증할 수 있는 디자인 판단.</strong></p>
+  <p>Claude Code, Codex, Cursor, Aider에 접근성, 한국 시장 전문성, 사람의 승인 단계, brief부터 구현까지 이어지는 정확한 증빙을 갖춘 디자인 실무 체계를 더하세요.</p>
+  <p class="design-ai-home-actions">
+    <a class="design-ai-home-action design-ai-home-action--primary" href="https://sungjin9288.github.io/design-ai/ko/docs/QUICKSTART/">5분 안에 시작</a>
+    <a class="design-ai-home-action" href="https://sungjin9288.github.io/design-ai/ko/docs/DISTRIBUTION/">v5.1.0 설치</a>
+  </p>
+  <p class="design-ai-home-proof"><span>전문 스킬 21개</span><span>MCP 도구 29개</span><span>SDK 내보내기 20개</span><span>WCAG AA 기본 적용</span></p>
+</section>
+
+<div class="design-ai-home-badges">
+  <a href="https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml"><img alt="감사 통과" src="https://img.shields.io/badge/audit-passing-brightgreen"></a>
+  <a href="https://sungjin9288.github.io/design-ai/ko/"><img alt="문서 사이트 공개" src="https://img.shields.io/badge/docs-live-indigo"></a>
+  <a href="https://github.com/sungjin9288/design-ai/blob/main/knowledge/PRINCIPLES.md"><img alt="지식 파일 97개" src="https://img.shields.io/badge/knowledge-97-blue"></a>
+  <a href="https://github.com/sungjin9288/design-ai/tree/main/examples"><img alt="예제 226개" src="https://img.shields.io/badge/examples-226-blue"></a>
+</div>
 
 > 🇰🇷 한국어 / [🇺🇸 English](https://github.com/sungjin9288/design-ai/blob/main/README.md)
 
-모델에 종속되지 않는 디자인 지식 베이스 + 스킬 시스템. 어떤 AI 코딩 에이전트(Claude Code, Codex CLI, Cursor, Aider)에 붙이든 20년 경력의 시니어 프로덕트 디자이너로 변신해요. 의견이 분명하고, 접근성을 기본으로 챙기며, 한국 시장을 깊이 이해해요.
-
 > **모델이 아니에요. 파인튜닝도 아니에요.** 디자인 전문 지식을 구조화한 코퍼스 + 에이전트가 바로 실행할 수 있는 지시문이에요. 범용 LLM을 이번 세션에서만큼은 시니어 디자이너로 바꿔주는 셈이에요.
 
-> **배포 상태, 2026-07-16 확인:** GitHub Release `v5.1.0`과 npm `@design-ai/cli@5.1.0`이 공개됐어요. npm `latest`는 `5.1.0`을 가리키고, GitHub Actions Trusted Publishing 기반 SLSA provenance가 포함되며, publish workflow의 public registry smoke가 통과했어요. Homebrew formula도 같은 tag를 가리키며 temporary tap source install과 formula test를 통과했어요. GitHub Pages 문서는 live 상태이며, VS Code Marketplace의 `sungjin.design-ai-vscode@0.4.1`도 계속 공개되어 있어요. 자세한 내용은 [`docs/external-status.md`](docs/external-status.md)를 확인하세요.
+**v5.1.0이 공개됐어요.** npm Trusted Publishing, SLSA provenance, GitHub
+Release, Homebrew 설치·테스트, public registry smoke를 확인했어요. 정확한
+증빙은 [`외부 배포 상태`](docs/external-status.md)에서 확인하세요.
 
 ## 한눈에 보는 커버리지
 

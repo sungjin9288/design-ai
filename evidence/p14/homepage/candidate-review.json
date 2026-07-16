@@ -1,0 +1,538 @@
+{
+  "kind": "design-ai-review-workflow",
+  "schemaVersion": 1,
+  "status": "static-review-complete",
+  "source": {
+    "reference": "/private/tmp/design-ai-p14-homepage/candidate.html",
+    "sha256": "08a333716be98c692ce55c1f6073e84ca32e67c6c40f5c297cd7bdfe7d26e8d6",
+    "bytes": 141707
+  },
+  "plan": {
+    "kind": "design-ai-start",
+    "schemaVersion": 1,
+    "brief": "Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.",
+    "context": {
+      "siteName": "",
+      "repoUrl": "",
+      "localPath": "",
+      "url": "",
+      "screenshots": [],
+      "locale": "en",
+      "viewports": [
+        "mobile",
+        "desktop"
+      ]
+    },
+    "route": {
+      "id": "design-review",
+      "label": "Design review",
+      "confidence": "forced",
+      "matchedKeywords": []
+    },
+    "designContract": {
+      "kind": "design-ai-artifact",
+      "schemaVersion": 1,
+      "mode": "design-contract",
+      "title": "Agent-readable design contract",
+      "brief": "Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.",
+      "route": {
+        "id": "design-review",
+        "label": "Design review",
+        "score": 0,
+        "confidence": "forced",
+        "matchedKeywords": [],
+        "command": {
+          "path": "commands/design-review.md",
+          "exists": true
+        },
+        "skills": [
+          {
+            "path": "skills/ux-audit/SKILL.md",
+            "exists": true
+          },
+          {
+            "path": "skills/design-critique/SKILL.md",
+            "exists": true
+          }
+        ],
+        "agents": [
+          {
+            "path": "agents/a11y-reviewer.md",
+            "exists": true
+          },
+          {
+            "path": "agents/design-critic.md",
+            "exists": true
+          }
+        ],
+        "knowledge": [
+          {
+            "path": "knowledge/PRINCIPLES.md",
+            "exists": true
+          },
+          {
+            "path": "knowledge/patterns/ux-guidelines.md",
+            "exists": true
+          },
+          {
+            "path": "knowledge/a11y/contrast.md",
+            "exists": true
+          },
+          {
+            "path": "knowledge/a11y/keyboard-and-focus.md",
+            "exists": true
+          }
+        ],
+        "keywords": [
+          "audit",
+          "review",
+          "critique",
+          "figma",
+          "screenshot",
+          "ux",
+          "a11y",
+          "accessibility",
+          "리뷰",
+          "감사",
+          "평가",
+          "비평",
+          "접근성",
+          "스크린샷"
+        ],
+        "explanation": {
+          "summary": "Route selected explicitly with --route.",
+          "scoreBreakdown": [
+            {
+              "label": "keyword matches",
+              "value": 0
+            }
+          ],
+          "referenceCoverage": {
+            "command": {
+              "available": 1,
+              "total": 1
+            },
+            "skills": {
+              "available": 2,
+              "total": 2
+            },
+            "agents": {
+              "available": 2,
+              "total": 2
+            },
+            "knowledge": {
+              "available": 4,
+              "total": 4
+            },
+            "total": {
+              "available": 9,
+              "total": 9
+            }
+          },
+          "missingReferences": []
+        },
+        "forced": true
+      },
+      "outputFile": "DESIGN.md",
+      "sourceFiles": [
+        "AGENTS.md",
+        "commands/design-review.md",
+        "skills/ux-audit/SKILL.md",
+        "skills/design-critique/SKILL.md",
+        "skills/ux-audit/PLAYBOOK.md",
+        "skills/design-critique/PLAYBOOK.md",
+        "agents/a11y-reviewer.md",
+        "agents/design-critic.md",
+        "knowledge/PRINCIPLES.md",
+        "knowledge/patterns/ux-guidelines.md",
+        "knowledge/a11y/contrast.md",
+        "knowledge/a11y/keyboard-and-focus.md",
+        "examples/report-example.md",
+        "examples/agentic-design-development-reference-mining.md"
+      ],
+      "workflow": [
+        {
+          "title": "Ground the product intent",
+          "purpose": "Capture the product, audience, brand character, supported artifact modes, and source hierarchy without inventing missing facts.",
+          "evidence": "Mark each decision as confirmed, inferred, or unresolved and cite the source of truth."
+        },
+        {
+          "title": "Define visual foundations",
+          "purpose": "Express color, typography, spacing, layout, iconography, and imagery as semantic rules agents can apply consistently.",
+          "evidence": "Include token names, contrast requirements, responsive behavior, and concrete examples where evidence exists."
+        },
+        {
+          "title": "Define component and motion behavior",
+          "purpose": "Name the component patterns, interaction states, motion tiers, and reduced-motion behavior that carry the product character.",
+          "evidence": "Record keyboard, focus, screen-reader, touch-target, loading, empty, error, and interruption expectations."
+        },
+        {
+          "title": "Set boundaries and ownership",
+          "purpose": "List anti-patterns, approval gates, asset and licensing boundaries, maintenance owner, and update triggers.",
+          "evidence": "Provide a short verification checklist agents can run before shipping generated work."
+        }
+      ],
+      "outputSections": [
+        "Product intent and audience",
+        "Brand principles and artifact modes",
+        "Color, typography, spacing, and layout",
+        "Components, states, and motion",
+        "Accessibility and responsive behavior",
+        "Anti-patterns, ownership, and verification"
+      ],
+      "approval": {
+        "status": "pending-human-approval",
+        "requiresApproval": [
+          "editing a target repository",
+          "installing or changing dependencies",
+          "running migrations or changing persistent data",
+          "creating commits, pushing, deploying, or writing to an external system"
+        ]
+      },
+      "verification": {
+        "command": "design-ai check DESIGN.md --route design-review --strict",
+        "checklist": [
+          "Confirm the selected route, command, and files read before producing the artifact.",
+          "Cite checked knowledge files for material design decisions.",
+          "State assumptions and unresolved inputs explicitly.",
+          "Include accessibility notes for contrast, keyboard/focus, touch targets, and screen-reader behavior where relevant.",
+          "Include responsive behavior for mobile and desktop where relevant.",
+          "Run the route playbook verification checklist before final output.",
+          "Lead with the highest-impact issue before secondary observations.",
+          "Separate UX, visual design, and accessibility findings.",
+          "Provide concrete fixes rather than broad design advice."
+        ]
+      },
+      "markdown": "# Agent-readable design contract: Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.\n\n> Generated by design-ai as a read-only planning artifact. It does not modify a repository or contact an external service.\n\n## Artifact contract\n\n- Kind: `design-ai-artifact`\n- Schema version: `1`\n- Mode: `design-contract`\n- Route: `design-review` (Design review)\n- Output: `DESIGN.md`\n- Mutation boundary: planning and local output only; target-repo edits and external writes require explicit approval.\n\n## Brief\n\nHelp a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.\n\n## Source of truth\n\n- `AGENTS.md`\n- `commands/design-review.md`\n- `skills/ux-audit/SKILL.md`\n- `skills/design-critique/SKILL.md`\n- `skills/ux-audit/PLAYBOOK.md`\n- `skills/design-critique/PLAYBOOK.md`\n- `agents/a11y-reviewer.md`\n- `agents/design-critic.md`\n- `knowledge/PRINCIPLES.md`\n- `knowledge/patterns/ux-guidelines.md`\n- `knowledge/a11y/contrast.md`\n- `knowledge/a11y/keyboard-and-focus.md`\n- `examples/report-example.md`\n- `examples/agentic-design-development-reference-mining.md`\n\n## Workflow\n\n### 1. Ground the product intent\n\nCapture the product, audience, brand character, supported artifact modes, and source hierarchy without inventing missing facts.\n\n**Evidence:** Mark each decision as confirmed, inferred, or unresolved and cite the source of truth.\n\n### 2. Define visual foundations\n\nExpress color, typography, spacing, layout, iconography, and imagery as semantic rules agents can apply consistently.\n\n**Evidence:** Include token names, contrast requirements, responsive behavior, and concrete examples where evidence exists.\n\n### 3. Define component and motion behavior\n\nName the component patterns, interaction states, motion tiers, and reduced-motion behavior that carry the product character.\n\n**Evidence:** Record keyboard, focus, screen-reader, touch-target, loading, empty, error, and interruption expectations.\n\n### 4. Set boundaries and ownership\n\nList anti-patterns, approval gates, asset and licensing boundaries, maintenance owner, and update triggers.\n\n**Evidence:** Provide a short verification checklist agents can run before shipping generated work.\n\n## Output structure\n\n- Product intent and audience\n- Brand principles and artifact modes\n- Color, typography, spacing, and layout\n- Components, states, and motion\n- Accessibility and responsive behavior\n- Anti-patterns, ownership, and verification\n\n## Approval boundary\n\n- Approval required before editing a target repository.\n- Approval required before installing or changing dependencies.\n- Approval required before running migrations or changing persistent data.\n- Approval required before creating commits, pushing, deploying, or writing to an external system.\n\n## Verification\n\n- Artifact check: `design-ai check DESIGN.md --route design-review --strict`\n- Confirm the selected route, command, and files read before producing the artifact.\n- Cite checked knowledge files for material design decisions.\n- State assumptions and unresolved inputs explicitly.\n- Include accessibility notes for contrast, keyboard/focus, touch targets, and screen-reader behavior where relevant.\n- Include responsive behavior for mobile and desktop where relevant.\n- Run the route playbook verification checklist before final output.\n- Lead with the highest-impact issue before secondary observations.\n- Separate UX, visual design, and accessibility findings.\n- Provide concrete fixes rather than broad design advice."
+    },
+    "review": {
+      "status": "playbook-ready-not-run",
+      "routeId": "design-review",
+      "executed": false,
+      "sourceFiles": [
+        "skills/ux-audit/SKILL.md",
+        "skills/design-critique/SKILL.md",
+        "agents/a11y-reviewer.md",
+        "agents/design-critic.md",
+        "knowledge/PRINCIPLES.md",
+        "knowledge/patterns/ux-guidelines.md",
+        "knowledge/a11y/contrast.md",
+        "knowledge/a11y/keyboard-and-focus.md"
+      ]
+    },
+    "pathway": {
+      "id": "design-review",
+      "status": "playbook-ready",
+      "reason": "The selected review skill is ready, but no artifact or runtime behavior has been inspected.",
+      "missingInputs": [],
+      "commandArgs": [
+        "artifact",
+        "critique-loop",
+        "Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.",
+        "--route",
+        "design-review",
+        "--json"
+      ],
+      "command": "design-ai artifact critique-loop 'Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.' --route design-review --json"
+    },
+    "effects": {
+      "performed": {
+        "reads": [
+          {
+            "kind": "design-ai-corpus",
+            "reference": "AGENTS.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "commands/design-review.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "skills/ux-audit/SKILL.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "skills/design-critique/SKILL.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "skills/ux-audit/PLAYBOOK.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "skills/design-critique/PLAYBOOK.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "agents/a11y-reviewer.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "agents/design-critic.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "knowledge/PRINCIPLES.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "knowledge/patterns/ux-guidelines.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "knowledge/a11y/contrast.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "knowledge/a11y/keyboard-and-focus.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "examples/report-example.md"
+          },
+          {
+            "kind": "design-ai-corpus",
+            "reference": "examples/agentic-design-development-reference-mining.md"
+          }
+        ],
+        "localWrites": [],
+        "targetRepoMutations": [],
+        "externalActions": []
+      },
+      "intended": {
+        "reads": [],
+        "localWrites": [],
+        "targetRepoMutations": [],
+        "externalActions": []
+      },
+      "approvalRequiredBefore": [
+        "editing a target repository",
+        "installing or changing dependencies",
+        "running migrations or changing persistent data",
+        "creating commits, pushing, deploying, or writing to an external system"
+      ]
+    }
+  },
+  "report": {
+    "kind": "design-ai-quality-report",
+    "schemaVersion": 1,
+    "generatedAt": "2026-07-16T10:14:39.693Z",
+    "subject": {
+      "name": "candidate.html",
+      "type": "page",
+      "source": "/private/tmp/design-ai-p14-homepage/candidate.html"
+    },
+    "context": {
+      "brief": "Help a first-time AI coding agent user understand design-ai and reach a verified install or quickstart path from the first viewport.",
+      "routeId": "design-engineering-review",
+      "locale": "en",
+      "viewports": [
+        "mobile",
+        "desktop"
+      ]
+    },
+    "boundary": {
+      "mode": "read-only",
+      "targetRepoMutation": false,
+      "externalWrites": false,
+      "localEvidenceWrites": false,
+      "localEvidencePath": null,
+      "notes": [
+        "Only the supplied HTML source was inspected.",
+        "No browser, script, stylesheet, linked resource, network request, or target file was executed or changed."
+      ]
+    },
+    "sources": [
+      {
+        "kind": "code",
+        "reference": "/private/tmp/design-ai-p14-homepage/candidate.html",
+        "observation": "Inspected 141017 characters of supplied HTML with deterministic static rules."
+      }
+    ],
+    "lenses": [
+      {
+        "id": "purpose-frequency",
+        "status": "unverified",
+        "summary": "Task purpose and real usage frequency require product or runtime evidence.",
+        "evidence": [
+          {
+            "kind": "code",
+            "reference": "/private/tmp/design-ai-p14-homepage/candidate.html",
+            "observation": "Static HTML does not establish user intent or frequency."
+          }
+        ]
+      },
+      {
+        "id": "response",
+        "status": "unverified",
+        "summary": "Activation feedback and state transitions were not executed.",
+        "evidence": [
+          {
+            "kind": "code",
+            "reference": "/private/tmp/design-ai-p14-homepage/candidate.html",
+            "observation": "The inspector does not run event handlers or network requests."
+          }
+        ]
+      },
+      {
+        "id": "spatial-continuity",
+        "status": "unverified",
+        "summary": "Rendered movement, overlays, and focus continuity were not observed.",
+        "evidence": [
+          {
+            "kind": "code",
+            "reference": "/private/tmp/design-ai-p14-homepage/candidate.html",
+            "observation": "Static source does not prove rendered spatial continuity."
+          }
+        ]
+      },
+      {
+        "id": "interruptibility",
+        "status": "unverified",
+        "summary": "Repeated action, cancellation, and in-flight behavior were not exercised.",
+        "evidence": [
+          {
+            "kind": "code",
+            "reference": "/private/tmp/design-ai-p14-homepage/candidate.html",
+            "observation": "The inspector does not execute interactive scenarios."
+          }
+        ]
+      },
+      {
+        "id": "timing-cohesion",
+        "status": "unverified",
+        "summary": "Motion timing and reduced-motion behavior require runtime evidence.",
+        "evidence": [
+          {
+            "kind": "code",
+            "reference": "/private/tmp/design-ai-p14-homepage/candidate.html",
+            "observation": "Linked stylesheets and rendered animation are outside this static pass."
+          }
+        ]
+      },
+      {
+        "id": "performance",
+        "status": "unverified",
+        "summary": "Runtime responsiveness and loading cost were not measured.",
+        "evidence": [
+          {
+            "kind": "code",
+            "reference": "/private/tmp/design-ai-p14-homepage/candidate.html",
+            "observation": "No browser performance trace was collected."
+          }
+        ]
+      },
+      {
+        "id": "accessibility",
+        "status": "unverified",
+        "summary": "Supported static naming checks found no defect, but keyboard and accessibility-tree behavior remain unverified.",
+        "evidence": [
+          {
+            "kind": "code",
+            "reference": "/private/tmp/design-ai-p14-homepage/candidate.html",
+            "observation": "Checked document language, 36 interactive control(s), and image alt declarations."
+          }
+        ]
+      },
+      {
+        "id": "responsive-resilience",
+        "status": "unverified",
+        "summary": "A viewport declaration exists, but layout, wrapping, and overflow remain unverified.",
+        "evidence": [
+          {
+            "kind": "code",
+            "reference": "/private/tmp/design-ai-p14-homepage/candidate.html",
+            "observation": "A viewport meta declaration is present."
+          }
+        ]
+      }
+    ],
+    "findings": [
+      {
+        "id": "runtime-evidence-not-collected",
+        "lens": "response",
+        "severity": "p2",
+        "status": "unverified",
+        "title": "Collect interaction and runtime evidence",
+        "location": "runtime:/private/tmp/design-ai-p14-homepage/candidate.html",
+        "before": "The source was inspected without running the page, so interaction behavior is unknown.",
+        "after": "Exercise keyboard, repeated-action, loading, error, reduced-motion, and responsive scenarios in an approved browser run.",
+        "why": "Static markup cannot prove response timing, interruption safety, motion behavior, performance, or viewport resilience.",
+        "evidence": [
+          {
+            "kind": "manual",
+            "reference": "quality-report.json#boundary",
+            "observation": "This inspection is read-only and does not start a browser or execute page scripts."
+          }
+        ],
+        "verification": [
+          "Run the approved browser verification profile at every declared viewport.",
+          "Attach runtime, accessibility, and screenshot evidence to the resulting findings."
+        ]
+      }
+    ],
+    "summary": {
+      "status": "unverified",
+      "confirmedFindings": 0,
+      "unverifiedFindings": 1,
+      "blockingFindings": 0,
+      "nextAction": "Collect browser, accessibility-tree, keyboard, responsive, and performance evidence before implementation approval."
+    },
+    "approval": {
+      "status": "pending",
+      "requiredBefore": [
+        "editing the target repository",
+        "starting browser or accessibility verification",
+        "publishing or deploying an implementation"
+      ]
+    }
+  },
+  "linkage": {
+    "status": "pass",
+    "briefMatch": true,
+    "localeMatch": true,
+    "viewportMatch": true,
+    "sourceReferenceMatch": true,
+    "planSha256": "441562b1219aabd46deb8eefe585723a8c0edaafa35289a98e68d445fd3ab5aa",
+    "designContractSha256": "7320cd50666ee6c5e88feee6274fdd6cff204c86bc305ab308499259e1aa292d",
+    "reportSha256": "0f5085ad0c26f0f03f6c45acdd143c4b842d4e065ee542904b29660898c4bfde"
+  },
+  "stages": [
+    {
+      "id": "plan",
+      "status": "complete",
+      "artifactKind": "design-ai-start"
+    },
+    {
+      "id": "static-review",
+      "status": "complete",
+      "artifactKind": "design-ai-quality-report"
+    },
+    {
+      "id": "browser-verification",
+      "status": "not-run",
+      "artifactKind": null
+    },
+    {
+      "id": "implementation-handoff",
+      "status": "not-started",
+      "artifactKind": null
+    }
+  ],
+  "nextAction": {
+    "id": "human-review-required",
+    "status": "pending",
+    "summary": "Collect browser, accessibility-tree, keyboard, responsive, and performance evidence before implementation approval.",
+    "approvalRequiredBefore": [
+      "editing the target repository",
+      "starting browser or accessibility verification",
+      "publishing or deploying an implementation"
+    ]
+  },
+  "boundary": {
+    "mode": "read-only",
+    "localWrites": false,
+    "targetRepoMutation": false,
+    "externalWrites": false
+  }
+}
