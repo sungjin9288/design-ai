@@ -60,7 +60,16 @@ the language-root change:
 - sitemap requests: `/sitemap.xml` and `/ko/sitemap.xml`, both 200;
 - console: 0 errors, 0 warnings.
 
+Main commit `5b404576ae16f589f16888193d925e59af65b379` then passed
+GitHub Pages run `29493795348`. Public English and Korean nested pages were each
+reloaded at 390 by 844 pixels:
+
+- both document widths: 390 pixels;
+- head roots: `/design-ai/` and `/design-ai/ko/`;
+- contextual controls: the matching English and Korean external-pilot document;
+- canonical program JSON: public and linked from the English page;
+- console on each locale: 0 errors, 0 warnings.
+
 Material search now uses language-root alternate links for sitemap discovery,
-while visible language controls keep contextual page links. Public nested-page
-verification follows the main deployment and does not rewrite the immutable
-P6-P13 source chain.
+while visible language controls keep contextual page links. This follow-up does
+not rewrite the immutable P6-P13 source chain.
