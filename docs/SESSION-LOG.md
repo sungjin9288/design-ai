@@ -5,13 +5,15 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
-- **Phase 792 (v5.1.0 release candidate)** — Grouped the complete P6-P13
-  review-to-verified-iteration workflow into one additive minor release. Package
-  and plugin versions are aligned, the changelog and public truth documents keep
-  published v5.0.0 separate from candidate v5.1.0, and P13 completion now points
-  to PR #47, main commit `83479b2`, real VS Code e2e, and successful Pages
-  deployment. Public tag, registry, GitHub Release, and Homebrew evidence remain
-  pending until the release candidate passes its exact-tree gate and CI.
+- **Phase 792 (v5.1.0 public release complete; adoption evidence in progress)** —
+  Grouped the complete P6-P13 review-to-verified-iteration workflow into one
+  additive minor release. The exact release tree passed 832 tests, all 8 strict
+  audits, package smoke, PR #48 CI, main Audit run `29485559867`, and Docs run
+  `29485559848`. npm Trusted Publishing run `29485715200` published v5.1.0 with
+  SLSA provenance and public registry smoke; GitHub Release run `29485715193`
+  published the matching tag and digest-attested package asset. The Homebrew
+  formula passed syntax, style, temporary-tap source install, and formula test.
+  Homepage and consent-gated external pilot evidence remain separate work.
 - **Phase 791 (merged in PR #47)** — Added verified before-and-after design comparison
   across CLI, typed SDK, in-process MCP, and Website Console. The exact-source
   contract requires matching subject and review context, records every lens

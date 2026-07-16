@@ -1,6 +1,6 @@
 # Agent SDK reference
 
-> Status: v5.1.0 release candidate — 19 read-only function exports plus the opt-in `learn.*` local-write namespace; published v5.0.0 has 9 read-only verbs
+> Status: published in v5.1.0 — 19 read-only function exports plus the opt-in `learn.*` local-write namespace
 
 `@design-ai/cli/sdk` lets an external Node.js program — an agent runtime, a build script, a custom tool — use design-ai's deterministic design capabilities as importable functions, without shelling out to the CLI or spawning the MCP server. It is a thin, curated adapter over the same `cli/lib` functions the CLI and MCP server already call, so a capability that ships in the CLI is instantly available to an SDK consumer.
 
@@ -8,7 +8,7 @@ See [`AGENT-SDK.md`](AGENT-SDK.md) for the full design rationale, phased plan, a
 
 MCP parity: SDK `start()`, `reviewHtml()`, `compareReviews()`, `reviewHandoff()`, `verifyReviewHandoff()`, `recordPilotEvidence()`, `inspectHtml()`, `reviewPack()`, and `artifact()` map to `design_ai_start`, `design_ai_review_html`, `design_ai_compare_reviews`, `design_ai_review_handoff`, `design_ai_verify_review_handoff`, `design_ai_review_pilot`, `design_ai_inspect_html`, `design_ai_review_pack`, and `design_ai_artifact`; `recall` and `learn.*` (`remember`, `feedback`, `captureFromCheck`) map 1:1 to `design_ai_recall` and `design_ai_learn_*` (`design_ai_learn_remember`, `design_ai_learn_feedback`, `design_ai_learn_capture`) — see [`integrations/design-ai-mcp-server.md`](integrations/design-ai-mcp-server.md).
 
-Filesystem boundary: Website Improvement linked-preview inspection, target repository intake, and implementation evidence remain CLI/MCP operations rather than SDK exports. Comparison, scope proposal, approval, and pilot evidence accept exact JSON strings, so `compareReviews()`, `proposeImplementationScope()`, `approveImplementationScope()`, and `recordPilotEvidence()` add no general local-project filesystem access. The SDK has 20 current-source exports and exactly three opt-in local learning write methods.
+Filesystem boundary: Website Improvement linked-preview inspection, target repository intake, and implementation evidence remain CLI/MCP operations rather than SDK exports. Comparison, scope proposal, approval, and pilot evidence accept exact JSON strings, so `compareReviews()`, `proposeImplementationScope()`, `approveImplementationScope()`, and `recordPilotEvidence()` add no general local-project filesystem access. The published SDK has 20 exports and exactly three opt-in local learning write methods.
 
 ## Install and import
 

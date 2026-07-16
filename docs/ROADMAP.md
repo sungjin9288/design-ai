@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase 792 - Public release and adoption evidence in progress (v5.1.0)
+## Phase 792 - Public release complete, adoption evidence in progress (v5.1.0)
 
 - [x] Chose a backward-compatible minor release: the P6-P13 surfaces are additive
   and preserve the existing CLI, SDK, MCP, learning-write, and permission contracts.
@@ -8,9 +8,12 @@
 - [x] Converted the accumulated P6-P13 changelog into the v5.1.0 release entry.
 - [x] Corrected P13 completion evidence to PR #47, main commit `83479b2`, 832 tests,
   real VS Code e2e, and successful GitHub Pages deployment.
-- [ ] Pass the exact-tree release gate and pull-request CI.
-- [ ] Publish the v5.1.0 tag through npm Trusted Publishing and GitHub Release.
-- [ ] Refresh and verify the Homebrew formula against the published tag archive.
+- [x] Passed the exact-tree release gate, PR #48 required CI, main Audit run
+  `29485559867`, and Docs run `29485559848`.
+- [x] Published the v5.1.0 tag through npm Trusted Publishing run `29485715200`
+  and GitHub Release run `29485715193`.
+- [x] Refreshed the Homebrew formula against the published tag archive and passed
+  Ruby syntax, Homebrew style, temporary-tap source install, and formula test.
 - [ ] Run the documentation homepage through baseline, approved implementation,
   candidate, browser, and exact review-comparison evidence.
 - [ ] Prepare three consent-gated external pilot slots without claiming adoption
@@ -18,9 +21,13 @@
 
 ### Verified
 
-- All 8 audits passed for the release metadata and package candidate checks.
-- P13 itself passed 832 tests, package smoke, PR #47 CI, main-branch audit, real
-  VS Code e2e, documentation build, and GitHub Pages deployment.
+- The exact release tree passed 832 tests. All 8 audits passed, along with package smoke,
+  PR #48 CI, main-branch audit, real VS Code e2e, documentation build, and Pages
+  deployment.
+- npm `latest` resolves to `@design-ai/cli@5.1.0` with SLSA provenance and public
+  registry smoke. GitHub Release `v5.1.0` is public with a digest-attested package
+  asset. The Homebrew source archive SHA-256 is
+  `66bf42c34ad1bf65f7db0a644353094a5fba715720f108549f69b3f0580b22b1`.
 
 ### Versions
 
@@ -35,8 +42,6 @@
 
 ### What's still ahead
 
-- Exact-tree release gate, PR CI, tag workflows, public registry smoke, GitHub
-  Release, and Homebrew formula verification.
 - One documentation-homepage pilot and three consent-gated external pilot slots.
 
 ## Phase 791 - Verified design iteration (merged in PR #47)

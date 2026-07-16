@@ -58,9 +58,23 @@ boundary remain unchanged.
 - Installer lifecycle: 21 skills, 4 agents, 16 slash commands; 41 links removed
   cleanly by the uninstall smoke
 
-The exact-tree gate passed after this evidence record was added. Pull-request,
-tag, public registry, GitHub Release, and Homebrew results remain pending until
-those external steps actually complete.
+## Public release result
+
+- PR #48 passed required CI and was squash-merged as commit
+  `8a753359b585e439172e44219710d2f57e44c5ef`.
+- Main Audit run `29485559867` and Docs run `29485559848` passed, including real
+  VS Code e2e and GitHub Pages deployment.
+- npm Trusted Publishing run `29485715200` published
+  `@design-ai/cli@5.1.0` at `2026-07-16T09:18:28.771Z`; npm `latest` resolves to
+  the same version, the SLSA provenance predicate is
+  `https://slsa.dev/provenance/v1`, and public registry smoke passed.
+- GitHub Release run `29485715193` published `v5.1.0` at
+  `2026-07-16T09:17:29Z`. Asset `design-ai-cli-5.1.0.tgz` is 2,589,235 bytes with
+  digest `sha256:f05854b4bc81e626096cfe85151f7e8149e3ecbd518c1ff1598e7667b2f7c8fc`.
+- The tag archive SHA-256 is
+  `66bf42c34ad1bf65f7db0a644353094a5fba715720f108549f69b3f0580b22b1`.
+  The v5.1.0 Homebrew formula passed Ruby syntax, `brew style`, temporary-tap
+  source install, `brew test`, and installed CLI version parity.
 
 ## Claim boundary
 
