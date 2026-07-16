@@ -1,6 +1,45 @@
 # Roadmap
 
-## Phase 791 - Verified design iteration (implemented, local release gate complete)
+## Phase 792 - Public release and adoption evidence in progress (v5.1.0)
+
+- [x] Chose a backward-compatible minor release: the P6-P13 surfaces are additive
+  and preserve the existing CLI, SDK, MCP, learning-write, and permission contracts.
+- [x] Aligned package and Claude plugin manifests at v5.1.0.
+- [x] Converted the accumulated P6-P13 changelog into the v5.1.0 release entry.
+- [x] Corrected P13 completion evidence to PR #47, main commit `83479b2`, 832 tests,
+  real VS Code e2e, and successful GitHub Pages deployment.
+- [ ] Pass the exact-tree release gate and pull-request CI.
+- [ ] Publish the v5.1.0 tag through npm Trusted Publishing and GitHub Release.
+- [ ] Refresh and verify the Homebrew formula against the published tag archive.
+- [ ] Run the documentation homepage through baseline, approved implementation,
+  candidate, browser, and exact review-comparison evidence.
+- [ ] Prepare three consent-gated external pilot slots without claiming adoption
+  before another project owner actually participates.
+
+### Verified
+
+- All 8 audits passed for the release metadata and package candidate checks.
+- P13 itself passed 832 tests, package smoke, PR #47 CI, main-branch audit, real
+  VS Code e2e, documentation build, and GitHub Pages deployment.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 5.0.0 → 5.1.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+
+- Users can install the complete review-to-verified-iteration workflow instead of
+  depending on unreleased main-branch source.
+- Real homepage and external pilots can run against one public package identity.
+
+### What's still ahead
+
+- Exact-tree release gate, PR CI, tag workflows, public registry smoke, GitHub
+  Release, and Homebrew formula verification.
+- One documentation-homepage pilot and three consent-gated external pilot slots.
+
+## Phase 791 - Verified design iteration (merged in PR #47)
 
 - [x] Added one exact-source `design-ai-review-comparison` v1 contract with all
   eight lens transitions and resolved, persistent, introduced, and uncertain
@@ -17,13 +56,14 @@
 - [x] Verified Website Console at 1440px and 390px with no horizontal overflow,
   zero console warnings or errors, a working keyboard skip link, 44px minimum
   visible navigation height, and exact import/export SHA-256 parity.
-- [x] Passed `npm run release:check` with 831 tests, all 8 strict audits, 774
+- [x] Passed `npm run release:check` with 832 tests, all 8 strict audits, 774
   packaged files, a 0/0 documentation warning policy, SDK import smoke, and
   installed-bin plus one-shot comparison smoke.
 - [x] Started a fresh stdio MCP process, found `design_ai_compare_reviews` in the
   29-tool inventory, and returned a 3,934-byte compact artifact with matching
   source hashes and unchanged permission and claim boundaries.
-- [ ] Pass required pull-request CI, review, and merge.
+- [x] PR #47 passed required CI, was squash-merged as `83479b2`, and passed the
+  main-branch audit, real VS Code e2e, documentation build, and Pages deployment.
 
 ## Phase 790 - Real pilot evidence (implemented, local verification complete)
 

@@ -447,8 +447,8 @@ SHA-256 digests, byte counts, measures, issues, claims, next action, and boundar
 
 ### P13 - Verified design iteration
 
-Status: implemented in the current source; local contract, browser, and release
-verification are complete, while pull-request review remains.
+Status: merged in PR #47. Local and pull-request verification, main-branch CI,
+real VS Code e2e, documentation build, and GitHub Pages deployment are complete.
 
 Close the loop between review and implementation. A user should be able to compare
 the exact baseline and candidate quality reports and understand which design
@@ -480,11 +480,38 @@ P13 can establish bounded improvement between two supplied reviews. It does not
 establish production quality, customer adoption, or business impact. Those claims
 still require separate runtime and user evidence.
 
-Local release evidence: `npm run release:check` passes with 831 tests, all 8 strict
+Local release evidence: `npm run release:check` passes with 832 tests, all 8 strict
 audits, 774 packaged files, a 0/0 documentation warning policy, SDK import smoke,
 and comparison smoke through installed-bin plus one-shot `npm exec` paths. A fresh
 stdio MCP process listed all 29 tools and returned a 3,934-byte compact comparison
 with matching source identities and unchanged read-only boundaries.
+
+### P14 - Public release and real adoption evidence
+
+Status: v5.1.0 release candidate preparation in progress.
+
+Publish the complete P6-P13 workflow before adding another contract. Then run the
+same review-to-comparison path against the public documentation homepage and
+separately consented external projects. Installation, MCP connection, first useful
+artifact time, finding decisions, implementation completion, approval friction,
+and unresolved risk remain separate observations rather than one score.
+
+Exit criteria:
+
+- npm `latest`, GitHub Release, and Homebrew resolve to the same verified v5.1.0
+  package identity; GitHub Pages remains available.
+- The documentation homepage pilot preserves baseline, approved implementation,
+  candidate, browser, release, and comparison evidence.
+- Three external pilot slots have explicit owner consent, data boundaries, target
+  paths, measures, and stop conditions before any project is inspected.
+- At least one pilot belongs to another project owner before any external-adoption
+  claim is made.
+- The next product capability is selected only when the same user problem appears
+  in at least two independent pilot records.
+
+P14 does not treat a prepared recruitment packet as adoption, fabricate user
+feedback, or publish private project material. External pilot results remain
+blocked until real owners consent and participate.
 
 ## Quality targets
 
