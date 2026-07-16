@@ -109,6 +109,7 @@ plugins:
             Implementation evidence: 구현 증빙
             Real pilot evidence: 실제 파일럿 증빙
             External pilot program: 외부 파일럿 프로그램
+            External pilot recruitment plan: 외부 파일럿 모집 계획
             Verified design iteration: 검증 가능한 디자인 반복
             Agent Development: 에이전트 개발
             Website Improvement: 웹사이트 개선
@@ -204,6 +205,7 @@ nav:
       - Implementation evidence: docs/IMPLEMENTATION-REVIEW-EVIDENCE.md
       - Real pilot evidence: docs/REAL-PILOT-EVIDENCE.md
       - External pilot program: docs/EXTERNAL-PILOT-PROGRAM.md
+      - External pilot recruitment plan: docs/PILOT-RECRUITMENT-PLAN.md
       - Website Console real pilot: docs/case-studies/website-console-real-pilot.md
       - Verified design iteration: docs/REVIEW-COMPARISON.md
       - Comparison case study: docs/case-studies/verified-design-iteration.md

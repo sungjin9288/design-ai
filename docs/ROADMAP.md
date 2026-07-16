@@ -1,5 +1,31 @@
 # Roadmap
 
+## Phase 794 - External pilot recruitment activation
+
+- [x] Defined the P15 funnel from public recruitment through candidate intake,
+  separate consent, pilot execution, and evidence completion.
+- [x] Added one privacy-safe GitHub Issue Form covering the three prepared pilot
+  segments without requesting private source, credentials, personal contact data,
+  analytics exports, local paths, or customer data.
+- [x] Required owner authority, intake-only, separate-consent, private-artifact,
+  and separately gated action acknowledgements.
+- [x] Added deterministic form and chooser validation, including rejection tests
+  for missing consent language, prohibited local-path requests, and mandatory
+  public project references.
+- [x] Connected the validator to `release:self-test` and required PR audit paths.
+- [x] Created `external-pilot` and `pilot:intake` repository labels with an explicit
+  no-consent intake boundary.
+- [ ] Merge and render the Issue Form from the default branch, then publish the
+  source-controlled recruitment issue.
+
+### Boundary
+
+- A submitted issue is candidate intake only and authorizes no target action.
+- The P14 launch inventory remains at three `awaiting-owner` slots with zero
+  participants, targets, consent records, measurements, feedback, or adoption.
+- Product capability selection still requires the same problem in two completed,
+  independent pilot records from distinct owners.
+
 ## Phase 793 - Public Pages proof and external pilot launch framework
 
 - [x] Fixed the GitHub Pages project-path drift in English and Korean alternate

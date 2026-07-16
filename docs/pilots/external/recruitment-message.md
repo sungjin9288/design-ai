@@ -26,3 +26,6 @@ To participate, reply with:
 
 A reply is an intake signal, not final consent. The exact target, selectors, data
 boundary, retention, and stop conditions are recorded separately before inspection.
+
+Public intake form:
+<https://github.com/sungjin9288/design-ai/issues/new?template=external-pilot.yml>

@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: External pilot program guide
+    url: https://sungjin9288.github.io/design-ai/docs/EXTERNAL-PILOT-PROGRAM/
+    about: Review scope, privacy, consent, measurement, and stop conditions before applying.
