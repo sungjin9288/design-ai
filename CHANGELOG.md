@@ -2,7 +2,13 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
-## Unreleased
+## v5.1.0 — Verified design delivery loop (2026-07)
+
+Turns the first design artifact into a traceable review-to-implementation loop. The
+release adds deterministic quality inspection, optional browser evidence, exact
+handoffs, target-repository intake, immutable scope approval, implementation and
+pilot evidence, and verified before-and-after comparison without weakening human
+approval or claim boundaries.
 
 ### Added
 - Added CLI `design-ai review-compare`, SDK `compareReviews()`, MCP `design_ai_compare_reviews`, and Website Console import over one exact-source before-and-after design review operation.
@@ -73,9 +79,14 @@ User-facing release notes for design-ai. Versions follow semver.
 - Packed-tarball and public-registry smoke now require the start payload to preserve an embedded design contract and empty performed local-write, target-mutation, and external-action arrays.
 
 ### Verified
-- `npm run release:check` passes for P13 with 831 tests, all 8 strict audits, 774 packaged files, a 0/0 documentation warning policy, SDK import smoke, and review-comparison smoke through installed-bin plus one-shot `npm exec` paths.
+- All 8 audits passed for the v5.1.0 release candidate.
+- `npm run release:check` passes for P13 with 832 tests, all 8 strict audits, 774 packaged files, a 0/0 documentation warning policy, SDK import smoke, and review-comparison smoke through installed-bin plus one-shot `npm exec` paths.
 - Website Console full comparison import, reload restore, exact-byte export, and responsive rendering pass at 1440px and 390px with a working keyboard skip link, 44px minimum visible navigation height, no horizontal overflow, no console warnings or errors, and matching exported SHA-256.
 - A fresh stdio MCP process lists all 29 current-source tools and returns a 3,934-byte compact `design_ai_compare_reviews` result with matching baseline and candidate hashes plus unchanged read-only and claim boundaries.
+- PR #47 passed required audit, documentation, package, and unit-test checks before
+  squash merge. The resulting main-branch audit, real VS Code e2e, documentation
+  build, and GitHub Pages deployment also passed at commit `83479b2`.
+
 - `npm run release:check` passes for P11 with 805 tests, all 8 strict audits, 757 packaged files, a 0/0 documentation warning policy, and installed-bin plus one-shot `npm exec` implementation-evidence smoke.
 - A fresh MCP process called `design_ai_review_evidence`, preserved two declared verification artifact hashes, executed no verification command itself, and returned `attention-required` for three unverified runtime observations plus one remaining risk.
 - Website Console implementation-evidence import, exact-byte export, clear-to-approval restore, and responsive rendering passed at 1440px and 390px with matching SHA-256, 44px minimum visible button targets, no horizontal overflow, and no console warnings or errors.
@@ -104,6 +115,19 @@ User-facing release notes for design-ai. Versions follow semver.
 - `npm run release:check` passed for the P1 source candidate with 669 tests, all 8 strict audits, 672 packaged files, a warning-free documentation build, and installed-bin plus one-shot `npm exec` start smoke coverage.
 - Browser verification passed at 1440px and 390px with no horizontal overflow, 44px minimum visible button targets, working skip-link focus transfer, and zero console warnings or errors.
 - Pull request #35 passed audits and size budget, package integrity, documentation policy, and CLI plus VS Code library unit-test checks.
+
+### Versions
+- `package.json` + `.claude-plugin/plugin.json`: 5.0.0 → 5.1.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+- An installed agent can move from one exact design review through handoff,
+  consumer validation, target intake, approved implementation, evidence, pilot
+  measurement, and before-and-after comparison without changing contract meaning
+  across CLI, SDK, MCP, and Website Console.
+- Teams can distinguish bounded improvement from missing runtime evidence,
+  production quality, external adoption, and business impact instead of hiding
+  those boundaries behind one score.
 
 ## v5.0.0 — Refactor foundation and release-integrity guards (2026-07)
 

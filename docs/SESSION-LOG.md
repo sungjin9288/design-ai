@@ -5,18 +5,25 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
-- **Phase 791 (unreleased)** — Added verified before-and-after design comparison
+- **Phase 792 (v5.1.0 release candidate)** — Grouped the complete P6-P13
+  review-to-verified-iteration workflow into one additive minor release. Package
+  and plugin versions are aligned, the changelog and public truth documents keep
+  published v5.0.0 separate from candidate v5.1.0, and P13 completion now points
+  to PR #47, main commit `83479b2`, real VS Code e2e, and successful Pages
+  deployment. Public tag, registry, GitHub Release, and Homebrew evidence remain
+  pending until the release candidate passes its exact-tree gate and CI.
+- **Phase 791 (merged in PR #47)** — Added verified before-and-after design comparison
   across CLI, typed SDK, in-process MCP, and Website Console. The exact-source
   contract requires matching subject and review context, records every lens
   transition, and separates resolved, persistent, introduced, and uncertain
   findings. A missing finding is not called resolved until its candidate lens
-  passes. The full local release gate passes with 831 tests, 8 strict audits, 774
+  passes. The full local release gate passes with 832 tests, 8 strict audits, 774
   packaged files, warning-free docs, and installed-bin plus one-shot comparison
   smoke. A fresh stdio MCP process lists all 29 tools and returns a 3,934-byte
   compact comparison with matching source hashes. Desktop/mobile Console checks pass with exact
   JSON export parity, no horizontal overflow or console errors, a working keyboard
-  skip link, and 44px minimum visible navigation height. PR review remains before
-  merge.
+  skip link, and 44px minimum visible navigation height. PR #47 and the resulting
+  main-branch audit, real VS Code e2e, docs build, and Pages deployment passed.
 - **Phase 790 (unreleased)** — Added exact-source real-pilot evidence across CLI,
   typed SDK, in-process MCP, and Website Console. It joins P11 implementation
   evidence, the original P6 workflow, and one consented operator record; derives

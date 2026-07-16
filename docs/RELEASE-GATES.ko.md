@@ -1,10 +1,15 @@
-# 릴리스 게이트 상세 (v5.0.0)
+# 릴리스 게이트 상세 (공개 v5.0.0, v5.1.0 출시 후보)
 
 > `README.ko.md`의 상태·기여하기 요약을 뒷받침하는 전체 증빙 문구 모음이에요.
 > 영어판 전체 증빙은 [RELEASE-GATES.md](RELEASE-GATES.md)를 참고하세요.
 > 릴리스 정책 가드(`npm run release:metadata`)는 README.ko.md와 이 문서를 함께 검사해요.
 
 공개된 v5.0.0의 packed-tarball smoke와 registry smoke는 installed-bin과 one-shot `npm exec` 경로에서 `design-ai site --stdin --linked-preview --strict --json`을 실행해 linked root metadata, 기존 수동 start command, process 미실행, URL 미검증, target repo 미수정 경계를 확인해요.
+
+현재 package와 plugin manifest는 additive P6-P13 소스를 v5.1.0 출시 후보로
+식별해요. 정확한 tag가 전체 gate, npm Trusted Publishing, public registry
+smoke, GitHub Release, Homebrew formula 검증을 통과하기 전까지 공개 설치
+상태는 v5.0.0으로 유지해요.
 
 소스 릴리스 게이트는 installed-bin과 one-shot 패키지 경로에서 `design-ai benchmark --strict --json`도 실행해요. 이 읽기 전용 제품 전문화 벤치마크는 네 합성 사례를 검증하고, 종합 품질 점수를 만들지 않으며, 실제 고객 채택을 증명하지 않아요.
 

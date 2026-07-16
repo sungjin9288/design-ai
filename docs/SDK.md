@@ -1,6 +1,6 @@
 # Agent SDK reference
 
-> Status: current source candidate — 19 read-only function exports plus the opt-in `learn.*` local-write namespace; published v5.0.0 has 9 read-only verbs
+> Status: v5.1.0 release candidate — 19 read-only function exports plus the opt-in `learn.*` local-write namespace; published v5.0.0 has 9 read-only verbs
 
 `@design-ai/cli/sdk` lets an external Node.js program — an agent runtime, a build script, a custom tool — use design-ai's deterministic design capabilities as importable functions, without shelling out to the CLI or spawning the MCP server. It is a thin, curated adapter over the same `cli/lib` functions the CLI and MCP server already call, so a capability that ships in the CLI is instantly available to an SDK consumer.
 
