@@ -25,6 +25,9 @@ edit_uri: edit/main/
 # `tools/build-docs.sh` (idempotent) before `mkdocs build` / `mkdocs serve`.
 docs_dir: site-src
 
+hooks:
+  - tools/mkdocs_hooks.py
+
 theme:
   name: material
   custom_dir: docs/site-overrides

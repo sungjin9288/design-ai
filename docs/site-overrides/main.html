@@ -12,6 +12,34 @@
 {# Hero / extra above-the-fold content for the home page #}
 {% block extrahead %}
   {{ super() }}
+  <script>
+    (() => {
+      const siteUrl = new URL({{ config.site_url | tojson }});
+      const sitePath = siteUrl.pathname.replace(/\/$/, "");
+
+      function restoreProjectPath(link) {
+        const href = link.getAttribute("href");
+        if (
+          window.location.origin !== siteUrl.origin ||
+          !href?.startsWith("/") ||
+          href === sitePath ||
+          href.startsWith(`${sitePath}/`)
+        ) {
+          return;
+        }
+
+        link.href = `${siteUrl.origin}${sitePath}${href}`;
+      }
+
+      document
+        .querySelectorAll('link[rel="alternate"][hreflang]')
+        .forEach(restoreProjectPath);
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll("a[hreflang]").forEach(restoreProjectPath);
+      });
+    })();
+  </script>
   <meta name="description" content="A model-agnostic design knowledge base + skill system. Senior product designer for any AI coding agent. 97 knowledge files covering UI/UX, interface craft, agentic design workflows, website improvement, design systems, motion, illustration, print, video, game UI, conversational, and spatial design. Korean market depth.">
   <meta property="og:title" content="design-ai — Senior product designer for any AI coding agent">
   <meta property="og:description" content="97 knowledge files, 226 worked examples, 21 skills, 16 public slash commands. Korean market depth across all domains. Open-source MIT.">
