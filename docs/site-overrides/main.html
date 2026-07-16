@@ -16,6 +16,15 @@
     (() => {
       const siteUrl = new URL({{ config.site_url | tojson }});
       const sitePath = siteUrl.pathname.replace(/\/$/, "");
+      const alternateRoots = {{ config.extra.alternate_roots | tojson }};
+
+      function pointToLanguageRoot(link) {
+        const languageRoot = alternateRoots[link.hreflang];
+        if (!languageRoot) return;
+
+        const projectPath = window.location.origin === siteUrl.origin ? sitePath : "";
+        link.href = `${window.location.origin}${projectPath}${languageRoot}`;
+      }
 
       function restoreProjectPath(link) {
         const href = link.getAttribute("href");
@@ -33,7 +42,7 @@
 
       document
         .querySelectorAll('link[rel="alternate"][hreflang]')
-        .forEach(restoreProjectPath);
+        .forEach(pointToLanguageRoot);
 
       document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll("a[hreflang]").forEach(restoreProjectPath);
