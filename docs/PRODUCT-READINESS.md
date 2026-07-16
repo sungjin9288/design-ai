@@ -7,8 +7,9 @@ product.
 
 Current source status: **P14 public distribution, the internal documentation
 homepage pilot, deployed Pages QA, and the three-slot external pilot launch
-framework are complete; real external participation remains consent-gated and
-unverified.** CLI `design-ai start`,
+framework are complete. P15 recruitment intake is implemented and awaits
+default-branch form verification and recruitment publication; real external
+participation remains consent-gated and unverified.** CLI `design-ai start`,
 SDK `start()`, MCP `design_ai_start`, and Website Console share one canonical
 read-only start payload. CLI `design-ai inspect`, SDK `inspectHtml()`, and MCP
 `design_ai_inspect_html` share the canonical quality report. The inspector confirms
@@ -147,7 +148,9 @@ Distribution blockers are closed. Only adoption and future-scope decisions remai
 
 The next product decision is evidence-led adoption, not another contract:
 
-1. Activate one of the three prepared external pilot slots only after a real
-   project owner records authority, data boundaries, target scope, and consent.
-2. Select another product capability only after the same user problem appears in
+1. Publish and verify the P15 external-pilot Issue Form, then accept candidate
+   intake without treating it as consent.
+2. Activate one of the three prepared slots only after a real project owner
+   records authority, data boundaries, target scope, and consent.
+3. Select another product capability only after the same user problem appears in
    at least two independent pilot records.

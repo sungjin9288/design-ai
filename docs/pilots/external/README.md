@@ -7,13 +7,16 @@ participant, project, consent, result, feedback, or adoption evidence.
 
 - `program.json`: machine-checked slot inventory and claim boundary
 - `recruitment-message.md`: paste-ready invitation with eligibility and privacy
+- `recruitment-issue.md`: source-controlled public recruitment issue body
 - `owner-consent-template.md`: pre-inspection authority and data boundary record
 - `measurement-template.md`: source-backed close-out checklist
 
 ## Use
 
 1. Run `npm run external-pilot:check` in the design-ai repository.
-2. Send the recruitment message without adding private contact data here.
+2. Send the recruitment message or use the public
+   [Issue Form](https://github.com/sungjin9288/design-ai/issues/new?template=external-pilot.yml)
+   without adding private contact data here.
 3. Create a separate owner consent record for the selected project.
 4. Run the P6-P13 chain in the participant project after consent.
 5. Derive `pilot-evidence.json` with `design-ai review-pilot`.

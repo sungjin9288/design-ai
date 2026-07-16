@@ -24,6 +24,12 @@ npm run external-pilot:check
 The slots are capacity, not evidence. Their current records deliberately contain
 no owner identity, contact reference, target path, consent, result, or feedback.
 
+[Apply through the external pilot Issue Form](https://github.com/sungjin9288/design-ai/issues/new?template=external-pilot.yml).
+Submitting the form creates a candidate intake only; it does not approve source
+inspection, evidence collection, or target mutation.
+The [P15 recruitment plan](PILOT-RECRUITMENT-PLAN.md) defines the public intake
+funnel and its completion checks.
+
 ## Entry gate
 
 Start a pilot only when all of these statements are true:

@@ -1,0 +1,115 @@
+name: External design pilot
+description: Apply for one bounded, owner-consented design-ai improvement pilot.
+title: "[Pilot] "
+labels:
+  - external-pilot
+  - pilot:intake
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is an intake signal, not consent to inspect or change a project.
+        Do not post secrets, credentials, personal or customer data, private source,
+        analytics exports, local paths, or private preview links. A separate owner
+        consent record is required before source inspection or target mutation.
+
+  - type: dropdown
+    id: pilot-segment
+    attributes:
+      label: Pilot segment
+      description: Choose the closest prepared slot.
+      options:
+        - Marketing site
+        - App workflow
+        - Korean commerce or fintech
+    validations:
+      required: true
+
+  - type: input
+    id: project-role
+    attributes:
+      label: Project role or GitHub handle
+      description: Use a role or handle only. Do not provide a legal name, email, or phone number.
+      placeholder: Product owner, maintainer, or @handle
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: owner-authority
+    attributes:
+      label: Owner authority
+      description: Confirm that you can authorize the bounded target or can bring in the person who can.
+      options:
+        - label: I can authorize the target project, or I will include its authorized owner before consent.
+          required: true
+
+  - type: textarea
+    id: target-scope
+    attributes:
+      label: Bounded page, screen, or flow
+      description: Describe one review target without pasting private source or a local path.
+      placeholder: The public pricing page from plan comparison through the signup action.
+    validations:
+      required: true
+
+  - type: input
+    id: public-reference
+    attributes:
+      label: Public project reference
+      description: Optional. Share only a public repository or public page URL. Write "private" when it cannot be public.
+      placeholder: https://github.com/owner/repository or https://example.com/page
+
+  - type: dropdown
+    id: target-visibility
+    attributes:
+      label: Target visibility
+      options:
+        - Public repository and page
+        - Public page with private repository
+        - Private project; details will stay outside GitHub
+        - Non-code artifact
+    validations:
+      required: true
+
+  - type: dropdown
+    id: verification-surface
+    attributes:
+      label: Available verification surface
+      options:
+        - Local run and safe preview
+        - Local run only
+        - Safe preview only
+        - Not available yet
+    validations:
+      required: true
+
+  - type: textarea
+    id: improvement-goal
+    attributes:
+      label: Improvement goal
+      description: Describe the user problem and what observable change would make the pilot useful.
+      placeholder: First-time visitors cannot distinguish the recommended plan before reaching the signup action.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: data-boundary
+    attributes:
+      label: Public intake data boundary
+      options:
+        - label: I did not include secrets, credentials, personal or customer data, private source, analytics exports, local paths, or private preview links.
+          required: true
+        - label: Private screenshots, logs, and source will remain in the target project unless separately approved for publication.
+          required: true
+
+  - type: checkboxes
+    id: execution-boundary
+    attributes:
+      label: Consent and execution boundary
+      options:
+        - label: I understand that this issue is intake only and does not authorize source inspection or target mutation.
+          required: true
+        - label: A separate owner-consent record is required before a pilot starts.
+          required: true
+        - label: Dependency changes, migrations, commit, push, deployment, and external writes remain separate approval gates.
+          required: true

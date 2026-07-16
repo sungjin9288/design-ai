@@ -10,6 +10,9 @@ User-facing release notes for design-ai. Versions follow semver.
   sites, app workflows, and Korean commerce or fintech interfaces. Recruitment,
   owner consent, data boundaries, measurement, and stop conditions are reusable
   without implying a participant, result, feedback, or adoption claim.
+- Added a privacy-safe GitHub Issue Form and deterministic validator for public
+  external-pilot candidate intake. Applications remain separate from owner
+  consent, target access, implementation, feedback, and adoption evidence.
 
 ### Fixed
 
