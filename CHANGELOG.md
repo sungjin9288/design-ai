@@ -2,6 +2,21 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## Unreleased
+
+### Added
+
+- Added a machine-checked three-slot external pilot launch packet for marketing
+  sites, app workflows, and Korean commerce or fintech interfaces. Recruitment,
+  owner consent, data boundaries, measurement, and stop conditions are reusable
+  without implying a participant, result, feedback, or adoption claim.
+
+### Fixed
+
+- Restored GitHub Pages project paths in multilingual alternate links and mirrored
+  the combined sitemap at locale roots, removing the deployed English and Korean
+  sitemap 404s while preserving local preview routing.
+
 ## v5.1.0 — Verified design delivery loop (2026-07)
 
 Turns the first design artifact into a traceable review-to-implementation loop. The

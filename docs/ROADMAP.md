@@ -1,5 +1,32 @@
 # Roadmap
 
+## Phase 793 - Public Pages proof and external pilot launch framework
+
+- [x] Fixed the GitHub Pages project-path drift in English and Korean alternate
+  links without changing local preview routing.
+- [x] Mirrored the combined multilingual sitemap at each locale root through a
+  safe MkDocs post-build hook and added path-boundary unit coverage.
+- [x] Passed PR #51 required CI run `29492331845` and GitHub Pages deployment run
+  `29492452008`.
+- [x] Verified public English desktop and Korean mobile views with no horizontal
+  overflow, zero console warnings or errors, correct language links, and working
+  skip-link focus.
+- [x] Verified both public sitemap paths return 200 with byte-identical SHA-256
+  `3c8737fc5b8801eab0fbdae7f27517406e12bbf615c03569c4735e41e3aa1215`.
+- [x] Prepared three external pilot slots for a marketing site, app workflow, and
+  Korean commerce or fintech interface.
+- [x] Added recruitment, owner-consent, measurement, data-boundary, and stop-condition
+  templates plus a checker that rejects invented consent or measurements.
+
+### Boundary
+
+- The three slots have no identified participant, target repository, consent,
+  result, feedback, or adoption evidence.
+- A real project gets a separate source-linked evidence directory only after its
+  owner records authority and consent.
+- Another product capability remains blocked until the same problem appears in
+  two independent pilot records from distinct project owners.
+
 ## Phase 792 - Public release and internal homepage pilot complete (v5.1.0)
 
 - [x] Chose a backward-compatible minor release: the P6-P13 surfaces are additive
@@ -16,8 +43,8 @@
   Ruby syntax, Homebrew style, temporary-tap source install, and formula test.
 - [x] Run the documentation homepage through baseline, approved implementation,
   candidate, browser, and exact review-comparison evidence.
-- [ ] Prepare three consent-gated external pilot slots without claiming adoption
-  before another project owner actually participates.
+- [x] Prepared three consent-gated external pilot slots in Phase 793 without
+  claiming adoption before another project owner actually participates.
 
 ### Verified
 
@@ -29,8 +56,9 @@
   asset. The Homebrew source archive SHA-256 is
   `66bf42c34ad1bf65f7db0a644353094a5fba715720f108549f69b3f0580b22b1`.
 - The documentation homepage internal pilot resolves both confirmed P1 findings,
-  adds no persistent, introduced, or uncertain finding, and preserves the local
-  multilingual sitemap 404 as a performance warning rather than hiding it.
+  adds no persistent, introduced, or uncertain finding, and preserves its local
+  multilingual sitemap warning. The Phase 793 deployed follow-up closes the public
+  404 with zero console issues and two byte-identical 200 sitemap responses.
 
 ### Versions
 
@@ -45,8 +73,8 @@
 
 ### What's still ahead
 
-- Three consent-gated external pilot slots and real owner participation. A
-  prepared slot is not adoption evidence.
+- Real owner participation in the prepared consent-gated slots. A prepared slot
+  is not adoption evidence.
 
 ## Phase 791 - Verified design iteration (merged in PR #47)
 

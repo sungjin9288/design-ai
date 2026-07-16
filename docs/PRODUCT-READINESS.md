@@ -5,9 +5,10 @@ Homebrew formula identify the same additive P6-P13 release. The public contract
 has 29 MCP tools and 20 SDK exports. Model training is not part of the shipped
 product.
 
-Current source status: **P14 public distribution and the internal documentation
-homepage pilot are complete; consent-gated external pilot participation remains
-external and unverified.** CLI `design-ai start`,
+Current source status: **P14 public distribution, the internal documentation
+homepage pilot, deployed Pages QA, and the three-slot external pilot launch
+framework are complete; real external participation remains consent-gated and
+unverified.** CLI `design-ai start`,
 SDK `start()`, MCP `design_ai_start`, and Website Console share one canonical
 read-only start payload. CLI `design-ai inspect`, SDK `inspectHtml()`, and MCP
 `design_ai_inspect_html` share the canonical quality report. The inspector confirms
@@ -146,7 +147,7 @@ Distribution blockers are closed. Only adoption and future-scope decisions remai
 
 The next product decision is evidence-led adoption, not another contract:
 
-1. Recruit three separately consented external pilot slots through the prepared
-   owner, data, target, measurement, and stop-condition contract.
+1. Activate one of the three prepared external pilot slots only after a real
+   project owner records authority, data boundaries, target scope, and consent.
 2. Select another product capability only after the same user problem appears in
    at least two independent pilot records.

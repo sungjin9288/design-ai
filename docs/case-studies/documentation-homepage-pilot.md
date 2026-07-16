@@ -45,8 +45,12 @@ migration, application service, analytics, or external data collection.
 
 The canonical review comparison is `improved`: both confirmed findings are
 resolved, no finding persists, no finding is introduced, and no finding remains
-uncertain. The performance lens remains a warning because the local multilingual
-build still requests `/ko/sitemap.xml`, which returns 404 in the loopback preview.
+uncertain. Its immutable local evidence keeps the multilingual sitemap warning.
+A deployment follow-up in PR #51 restored the GitHub Pages project path, mirrored
+the combined sitemap at the Korean locale root, and passed public English desktop
+and Korean mobile checks with zero console errors or warnings. Both public sitemap
+paths return 200 with byte-identical content. The follow-up evidence is preserved
+under `evidence/p14/public-pages/`; it does not rewrite the P6-P13 source chain.
 
 The P12 timing window starts when the retained scope approval became available,
 so its zero-millisecond first-artifact value is an evidence-window boundary, not a
