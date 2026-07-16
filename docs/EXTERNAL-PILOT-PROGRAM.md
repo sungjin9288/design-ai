@@ -27,6 +27,9 @@ no owner identity, contact reference, target path, consent, result, or feedback.
 [Apply through the external pilot Issue Form](https://github.com/sungjin9288/design-ai/issues/new?template=external-pilot.yml).
 Submitting the form creates a candidate intake only; it does not approve source
 inspection, evidence collection, or target mutation.
+The [public recruitment issue](https://github.com/sungjin9288/design-ai/issues/56)
+records the three available segments and the zero-participant claim boundary at
+publication.
 The [P15 recruitment plan](PILOT-RECRUITMENT-PLAN.md) defines the public intake
 funnel and its completion checks.
 

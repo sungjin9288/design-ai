@@ -4,6 +4,11 @@ P15 turns the prepared P14 slots into a public, privacy-safe intake path. It doe
 not add a design capability or weaken the rule that product work needs repeated
 evidence from distinct project owners.
 
+Launch evidence: [public recruitment issue #56](https://github.com/sungjin9288/design-ai/issues/56)
+and [the source-controlled P15 launch record](https://github.com/sungjin9288/design-ai/blob/main/evidence/p15/recruitment-launch.md).
+The form and recruitment path are live; candidate intake, consent, participation,
+results, and adoption evidence remain separate future states.
+
 ## Objective
 
 Let a project owner apply for one bounded design-ai pilot through GitHub without
