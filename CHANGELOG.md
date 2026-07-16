@@ -14,6 +14,11 @@ User-facing release notes for design-ai. Versions follow semver.
   external-pilot candidate intake, plus a public three-slot recruitment issue.
   Applications remain separate from owner consent, target access, implementation,
   feedback, and adoption evidence.
+- Added a P16 marketing-site pilot operations guide, Korean-first direct outreach
+  cadence, anonymous recruitment status, fixed-key problem hypothesis template,
+  lifecycle labels, and deterministic boundary checks. The operating layer keeps
+  the P14 three-slot baseline unchanged and blocks capability selection until two
+  distinct project owners reproduce the same source-backed problem.
 
 ### Fixed
 

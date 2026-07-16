@@ -1,5 +1,37 @@
 # Roadmap
 
+## Phase 795 - External marketing pilot operations readiness
+
+- [x] Defined one P16 operator flow from private invitation through Issue Form
+  review, separate consent, bounded execution, feedback, publication, and close-out.
+- [x] Limited the first active slot to one public marketing page and one real CTA
+  or core flow with a safe local run or preview.
+- [x] Added five mutually exclusive candidate lifecycle labels and documented the
+  transition rule without treating intake metadata as consent.
+- [x] Added a Korean-first direct invitation, one-reminder cadence, Day 14 public
+  fallback, Day 28 blocked close-out, and an anonymous aggregate status record.
+- [x] Added a Markdown hypothesis template with seven fixed problem keys, three
+  required evidence sources, two-distinct-owner repetition, and one-capability
+  tie-breaking rules.
+- [x] Added deterministic operation checks that reject missing status labels,
+  weakened owner independence, personal contact data, premature activity, a
+  changed Issue Form link, or any byte drift in the P14 program baseline.
+- [ ] Send the first private invitation set after the maintainer supplies a private
+  list of three to five trusted project owners.
+- [ ] Start the first pilot only after a qualifying Issue Form and separate owner
+  consent exist.
+
+### Boundary
+
+- P16 repository preparation creates no candidate, consent, participant, external
+  result, feedback, repeated problem, or adoption evidence.
+- `@design-ai/cli` stays at v5.1.0; no CLI command, SDK export, MCP tool, version
+  bump, or npm publication is part of this phase.
+- The P14 three-slot baseline remains byte-identical with three `awaiting-owner`
+  slots and zero participation.
+- If recruitment reaches Day 28 without a candidate, record external participation
+  as blocked and add no capability from invented evidence.
+
 ## Phase 794 - External pilot recruitment activation
 
 - [x] Defined the P15 funnel from public recruitment through candidate intake,

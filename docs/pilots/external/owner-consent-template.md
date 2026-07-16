@@ -18,6 +18,8 @@ Do not store email, phone, legal name, access token, or credential in this recor
 - Initial readable selectors:
 - Initial mutable selectors:
 - Existing change ownership:
+- Evidence retention location and duration:
+- Screenshot publication: `approved`, `declined`, or `not-requested`
 
 ## Consent decisions
 

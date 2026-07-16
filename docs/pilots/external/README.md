@@ -8,8 +8,11 @@ participant, project, consent, result, feedback, or adoption evidence.
 - `program.json`: machine-checked slot inventory and claim boundary
 - `recruitment-message.md`: paste-ready invitation with eligibility and privacy
 - `recruitment-issue.md`: source-controlled public recruitment issue body
+- `direct-invitation-ko.md`: Korean-first private invitation and one-reminder cadence
+- `recruitment-status.md`: anonymous aggregate recruitment state
 - `owner-consent-template.md`: pre-inspection authority and data boundary record
 - `measurement-template.md`: source-backed close-out checklist
+- `hypothesis-template.md`: fixed-key repeated-problem decision record
 
 ## Use
 
@@ -23,6 +26,10 @@ participant, project, consent, result, feedback, or adoption evidence.
 5. Derive `pilot-evidence.json` with `design-ai review-pilot`.
 6. Add only owner-approved, publishable evidence to a new source-linked slot
    directory outside this immutable launch packet.
+
+The P16 [operations guide](../../EXTERNAL-PILOT-OPERATIONS.md) defines direct
+outreach, candidate lifecycle labels, the marketing-site first slot, negative
+execution gates, browser proof, and the two-distinct-owner capability threshold.
 
 Do not edit `program.json` to suggest that a slot ran. A real pilot gets a new
 source-linked evidence directory; the launch inventory remains the pre-participation

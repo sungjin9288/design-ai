@@ -74,3 +74,24 @@ record belongs in neither the issue nor this repository.
 P15 collects candidates; it does not choose the next capability. That decision
 still requires the same user problem in at least two independent, completed pilot
 records from distinct owners.
+
+## P16 operating continuation
+
+P16 keeps the public form unchanged and adds a controlled operating layer:
+
+1. The maintainer privately selects three to five trusted project owners and uses
+   the Korean-first direct invitation.
+2. Day 7 permits one reminder. Day 14 permits public fallback only when no
+   candidate Issue exists. Day 28 closes recruitment as externally blocked when
+   no candidate appears.
+3. Submitted Issue Forms move through one lifecycle label at a time: reviewing,
+   consent pending, running, evidence complete, or closed without a pilot.
+4. The first active slot is one public marketing page with a real CTA or core
+   flow, a safe local run or preview, and no unapproved dependency or migration.
+5. Completed pilots use the fixed hypothesis keys and require completed pilot
+   evidence, owner-approved feedback, and a source finding reference before they
+   influence a product decision.
+
+Follow the [P16 operations guide](EXTERNAL-PILOT-OPERATIONS.md) and the anonymous
+[recruitment status](pilots/external/recruitment-status.md). The private target
+list and messages never enter this repository.
