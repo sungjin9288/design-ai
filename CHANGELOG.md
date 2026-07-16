@@ -14,8 +14,10 @@ User-facing release notes for design-ai. Versions follow semver.
 ### Fixed
 
 - Restored GitHub Pages project paths in multilingual alternate links and mirrored
-  the combined sitemap at locale roots, removing the deployed English and Korean
-  sitemap 404s while preserving local preview routing.
+  the combined sitemap at locale roots. Head alternate links now provide stable
+  language-root sitemap discovery while visible language controls retain contextual
+  page links, removing homepage and nested-page 404s without changing local preview
+  navigation.
 
 ## v5.1.0 — Verified design delivery loop (2026-07)
 

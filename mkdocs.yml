@@ -167,6 +167,9 @@ extra_css:
   - docs/site-overrides/extra.css
 
 extra:
+  alternate_roots:
+    en: /
+    ko: /ko/
   alternate:
     - name: English
       link: /

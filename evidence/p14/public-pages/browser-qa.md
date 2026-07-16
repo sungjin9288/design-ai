@@ -47,3 +47,20 @@ The responses are byte-identical with SHA-256
 This follow-up closes the deployed project-path and locale sitemap warning. It does
 not rewrite the immutable P6-P13 candidate artifacts or claim broader browser,
 assistive-technology, adoption, or production evidence.
+
+## Nested-page regression check
+
+The external pilot program document was served locally at 390 by 844 pixels after
+the language-root change:
+
+- document width: 390 pixels;
+- head alternate roots: `/` and `/ko/`;
+- visible contextual links: `/docs/EXTERNAL-PILOT-PROGRAM/` and
+  `/ko/docs/EXTERNAL-PILOT-PROGRAM/`;
+- sitemap requests: `/sitemap.xml` and `/ko/sitemap.xml`, both 200;
+- console: 0 errors, 0 warnings.
+
+Material search now uses language-root alternate links for sitemap discovery,
+while visible language controls keep contextual page links. Public nested-page
+verification follows the main deployment and does not rewrite the immutable
+P6-P13 source chain.
