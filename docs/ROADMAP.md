@@ -16,6 +16,12 @@
 - [x] Added deterministic operation checks that reject missing status labels,
   weakened owner independence, personal contact data, premature activity, a
   changed Issue Form link, or any byte drift in the P14 program baseline.
+- [x] Merged PR #58 after required CI run `29503138956`, passed main audit run
+  `29503275956` and Pages run `29503275933`, then verified the deployed P16 guide,
+  issue #56, and five lifecycle labels at desktop and mobile widths.
+- [x] Recorded source digests, local gates, Real-CI, public browser checks, and the
+  remaining zero-participation boundary in
+  [the P16 readiness record](https://github.com/sungjin9288/design-ai/blob/main/evidence/p16/operations-readiness.md).
 - [ ] Send the first private invitation set after the maintainer supplies a private
   list of three to five trusted project owners.
 - [ ] Start the first pilot only after a qualifying Issue Form and separate owner

@@ -14,7 +14,11 @@ For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
   owner-approved publication, seven fixed problem keys, and the two-distinct-owner
   capability threshold are now explicit and machine-checked. Direct outreach has
   not started, so no candidate, consent, external result, feedback, repeated
-  problem, or adoption evidence is claimed.
+  problem, or adoption evidence is claimed. PR #58, required CI run `29503138956`,
+  main audit run `29503275956`, and Pages run `29503275933` passed. Deployed
+  desktop/mobile checks confirmed the guide, issue #56, and five lifecycle labels
+  without horizontal overflow; the exact readiness evidence is recorded under
+  `evidence/p16/operations-readiness.md`.
 - **Phase 794 (external pilot recruitment activation)** — Merged the privacy-safe
   P15 GitHub Issue Form and deterministic boundary validator in PR #55. The live
   default-branch form exposes all three prepared segments, keeps public repository
