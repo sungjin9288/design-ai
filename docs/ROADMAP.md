@@ -11,6 +11,9 @@
 - [x] Verified public English desktop and Korean mobile views with no horizontal
   overflow, zero console warnings or errors, correct language links, and working
   skip-link focus.
+- [x] Reverified the nested external-pilot document in both locales at 390 pixels
+  after PR #53: language-root sitemap discovery, contextual navigation, no
+  horizontal overflow, and zero console warnings or errors.
 - [x] Verified both public sitemap paths return 200 with byte-identical SHA-256
   `3c8737fc5b8801eab0fbdae7f27517406e12bbf615c03569c4735e41e3aa1215`.
 - [x] Prepared three external pilot slots for a marketing site, app workflow, and

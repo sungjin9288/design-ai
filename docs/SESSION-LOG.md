@@ -10,7 +10,9 @@ For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
   PR #51. Required CI run `29492331845` and Pages run `29492452008` passed. Public
   English desktop and Korean mobile checks now show correct `/design-ai` alternate
   links, no horizontal overflow, a working skip link, and zero console errors or
-  warnings; both sitemap paths return 200 with byte-identical content. Prepared
+  warnings; both sitemap paths return 200 with byte-identical content. PR #53 then
+  separated language-root sitemap discovery from contextual locale navigation;
+  both public nested locale pages pass at 390 pixels with zero console issues. Prepared
   three machine-checked external pilot slots with recruitment, consent, data,
   measurement, and stop-condition templates. No participant, target, consent,
   result, feedback, or adoption claim was created. The next capability decision
