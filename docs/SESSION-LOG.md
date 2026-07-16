@@ -5,6 +5,17 @@ A single-page narrative of how design-ai grew from v2.0 (foundation) to v4.55 (m
 For per-version detail, see [`CHANGELOG.md`](../CHANGELOG.md).
 For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
 
+- **Phase 793 (public Pages proof and external pilot launch framework)** — Fixed
+  the deployed documentation site's project-path drift and locale sitemap 404 in
+  PR #51. Required CI run `29492331845` and Pages run `29492452008` passed. Public
+  English desktop and Korean mobile checks now show correct `/design-ai` alternate
+  links, no horizontal overflow, a working skip link, and zero console errors or
+  warnings; both sitemap paths return 200 with byte-identical content. Prepared
+  three machine-checked external pilot slots with recruitment, consent, data,
+  measurement, and stop-condition templates. No participant, target, consent,
+  result, feedback, or adoption claim was created. The next capability decision
+  remains gated on the same problem appearing in two independent pilot records
+  from distinct owners.
 - **Phase 792 (v5.1.0 public release and internal homepage pilot complete)** —
   Grouped the complete P6-P13 review-to-verified-iteration workflow into one
   additive minor release. The exact release tree passed 832 tests, all 8 strict
@@ -18,8 +29,9 @@ For per-phase detail, see [`docs/ROADMAP.md`](ROADMAP.md).
   unnamed search control are resolved, five repeated search and drawer cycles
   pass, English and Korean 390-pixel views have no horizontal overflow, and both
   CTA contrast ratios clear WCAG AA. The local `/ko/sitemap.xml` 404 remains an
-  explicit performance warning. External participation and adoption remain
-  unverified until another project owner consents and takes part.
+  explicit historical warning in that immutable evidence chain; Phase 793 closes
+  the deployed path. External participation and adoption remain unverified until
+  another project owner consents and takes part.
 - **Phase 791 (merged in PR #47)** — Added verified before-and-after design comparison
   across CLI, typed SDK, in-process MCP, and Website Console. The exact-source
   contract requires matching subject and review context, records every lens

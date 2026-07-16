@@ -1,0 +1,290 @@
+{
+  "kind": "design-ai-external-pilot-program",
+  "schemaVersion": 1,
+  "status": "recruitment-ready-no-participants",
+  "claimBoundary": "The three slots are prepared but have no identified owner, consented project, measured result, feedback, or adoption evidence.",
+  "decisionRule": {
+    "minimumIndependentPilotRecords": 2,
+    "requireDistinctProjectOwners": true,
+    "selection": "Add a product capability only when the same user problem appears in at least two independent pilot records.",
+    "adoptionClaim": "blocked-until-real-participation"
+  },
+  "slots": [
+    {
+      "id": "external-marketing-site",
+      "segment": "marketing-site",
+      "status": "awaiting-owner",
+      "recruitment": {
+        "message": "Improve one existing landing or marketing page through the complete review-to-verified-iteration workflow.",
+        "eligibility": [
+          "The project owner can consent for the named repository and artifact.",
+          "One bounded page or user flow can be reviewed and changed.",
+          "The project has runnable local verification or a safe preview.",
+          "Private data and production credentials can stay outside the evidence bundle."
+        ],
+        "dataBoundary": [
+          "Collect only source references, finding decisions, approval events, verification results, and optional quoted feedback approved for retention.",
+          "Do not copy secrets, customer records, analytics exports, or private source into this repository.",
+          "Keep screenshots and logs in the participant project unless the owner separately approves publication."
+        ]
+      },
+      "owner": {
+        "status": "not-identified",
+        "relationship": "external-required",
+        "contactReference": ""
+      },
+      "consent": {
+        "status": "not-collected",
+        "approver": "",
+        "reference": "",
+        "approvedAt": "",
+        "evidenceCollection": false,
+        "targetMutation": false
+      },
+      "target": {
+        "repositoryUrl": "",
+        "localPath": "",
+        "artifact": "",
+        "allowedSelectors": []
+      },
+      "measures": [
+        {
+          "id": "time-to-first-useful-artifact",
+          "status": "not-measured",
+          "value": "",
+          "method": "Derive from canonical UTC pilotStartedAt and firstUsefulArtifactAt timestamps."
+        },
+        {
+          "id": "finding-decisions",
+          "status": "not-measured",
+          "value": "",
+          "method": "Count accepted, rejected, and unresolved workflow findings without an aggregate score."
+        },
+        {
+          "id": "approval-friction",
+          "status": "not-measured",
+          "value": "",
+          "method": "Count approved, not-required, and pending gates from the exact scope chain."
+        },
+        {
+          "id": "implementation-completion",
+          "status": "not-measured",
+          "value": "",
+          "method": "Use complete, partial, or blocked only when P11 implementation evidence agrees."
+        },
+        {
+          "id": "unresolved-risk",
+          "status": "not-measured",
+          "value": "",
+          "method": "Carry unresolved P11 risks forward without rewriting them as passes."
+        },
+        {
+          "id": "participant-feedback",
+          "status": "not-measured",
+          "value": "",
+          "method": "Record feedback only with owner-approved source wording and reference."
+        }
+      ],
+      "stopConditions": [
+        "Owner authority or consent is missing or ambiguous.",
+        "The requested scope expands beyond one bounded page or flow.",
+        "Secrets, personal data, customer data, or production credentials enter the evidence path.",
+        "A dependency, migration, external write, commit, push, or deployment lacks its separate approval.",
+        "Verification cannot distinguish observed behavior from inference."
+      ],
+      "artifacts": {
+        "intake": "",
+        "consent": "",
+        "workflow": "",
+        "implementationEvidence": "",
+        "pilotRecord": "",
+        "pilotEvidence": "",
+        "feedback": ""
+      }
+    },
+    {
+      "id": "external-app-workflow",
+      "segment": "app-workflow",
+      "status": "awaiting-owner",
+      "recruitment": {
+        "message": "Improve one existing web or app workflow whose runtime, responsive, keyboard, and accessibility behavior can be observed.",
+        "eligibility": [
+          "The project owner can consent for the named repository and workflow.",
+          "One bounded screen or user flow can be reviewed and changed.",
+          "The project has runnable local verification or a safe preview.",
+          "Private data and production credentials can stay outside the evidence bundle."
+        ],
+        "dataBoundary": [
+          "Collect only source references, finding decisions, approval events, verification results, and optional quoted feedback approved for retention.",
+          "Do not copy secrets, customer records, analytics exports, or private source into this repository.",
+          "Keep screenshots and logs in the participant project unless the owner separately approves publication."
+        ]
+      },
+      "owner": {
+        "status": "not-identified",
+        "relationship": "external-required",
+        "contactReference": ""
+      },
+      "consent": {
+        "status": "not-collected",
+        "approver": "",
+        "reference": "",
+        "approvedAt": "",
+        "evidenceCollection": false,
+        "targetMutation": false
+      },
+      "target": {
+        "repositoryUrl": "",
+        "localPath": "",
+        "artifact": "",
+        "allowedSelectors": []
+      },
+      "measures": [
+        {
+          "id": "time-to-first-useful-artifact",
+          "status": "not-measured",
+          "value": "",
+          "method": "Derive from canonical UTC pilotStartedAt and firstUsefulArtifactAt timestamps."
+        },
+        {
+          "id": "finding-decisions",
+          "status": "not-measured",
+          "value": "",
+          "method": "Count accepted, rejected, and unresolved workflow findings without an aggregate score."
+        },
+        {
+          "id": "approval-friction",
+          "status": "not-measured",
+          "value": "",
+          "method": "Count approved, not-required, and pending gates from the exact scope chain."
+        },
+        {
+          "id": "implementation-completion",
+          "status": "not-measured",
+          "value": "",
+          "method": "Use complete, partial, or blocked only when P11 implementation evidence agrees."
+        },
+        {
+          "id": "unresolved-risk",
+          "status": "not-measured",
+          "value": "",
+          "method": "Carry unresolved P11 risks forward without rewriting them as passes."
+        },
+        {
+          "id": "participant-feedback",
+          "status": "not-measured",
+          "value": "",
+          "method": "Record feedback only with owner-approved source wording and reference."
+        }
+      ],
+      "stopConditions": [
+        "Owner authority or consent is missing or ambiguous.",
+        "The requested scope expands beyond one bounded page or flow.",
+        "Secrets, personal data, customer data, or production credentials enter the evidence path.",
+        "A dependency, migration, external write, commit, push, or deployment lacks its separate approval.",
+        "Verification cannot distinguish observed behavior from inference."
+      ],
+      "artifacts": {
+        "intake": "",
+        "consent": "",
+        "workflow": "",
+        "implementationEvidence": "",
+        "pilotRecord": "",
+        "pilotEvidence": "",
+        "feedback": ""
+      }
+    },
+    {
+      "id": "external-korean-commerce-fintech",
+      "segment": "korean-commerce-fintech",
+      "status": "awaiting-owner",
+      "recruitment": {
+        "message": "Improve one Korean commerce or fintech interface using the relevant opt-in review pack and the complete evidence chain.",
+        "eligibility": [
+          "The project owner can consent for the named repository and artifact.",
+          "One bounded screen or user flow can be reviewed and changed.",
+          "The project has runnable local verification or a safe preview.",
+          "Private data and production credentials can stay outside the evidence bundle."
+        ],
+        "dataBoundary": [
+          "Collect only source references, finding decisions, approval events, verification results, and optional quoted feedback approved for retention.",
+          "Do not copy secrets, customer records, analytics exports, or private source into this repository.",
+          "Keep screenshots and logs in the participant project unless the owner separately approves publication."
+        ]
+      },
+      "owner": {
+        "status": "not-identified",
+        "relationship": "external-required",
+        "contactReference": ""
+      },
+      "consent": {
+        "status": "not-collected",
+        "approver": "",
+        "reference": "",
+        "approvedAt": "",
+        "evidenceCollection": false,
+        "targetMutation": false
+      },
+      "target": {
+        "repositoryUrl": "",
+        "localPath": "",
+        "artifact": "",
+        "allowedSelectors": []
+      },
+      "measures": [
+        {
+          "id": "time-to-first-useful-artifact",
+          "status": "not-measured",
+          "value": "",
+          "method": "Derive from canonical UTC pilotStartedAt and firstUsefulArtifactAt timestamps."
+        },
+        {
+          "id": "finding-decisions",
+          "status": "not-measured",
+          "value": "",
+          "method": "Count accepted, rejected, and unresolved workflow findings without an aggregate score."
+        },
+        {
+          "id": "approval-friction",
+          "status": "not-measured",
+          "value": "",
+          "method": "Count approved, not-required, and pending gates from the exact scope chain."
+        },
+        {
+          "id": "implementation-completion",
+          "status": "not-measured",
+          "value": "",
+          "method": "Use complete, partial, or blocked only when P11 implementation evidence agrees."
+        },
+        {
+          "id": "unresolved-risk",
+          "status": "not-measured",
+          "value": "",
+          "method": "Carry unresolved P11 risks forward without rewriting them as passes."
+        },
+        {
+          "id": "participant-feedback",
+          "status": "not-measured",
+          "value": "",
+          "method": "Record feedback only with owner-approved source wording and reference."
+        }
+      ],
+      "stopConditions": [
+        "Owner authority or consent is missing or ambiguous.",
+        "The requested scope expands beyond one bounded page or flow.",
+        "Secrets, personal data, customer data, or production credentials enter the evidence path.",
+        "A dependency, migration, external write, commit, push, or deployment lacks its separate approval.",
+        "Verification cannot distinguish observed behavior from inference."
+      ],
+      "artifacts": {
+        "intake": "",
+        "consent": "",
+        "workflow": "",
+        "implementationEvidence": "",
+        "pilotRecord": "",
+        "pilotEvidence": "",
+        "feedback": ""
+      }
+    }
+  ]
+}

@@ -488,8 +488,9 @@ with matching source identities and unchanged read-only boundaries.
 
 ### P14 - Public release and real adoption evidence
 
-Status: v5.1.0 public distribution and the internal documentation homepage pilot
-complete; consent-gated external participation remains unverified.
+Status: v5.1.0 public distribution, the internal documentation homepage pilot,
+deployed Pages QA, and a machine-checked three-slot launch framework are complete;
+consent-gated external participation remains unverified.
 
 Publish the complete P6-P13 workflow before adding another contract. Then run the
 same review-to-comparison path against the public documentation homepage and
@@ -504,9 +505,12 @@ Exit criteria:
 - The documentation homepage pilot preserves baseline, approved implementation,
   candidate, browser, release, and comparison evidence. Its exact comparison is
   `improved`, with two P1 findings resolved and no persistent, introduced, or
-  uncertain findings; the local sitemap warning remains explicit.
-- Three external pilot slots have explicit owner consent, data boundaries, target
-  paths, measures, and stop conditions before any project is inspected.
+  uncertain findings. Its local sitemap warning remains immutable, while the
+  deployed follow-up proves correct public alternate paths, two 200 sitemap
+  responses, and zero English desktop or Korean mobile console issues.
+- Three external pilot slots define mandatory owner consent, data boundaries,
+  target paths, measures, and stop conditions before any project is inspected.
+  Their launch inventory contains no participant, target, result, or feedback.
 - At least one pilot belongs to another project owner before any external-adoption
   claim is made.
 - The next product capability is selected only when the same user problem appears

@@ -1,0 +1,4 @@
+HTTP 200  https://sungjin9288.github.io/design-ai/sitemap.xml
+HTTP 200  https://sungjin9288.github.io/design-ai/ko/sitemap.xml
+3c8737fc5b8801eab0fbdae7f27517406e12bbf615c03569c4735e41e3aa1215  sitemap.xml
+3c8737fc5b8801eab0fbdae7f27517406e12bbf615c03569c4735e41e3aa1215  ko/sitemap.xml
