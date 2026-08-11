@@ -78,8 +78,8 @@ Recommended Phase 1:
 5. Write contract tests for top 5 components (Button, Input, Modal, etc.)
 
 Phase 2 (later):
-6. Chromatic for visual regression (paid: $149/mo for Pro tier)
-   OR: Playwright + image-snapshot if free is required
+6. Chromatic for hosted visual regression (paid; verify the current plan before recommending purchase)
+   OR: Playwright screenshots when a self-managed path is required
 7. Token drift Figma sync diff
 8. Per-component QA checklist enforcement
 ```

@@ -1,5 +1,40 @@
 # Roadmap
 
+## Phase 796 - Skill contract and core hardening
+
+- [x] Audited the 21-skill inventory against the Agent Skills specification,
+  repository manifests, progressive-disclosure structure, and durable guidance.
+- [x] Compared current open-source design-agent patterns and recorded explicit
+  `ADAPT`, `DEFER`, and `REJECT` decisions in the
+  [P17 hardening plan](P17-SKILL-AND-CORE-HARDENING-PLAN.md).
+- [x] Added one shared Markdown frontmatter helper and preserved the existing
+  knowledge frontmatter audit behavior.
+- [x] Added a deterministic skill contract gate for metadata, activation wording,
+  playbook linkage and sections, line budgets, manifest parity, and unstable
+  capability or pricing claims.
+- [x] Standardized all 21 skill dispatchers with an explicit `Use when` condition
+  and one direct executable-playbook handoff.
+- [x] Replaced guessed Figma and collaboration MCP operation names with active
+  tool-schema detection, and removed dated capability and fixed-price guidance.
+- [x] Connected isolated negative fixtures and the complete 21-skill check to
+  `release:self-test`.
+- [x] Re-ran the complete release gate: 832/832 tests, eight strict audits, 794
+  packaged files, zero documentation warnings, and installed-bin plus one-shot
+  package smoke passed.
+- [ ] Split the Website Console, learning, review, and lifecycle smoke domains
+  from the monolithic package-smoke harness without changing command order or
+  contract output.
+
+### Boundary
+
+- P17A adds no CLI command, SDK export, MCP tool, Website Console stage, package
+  version, npm publication, target-repository mutation, or external write.
+- P16 recruitment and the P14 three-slot baseline remain unchanged; this internal
+  hardening creates no external participation or adoption evidence.
+- Source-grounded design-system compilation, interface content quality, objective
+  visual evaluators, and project continuity remain separately gated follow-up
+  phases.
+
 ## Phase 795 - External marketing pilot operations readiness
 
 - [x] Defined one P16 operator flow from private invitation through Issue Form

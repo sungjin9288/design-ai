@@ -1,6 +1,6 @@
 ---
 name: conversational-ui-designer
-description: Design and spec conversational UI — voice assistants, chatbots, AI chat (LLM), live agent. Picks modality, intent model, persona, honorific level (해요체 / 합쇼체), error handling, accessibility, Korean conventions (Bixby / Clova / KakaoTalk channel).
+description: Design and spec voice assistants, chatbots, AI chat, and live-agent flows with modality, intent, persona, recovery, accessibility, and Korean conventions. Use when a product needs a conversational interface or handoff contract.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

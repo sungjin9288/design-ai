@@ -6,6 +6,14 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Added
 
+- Added a zero-dependency skill contract gate for all 21 shipped skills. It
+  validates Agent Skills metadata, explicit activation wording, progressive
+  disclosure, playbook inputs and completion criteria, local source authority,
+  line budgets, and inventory parity across plugin, capability manifest, and
+  repository directories.
+- Added isolated negative fixtures for skill metadata, playbook linkage,
+  completion criteria, unstable pricing guidance, and manifest drift, then
+  connected both fixture and repository checks to `release:self-test`.
 - Added a machine-checked three-slot external pilot launch packet for marketing
   sites, app workflows, and Korean commerce or fintech interfaces. Recruitment,
   owner consent, data boundaries, measurement, and stop conditions are reusable
@@ -19,6 +27,15 @@ User-facing release notes for design-ai. Versions follow semver.
   lifecycle labels, and deterministic boundary checks. The operating layer keeps
   the P14 three-slot baseline unchanged and blocks capability selection until two
   distinct project owners reproduce the same source-backed problem.
+
+### Changed
+
+- Standardized every `SKILL.md` as a concise discovery and activation contract
+  that delegates execution to its linked `PLAYBOOK.md`, without duplicating the
+  workflow or adding a public command, SDK export, or MCP tool.
+- Replaced guessed Figma and collaboration MCP operation names with active
+  tool-schema inspection, and replaced dated capability and fixed recurring-price
+  statements with durable source-verification rules.
 
 ### Fixed
 

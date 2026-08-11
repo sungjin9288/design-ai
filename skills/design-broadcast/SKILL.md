@@ -1,6 +1,6 @@
 ---
 name: design-broadcast
-description: Distribute a design-ai artifact (palette, spec, audit) via Slack and/or Notion MCPs. Composes audience-appropriate summaries, formats with Slack Block Kit / Notion blocks, requires user confirmation before posting. Falls back to formatted output for manual paste when MCPs unavailable.
+description: Prepare and distribute a design-ai artifact through Slack or Notion with audience-specific formatting and an explicit confirmation gate. Use when a user asks to share a palette, spec, audit, or design-system update.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

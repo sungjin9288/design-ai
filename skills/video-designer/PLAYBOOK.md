@@ -115,7 +115,7 @@ Style:
 
 Honorific level (Korean):
 - 합쇼체 (~합니다) for B2B, banking, formal.
-- 해요체 (~해요) for B2C, lifestyle, fintech (default 2024+).
+- 해요체 (~해요) for friendly B2C, lifestyle, or fintech communication.
 
 ### 7. Music + sound
 

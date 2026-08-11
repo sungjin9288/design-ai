@@ -1,6 +1,6 @@
 ---
 name: design-critique
-description: Senior-designer feedback on a design proposal — covers problem fit, hierarchy, craft, tradeoffs, and lands on a single top recommendation.
+description: Give senior design feedback on problem fit, hierarchy, craft, and tradeoffs, ending with one top recommendation. Use when a user asks for a critique of a mockup, proposal, visual direction, or release candidate.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

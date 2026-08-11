@@ -1,6 +1,6 @@
 ---
 name: spatial-designer
-description: Design and spec spatial / AR / VR / MR experiences. Picks platform (Vision Pro / Quest / HoloLens / mobile AR / WebXR), anchoring (world / wrist / hand / head), locomotion (teleport / smooth / snap turn), comfort options, accessibility. Korean Galaxy XR and KR market context.
+description: Design and spec spatial, AR, VR, MR, and WebXR experiences with platform, anchoring, locomotion, comfort, accessibility, and regional constraints. Use when an immersive product needs an implementation-ready experience contract.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

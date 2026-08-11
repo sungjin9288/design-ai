@@ -1,6 +1,6 @@
 ---
 name: ux-audit
-description: Audit a screen, flow, or page against UX best practices and WCAG accessibility. Output is a prioritized issue list with severity, citation, and specific fix.
+description: Audit a screen, flow, or page against UX and WCAG requirements, returning prioritized, cited, actionable findings. Use when a user asks to diagnose usability, accessibility, hierarchy, state, or interaction problems.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

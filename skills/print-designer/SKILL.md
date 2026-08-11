@@ -1,6 +1,6 @@
 ---
 name: print-designer
-description: Design and spec a print piece — business card, brochure, poster, packaging, or full stationery system. Picks size, paper, finish, color (CMYK + Pantone), bleed, regulatory content; produces a print-ready spec. Korean print conventions baked in.
+description: Design and spec print-ready business cards, brochures, posters, packaging, or stationery with production and regulatory constraints. Use when a physical artifact needs dimensions, paper, finish, CMYK or Pantone, bleed, and Korean print guidance.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

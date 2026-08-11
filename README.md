@@ -257,7 +257,9 @@ See [`docs/CONTRIBUTING.md`](docs/CONTRIBUTING.md). The bar:
 - Run `npm run release:check` as the core gate before release PRs or tags. It wraps `npm test` (CLI unit tests), `npm run audit:strict` (all 8 audits), `git diff --check` (whitespace), `npm run package:check` (package contents), `npm run release:metadata` (release metadata + Product Readiness guard), `npm run release:self-test` (release assertion self-tests), and `npm run package:smoke` (packed-tarball smoke covering install, `site`, `workspace`, `learn`, and help/version/audit surfaces for both installed-bin and one-shot `npm exec --package <tarball>` paths).
 - After npm publish completes, run `npm run registry:smoke` to verify the same surfaces against the public `npm exec --package` install path.
 - Knowledge files use `<!-- hand-written -->` marker if hand-authored.
-- Skill PLAYBOOKs include a verification phase checklist.
+- Skill PLAYBOOKs include a verification phase checklist. `npm run skills:check`
+  also enforces Agent Skills metadata, activation wording, progressive-disclosure
+  linkage, playbook structure, durable guidance, and manifest inventory parity.
 - Korean strings spelled out in Korean (no machine translation passing through).
 - All audits pass.
 - Before pushing for CI, run `npm run ci:local` when you need local parity with the non-publishing GitHub workflows. It wraps `release:check`, Python syntax checks, knowledge size budget, VS Code extension compile/unit tests, the MkDocs build, and the MkDocs warning policy used by the docs deployment workflow: no non-`refs/` warnings, with refs-only warnings capped at the accepted baseline.

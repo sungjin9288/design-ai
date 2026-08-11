@@ -23,19 +23,17 @@ Sync design tokens between Figma and code. When Figma MCP is connected, reads/wr
 
 ### 1. Detect MCP availability
 
-```
-if mcp__Figma is connected:
-  proceed with full read/write workflow
-else:
-  walk through Tokens Studio plugin manual flow
-```
+Inspect the active tool inventory and the schema of each connected Figma
+operation. Record variable read and variable write as separate capabilities.
+Never infer a tool name from this playbook. If variable reads are unavailable,
+use the Tokens Studio export workflow. If variable writes are unavailable, keep
+the result as a diff and prepare a manual import.
 
 ### 2. Read tokens from Figma
 
-```
-mcp__Figma__get_variable_defs(file_key=<...>)
-→ returns all Variables grouped by collection
-```
+Call only a connected Figma operation whose declared schema reads variable
+definitions for the supplied file. Preserve collection, mode, alias, value, and
+source identifiers from the returned payload before mapping them into code.
 
 Transform into design-ai's W3C DTCG / Style Dictionary format:
 
@@ -96,15 +94,11 @@ Token sync report
 
 ### 5. Push tokens code → Figma
 
-For each token in `tokens/source.json`:
-
-```
-mcp__Figma__... (write Variable in the appropriate collection)
-```
-
-⚠ As of mid-2025, Figma MCP's WRITE operations for Variables are limited. The Tokens Studio plugin is more capable for true bidirectional sync.
-
-For now: agent can READ from Figma reliably; for WRITE, recommend Tokens Studio.
+Proceed only when the active Figma tool schema explicitly supports variable
+writes, the authenticated principal has write access, and the user approved the
+displayed diff. Otherwise, stop at the verified diff and use Tokens Studio for
+the import. Capability detection in the active session is authoritative; this
+playbook does not assume that read and write support move together.
 
 ### 6. Without MCP — fallback to Tokens Studio
 
@@ -128,6 +122,7 @@ For destructive operations (push, overwrite), stop after diff and confirm before
 
 - [ ] Did I confirm direction (figma→code / code→figma / verify) before acting?
 - [ ] Did I check for write access before pushing (read-only auth = abort)?
+- [ ] Did I use only Figma operations present in the active tool inventory?
 - [ ] Did I show the diff to user before applying changes?
 - [ ] Did I cite the source-of-truth strategy ([`docs/TOKEN-SYNC.md`](../../docs/TOKEN-SYNC.md))?
 - [ ] Did I warn about MCP write limitations when relevant?

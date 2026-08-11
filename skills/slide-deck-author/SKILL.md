@@ -1,6 +1,6 @@
 ---
 name: slide-deck-author
-description: Design and outline a slide deck (talk / pitch / reading deck). Picks archetype, drafts slide-by-slide content with message-led titles, applies brand, outputs outline + render-ready markdown for declarative deck tools. Korean-aware.
+description: Design and outline talk, pitch, or reading decks with message-led titles, brand rules, and render-ready structure. Use when a user needs a slide narrative, visual plan, speaker support, or Korean-aware deck specification.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

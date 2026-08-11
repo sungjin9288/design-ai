@@ -1,6 +1,6 @@
 ---
 name: motion-designer
-description: Design and spec motion for a screen, component, or page — pick the right duration, easing, and tool (CSS / Framer Motion / GSAP / Lottie / Rive); deliver a motion spec a developer can implement against. Reduced-motion-safe by default.
+description: Design and spec purposeful, reduced-motion-safe animation with concrete duration, easing, choreography, tool, and verification choices. Use when a screen, component, page, or interaction needs motion design or audit guidance.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

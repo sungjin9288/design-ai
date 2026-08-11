@@ -19,10 +19,9 @@ Distribute a design-ai artifact (palette, spec, audit report) to the team via Sl
 
 ### 1. Detect available MCPs
 
-```
-slack_available = mcp__plugin_design_slack is connected
-notion_available = mcp__864aac7f-...__notion-* is connected
-```
+Inspect the callable tool inventory and identify Slack or Notion operations from
+their declared names, provenance, descriptions, and input schemas. Never guess an
+MCP server name or call a tool that is not present in the active session.
 
 If neither: output formatted content the user can paste manually.
 

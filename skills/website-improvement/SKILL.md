@@ -1,6 +1,6 @@
 ---
 name: website-improvement
-description: Plan and coordinate professional website improvement work. Use for existing website audits, Site Profile setup, MCP readiness planning, refactor task generation, Codex/Claude prompt generation, and handoff reports.
+description: Plan and coordinate evidence-backed website audits, profiles, MCP readiness, refactor tasks, agent prompts, and handoffs. Use when a homepage or existing site needs development, redesign, quality improvement, or target-repository execution planning.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

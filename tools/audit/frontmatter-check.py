@@ -20,6 +20,8 @@ import re
 import sys
 from pathlib import Path
 
+from markdown_contracts import parse_frontmatter
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -35,71 +37,6 @@ STABILITY_VALUES = {"stable", "beta", "experimental", "deprecated"}
 
 def is_hand_written(text: str) -> bool:
     return "<!-- hand-written -->" in text
-
-
-def parse_frontmatter(text: str) -> dict[str, object] | None:
-    """Lightweight YAML parser — handles flat keys + simple lists.
-    Returns None if no frontmatter found.
-    Skips a leading HTML comment (e.g., `<!-- hand-written -->`) before frontmatter.
-    """
-    lines = text.splitlines()
-
-    # Skip leading HTML comments (e.g., <!-- hand-written -->) and blank lines
-    cursor = 0
-    while cursor < len(lines):
-        stripped = lines[cursor].strip()
-        if stripped.startswith("<!--") and stripped.endswith("-->"):
-            cursor += 1
-            continue
-        if stripped == "":
-            cursor += 1
-            continue
-        break
-
-    if cursor >= len(lines) or not lines[cursor].strip().startswith("---"):
-        return None
-
-    fm_lines: list[str] = []
-    for line in lines[cursor + 1:]:
-        if line.strip().startswith("---"):
-            break
-        fm_lines.append(line)
-    if not fm_lines:
-        return None
-
-    fm: dict[str, object] = {}
-    current_list_key: str | None = None
-    for line in fm_lines:
-        stripped = line.rstrip()
-        if not stripped:
-            current_list_key = None
-            continue
-
-        # List continuation: "  - item"
-        if current_list_key and stripped.lstrip().startswith("-"):
-            item = stripped.lstrip()[1:].strip()
-            if item:
-                fm[current_list_key] = list(fm.get(current_list_key, [])) + [item]
-            continue
-
-        # New key
-        match = re.match(r"^([a-zA-Z_]+):\s*(.*)$", stripped)
-        if not match:
-            continue
-        key, value = match.group(1), match.group(2).strip()
-        if value == "":
-            current_list_key = key
-            fm[key] = []
-        elif value.startswith("[") and value.endswith("]"):
-            # Inline list
-            inner = value[1:-1]
-            items = [item.strip().strip("\"'") for item in inner.split(",") if item.strip()]
-            fm[key] = items
-            current_list_key = None
-        else:
-            fm[key] = value.strip().strip("\"'")
-            current_list_key = None
-    return fm
 
 
 def validate(path: Path, strict: bool) -> list[str]:
