@@ -100,6 +100,7 @@ plugins:
             Design Quality: 디자인 품질
             Product specialization plan: 제품 전문화 계획
             Product specialization benchmarks: 제품 전문화 벤치마크
+            Skill and core hardening plan: 스킬 및 핵심 구조 강화 계획
             Quality contract: 품질 계약
             Canonical review workflow: 표준 디자인 리뷰 워크플로우
             Review evidence handoff: 리뷰 근거 인계
@@ -197,6 +198,7 @@ nav:
   - Design Quality:
       - Product specialization plan: docs/PRODUCT-SPECIALIZATION-PLAN.md
       - Product specialization benchmarks: docs/BENCHMARKS.md
+      - Skill and core hardening plan: docs/P17-SKILL-AND-CORE-HARDENING-PLAN.md
       - Quality contract: docs/DESIGN-QUALITY-CONTRACT.md
       - Canonical review workflow: docs/REVIEW-WORKFLOW.md
       - Review evidence handoff: docs/REVIEW-HANDOFF.md

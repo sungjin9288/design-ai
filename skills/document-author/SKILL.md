@@ -1,6 +1,6 @@
 ---
 name: document-author
-description: Write and structure technical or product documentation. Picks the right Diátaxis type (tutorial / how-to / reference / explanation), applies its template, follows technical-writing voice rules, includes runnable code samples, and links related docs. Korean-aware.
+description: Write technical or product documentation using the right Diátaxis type, voice, runnable examples, and cross-references. Use when a user needs a tutorial, how-to, reference, explanation, or Korean-aware documentation set.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

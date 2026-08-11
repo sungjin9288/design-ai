@@ -134,6 +134,16 @@ The report should include target site information, diagnostic summary, major iss
 
 Use [`TEMPLATE.md`](TEMPLATE.md) for the final report or planning artifact.
 
+## Source files this skill reads
+
+- [`TEMPLATE.md`](TEMPLATE.md) — canonical website plan and handoff structure
+- [`knowledge/PRINCIPLES.md`](../../knowledge/PRINCIPLES.md) — cross-domain design rules
+- [`knowledge/patterns/agentic-design-workflows.md`](../../knowledge/patterns/agentic-design-workflows.md) — artifact and approval boundaries
+- [`knowledge/patterns/interface-craft.md`](../../knowledge/patterns/interface-craft.md) — runtime interaction review lenses
+- [`knowledge/patterns/ux-guidelines.md`](../../knowledge/patterns/ux-guidelines.md) — product usability checks
+- [`knowledge/a11y/contrast.md`](../../knowledge/a11y/contrast.md) — contrast evidence
+- [`knowledge/a11y/keyboard-and-focus.md`](../../knowledge/a11y/keyboard-and-focus.md) — keyboard and focus evidence
+
 ## Verification phase
 
 - [ ] Site Profile includes a target repo reference, pages, user flows, viewports, platform notes, and a live URL when a preview or deployed site exists.

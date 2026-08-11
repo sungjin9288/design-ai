@@ -1,6 +1,6 @@
 ---
 name: illustration-designer
-description: Design and spec an illustration system or a single illustration — pick style, voice, color treatment, format (SVG / Lottie / PNG), and delivery. Covers spot illustrations, hero illustrations, mascots, and SVG production.
+description: Design and spec illustration systems, spot or hero artwork, mascots, and SVG production with explicit style, color, format, and delivery. Use when a product needs a coherent illustration direction or asset brief.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

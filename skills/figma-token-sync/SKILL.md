@@ -1,6 +1,6 @@
 ---
 name: figma-token-sync
-description: Sync design tokens between Figma and code. Reads Figma Variables via MCP (or Tokens Studio fallback), diffs against tokens/source.json, applies changes in the requested direction (figma→code / code→figma / verify-only).
+description: Compare and sync design tokens between Figma and code with explicit direction, source-of-truth, and write gates. Use when a user needs Figma-to-code, code-to-Figma, or verify-only token reconciliation.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

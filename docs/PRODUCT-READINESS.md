@@ -12,7 +12,11 @@ Issue Form and public issue #56. P16 marketing-site pilot operations, anonymous
 status tracking, separate consent, fixed problem classification, and distinct-owner
 decision rules are prepared; direct outreach has not started, and real external
 participation remains
-consent-gated and unverified.** CLI `design-ai start`,
+consent-gated and unverified. P17A now validates the metadata, activation,
+progressive disclosure, local source authority, completion criteria, line budgets,
+and inventory parity of all 21 skills, while removing guessed MCP operations and
+dated operational claims from durable playbooks. This is current-source internal
+hardening, not a new public capability or release.** CLI `design-ai start`,
 SDK `start()`, MCP `design_ai_start`, and Website Console share one canonical
 read-only start payload. CLI `design-ai inspect`, SDK `inspectHtml()`, and MCP
 `design_ai_inspect_html` share the canonical quality report. The inspector confirms
@@ -81,6 +85,7 @@ This document separates shipped product scope from future product ideas so the r
 | Area | Status | Evidence | Remaining work |
 |---|---|---|---|
 | Design consulting skills | Complete for v5.0.0 | 21 skills across design systems, interface craft, website improvement, UX audit, critique, handoff, motion, illustration, print, video, game UI, conversational UI, and spatial design | Keep knowledge fresh through normal stability review |
+| Skill contract reliability | Implemented in current source; unreleased | Zero-dependency metadata and playbook validator, isolated negative fixtures, 21/21 skill check, manifest parity, and release-self-test integration; `npm run release:check` passes with 832 tests, 8 strict audits, 794 packaged files, a 0/0 documentation warning policy, SDK smoke, installed-bin smoke, and one-shot package smoke; no CLI, SDK, MCP, package version, publication, or P16 state change | Modularize the oversized smoke harness under P17B while preserving entry points and exact contract behavior |
 | Design agent workflows | Complete for v5.0.0 | 16 public slash commands, 4 review agents, route/prompt/artifact/pack/check/search/show/examples CLI workflows; shared implementation-plan, critique-loop, and DESIGN.md contracts across CLI, SDK, MCP, and Website Console | Collect adoption feedback and keep release evidence current |
 | One start flow | Published in v5.1.0 | Shared `start` operation, CLI/SDK/MCP exact JSON parity, Website Console import/review/export, closed input contracts, and installed-bin plus one-shot smoke coverage | Collect real workflow evidence without weakening the read-only boundary |
 | Read-only quality engine | Published in v5.1.0 | Shared static HTML operation across CLI/SDK/MCP, canonical eight-lens report validation, benchmark reproduction, immutable-source assertions, and `npm run release:check` evidence with 694 tests, 8 strict audits, 676 packaged files, warning-free docs, and installed-bin plus one-shot smoke coverage | Keep static confirmation separate from optional browser evidence |

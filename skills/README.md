@@ -2,8 +2,8 @@
 
 Task-focused playbooks. Each skill is a directory containing:
 
-- `SKILL.md` — Claude Code-compatible manifest (frontmatter + body). Auto-loaded if dropped under `~/.claude/skills/`.
-- `PLAYBOOK.md` — Plain-markdown version for Codex CLI / any agent. Same content as `SKILL.md`.
+- `SKILL.md` — Portable Agent Skills manifest and concise activation instructions.
+- `PLAYBOOK.md` — The executable workflow loaded through progressive disclosure.
 - `TEMPLATE.md` — Optional output template.
 - `examples/` — Optional worked examples.
 
@@ -38,3 +38,17 @@ Task-focused playbooks. Each skill is a directory containing:
 **Codex CLI** (or any other agent): paste the contents of `PLAYBOOK.md` into your prompt, or have the agent `cat` it.
 
 **Self-hosted prompt**: include the playbook in your system prompt. Each playbook is self-contained.
+
+## Quality gate
+
+Run `npm run skills:check` after changing a skill. The gate verifies:
+
+- Agent Skills name and description constraints, including an explicit activation condition;
+- direct progressive-disclosure linkage from `SKILL.md` to `PLAYBOOK.md`;
+- playbook inputs, workflow, local authorities, verification, and done criteria;
+- plugin, capability-manifest, and on-disk skill inventory parity;
+- removal of hard-coded prices and dated capability claims from durable guidance.
+
+`npm run release:self-test` runs the isolated mutation fixtures and the complete
+repository check. This gate supplements the eight corpus audits; it does not
+rewrite a skill or repair drift as a side effect.

@@ -1,6 +1,6 @@
 ---
 name: video-designer
-description: Design and spec video for marketing, social, or in-product use. Picks length, format, aspect ratio, codec, captions, voiceover, and platform; produces production-ready spec. Korean conventions and ad-disclosure rules included.
+description: Design and spec marketing, social, or in-product video with format, aspect ratio, codec, captions, voiceover, platform, and Korean disclosure constraints. Use when a video concept needs a production-ready brief and delivery contract.
 ---
 
-See [PLAYBOOK.md](PLAYBOOK.md).
+Open and follow [PLAYBOOK.md](PLAYBOOK.md) as the executable workflow. Load only the linked sources relevant to the task, and complete its verification and done criteria before reporting completion.

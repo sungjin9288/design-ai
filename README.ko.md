@@ -217,7 +217,9 @@ main 브랜치의 모든 커밋에서 8개 모두 통과해요.
 - 릴리스 PR 또는 태그 전에는 `npm run release:check`를 core gate로 실행해요. 이 명령은 `npm test`(CLI unit test), `npm run audit:strict`(8개 audit 전부), `git diff --check`(whitespace 검사), `npm run package:check`(package contents 검사), `npm run release:metadata`(release metadata + Product Readiness guard), `npm run release:self-test`(release 자체 검증), `npm run package:smoke`(packed-tarball smoke — install, `site`, `workspace`, `learn`, help/version/audit 표면 전체를 installed-bin과 one-shot `npm exec --package <tarball>` 두 경로에서 확인)를 하나로 묶어요.
 - npm publish가 끝난 뒤에는 `npm run registry:smoke`로 같은 표면을 공개 `npm exec --package` 설치 경로에서 다시 확인해요.
 - 손으로 쓴 지식 파일은 `<!-- hand-written -->` 마커 사용.
-- 스킬 PLAYBOOK은 verification phase 체크리스트 포함.
+- 스킬 PLAYBOOK은 verification phase 체크리스트를 포함해요. `npm run skills:check`는
+  Agent Skills metadata, 사용 시점, progressive-disclosure 연결, playbook 구조,
+  오래 유지 가능한 지침, manifest inventory 정합성도 함께 검사해요.
 - 한국어 문자열은 한국어로 직접 작성 (기계 번역 금지).
 - 모든 검사 통과.
 - CI에 올리기 전 GitHub workflow와 가까운 로컬 검증이 필요하면 `npm run ci:local`을 실행하세요. `release:check`, Python syntax check, knowledge size budget, VS Code extension compile/unit test, MkDocs build, docs deployment workflow와 같은 MkDocs warning policy를 한 번에 확인해요. 이 정책은 non-`refs/` warning을 막고, refs-only warning도 승인된 baseline 이상 늘어나지 않게 제한해요.
