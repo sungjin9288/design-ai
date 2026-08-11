@@ -27,6 +27,11 @@ from capability_manifest import (
     SOURCE_CAPABILITIES as EXPECTED_CAPABILITIES,
     validate_capability_manifest,
 )
+from smoke_domains.site_contracts import EXPECTED_SITE_MCP_PROBE_COUNTS
+from smoke_domains.site_validators import (
+    assert_site_bundle_mcp_probes_payload,
+    assert_site_mcp_probe_counts,
+)
 from smoke_assertions import (
     EXPECTED_CHECK_ARTIFACT_NAME,
     EXPECTED_CHECK_EXAMPLES_LIMIT,
@@ -184,35 +189,6 @@ SITE_EVIDENCE_VALUES = {
     "nextActions": "Attach before/after screenshots",
 }
 SITE_EVIDENCE_COUNTS = {key: 1 for key in SITE_EVIDENCE_VALUES}
-EXPECTED_SITE_MCP_PROBE_COUNTS = {"count": 4, "pass": 4, "warn": 0, "fail": 0}
-EXPECTED_SITE_BUNDLE_MCP_PROBES_KEYS = [
-    "enabled",
-    "mode",
-    "externalCalls",
-    "status",
-    "count",
-    "pass",
-    "warn",
-    "fail",
-    "items",
-]
-EXPECTED_SITE_BUNDLE_MCP_PROBE_ITEM_KEYS = [
-    "id",
-    "key",
-    "label",
-    "requestedStatus",
-    "level",
-    "passed",
-    "message",
-    "evidence",
-    "actions",
-]
-EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS = [
-    "github-repo-reference",
-    "figma-url-reference",
-    "browser-smoke-target",
-    "deploy-provider-reference",
-]
 SITE_INIT_SMOKE_ARGS = [
     "site",
     "--init",
@@ -339,59 +315,6 @@ SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN = """# Company Website Intake Template
 |---|---|---|---|
 | Accessibility | Mobile nav focus is unclear | Keyboard focus ring is missing from the menu trigger | / |
 """
-
-
-def assert_site_mcp_probe_counts(
-    actual: object,
-    *,
-    context: str,
-    label: str,
-) -> None:
-    if actual != EXPECTED_SITE_MCP_PROBE_COUNTS:
-        raise SystemExit(f"{label} after {context} MCP probe counts changed: {actual!r}")
-
-
-def assert_site_bundle_mcp_probes_payload(payload: object, *, context: str) -> None:
-    checked = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_BUNDLE_MCP_PROBES_KEYS,
-        label="mcp-probes.json",
-        context=context,
-        command_label="site bundle",
-    )
-    if checked.get("enabled") is not True or checked.get("mode") != "read-only-local":
-        raise SystemExit(f"site bundle after {context} mcp-probes.json mode changed")
-    if checked.get("externalCalls") is not False:
-        raise SystemExit(f"site bundle after {context} mcp-probes.json must remain read-only")
-    if checked.get("status") != "pass":
-        raise SystemExit(f"site bundle after {context} mcp-probes.json status changed")
-    assert_site_mcp_probe_counts(
-        {key: checked.get(key) for key in ("count", "pass", "warn", "fail")},
-        context=context,
-        label="site bundle mcp-probes.json",
-    )
-
-    items = checked.get("items")
-    if not isinstance(items, list) or len(items) != len(EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS):
-        raise SystemExit(f"site bundle after {context} mcp-probes.json item count changed")
-    checked_ids = []
-    for item in items:
-        checked_item = assert_smoke_json_keys(
-            item,
-            EXPECTED_SITE_BUNDLE_MCP_PROBE_ITEM_KEYS,
-            label="mcp-probes.json item",
-            context=context,
-            command_label="site bundle",
-        )
-        checked_ids.append(checked_item.get("id"))
-        if checked_item.get("level") != "pass" or checked_item.get("passed") is not True:
-            raise SystemExit(f"site bundle after {context} mcp-probes.json item should pass: {checked_item.get('id')}")
-        if not isinstance(checked_item.get("evidence"), list) or not checked_item.get("evidence"):
-            raise SystemExit(f"site bundle after {context} mcp-probes.json item evidence missing")
-        if not isinstance(checked_item.get("actions"), list):
-            raise SystemExit(f"site bundle after {context} mcp-probes.json item actions must be an array")
-    if checked_ids != EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS:
-        raise SystemExit(f"site bundle after {context} mcp-probes.json item order changed")
 
 
 def npm_exec_cmd(tarball: Path, *args: str) -> list[str]:

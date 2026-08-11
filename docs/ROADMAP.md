@@ -1,5 +1,34 @@
 # Roadmap
 
+## Phase 797 - Website Console smoke domain extraction
+
+- [x] Recorded the pre-extraction smoke harness sizes and focused self-test times.
+- [x] Moved 42 Website Console contract constants into
+  `smoke_domains/site_contracts.py` and eight shared command, MCP probe, and
+  repair validators into `smoke_domains/site_validators.py`.
+- [x] Preserved the original `smoke_assertions.py`, local package-smoke, and
+  registry-smoke import surfaces.
+- [x] Added a byte-stable contract snapshot plus positive and negative fixtures
+  in a separate, independently runnable self-test wired through
+  `smoke:site-contracts:self-test` and the release self-test chain.
+- [x] Proved exact parity with the pre-extraction values and command rewrite order.
+- [x] Kept all new files below 400 lines and every extracted function below 200
+  lines; the largest function is 85 lines.
+- [x] Preserved the exact 716-command packed-smoke sequence and normalized
+  SHA-256 before and after extraction; recorded 1,444.11-second and
+  914.29-second local wall-clock observations.
+- [ ] Move Website Console payload fixtures, assertion groups, and installed-bin
+  plus one-shot runners behind the same domain boundary.
+- [ ] Split the learning, review/evidence/pilot, and lifecycle domains in that
+  order after Website Console extraction is complete.
+
+### Boundary
+
+- P17B.1 changes only test architecture and release verification. It adds no CLI,
+  SDK, MCP, Website Console, package-version, publication, or P16 state change.
+- The original smoke entry points, command sequence, JSON contracts, local versus
+  registry coverage, and failure messages remain authoritative.
+
 ## Phase 796 - Skill contract and core hardening
 
 - [x] Audited the 21-skill inventory against the Agent Skills specification,

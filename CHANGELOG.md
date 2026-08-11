@@ -6,6 +6,9 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Added
 
+- Added an independently runnable Website Console smoke-contract self-test with
+  a byte-stable SHA-256 snapshot, command-order checks, and negative fixtures for
+  unsafe guidance, malformed probe payloads, and repair-state drift.
 - Added a zero-dependency skill contract gate for all 21 shipped skills. It
   validates Agent Skills metadata, explicit activation wording, progressive
   disclosure, playbook inputs and completion criteria, local source authority,
@@ -30,6 +33,9 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Changed
 
+- Moved 42 Website Console contract constants and shared site/probe/repair
+  validators into focused contract and validator modules while preserving the
+  existing `smoke_assertions`, local package-smoke, and registry-smoke surfaces.
 - Standardized every `SKILL.md` as a concise discovery and activation contract
   that delegates execution to its linked `PLAYBOOK.md`, without duplicating the
   workflow or adding a public command, SDK export, or MCP tool.
