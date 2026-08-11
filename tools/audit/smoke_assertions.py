@@ -16,6 +16,54 @@ from capability_manifest import (
     validate_capability_manifest,
 )
 from doctor_assertions import EXPECTED_DOCTOR_PASS_LABELS, assert_doctor_report_clean
+from smoke_domains.site_contracts import (
+    EXPECTED_SITE_COUNTS_KEYS,
+    EXPECTED_SITE_INTAKE_TEMPLATE_COMMAND_KEYS,
+    EXPECTED_SITE_INTAKE_TEMPLATE_KEYS,
+    EXPECTED_SITE_INTAKE_TEMPLATE_PRIVACY_KEYS,
+    EXPECTED_SITE_ISSUE_KEYS,
+    EXPECTED_SITE_MCP_ACTION_PLAN_COMMAND_KEYS,
+    EXPECTED_SITE_MCP_ACTION_PLAN_PAYLOAD_KEYS,
+    EXPECTED_SITE_MCP_ACTION_PLAN_TASK_KEYS,
+    EXPECTED_SITE_MCP_CHECK_COUNTS_KEYS,
+    EXPECTED_SITE_MCP_CHECK_ITEM_KEYS,
+    EXPECTED_SITE_MCP_CHECK_PAYLOAD_KEYS,
+    EXPECTED_SITE_MCP_CHECK_PROBE_COMMAND_KEYS,
+    EXPECTED_SITE_MCP_CHECK_PROBES_PAYLOAD_KEYS,
+    EXPECTED_SITE_MCP_CHECK_SITE_KEYS,
+    EXPECTED_SITE_MCP_PROBE_COUNTS,
+    EXPECTED_SITE_MCP_PROBE_ITEM_KEYS,
+    EXPECTED_SITE_MCP_PROBES_KEYS,
+    EXPECTED_SITE_NEXT_ACTION_COMMAND_KEYS,
+    EXPECTED_SITE_NEXT_ACTION_KEYS,
+    EXPECTED_SITE_NEXT_ACTIONS_COUNTS_KEYS,
+    EXPECTED_SITE_NEXT_ACTIONS_PAYLOAD_KEYS,
+    EXPECTED_SITE_NEXT_ACTIONS_SITE_KEYS,
+    EXPECTED_SITE_NEXT_ACTIONS_TOP_TASK_KEYS,
+    EXPECTED_SITE_PAYLOAD_KEYS,
+    EXPECTED_SITE_PROFILE_KEYS,
+    EXPECTED_SITE_PROMPT_TEMPLATE_IDS,
+    EXPECTED_SITE_PROMPT_TEMPLATE_KEYS,
+    EXPECTED_SITE_PROMPT_TEMPLATE_PAYLOAD_KEYS,
+    EXPECTED_SITE_SAMPLE_KEYS,
+    EXPECTED_SITE_SAMPLE_PROFILE_KEYS,
+    EXPECTED_SITE_SAMPLE_TASK_KEYS,
+    EXPECTED_SITE_TOP_TASK_KEYS,
+    EXPECTED_SITE_WORKFLOW_GRAPH_EDGE_KEYS,
+    EXPECTED_SITE_WORKFLOW_GRAPH_NODE_IDS,
+    EXPECTED_SITE_WORKFLOW_GRAPH_NODE_KEYS,
+    EXPECTED_SITE_WORKFLOW_GRAPH_PAYLOAD_KEYS,
+    EXPECTED_SITE_WORKFLOW_GRAPH_SITE_KEYS,
+    EXPECTED_SITE_WORKFLOW_GRAPH_SUMMARY_KEYS,
+)
+from smoke_domains.site_validators import (
+    assert_site_repair_apply_report_payload,
+    assert_site_repair_guidance_report_contract,
+    assert_site_repair_preview_report_payload,
+    guidance_out_path,
+    site_guidance_command,
+    site_mcp_probe_embedded_command,
+)
 
 ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
 ROOT = Path(__file__).resolve().parents[2]
@@ -1157,470 +1205,12 @@ EXPECTED_WORKSPACE_RELEASE_KEYS = ["packageName", "version", "scripts", "availab
 EXPECTED_WORKSPACE_AUDIT_SUMMARY_KEYS = ["status", "failures", "warnings"]
 EXPECTED_WORKSPACE_ACTION_KEYS = ["level", "text"]
 EXPECTED_WORKSPACE_ACTION_KEYS_WITH_COMMAND = [*EXPECTED_WORKSPACE_ACTION_KEYS, "command"]
-EXPECTED_SITE_PAYLOAD_KEYS = [
-    "filePath",
-    "valid",
-    "status",
-    "site",
-    "counts",
-    "auditStatusCounts",
-    "mcpStatusCounts",
-    "taskPriorityCounts",
-    "requiredMcp",
-    "topTasks",
-    "issues",
-]
-EXPECTED_SITE_PROFILE_KEYS = [
-    "id",
-    "name",
-    "liveUrl",
-    "repoUrl",
-    "localPath",
-    "deployProvider",
-    "cms",
-    "database",
-    "pages",
-    "userFlows",
-    "viewports",
-]
-EXPECTED_SITE_COUNTS_KEYS = [
-    "pages",
-    "userFlows",
-    "viewports",
-    "auditCategories",
-    "auditFindings",
-    "refactorTasks",
-    "executedWork",
-    "verificationResults",
-    "remainingRisks",
-    "nextActions",
-    "requiredMcp",
-    "optionalMcp",
-    "unavailableMcp",
-]
-EXPECTED_SITE_TOP_TASK_KEYS = ["id", "title", "priority", "category", "impact", "effort", "pages"]
-EXPECTED_SITE_ISSUE_KEYS = ["level", "id", "message"]
-EXPECTED_SITE_NEXT_ACTIONS_PAYLOAD_KEYS = [
-    "kind",
-    "version",
-    "filePath",
-    "status",
-    "workspaceStatus",
-    "mcpStatus",
-    "mcpProbeStatus",
-    "mcpProbeCounts",
-    "site",
-    "counts",
-    "topTasks",
-    "actions",
-    "commands",
-    "boundaries",
-    "externalCalls",
-    "targetRepoMutation",
-]
-EXPECTED_SITE_MCP_PROBE_COUNTS = {"count": 4, "pass": 4, "warn": 0, "fail": 0}
-EXPECTED_SITE_NEXT_ACTIONS_SITE_KEYS = ["name", "liveUrl", "repoUrl", "localPath"]
-EXPECTED_SITE_NEXT_ACTIONS_COUNTS_KEYS = [
-    "actions",
-    "blocking",
-    "warnings",
-    "tasks",
-    "requiredMcpMissing",
-    "taskGaps",
-    "probeGaps",
-]
-EXPECTED_SITE_NEXT_ACTIONS_TOP_TASK_KEYS = ["id", "title", "priority", "category", "impact", "effort"]
-EXPECTED_SITE_NEXT_ACTION_KEYS = ["rank", "severity", "title", "reason", "command", "references"]
-EXPECTED_SITE_NEXT_ACTION_COMMAND_KEYS = [
-    "summary",
-    "mcpCheck",
-    "mcpPlan",
-    "mcpCheckProbes",
-    "mcpPlanProbes",
-    "tasks",
-    "implementationPrompt",
-    "handoffReport",
-    "handoffBundle",
-]
-EXPECTED_SITE_SAMPLE_KEYS = [
-    "version",
-    "updatedAt",
-    "siteProfile",
-    "auditChecklist",
-    "mcpReadiness",
-    "refactorTasks",
-    "implementationEvidence",
-    "reportNotes",
-]
-EXPECTED_SITE_SAMPLE_PROFILE_KEYS = [
-    "id",
-    "name",
-    "liveUrl",
-    "repoUrl",
-    "localPath",
-    "figmaUrl",
-    "brandNotes",
-    "deployProvider",
-    "sentryProject",
-    "cms",
-    "database",
-    "pages",
-    "userFlows",
-    "viewports",
-]
-EXPECTED_SITE_SAMPLE_TASK_KEYS = [
-    "id",
-    "title",
-    "category",
-    "problem",
-    "evidence",
-    "impact",
-    "effort",
-    "priority",
-    "pages",
-    "recommendedMcp",
-    "codexPrompt",
-    "verification",
-    "risks",
-]
-EXPECTED_SITE_INTAKE_TEMPLATE_KEYS = [
-    "kind",
-    "version",
-    "format",
-    "language",
-    "recommendedFileName",
-    "sections",
-    "privacy",
-    "commands",
-    "content",
-]
-EXPECTED_SITE_INTAKE_TEMPLATE_PRIVACY_KEYS = [
-    "storesCredentials",
-    "storesProductionSecrets",
-    "storesCustomerData",
-]
-EXPECTED_SITE_INTAKE_TEMPLATE_COMMAND_KEYS = [
-    "nextActions",
-    "bundle",
-    "bundleCheck",
-    "bundleHandoff",
-]
-EXPECTED_SITE_PROMPT_TEMPLATE_PAYLOAD_KEYS = ["count", "templates"]
-EXPECTED_SITE_PROMPT_TEMPLATE_KEYS = [
-    "id",
-    "label",
-    "agent",
-    "output",
-    "description",
-    "taskSelectable",
-]
-EXPECTED_SITE_PROMPT_TEMPLATE_IDS = [
-    "implementation-plan",
-    "critique-loop",
-    "design-contract",
-    "codex-repo-intake",
-    "codex-implementation",
-    "codex-visual-qa",
-    "codex-deployment",
-    "claude-design-review",
-    "claude-competitor",
-    "claude-copy-ux",
-    "handoff-report",
-]
-EXPECTED_SITE_MCP_CHECK_PAYLOAD_KEYS = [
-    "filePath",
-    "status",
-    "workspaceStatus",
-    "site",
-    "counts",
-    "items",
-    "taskGaps",
-    "workspaceIssues",
-    "nextActions",
-]
-EXPECTED_SITE_MCP_CHECK_SITE_KEYS = ["name", "liveUrl", "repoUrl", "localPath"]
-EXPECTED_SITE_MCP_CHECK_COUNTS_KEYS = [
-    "total",
-    "required",
-    "optional",
-    "ready",
-    "missing",
-    "unused",
-    "unavailable",
-    "taskGaps",
-]
-EXPECTED_SITE_MCP_CHECK_ITEM_KEYS = [
-    "key",
-    "label",
-    "requestedStatus",
-    "state",
-    "level",
-    "evidence",
-    "actions",
-]
-EXPECTED_SITE_MCP_CHECK_PROBES_PAYLOAD_KEYS = EXPECTED_SITE_MCP_CHECK_PAYLOAD_KEYS + ["probes", "commands"]
-EXPECTED_SITE_MCP_PROBES_KEYS = [
-    "enabled",
-    "mode",
-    "externalCalls",
-    "status",
-    "count",
-    "pass",
-    "warn",
-    "fail",
-    "items",
-]
-EXPECTED_SITE_MCP_PROBE_ITEM_KEYS = [
-    "id",
-    "key",
-    "label",
-    "requestedStatus",
-    "level",
-    "passed",
-    "message",
-    "evidence",
-    "actions",
-]
-EXPECTED_SITE_MCP_CHECK_PROBE_COMMAND_KEYS = [
-    "mcpCheckProbesHumanOut",
-    "mcpCheckProbesJsonOut",
-    "mcpPlanProbesJson",
-    "mcpPlanProbesJsonOut",
-]
-EXPECTED_SITE_MCP_CHECK_TASK_GAP_KEYS = ["taskId", "title", "mcp", "status", "level", "message"]
-EXPECTED_SITE_MCP_ACTION_PLAN_PAYLOAD_KEYS = [
-    "kind",
-    "version",
-    "filePath",
-    "status",
-    "workspaceStatus",
-    "site",
-    "counts",
-    "readinessMatrix",
-    "probes",
-    "blockingItems",
-    "warnings",
-    "taskAlignment",
-    "taskGaps",
-    "workspaceIssues",
-    "nextActions",
-    "executionSequence",
-    "commands",
-    "boundaries",
-    "externalCalls",
-    "targetRepoMutation",
-]
-EXPECTED_SITE_MCP_ACTION_PLAN_TASK_KEYS = [
-    "task",
-    "priorityImpact",
-    "recommendedMcp",
-    "readinessState",
-]
-EXPECTED_SITE_MCP_ACTION_PLAN_COMMAND_KEYS = [
-    "mcpCheck",
-    "mcpCheckProbesHumanOut",
-    "mcpCheckProbesJsonOut",
-    "mcpPlanProbesJsonOut",
-    "tasks",
-    "implementationPrompt",
-    "handoffReport",
-]
-EXPECTED_SITE_WORKFLOW_GRAPH_PAYLOAD_KEYS = [
-    "version",
-    "kind",
-    "generatedAt",
-    "filePath",
-    "status",
-    "workspaceStatus",
-    "mcpStatus",
-    "externalCalls",
-    "site",
-    "summary",
-    "nodes",
-    "edges",
-    "boundaries",
-]
-EXPECTED_SITE_WORKFLOW_GRAPH_SITE_KEYS = ["id", "name", "liveUrl", "repoUrl", "localPath"]
-EXPECTED_SITE_WORKFLOW_GRAPH_SUMMARY_KEYS = [
-    "status",
-    "workspaceStatus",
-    "mcpStatus",
-    "nodeCount",
-    "edgeCount",
-    "auditCategoryCount",
-    "taskCount",
-    "generatedTaskCount",
-    "requiredMcpCount",
-    "promptTemplateCount",
-]
-EXPECTED_SITE_WORKFLOW_GRAPH_NODE_KEYS = ["id", "type", "label", "status", "data"]
-EXPECTED_SITE_WORKFLOW_GRAPH_EDGE_KEYS = ["id", "from", "to", "type", "label"]
-EXPECTED_SITE_WORKFLOW_GRAPH_NODE_IDS = [
-    "workspace:intake",
-    "profile:sample-korean-saas",
-    "audit:visual-design",
-    "audit:accessibility",
-    "mcp:github",
-    "mcp:browser",
-    "task:task-homepage-cta",
-    "task:task-accessibility",
-    "task:task-content-quality",
-    "prompt:codex-implementation",
-    "prompt:claude-design-review",
-    "handoff:report",
-    "handoff:bundle",
-    "handoff:target-repo",
-]
 EXPECTED_REPOSITORY_SLUG = "sungjin9288/design-ai"
 EXPECTED_REPOSITORY_URL = f"https://github.com/{EXPECTED_REPOSITORY_SLUG}"
 
 
 def format_cmd(cmd: list[str]) -> str:
     return shlex.join(cmd)
-
-
-def site_guidance_command(guidance_command: str, reference_cmd: list[str], *, context: str) -> list[str]:
-    tokens = shlex.split(guidance_command)
-    if len(tokens) < 2 or tokens[0] != "design-ai" or tokens[1] != "site":
-        raise SystemExit(f"{context} guidance command is not a design-ai site command: {guidance_command!r}")
-    try:
-        site_index = reference_cmd.index("site")
-    except ValueError as exc:
-        raise SystemExit(f"{context} reference command does not include site: {reference_cmd!r}") from exc
-    return [*reference_cmd[:site_index], *tokens[1:]]
-
-
-def site_mcp_probe_embedded_command(
-    payload: object,
-    command_key: str,
-    reference_cmd: list[str],
-    *,
-    context: str,
-    output_path: Path | str | None = None,
-) -> list[str]:
-    if not isinstance(payload, dict):
-        raise SystemExit(f"{context} MCP probe payload is not an object")
-    commands = payload.get("commands")
-    if not isinstance(commands, dict):
-        raise SystemExit(f"{context} MCP probe payload missing commands")
-    command = commands.get(command_key)
-    if not isinstance(command, str):
-        raise SystemExit(f"{context} MCP probe command missing or invalid: {command_key}")
-
-    expected_tails = {
-        "mcpCheckProbesHumanOut": ["--mcp-check", "--probes", "--out", "mcp-check-probes.txt"],
-        "mcpCheckProbesJsonOut": ["--mcp-check", "--probes", "--json", "--out", "mcp-check-probes.json"],
-        "mcpPlanProbesJson": ["--mcp-plan", "--probes", "--json"],
-        "mcpPlanProbesJsonOut": ["--mcp-plan", "--probes", "--json", "--out", "mcp-action-plan-probes.json"],
-    }
-    expected_tail = expected_tails.get(command_key)
-    if expected_tail is None:
-        raise SystemExit(f"{context} unsupported MCP probe command key: {command_key}")
-
-    tokens = shlex.split(command)
-    if tokens[:3] != ["design-ai", "site", "<workspace.json>"] or tokens[3:] != expected_tail:
-        raise SystemExit(f"{context} MCP probe command changed: {command!r}")
-
-    try:
-        site_index = reference_cmd.index("site")
-    except ValueError as exc:
-        raise SystemExit(f"{context} reference command does not include site: {reference_cmd!r}") from exc
-
-    site_args = ["site", "--stdin", *tokens[3:]]
-    if "--out" in site_args:
-        if output_path is None:
-            raise SystemExit(f"{context} output path is required for embedded command: {command_key}")
-        out_index = site_args.index("--out")
-        site_args[out_index + 1] = str(output_path)
-        if "--force" not in site_args:
-            site_args.append("--force")
-    elif output_path is not None:
-        raise SystemExit(f"{context} output path is only valid for --out embedded commands: {command_key}")
-
-    return [*reference_cmd[:site_index], *site_args]
-
-
-def guidance_out_path(guidance_command: str, *, context: str) -> Path:
-    tokens = shlex.split(guidance_command)
-    try:
-        out_index = tokens.index("--out")
-    except ValueError as exc:
-        raise SystemExit(f"{context} guidance command missing --out: {guidance_command!r}") from exc
-    if out_index + 1 >= len(tokens):
-        raise SystemExit(f"{context} guidance command has no --out path: {guidance_command!r}")
-    return Path(tokens[out_index + 1])
-
-
-def assert_site_repair_guidance_report_contract(
-    guidance: object,
-    *,
-    bundle_dir: Path,
-    context: str,
-) -> tuple[str, str, Path, Path]:
-    if not isinstance(guidance, dict) or guidance.get("available") is not True:
-        raise SystemExit(f"site bundle repair preview after {context} guidance missing")
-    if guidance.get("targetRepoMutation") is not False or guidance.get("externalCalls") is not False:
-        raise SystemExit(f"site bundle repair preview after {context} boundary flags changed")
-
-    apply_command = guidance.get("applyCommand")
-    if not isinstance(apply_command, str) or "--bundle-repair --yes --json" not in apply_command:
-        raise SystemExit(f"site bundle repair preview after {context} apply command changed: {apply_command!r}")
-
-    preview_report_command = guidance.get("previewReportCommand")
-    if (
-        not isinstance(preview_report_command, str)
-        or "--bundle-repair --json --out " not in preview_report_command
-        or "repair-preview.json" not in preview_report_command
-    ):
-        raise SystemExit(
-            f"site bundle repair preview after {context} preview report command changed: {preview_report_command!r}"
-        )
-
-    apply_report_command = guidance.get("applyReportCommand")
-    if (
-        not isinstance(apply_report_command, str)
-        or "--bundle-repair --yes --json --out " not in apply_report_command
-        or "repair-applied.json" not in apply_report_command
-    ):
-        raise SystemExit(
-            f"site bundle repair preview after {context} apply report command changed: {apply_report_command!r}"
-        )
-
-    preview_out = guidance_out_path(preview_report_command, context=f"{context} preview report")
-    expected_preview_out = bundle_dir.parent / f"{bundle_dir.name}-repair-preview.json"
-    if preview_out != expected_preview_out:
-        raise SystemExit(
-            f"site bundle repair preview after {context} guidance report path changed: {preview_out!s}"
-        )
-
-    apply_out = guidance_out_path(apply_report_command, context=f"{context} apply report")
-    expected_apply_out = bundle_dir.parent / f"{bundle_dir.name}-repair-applied.json"
-    if apply_out != expected_apply_out:
-        raise SystemExit(
-            f"site bundle repair apply after {context} guidance report path changed: {apply_out!s}"
-        )
-
-    return preview_report_command, apply_report_command, preview_out, apply_out
-
-
-def assert_site_repair_preview_report_payload(payload: object, *, context: str) -> None:
-    if not isinstance(payload, dict):
-        raise SystemExit(f"site bundle repair preview after {context} guidance --out payload must be an object")
-    if payload.get("dryRun") is not True or payload.get("applied") is not False:
-        raise SystemExit(f"site bundle repair preview after {context} guidance --out payload changed")
-
-
-def assert_site_repair_apply_report_payload(payload: object, *, context: str) -> None:
-    if not isinstance(payload, dict):
-        raise SystemExit(f"site bundle repair apply after {context} guidance --out payload must be an object")
-    if payload.get("status") != "pass" or payload.get("dryRun") is not False or payload.get("applied") is not True:
-        raise SystemExit(f"site bundle repair apply after {context} expected applied pass output")
-    if payload.get("before", {}).get("status") != "fail" or payload.get("after", {}).get("status") != "pass":
-        raise SystemExit(f"site bundle repair apply after {context} expected fail -> pass transition")
-    if payload.get("after", {}).get("generatedDriftFiles") != []:
-        raise SystemExit(f"site bundle repair apply after {context} expected no generated drift after repair")
-    if payload.get("written", {}).get("count") != 9:
-        raise SystemExit(f"site bundle repair apply after {context} expected 9 rewritten files")
 
 
 def load_run_all_audit_scripts() -> tuple[str, ...]:

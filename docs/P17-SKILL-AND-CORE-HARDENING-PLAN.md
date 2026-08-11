@@ -128,10 +128,36 @@ Current verification evidence:
 
 ### P17B - Smoke harness modularization
 
+Status: in progress. The first Website Console contract extraction is implemented
+without changing CLI behavior or smoke command order.
+
+Current P17B.1 evidence:
+
+- 42 `EXPECTED_SITE_*` contract values now have one owner in
+  `smoke_domains/site_contracts.py`, while eight shared command, probe, and
+  repair validators live in `smoke_domains/site_validators.py`;
+- the original `smoke_assertions.py`, `package-smoke.py`, and `registry-smoke.py`
+  entry points preserve their existing imports and focused self-tests;
+- the extracted contract has a byte-stable SHA-256 snapshot and isolated positive
+  and negative fixtures;
+- baseline parity confirms all 42 values and the command rewrite order are
+  unchanged;
+- `smoke_assertions.py` decreased from 15,513 to 15,103 lines,
+  `package-smoke.py` from 24,782 to 24,705, and `registry-smoke.py` from 9,159 to
+  9,081; the new contract, validator, and self-test files are 345, 219, and 166
+  lines, with 13 functions total and no function longer than 85 lines;
+- pre-extraction focused baselines were 0.42 seconds for shared smoke assertions
+  and 0.96 seconds for package-smoke self-tests;
+- pre- and post-extraction packed smoke both execute the same 716-command
+  sequence with normalized SHA-256
+  `0654a8730d42526860bb1d00c16f1c828395ffd0aca448a1f137fcb30fd24a46`;
+  observed local wall time was 1,444.11 seconds before and 914.29 seconds after.
+
 1. Freeze current `package-smoke.py` and `smoke_assertions.py` behavior with
    focused characterization tests.
 2. Extract domain modules in this order:
-   - Website Console site/bundle/handoff;
+   - Website Console site/bundle/handoff (contract and validator layer complete;
+     scenario payload fixtures, assertion groups, and runners remain);
    - learning profile and skill proposals;
    - review/evidence/pilot contracts;
    - install/help/search/route lifecycle.
