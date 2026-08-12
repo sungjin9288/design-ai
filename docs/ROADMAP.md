@@ -1,30 +1,72 @@
 # Roadmap
 
-## Phase 797 - Website Console smoke domain extraction
+## Phase 798 - Learning smoke domain extraction (P17B.3)
+
+- [x] Applied and verified the sealed P17B.2 dirty baseline before editing.
+- [x] Split learning smoke ownership into direct profile, transfer,
+  relevance/eval, agent-backlog, skill-proposal report/review, and skill-proposal
+  apply-plan imports while leaving command execution in the stable entry points.
+- [x] Grouped backlog and apply-plan validation by contract responsibility instead
+  of positional argument bags or mechanically split condition ranges; retained
+  the original public failure messages.
+- [x] Delivered 30 new learning modules below 400 lines. The largest is 394 lines,
+  the largest new-module function is 173 lines, and the largest added entry-point
+  scenario helper is 184 lines. The entrypoints are now 12,655 / 20,228 / 7,311
+  lines (`smoke_assertions.py` / `package-smoke.py` / `registry-smoke.py`).
+- [x] Preserved the actual 716-command packed-smoke sequence and normalized
+  SHA-256 `0654a8730d42526860bb1d00c16f1c828395ffd0aca448a1f137fcb30fd24a46`.
+- [x] Preserved the 4387-byte registry Website Console fixture, npm 5.1.0, and
+  the immutable P16 program digest.
+- [x] Passed focused self-tests, F821 and syntax checks, 832 Node tests, eight
+  strict audits, the 845-file package-content check, documentation policy,
+  release self-tests, and packed smoke.
+- [ ] Extract the review domain next.
+- [ ] Extract implementation-evidence after review remains stable.
+- [ ] Extract pilot contracts after review and evidence remain stable.
+- [ ] Extract install/help/search/route lifecycle contracts last.
+
+### Boundary
+
+- P17B.3 changes only smoke-test architecture and verification. It adds no CLI,
+  SDK, MCP, Website Console runtime, public API, package version, dependency,
+  migration, P16 state, external write, commit, push, merge, publish, or deploy.
+- JSON, Markdown, human output, patch, template, sidecar, workspace fixture,
+  command coverage, and negative failure contracts remain authoritative.
+
+## Phase 797 - Website Console smoke domain extraction (P17B.2)
 
 - [x] Recorded the pre-extraction smoke harness sizes and focused self-test times.
 - [x] Moved 42 Website Console contract constants into
   `smoke_domains/site_contracts.py` and eight shared command, MCP probe, and
   repair validators into `smoke_domains/site_validators.py`.
-- [x] Preserved the original `smoke_assertions.py`, local package-smoke, and
-  registry-smoke import surfaces.
+- [x] Preserved stable callable names, execution paths, and focused self-test
+  paths for `smoke_assertions.py`, local package-smoke, and registry-smoke.
 - [x] Added a byte-stable contract snapshot plus positive and negative fixtures
   in a separate, independently runnable self-test wired through
   `smoke:site-contracts:self-test` and the release self-test chain.
 - [x] Proved exact parity with the pre-extraction values and command rewrite order.
-- [x] Kept all new files below 400 lines and every extracted function below 200
-  lines; the largest function is 85 lines.
+- [x] Delivered 17 new modules and 64 extracted functions; all new files remain
+  below 400 lines, the largest file is 354 lines, and the largest extracted
+  function is 163 lines. The entrypoints are 12,655 / 24,494 / 9,078 lines
+  (`smoke_assertions.py` / `package-smoke.py` / `registry-smoke.py`).
 - [x] Preserved the exact 716-command packed-smoke sequence and normalized
   SHA-256 before and after extraction; recorded 1,444.11-second and
   914.29-second local wall-clock observations.
-- [ ] Move Website Console payload fixtures, assertion groups, and installed-bin
-  plus one-shot runners behind the same domain boundary.
-- [ ] Split the learning, review/evidence/pilot, and lifecycle domains in that
-  order after Website Console extraction is complete.
+- [x] Moved Website Console JSON and Markdown fixtures into focused smoke-domain
+  modules, including package-smoke intake/evidence/warning payload fixtures.
+- [x] Moved Website Console assertion groups into focused responsibility modules
+  imported directly by `smoke_assertions.py` without changing failure messages.
+- [x] Added one explicit ordered Website Console runner plan shared by installed-bin
+  and one-shot npm executors; their command factories and coverage remain separate.
+- [x] Ran the full release evidence gate for the delivered source snapshot:
+  832 Node tests, eight strict audits, package contents, documentation policy,
+  release self-tests, and packed smoke all passed.
+- [x] Extracted the learning profile and skill proposals domain in Phase 798;
+  review, evidence, pilot, and lifecycle domains remain separate follow-up work.
 
 ### Boundary
 
-- P17B.1 changes only test architecture and release verification. It adds no CLI,
+- P17B.2 changes only smoke-test architecture and release verification. It adds no CLI,
   SDK, MCP, Website Console, package-version, publication, or P16 state change.
 - The original smoke entry points, command sequence, JSON contracts, local versus
   registry coverage, and failure messages remain authoritative.

@@ -6,6 +6,13 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Added
 
+- Added focused Website Console smoke-domain fixture and assertion modules for
+  JSON/Markdown scenarios, package intake/evidence payloads, and MCP/bundle
+  contracts. The stable smoke entry point imports those responsibility modules
+  directly, and installed-bin plus one-shot npm paths now advance one
+  explicit ordered phase authority from their real command blocks without
+  changing CLI behavior or coverage; registry smoke retains the byte-stable
+  normal Website Console fixture.
 - Added an independently runnable Website Console smoke-contract self-test with
   a byte-stable SHA-256 snapshot, command-order checks, and negative fixtures for
   unsafe guidance, malformed probe payloads, and repair-state drift.
@@ -33,6 +40,11 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Changed
 
+- Split the package and registry learning smoke assertions into directly imported
+  profile, transfer, relevance/eval, agent-backlog, skill-proposal report/review,
+  and skill-proposal apply-plan modules. The stable smoke entry points still own
+  command execution, while responsibility-named validators preserve exact
+  payload, report, patch, template, sidecar, fixture, and failure contracts.
 - Moved 42 Website Console contract constants and shared site/probe/repair
   validators into focused contract and validator modules while preserving the
   existing `smoke_assertions`, local package-smoke, and registry-smoke surfaces.

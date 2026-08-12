@@ -27,9 +27,57 @@ from doctor_assertions import (
     assert_doctor_report_clean,
     run_self_test as run_doctor_assertions_self_test,
 )
+from smoke_domains.site_registry_fixtures import (
+    registry_site_workspace_fixture_json as site_workspace_fixture_json,
+    registry_site_workspace_warning_fixture_json as site_workspace_warning_fixture_json,
+)
 from smoke_domains.site_validators import (
     assert_site_bundle_mcp_probes_payload,
     assert_site_mcp_probe_counts,
+)
+from smoke_domains.registry_learning_eval import (
+    assert_learning_eval_template_json,
+    assert_learning_eval_template_report_json,
+    assert_learning_query_export_json,
+    assert_learning_query_human,
+    assert_learning_query_json,
+    assert_learning_readiness_markdown_index,
+)
+from smoke_domains.registry_learning_profile import (
+    assert_learning_feedback_json,
+    assert_learning_init_json,
+    write_learning_audit_fixture,
+    write_learning_stats_fixture,
+)
+from smoke_domains.registry_learning_profile_fix import assert_learning_audit_fix_json
+from smoke_domains.registry_learning_profile_reports import (
+    assert_learning_audit_cleanup_human,
+    assert_learning_audit_cleanup_json,
+    assert_learning_stats_human,
+    assert_learning_stats_json,
+)
+from smoke_domains.registry_learning_relevance import (
+    assert_learning_recall_json,
+    assert_learning_relevance_context,
+    assert_recall_context,
+    write_learning_relevance_fixture,
+)
+from smoke_domains.registry_learning_transfer import (
+    assert_learning_backup_json,
+    assert_learning_import_json,
+    learning_import_payload_text,
+    learning_restore_payload_text,
+    learning_verify_payload_text,
+    write_learning_backup_fixture,
+    write_learning_import_target_fixture,
+    write_learning_redaction_fixture,
+)
+from smoke_domains.registry_learning_transfer_restore import (
+    assert_learning_redact_json,
+    assert_learning_restore_backups_json,
+    assert_learning_restore_backups_prune_json,
+    assert_learning_restore_json,
+    assert_learning_verify_json,
 )
 from smoke_assertions import (
     EXPECTED_CHECK_ARTIFACT_NAME,
@@ -392,329 +440,22 @@ def require_registry_smoke(condition: bool, *, context: str, cmd: list[str], mes
         raise SystemExit(f"{context}: {message}: {format_cmd(cmd)}")
 
 
-def write_learning_stats_fixture(profile_path: Path) -> None:
-    profile_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:00:03.000Z",
-                "entries": [
-                    {
-                        "id": "registry-brand",
-                        "category": "brand",
-                        "text": "Use quiet enterprise brand language",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                    },
-                    {
-                        "id": "registry-a11y",
-                        "category": "accessibility",
-                        "text": "Prefer keyboard-first critique notes",
-                        "source": "feedback:keep",
-                        "createdAt": "2026-05-22T00:00:01.000Z",
-                    },
-                    {
-                        "id": "registry-korean",
-                        "category": "korean",
-                        "text": "Prefer dense Korean mobile layouts with compact controls",
-                        "source": "import:cli",
-                        "createdAt": "2026-05-22T00:00:03.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def write_learning_relevance_fixture(profile_path: Path) -> None:
-    profile_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:00:02.000Z",
-                "entries": [
-                    {
-                        "id": "learn-brand",
-                        "category": "brand",
-                        "text": "Use quiet enterprise brand language",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                    },
-                    {
-                        "id": "learn-relevant",
-                        "category": "accessibility",
-                        "text": "Prioritize keyboard accessibility details for Button component API specs",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:01.000Z",
-                    },
-                    {
-                        "id": "learn-unrelated-newer",
-                        "category": "korean",
-                        "text": "Prefer dense Korean mobile checkout layout",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:02.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def write_learning_audit_fixture(profile_path: Path) -> None:
-    profile_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:00:03.000Z",
-                "entries": [
-                    {
-                        "id": "registry-audit-a",
-                        "category": "workflow",
-                        "text": "Prefer release notes that state evidence before claims",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                    },
-                    {
-                        "id": "registry-audit-b",
-                        "category": "workflow",
-                        "text": "Prefer release notes that state evidence before claims",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:01.000Z",
-                    },
-                    {
-                        "id": "registry-audit-c",
-                        "category": "constraint",
-                        "text": "Never include api_key=redacted placeholders in prompt context",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:02.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def write_learning_backup_fixture(profile_path: Path) -> None:
-    profile_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:00:01.000Z",
-                "entries": [
-                    {
-                        "id": "registry-backup-brand",
-                        "category": "brand",
-                        "text": "Use quiet enterprise language",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                    },
-                    {
-                        "id": "registry-backup-korean",
-                        "category": "korean",
-                        "text": "Prefer dense Korean mobile layouts",
-                        "source": "feedback:keep",
-                        "createdAt": "2026-05-22T00:00:01.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def write_learning_import_target_fixture(profile_path: Path) -> None:
-    profile_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:00:00.000Z",
-                "entries": [
-                    {
-                        "id": "registry-import-existing",
-                        "category": "brand",
-                        "text": "Use quiet enterprise language",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def write_learning_redaction_fixture(profile_path: Path) -> None:
-    profile_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:00:01.000Z",
-                "entries": [
-                    {
-                        "id": "registry-sensitive",
-                        "category": "constraint",
-                        "text": "Never include api_key: sk-test12345678901234567890 in shared learning profiles",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                    },
-                    {
-                        "id": "registry-clean",
-                        "category": "korean",
-                        "text": "Prefer dense Korean mobile layouts",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:01.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def learning_import_payload_text() -> str:
-    return json.dumps(
-        {
-            "file": "/portable/registry-learning.json",
-            "entries": [
-                {
-                    "id": "registry-import-existing",
-                    "category": "brand",
-                    "text": "Use quiet enterprise language",
-                    "source": "registry-smoke",
-                    "createdAt": "2026-05-22T00:00:00.000Z",
-                },
-                {
-                    "id": "registry-import-existing",
-                    "category": "korean",
-                    "text": "Prefer dense Korean mobile layouts",
-                    "source": "cli",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                },
-            ],
-        },
-        indent=2,
-    )
 
 
-def learning_restore_payload_text() -> str:
-    return json.dumps(
-        {
-            "file": "/portable/registry-learning-restore.json",
-            "version": 1,
-            "updatedAt": "2026-05-22T00:00:03.000Z",
-            "entries": [
-                {
-                    "id": "registry-restore-existing-restored",
-                    "category": "brand",
-                    "text": "Use quiet enterprise language",
-                    "source": "backup",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                },
-                {
-                    "id": "registry-restore-new",
-                    "category": "korean",
-                    "text": "Prefer dense Korean mobile layouts",
-                    "source": "backup",
-                    "createdAt": "2026-05-22T00:00:02.000Z",
-                },
-                {
-                    "id": "registry-import-existing",
-                    "category": "workflow",
-                    "text": "Use a release checklist before handoff",
-                    "source": "backup",
-                    "createdAt": "2026-05-22T00:00:03.000Z",
-                },
-            ],
-        },
-        indent=2,
-    )
 
 
-def assert_learning_feedback_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    outcome: str,
-    category: str,
-    expected_instruction: str,
-    expected_count: int,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn feedback JSON") from error
-
-    require_registry_smoke(
-        isinstance(payload, dict),
-        context=context,
-        cmd=cmd,
-        message="learn feedback JSON must be an object",
-    )
-    require_registry_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn feedback JSON file path differs from the registry smoke profile",
-    )
-    require_registry_smoke(
-        payload.get("count") == expected_count,
-        context=context,
-        cmd=cmd,
-        message="learn feedback JSON count changed",
-    )
-
-    feedback = payload.get("feedback")
-    entry = payload.get("entry")
-    require_registry_smoke(
-        isinstance(feedback, dict) and isinstance(entry, dict),
-        context=context,
-        cmd=cmd,
-        message="learn feedback JSON should include feedback and entry objects",
-    )
-    require_registry_smoke(
-        feedback.get("outcome") == outcome,
-        context=context,
-        cmd=cmd,
-        message="learn feedback outcome changed",
-    )
-    require_registry_smoke(
-        feedback.get("category") == category and entry.get("category") == category,
-        context=context,
-        cmd=cmd,
-        message="learn feedback category changed",
-    )
-    require_registry_smoke(
-        entry.get("source") == f"feedback:{outcome}",
-        context=context,
-        cmd=cmd,
-        message="learn feedback source should preserve the outcome",
-    )
-    require_registry_smoke(
-        isinstance(feedback.get("instruction"), str)
-        and feedback.get("instruction") == entry.get("text")
-        and feedback.get("instruction") == expected_instruction,
-        context=context,
-        cmd=cmd,
-        message="learn feedback instruction text changed",
-    )
 
 
 def assert_learning_feedback_smoke(
@@ -849,130 +590,6 @@ def assert_learning_feedback_smoke(
     )
 
 
-def assert_learning_init_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    dry_run: bool,
-    added_count: int,
-    skipped_count: int,
-    count: int,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn init JSON") from error
-
-    require_registry_smoke(
-        isinstance(payload, dict),
-        context=context,
-        cmd=cmd,
-        message="learn init JSON must be an object",
-    )
-    require_registry_smoke(
-        list(payload) == [
-            "file",
-            "dryRun",
-            "applied",
-            "source",
-            "candidateCount",
-            "addedCount",
-            "skippedCount",
-            "count",
-            "entries",
-            "skipped",
-        ],
-        context=context,
-        cmd=cmd,
-        message="learn init JSON keys changed",
-    )
-    require_registry_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn init file path changed",
-    )
-    require_registry_smoke(
-        payload.get("dryRun") is dry_run and payload.get("applied") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn init dryRun/apply flags changed",
-    )
-    require_registry_smoke(
-        payload.get("source") == "init:local-dogfood",
-        context=context,
-        cmd=cmd,
-        message="learn init source changed",
-    )
-    require_registry_smoke(
-        payload.get("candidateCount") == 6
-        and payload.get("addedCount") == added_count
-        and payload.get("skippedCount") == skipped_count
-        and payload.get("count") == count,
-        context=context,
-        cmd=cmd,
-        message="learn init counts changed",
-    )
-
-    entries = payload.get("entries")
-    skipped = payload.get("skipped")
-    require_registry_smoke(
-        isinstance(entries, list) and len(entries) == added_count,
-        context=context,
-        cmd=cmd,
-        message="learn init entries list changed",
-    )
-    require_registry_smoke(
-        isinstance(skipped, list) and len(skipped) == skipped_count,
-        context=context,
-        cmd=cmd,
-        message="learn init skipped list changed",
-    )
-
-    if entries:
-        categories = [entry.get("category") for entry in entries if isinstance(entry, dict)]
-        require_registry_smoke(
-            categories == ["preference", "workflow", "accessibility", "korean", "brand", "constraint"],
-            context=context,
-            cmd=cmd,
-            message="learn init entry categories changed",
-        )
-        require_registry_smoke(
-            all(
-                isinstance(entry, dict)
-                and isinstance(entry.get("id"), str)
-                and entry["id"].startswith("learn-")
-                and entry.get("source") == "init:local-dogfood"
-                and isinstance(entry.get("createdAt"), str)
-                and isinstance(entry.get("text"), str)
-                for entry in entries
-            ),
-            context=context,
-            cmd=cmd,
-            message="learn init entry schema changed",
-        )
-        require_registry_smoke(
-            "one best path" in entries[0].get("text", "")
-            and "repository context" in entries[1].get("text", "")
-            and "WCAG 2.1 AA" in entries[2].get("text", "")
-            and "Pretendard" in entries[3].get("text", "")
-            and "restrained product UI language" in entries[4].get("text", "")
-            and "external AI APIs" in entries[5].get("text", ""),
-            context=context,
-            cmd=cmd,
-            message="learn init entry text changed",
-        )
-
-    if skipped:
-        require_registry_smoke(
-            all(item.get("reason") == "duplicate-entry-text" for item in skipped if isinstance(item, dict)),
-            context=context,
-            cmd=cmd,
-            message="learn init skipped reason changed",
-        )
 
 
 def assert_learning_init_smoke(
@@ -1041,120 +658,8 @@ def assert_learning_init_smoke(
     )
 
 
-def learning_verify_payload_text() -> str:
-    return json.dumps(
-        {
-            "file": "/portable/registry-learning.json",
-            "entries": [
-                {
-                    "id": "registry-verify-entry",
-                    "category": "brand",
-                    "text": "Use quiet enterprise language",
-                    "source": "registry-smoke",
-                    "createdAt": "2026-05-22T00:00:00.000Z",
-                },
-                {
-                    "id": "registry-verify-entry",
-                    "category": "korean",
-                    "text": "Prefer dense Korean mobile layouts",
-                    "source": "cli",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                },
-            ],
-        },
-        indent=2,
-    )
 
 
-def assert_learning_verify_json(
-    raw: str,
-    *,
-    source: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn verify JSON") from error
-
-    require_registry_smoke(
-        isinstance(payload, dict),
-        context=context,
-        cmd=cmd,
-        message="learn verify JSON must be an object",
-    )
-    require_registry_smoke(
-        payload.get("source") == source,
-        context=context,
-        cmd=cmd,
-        message="learn verify JSON source changed",
-    )
-    require_registry_smoke(
-        payload.get("importable") is True,
-        context=context,
-        cmd=cmd,
-        message="learn verify importable flag changed",
-    )
-    require_registry_smoke(
-        payload.get("count") == 2,
-        context=context,
-        cmd=cmd,
-        message="learn verify count changed",
-    )
-
-    audit_summary = payload.get("auditSummary")
-    require_registry_smoke(
-        isinstance(audit_summary, dict)
-        and audit_summary.get("status") == "warn"
-        and audit_summary.get("failures") == 0
-        and audit_summary.get("warnings") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn verify audit summary changed",
-    )
-
-    issues = payload.get("issues")
-    require_registry_smoke(
-        isinstance(issues, list)
-        and len(issues) == 1
-        and issues[0].get("code") == "duplicate-entry-id"
-        and issues[0].get("entryId") == "registry-verify-entry",
-        context=context,
-        cmd=cmd,
-        message="learn verify duplicate-id warning changed",
-    )
-
-    entries = payload.get("entries")
-    require_registry_smoke(
-        isinstance(entries, list) and len(entries) == 2,
-        context=context,
-        cmd=cmd,
-        message="learn verify entries list changed",
-    )
-    require_registry_smoke(
-        all(
-            isinstance(entry, dict)
-            and isinstance(entry.get("source"), str)
-            and entry["source"].startswith("import:")
-            for entry in entries
-        ),
-        context=context,
-        cmd=cmd,
-        message="learn verify entries should be normalized as import entries",
-    )
-
-    categories = {entry.get("category") for entry in entries if isinstance(entry, dict)}
-    previews = {entry.get("textPreview") for entry in entries if isinstance(entry, dict)}
-    require_registry_smoke(
-        categories == {"brand", "korean"}
-        and "Use quiet enterprise language" in previews
-        and "Prefer dense Korean mobile layouts" in previews,
-        context=context,
-        cmd=cmd,
-        message="learn verify entry summaries changed",
-    )
 
 
 def assert_learning_verify_smoke(
@@ -1217,107 +722,6 @@ def assert_learning_verify_smoke(
     )
 
 
-def assert_learning_backup_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn backup JSON") from error
-
-    require_registry_smoke(
-        isinstance(payload, dict),
-        context=context,
-        cmd=cmd,
-        message="learn backup JSON must be an object",
-    )
-    require_registry_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn backup JSON file path differs from the registry smoke profile",
-    )
-    require_registry_smoke(
-        payload.get("version") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn backup version changed",
-    )
-    require_registry_smoke(
-        payload.get("updatedAt") == "2026-05-22T00:00:01.000Z",
-        context=context,
-        cmd=cmd,
-        message="learn backup updatedAt changed",
-    )
-    require_registry_smoke(
-        payload.get("count") == 2,
-        context=context,
-        cmd=cmd,
-        message="learn backup count changed",
-    )
-    require_registry_smoke(
-        isinstance(payload.get("exportedAt"), str) and payload.get("exportedAt"),
-        context=context,
-        cmd=cmd,
-        message="learn backup exportedAt missing",
-    )
-
-    audit_summary = payload.get("auditSummary")
-    require_registry_smoke(
-        isinstance(audit_summary, dict)
-        and audit_summary.get("status") == "pass"
-        and audit_summary.get("failures") == 0
-        and audit_summary.get("warnings") == 0,
-        context=context,
-        cmd=cmd,
-        message="learn backup audit summary changed",
-    )
-
-    entries = payload.get("entries")
-    require_registry_smoke(
-        isinstance(entries, list) and len(entries) == 2,
-        context=context,
-        cmd=cmd,
-        message="learn backup entries list changed",
-    )
-    require_registry_smoke(
-        all(
-            isinstance(entry, dict)
-            and isinstance(entry.get("text"), str)
-            and entry.get("text")
-            for entry in entries
-        ),
-        context=context,
-        cmd=cmd,
-        message="learn backup entries should preserve full text",
-    )
-
-    entry_by_id = {entry.get("id"): entry for entry in entries if isinstance(entry, dict)}
-    first_entry = entry_by_id.get("registry-backup-brand")
-    second_entry = entry_by_id.get("registry-backup-korean")
-    require_registry_smoke(
-        isinstance(first_entry, dict)
-        and first_entry.get("category") == "brand"
-        and first_entry.get("text") == "Use quiet enterprise language"
-        and first_entry.get("source") == "registry-smoke",
-        context=context,
-        cmd=cmd,
-        message="learn backup first entry changed",
-    )
-    require_registry_smoke(
-        isinstance(second_entry, dict)
-        and second_entry.get("category") == "korean"
-        and second_entry.get("text") == "Prefer dense Korean mobile layouts"
-        and second_entry.get("source") == "feedback:keep",
-        context=context,
-        cmd=cmd,
-        message="learn backup second entry changed",
-    )
 
 
 def assert_learning_backup_smoke(
@@ -1360,202 +764,19 @@ def assert_learning_backup_smoke(
     )
 
 
-def assert_learning_restore_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    source: str,
-    dry_run: bool,
-    backup_path: Path | None = None,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn restore JSON") from error
-
-    require_registry_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore JSON must be an object")
-    require_registry_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn restore JSON file path differs from the registry smoke profile",
-    )
-    require_registry_smoke(payload.get("source") == source, context=context, cmd=cmd, message="learn restore source changed")
-    require_registry_smoke(
-        payload.get("dryRun") is dry_run and payload.get("applied") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn restore dry-run/apply flags changed",
-    )
-    require_registry_smoke(payload.get("restorable") is True, context=context, cmd=cmd, message="learn restore should be restorable")
-    backup_file = payload.get("backupFile")
-    require_registry_smoke(isinstance(backup_file, str) and backup_file, context=context, cmd=cmd, message="learn restore backup file is missing")
-    if backup_path is not None:
-        require_registry_smoke(backup_file == str(backup_path), context=context, cmd=cmd, message="learn restore backup file path changed")
-    else:
-        require_registry_smoke(
-            f"{profile_path.stem}.restore-backup-" in backup_file,
-            context=context,
-            cmd=cmd,
-            message="learn restore default backup file naming changed",
-        )
-    require_registry_smoke(
-        payload.get("backupCreated") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn restore backup created flag changed",
-    )
-    require_registry_smoke(payload.get("backupEntryCount") == 1, context=context, cmd=cmd, message="learn restore backup entry count changed")
-    rollback_command = payload.get("rollbackCommand")
-    require_registry_smoke(
-        isinstance(rollback_command, str)
-        and "design-ai learn --restore --from-file" in rollback_command
-        and str(profile_path) in rollback_command,
-        context=context,
-        cmd=cmd,
-        message="learn restore rollback command changed",
-    )
-    require_registry_smoke(payload.get("previousCount") == 1, context=context, cmd=cmd, message="learn restore previous count changed")
-    require_registry_smoke(payload.get("restoredCount") == 3, context=context, cmd=cmd, message="learn restore restored count changed")
-    require_registry_smoke(payload.get("removedCount") == 0, context=context, cmd=cmd, message="learn restore removed count changed")
-    require_registry_smoke(payload.get("addedCount") == 2, context=context, cmd=cmd, message="learn restore added count changed")
-    require_registry_smoke(payload.get("metadataChangedCount") == 1, context=context, cmd=cmd, message="learn restore metadata change count changed")
-    require_registry_smoke(payload.get("idConflictCount") == 1, context=context, cmd=cmd, message="learn restore id conflict count changed")
-    require_registry_smoke(
-        payload.get("auditSummary") == {"status": "pass", "failures": 0, "warnings": 0},
-        context=context,
-        cmd=cmd,
-        message="learn restore audit summary changed",
-    )
-
-    diff = payload.get("diff")
-    require_registry_smoke(
-        isinstance(diff, dict)
-        and diff.get("comparisonOnlyCount") == 2
-        and diff.get("metadataChangedCount") == 1
-        and diff.get("idConflictCount") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn restore diff summary changed",
-    )
-    privacy = payload.get("privacy")
-    require_registry_smoke(
-        isinstance(privacy, dict) and privacy.get("mutatesProfile") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn restore privacy mutation flag changed",
-    )
 
 
-def assert_learning_restore_backups_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    backup_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn restore-backups JSON") from error
-
-    require_registry_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore-backups JSON must be an object")
-    require_registry_smoke(payload.get("file") == str(profile_path), context=context, cmd=cmd, message="learn restore-backups file path changed")
-    require_registry_smoke(
-        payload.get("directory") == str(profile_path.parent)
-        and payload.get("pattern") == f"{profile_path.stem}.restore-backup-*.json",
-        context=context,
-        cmd=cmd,
-        message="learn restore-backups search pattern changed",
-    )
-    require_registry_smoke(payload.get("totalCount", 0) >= 1, context=context, cmd=cmd, message="learn restore-backups should find rollback backups")
-    require_registry_smoke(payload.get("count", 0) >= 1, context=context, cmd=cmd, message="learn restore-backups limited count changed")
-    backups = payload.get("backups")
-    require_registry_smoke(isinstance(backups, list) and backups, context=context, cmd=cmd, message="learn restore-backups backups array missing")
-    first = backups[0]
-    require_registry_smoke(first.get("file") == str(backup_path), context=context, cmd=cmd, message="learn restore-backups latest file changed")
-    require_registry_smoke(first.get("entryCount") == 1, context=context, cmd=cmd, message="learn restore-backups entry count changed")
-    require_registry_smoke(
-        first.get("auditSummary") == {"status": "pass", "failures": 0, "warnings": 0},
-        context=context,
-        cmd=cmd,
-        message="learn restore-backups audit summary changed",
-    )
-    restore_preview_command = first.get("restorePreviewCommand")
-    require_registry_smoke(
-        isinstance(restore_preview_command, str)
-        and "design-ai learn --restore --from-file" in restore_preview_command
-        and str(backup_path) in restore_preview_command
-        and str(profile_path) in restore_preview_command,
-        context=context,
-        cmd=cmd,
-        message="learn restore-backups preview command changed",
-    )
-    privacy = payload.get("privacy")
-    require_registry_smoke(
-        isinstance(privacy, dict) and privacy.get("mutatesProfile") is False,
-        context=context,
-        cmd=cmd,
-        message="learn restore-backups privacy mutation flag changed",
-    )
 
 
-def assert_learning_restore_backups_prune_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    deleted_path: Path,
-    dry_run: bool,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn restore-backups prune JSON") from error
-
-    require_registry_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore-backups prune JSON must be an object")
-    require_registry_smoke(payload.get("file") == str(profile_path), context=context, cmd=cmd, message="learn restore-backups prune file path changed")
-    prune = payload.get("prune")
-    require_registry_smoke(isinstance(prune, dict), context=context, cmd=cmd, message="learn restore-backups prune payload missing")
-    require_registry_smoke(prune.get("dryRun") is dry_run, context=context, cmd=cmd, message="learn restore-backups prune dryRun changed")
-    require_registry_smoke(prune.get("applied") is (not dry_run), context=context, cmd=cmd, message="learn restore-backups prune applied flag changed")
-    require_registry_smoke(prune.get("keep") == 1, context=context, cmd=cmd, message="learn restore-backups prune keep count changed")
-    require_registry_smoke(prune.get("candidateCount") == 1, context=context, cmd=cmd, message="learn restore-backups prune candidate count changed")
-    expected_deleted_count = 0 if dry_run else 1
-    require_registry_smoke(prune.get("deletedCount") == expected_deleted_count, context=context, cmd=cmd, message="learn restore-backups prune deleted count changed")
-    candidates = prune.get("candidates")
-    require_registry_smoke(isinstance(candidates, list) and candidates, context=context, cmd=cmd, message="learn restore-backups prune candidates missing")
-    require_registry_smoke(candidates[0].get("file") == str(deleted_path), context=context, cmd=cmd, message="learn restore-backups prune candidate file changed")
-    if not dry_run:
-        deleted = prune.get("deleted")
-        require_registry_smoke(isinstance(deleted, list) and deleted, context=context, cmd=cmd, message="learn restore-backups prune deleted list missing")
-        require_registry_smoke(deleted[0].get("file") == str(deleted_path), context=context, cmd=cmd, message="learn restore-backups prune deleted file changed")
-    privacy = payload.get("privacy")
-    require_registry_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("mutatesProfile") is False
-        and privacy.get("deletesBackupFiles") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn restore-backups prune privacy flags changed",
-    )
 
 
-def assert_learning_restore_smoke(
+def _assert_registry_learning_restore_apply_and_inventory(
     command_factory,
-    profile_path: Path,
-    *,
-    env: dict[str, str],
-    cwd: Path | None = None,
-    context: str,
-) -> None:
+    profile_path,
+    env,
+    cwd,
+    context,
+):
     write_learning_import_target_fixture(profile_path)
     restore_file = profile_path.with_name(f"{profile_path.stem}-restore.json")
     restore_file.write_text(f"{learning_restore_payload_text()}\n", encoding="utf-8")
@@ -1723,6 +944,10 @@ def assert_learning_restore_smoke(
         cmd=backups_out_cmd,
         expected_path=str(backups_out_path),
     )
+    return restore_inventory_path, older_restore_inventory_path, backups_out_path, backups_out_cmd
+
+
+def _assert_registry_learning_restore_prune(command_factory, profile_path, env, cwd, context, restore_inventory_path, older_restore_inventory_path, backups_out_path, backups_out_cmd):
     assert_learning_restore_backups_json(
         backups_out_path.read_text(encoding="utf-8"),
         profile_path=profile_path,
@@ -1785,82 +1010,26 @@ def assert_learning_restore_smoke(
     )
 
 
-def assert_learning_import_json(
-    raw: str,
-    *,
+def assert_learning_restore_smoke(
+    command_factory,
     profile_path: Path,
-    dry_run: bool,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
     context: str,
-    cmd: list[str],
 ) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn import JSON") from error
+    restore_inventory_path, older_restore_inventory_path, backups_out_path, backups_out_cmd = (
+        _assert_registry_learning_restore_apply_and_inventory(
+            command_factory,
+            profile_path,
+            env,
+            cwd,
+            context,
+        )
+    )
+    _assert_registry_learning_restore_prune(command_factory, profile_path, env, cwd, context, restore_inventory_path, older_restore_inventory_path, backups_out_path, backups_out_cmd)
 
-    require_registry_smoke(
-        isinstance(payload, dict),
-        context=context,
-        cmd=cmd,
-        message="learn import JSON must be an object",
-    )
-    require_registry_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn import JSON file path differs from the registry smoke profile",
-    )
-    require_registry_smoke(
-        payload.get("dryRun") is dry_run and payload.get("applied") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn import dry-run/apply flags changed",
-    )
-    require_registry_smoke(
-        payload.get("importedCount") == 2
-        and payload.get("addedCount") == 1
-        and payload.get("skippedCount") == 1
-        and payload.get("count") == 2,
-        context=context,
-        cmd=cmd,
-        message="learn import counts changed",
-    )
 
-    added = payload.get("added")
-    skipped = payload.get("skipped")
-    require_registry_smoke(
-        isinstance(added, list) and len(added) == 1,
-        context=context,
-        cmd=cmd,
-        message="learn import added list missing",
-    )
-    require_registry_smoke(
-        isinstance(skipped, list) and len(skipped) == 1,
-        context=context,
-        cmd=cmd,
-        message="learn import skipped list missing",
-    )
-
-    added_entry = added[0]
-    skipped_entry = skipped[0]
-    require_registry_smoke(
-        isinstance(added_entry, dict)
-        and added_entry.get("category") == "korean"
-        and added_entry.get("source") == "import:cli"
-        and added_entry.get("id") != "registry-import-existing",
-        context=context,
-        cmd=cmd,
-        message="learn import added entry metadata changed",
-    )
-    require_registry_smoke(
-        isinstance(skipped_entry, dict)
-        and skipped_entry.get("reason") == "duplicate-entry-text"
-        and skipped_entry.get("category") == "brand",
-        context=context,
-        cmd=cmd,
-        message="learn import duplicate skip metadata changed",
-    )
 
 
 def assert_learning_import_smoke(
@@ -1969,97 +1138,6 @@ def assert_learning_import_smoke(
     )
 
 
-def assert_learning_redact_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn redact JSON") from error
-
-    require_registry_smoke(
-        isinstance(payload, dict),
-        context=context,
-        cmd=cmd,
-        message="learn redact JSON must be an object",
-    )
-    require_registry_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn redact JSON file path differs from the registry smoke profile",
-    )
-    require_registry_smoke(
-        payload.get("redacted") is True
-        and payload.get("count") == 2
-        and payload.get("redactedCount") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn redact metadata changed",
-    )
-
-    source_audit = payload.get("sourceAuditSummary")
-    audit_summary = payload.get("auditSummary")
-    require_registry_smoke(
-        isinstance(source_audit, dict) and source_audit.get("status") == "warn",
-        context=context,
-        cmd=cmd,
-        message="learn redact source audit should warn for the fixture",
-    )
-    require_registry_smoke(
-        isinstance(audit_summary, dict) and audit_summary.get("status") == "pass",
-        context=context,
-        cmd=cmd,
-        message="learn redact redacted audit should pass for the fixture",
-    )
-
-    redactions = payload.get("redactions")
-    require_registry_smoke(
-        isinstance(redactions, list)
-        and len(redactions) == 1
-        and redactions[0].get("entryId") == "registry-sensitive"
-        and set(redactions[0].get("codes", [])) >= {
-            "sensitive-secret-assignment",
-            "sensitive-openai-secret-key",
-        },
-        context=context,
-        cmd=cmd,
-        message="learn redact redactions changed",
-    )
-
-    entries = payload.get("entries")
-    require_registry_smoke(
-        isinstance(entries, list) and len(entries) == 2,
-        context=context,
-        cmd=cmd,
-        message="learn redact entries list changed",
-    )
-    sensitive_entry = next((entry for entry in entries if entry.get("id") == "registry-sensitive"), None)
-    require_registry_smoke(
-        isinstance(sensitive_entry, dict),
-        context=context,
-        cmd=cmd,
-        message="learn redact sensitive entry missing",
-    )
-    redacted_text = sensitive_entry.get("text", "")
-    require_registry_smoke(
-        "[REDACTED:secret-assignment]" in redacted_text
-        and "[REDACTED:openai-secret-key]" in redacted_text,
-        context=context,
-        cmd=cmd,
-        message="learn redact did not include redaction markers",
-    )
-    require_registry_smoke(
-        "sk-test" not in redacted_text and "api_key" not in redacted_text,
-        context=context,
-        cmd=cmd,
-        message="learn redact leaked sensitive-looking text",
-    )
 
 
 def assert_learning_redact_smoke(
@@ -2141,56 +1219,6 @@ def assert_learning_redact_smoke(
     )
 
 
-def assert_learning_recall_json(
-    raw: str,
-    *,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn recall JSON") from error
-
-    require_registry_smoke(
-        isinstance(payload, dict) and payload.get("query") == "korean mobile",
-        context=context,
-        cmd=cmd,
-        message="learn recall JSON must echo the query",
-    )
-    corpus = payload.get("corpus")
-    require_registry_smoke(
-        isinstance(corpus, dict)
-        and isinstance(corpus.get("candidateCount"), int)
-        and corpus.get("candidateCount") > 0
-        and isinstance(corpus.get("selectedCount"), int)
-        and isinstance(corpus.get("selected"), list),
-        context=context,
-        cmd=cmd,
-        message="learn recall corpus block shape changed",
-    )
-    learning = payload.get("learning")
-    require_registry_smoke(
-        isinstance(learning, dict)
-        and learning.get("mode") == "brief-relevance"
-        and learning.get("candidateCount") == 3
-        and isinstance(learning.get("selected"), list),
-        context=context,
-        cmd=cmd,
-        message="learn recall learning block shape changed",
-    )
-    selected = learning.get("selected")
-    require_registry_smoke(
-        len(selected) >= 1
-        and isinstance(selected[0], dict)
-        and selected[0].get("id") == "registry-korean"
-        and selected[0].get("category") == "korean"
-        and isinstance(selected[0].get("matchedTokens"), list),
-        context=context,
-        cmd=cmd,
-        message="learn recall should rank the Korean learning entry for a Korean query",
-    )
 
 
 def assert_learning_recall_smoke(
@@ -2237,134 +1265,8 @@ def write_learning_stats_fixture_snapshot(profile_path: Path) -> str:
     return profile_path.read_text(encoding="utf-8")
 
 
-def assert_learning_stats_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn stats JSON") from error
-
-    require_registry_smoke(
-        isinstance(payload, dict),
-        context=context,
-        cmd=cmd,
-        message="learn stats JSON must be an object",
-    )
-    require_registry_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn stats JSON file path differs from the registry smoke profile",
-    )
-    require_registry_smoke(
-        payload.get("exists") is True,
-        context=context,
-        cmd=cmd,
-        message="learn stats profile should exist",
-    )
-    require_registry_smoke(
-        payload.get("version") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn stats version changed",
-    )
-    require_registry_smoke(
-        payload.get("updatedAt") == "2026-05-22T00:00:03.000Z",
-        context=context,
-        cmd=cmd,
-        message="learn stats updatedAt changed",
-    )
-    require_registry_smoke(
-        payload.get("count") == 3,
-        context=context,
-        cmd=cmd,
-        message="learn stats entry count changed",
-    )
-
-    category_counts = payload.get("categoryCounts")
-    require_registry_smoke(
-        isinstance(category_counts, dict)
-        and category_counts.get("brand") == 1
-        and category_counts.get("accessibility") == 1
-        and category_counts.get("korean") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn stats category distribution changed",
-    )
-    source_counts = payload.get("sourceCounts")
-    require_registry_smoke(
-        isinstance(source_counts, dict)
-        and source_counts.get("registry-smoke") == 1
-        and source_counts.get("feedback:keep") == 1
-        and source_counts.get("import:cli") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn stats source distribution changed",
-    )
-
-    audit_summary = payload.get("auditSummary")
-    require_registry_smoke(
-        isinstance(audit_summary, dict)
-        and audit_summary.get("status") == "pass"
-        and audit_summary.get("failures") == 0
-        and audit_summary.get("warnings") == 0,
-        context=context,
-        cmd=cmd,
-        message="learn stats audit summary changed",
-    )
-
-    latest = payload.get("latestEntry")
-    oldest = payload.get("oldestEntry")
-    require_registry_smoke(
-        isinstance(latest, dict)
-        and latest.get("id") == "registry-korean"
-        and latest.get("category") == "korean"
-        and latest.get("source") == "import:cli"
-        and latest.get("textPreview") == "Prefer dense Korean mobile layouts with compact controls",
-        context=context,
-        cmd=cmd,
-        message="learn stats latest entry summary changed",
-    )
-    require_registry_smoke(
-        isinstance(oldest, dict)
-        and oldest.get("id") == "registry-brand"
-        and oldest.get("category") == "brand"
-        and oldest.get("source") == "registry-smoke",
-        context=context,
-        cmd=cmd,
-        message="learn stats oldest entry summary changed",
-    )
 
 
-def assert_learning_stats_human(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "Local learning profile stats",
-        "Exists: yes",
-        "Entries: 3",
-        "Updated: 2026-05-22T00:00:03.000Z",
-        "Audit: pass (0 failure(s), 0 warning(s))",
-        "Categories: brand 1, accessibility 1, korean 1",
-        "Sources: registry-smoke 1, feedback:keep 1, import:cli 1",
-        "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
-        "registry-korean",
-        "Oldest: [brand] Use quiet enterprise brand language",
-        "registry-brand",
-        "2026-05-22T00:00:00.000Z",
-        "2026-05-22T00:00:03.000Z",
-    ):
-        require_registry_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn stats human output missing {expected!r}",
-        )
 
 
 def assert_learning_stats_smoke(
@@ -2417,241 +1319,10 @@ def assert_learning_stats_smoke(
     )
 
 
-def assert_learning_audit_cleanup_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn audit JSON") from error
-
-    require_registry_smoke(
-        isinstance(payload, dict),
-        context=context,
-        cmd=cmd,
-        message="learn audit JSON must be an object",
-    )
-    require_registry_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn audit JSON file path differs from the registry smoke profile",
-    )
-    require_registry_smoke(
-        payload.get("exists") is True and payload.get("count") == 3,
-        context=context,
-        cmd=cmd,
-        message="learn audit profile metadata changed",
-    )
-
-    summary = payload.get("summary")
-    require_registry_smoke(
-        isinstance(summary, dict)
-        and summary.get("status") == "warn"
-        and summary.get("failures") == 0
-        and isinstance(summary.get("warnings"), int)
-        and not isinstance(summary.get("warnings"), bool)
-        and summary["warnings"] >= 2,
-        context=context,
-        cmd=cmd,
-        message="learn audit warning summary changed",
-    )
-
-    issues = payload.get("issues")
-    require_registry_smoke(
-        isinstance(issues, list)
-        and any(
-            issue.get("code") == "duplicate-entry-text" and issue.get("entryId") == "registry-audit-b"
-            for issue in issues
-            if isinstance(issue, dict)
-        )
-        and any(
-            issue.get("code") == "sensitive-secret-assignment" and issue.get("entryId") == "registry-audit-c"
-            for issue in issues
-            if isinstance(issue, dict)
-        ),
-        context=context,
-        cmd=cmd,
-        message="learn audit issues changed",
-    )
-
-    suggestions = payload.get("suggestions")
-    require_registry_smoke(
-        isinstance(suggestions, list),
-        context=context,
-        cmd=cmd,
-        message="learn audit suggestions missing",
-    )
-    duplicate_command_args = [
-        "design-ai",
-        "learn",
-        "--file",
-        str(profile_path),
-        "--forget",
-        "registry-audit-b",
-        "--yes",
-    ]
-    sensitive_command_args = [
-        "design-ai",
-        "learn",
-        "--file",
-        str(profile_path),
-        "--forget",
-        "registry-audit-c",
-        "--yes",
-    ]
-    duplicate_suggestion = next(
-        (
-            suggestion for suggestion in suggestions
-            if (
-                isinstance(suggestion, dict)
-                and suggestion.get("action") == "remove-duplicate"
-                and suggestion.get("entryId") == "registry-audit-b"
-            )
-        ),
-        None,
-    )
-    sensitive_suggestion = next(
-        (
-            suggestion for suggestion in suggestions
-            if (
-                isinstance(suggestion, dict)
-                and suggestion.get("action") == "remove-or-redact-sensitive-content"
-                and suggestion.get("entryId") == "registry-audit-c"
-            )
-        ),
-        None,
-    )
-    require_registry_smoke(
-        isinstance(duplicate_suggestion, dict)
-        and duplicate_suggestion.get("commandArgs") == duplicate_command_args
-        and "--forget registry-audit-b --yes" in duplicate_suggestion.get("command", ""),
-        context=context,
-        cmd=cmd,
-        message="learn audit duplicate cleanup suggestion changed",
-    )
-    require_registry_smoke(
-        isinstance(sensitive_suggestion, dict)
-        and sensitive_suggestion.get("commandArgs") == sensitive_command_args
-        and "--forget registry-audit-c --yes" in sensitive_suggestion.get("command", ""),
-        context=context,
-        cmd=cmd,
-        message="learn audit sensitive cleanup suggestion changed",
-    )
 
 
-def assert_learning_audit_cleanup_human(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "Local learning profile audit",
-        "Status: warn",
-        "Suggested cleanup:",
-        "remove-duplicate (registry-audit-b)",
-        "remove-or-redact-sensitive-content (registry-audit-c)",
-        "--forget registry-audit-b --yes",
-        "--forget registry-audit-c --yes",
-    ):
-        require_registry_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn audit human output missing {expected!r}",
-        )
 
 
-def assert_learning_audit_fix_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    dry_run: bool,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn audit fix JSON") from error
-
-    require_registry_smoke(
-        isinstance(payload, dict),
-        context=context,
-        cmd=cmd,
-        message="learn audit fix JSON must be an object",
-    )
-    require_registry_smoke(
-        payload.get("file") == str(profile_path)
-        and payload.get("dryRun") is dry_run
-        and payload.get("applied") is (not dry_run)
-        and payload.get("cleanupCount") == 2,
-        context=context,
-        cmd=cmd,
-        message="learn audit fix metadata changed",
-    )
-    before = payload.get("before")
-    require_registry_smoke(
-        isinstance(before, dict) and before.get("status") == "warn",
-        context=context,
-        cmd=cmd,
-        message="learn audit fix should start from a warning profile",
-    )
-
-    cleanup = payload.get("cleanup")
-    require_registry_smoke(
-        isinstance(cleanup, list),
-        context=context,
-        cmd=cmd,
-        message="learn audit fix cleanup list missing",
-    )
-    cleanup_by_entry = {
-        item.get("entryId"): item
-        for item in cleanup
-        if isinstance(item, dict)
-    }
-    for entry_id, action in (
-        ("registry-audit-b", "remove-duplicate"),
-        ("registry-audit-c", "remove-or-redact-sensitive-content"),
-    ):
-        item = cleanup_by_entry.get(entry_id)
-        require_registry_smoke(
-            isinstance(item, dict)
-            and action in item.get("actions", [])
-            and item.get("commandArgs")
-            == ["design-ai", "learn", "--file", str(profile_path), "--forget", entry_id, "--yes"],
-            context=context,
-            cmd=cmd,
-            message=f"learn audit fix cleanup entry changed: {entry_id}",
-        )
-
-    removed = payload.get("removed")
-    if dry_run:
-        require_registry_smoke(
-            removed == [] and payload.get("after") is None,
-            context=context,
-            cmd=cmd,
-            message="learn audit fix dry run should not remove entries",
-        )
-    else:
-        require_registry_smoke(
-            isinstance(removed, list)
-            and [item.get("id") for item in removed if isinstance(item, dict)]
-            == ["registry-audit-b", "registry-audit-c"],
-            context=context,
-            cmd=cmd,
-            message="learn audit fix removed entries changed",
-        )
-        after = payload.get("after")
-        require_registry_smoke(
-            isinstance(after, dict) and after.get("status") == "pass",
-            context=context,
-            cmd=cmd,
-            message="learn audit fix should leave a passing profile",
-        )
 
 
 def assert_learning_audit_cleanup_smoke(
@@ -2878,14 +1549,8 @@ def assert_workspace_strict_failure_smoke(
     )
 
 
-def site_workspace_fixture_json() -> str:
-    return passing_site_sample_json()
 
 
-def site_workspace_warning_fixture_json() -> str:
-    payload = json.loads(site_workspace_fixture_json())
-    payload["siteProfile"]["sentryProject"] = ""
-    return json.dumps(payload, ensure_ascii=False)
 
 
 def assert_site_json_smoke(
@@ -4482,462 +3147,20 @@ def assert_pack_stdin_smoke(
     )
 
 
-def assert_recall_context(payload: dict[str, object], *, context: str, cmd: list[str]) -> None:
-    recall = payload.get("recall")
-    require_registry_smoke(
-        isinstance(recall, dict),
-        context=context,
-        cmd=cmd,
-        message="recall should be present when --with-recall is used",
-    )
-    require_registry_smoke(
-        recall.get("mode") == "lexical",
-        context=context,
-        cmd=cmd,
-        message="recall should use the deterministic lexical scorer",
-    )
-    selected_count = recall.get("selectedCount")
-    require_registry_smoke(
-        isinstance(selected_count, int) and selected_count >= 1,
-        context=context,
-        cmd=cmd,
-        message="recall should select at least one corpus file for the Button brief",
-    )
-    selected = recall.get("selected")
-    require_registry_smoke(
-        isinstance(selected, list) and len(selected) == selected_count and len(selected) >= 1,
-        context=context,
-        cmd=cmd,
-        message="recall selected list should match the reported selected count",
-    )
-    top = selected[0]
-    require_registry_smoke(
-        isinstance(top, dict) and isinstance(top.get("id"), str) and top.get("id"),
-        context=context,
-        cmd=cmd,
-        message="recall selection should cite the corpus relPath as its id",
-    )
-    require_registry_smoke(
-        type(top.get("score")) in (int, float) and top.get("score") > 0,
-        context=context,
-        cmd=cmd,
-        message="recall selection should include a positive relevance score",
-    )
-    markdown = recall.get("markdown")
-    require_registry_smoke(
-        isinstance(markdown, str) and "## Recalled design knowledge" in markdown and top.get("id") in markdown,
-        context=context,
-        cmd=cmd,
-        message="recall markdown should carry the Recalled design knowledge section and cite the top file",
-    )
 
 
-def assert_learning_relevance_context(payload: dict[str, object], *, context: str, cmd: list[str]) -> None:
-    learning_context = payload.get("learningContext")
-    require_registry_smoke(
-        isinstance(learning_context, dict),
-        context=context,
-        cmd=cmd,
-        message="learningContext should be present when --with-learning is used",
-    )
-
-    selection = learning_context.get("selection")
-    require_registry_smoke(
-        isinstance(selection, dict),
-        context=context,
-        cmd=cmd,
-        message="learningContext selection metadata missing",
-    )
-    require_registry_smoke(
-        selection.get("mode") == "brief-relevance",
-        context=context,
-        cmd=cmd,
-        message="learningContext should use brief-relevance selection",
-    )
-    require_registry_smoke(
-        selection.get("candidateCount") == 3,
-        context=context,
-        cmd=cmd,
-        message="learningContext candidate count changed",
-    )
-    require_registry_smoke(
-        selection.get("matchedCount") >= 1,
-        context=context,
-        cmd=cmd,
-        message="learningContext should report at least one relevant match",
-    )
-    require_registry_smoke(
-        selection.get("selectedCount") == 1,
-        context=context,
-        cmd=cmd,
-        message="learningContext should report the limited selected entry count",
-    )
-    require_registry_smoke(
-        selection.get("fallbackCount") == 0,
-        context=context,
-        cmd=cmd,
-        message="learningContext should not use recency fallback when the relevant entry fits the limit",
-    )
-
-    selected = selection.get("selected")
-    require_registry_smoke(
-        isinstance(selected, list) and len(selected) == 1 and isinstance(selected[0], dict),
-        context=context,
-        cmd=cmd,
-        message="learningContext selection should explain the selected entry",
-    )
-    selected_entry = selected[0]
-    require_registry_smoke(
-        selected_entry.get("id") == "learn-relevant",
-        context=context,
-        cmd=cmd,
-        message="learning selection explanation should point at the relevant entry",
-    )
-    require_registry_smoke(
-        selected_entry.get("reason") == "brief-match",
-        context=context,
-        cmd=cmd,
-        message="learning selection explanation should mark the relevant entry as a brief match",
-    )
-    require_registry_smoke(
-        type(selected_entry.get("score")) in (int, float) and selected_entry.get("score") > 0,
-        context=context,
-        cmd=cmd,
-        message="learning selection explanation should include a positive relevance score",
-    )
-    matched_tokens = selected_entry.get("matchedTokens")
-    require_registry_smoke(
-        (
-            isinstance(matched_tokens, list)
-            and "button" in matched_tokens
-            and "accessibility" in matched_tokens
-        ),
-        context=context,
-        cmd=cmd,
-        message="learning selection explanation should include matched brief tokens",
-    )
-
-    entries = learning_context.get("entries")
-    require_registry_smoke(
-        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
-        context=context,
-        cmd=cmd,
-        message="learningContext should include the single limited entry",
-    )
-    require_registry_smoke(
-        entries[0].get("id") == "learn-relevant",
-        context=context,
-        cmd=cmd,
-        message="brief relevance should pick the Button accessibility entry over the newer unrelated entry",
-    )
-
-    prompt = payload.get("prompt")
-    require_registry_smoke(isinstance(prompt, str), context=context, cmd=cmd, message="prompt should be a string")
-    require_registry_smoke(
-        "Learning selection: brief relevance" in prompt,
-        context=context,
-        cmd=cmd,
-        message="prompt markdown should disclose brief-relevance learning selection",
-    )
-    require_registry_smoke(
-        "Prioritize keyboard accessibility details" in prompt,
-        context=context,
-        cmd=cmd,
-        message="prompt markdown should include the relevant learning entry",
-    )
-    require_registry_smoke(
-        "dense Korean mobile checkout" not in prompt,
-        context=context,
-        cmd=cmd,
-        message="prompt markdown should exclude the newer unrelated learning entry when limit is 1",
-    )
 
 
-def assert_learning_query_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn query JSON") from error
-
-    require_registry_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn query JSON must be an object")
-    require_registry_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn query file path differs from the smoke profile",
-    )
-    require_registry_smoke(
-        payload.get("query") == "keyboard accessibility",
-        context=context,
-        cmd=cmd,
-        message="learn query text changed",
-    )
-    require_registry_smoke(
-        payload.get("count") == 1 and payload.get("totalCount") == 3,
-        context=context,
-        cmd=cmd,
-        message="learn query should return only the matching entry while reporting total profile size",
-    )
-
-    entries = payload.get("entries")
-    require_registry_smoke(
-        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
-        context=context,
-        cmd=cmd,
-        message="learn query entries list should contain exactly one matching entry",
-    )
-    require_registry_smoke(
-        entries[0].get("id") == "learn-relevant",
-        context=context,
-        cmd=cmd,
-        message="learn query should return the Button accessibility entry",
-    )
-    selection = payload.get("selection")
-    require_registry_smoke(
-        isinstance(selection, dict),
-        context=context,
-        cmd=cmd,
-        message="learn query explain selection metadata missing",
-    )
-    require_registry_smoke(
-        selection.get("fallbackEnabled") is False and selection.get("selectedCount") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn query explain should select exactly one entry without fallback",
-    )
-    selected = selection.get("selected")
-    require_registry_smoke(
-        isinstance(selected, list) and len(selected) == 1 and isinstance(selected[0], dict),
-        context=context,
-        cmd=cmd,
-        message="learn query explain selected list should contain one entry",
-    )
-    require_registry_smoke(
-        selected[0].get("id") == "learn-relevant"
-        and selected[0].get("reason") == "brief-match"
-        and type(selected[0].get("score")) in (int, float)
-        and selected[0].get("score") > 0,
-        context=context,
-        cmd=cmd,
-        message="learn query explain should include score and match reason",
-    )
-    matched_tokens = selected[0].get("matchedTokens")
-    require_registry_smoke(
-        isinstance(matched_tokens, list)
-        and "keyboard" in matched_tokens
-        and "accessibility" in matched_tokens,
-        context=context,
-        cmd=cmd,
-        message="learn query explain should include matched query tokens",
-    )
 
 
-def assert_learning_query_human(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "Local learning profile",
-        "Entries: 1/3",
-        "Query: keyboard accessibility",
-        "Limit: 2",
-        "Explain: selection score, matched tokens, and reason",
-        "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
-        "matched accessibility, keyboard",
-        "reason brief-match",
-    ):
-        require_registry_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn query human output missing {expected!r}",
-        )
-    require_registry_smoke(
-        "dense Korean mobile checkout" not in raw
-        and "quiet enterprise brand language" not in raw
-        and "quiet enterprise brand voice" not in raw,
-        context=context,
-        cmd=cmd,
-        message="learn query human output should exclude unrelated profile entries",
-    )
 
 
-def assert_learning_query_export_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn query export JSON") from error
-
-    require_registry_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn query export JSON must be an object")
-    require_registry_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn query export file path differs from the smoke profile",
-    )
-    require_registry_smoke(
-        payload.get("query") == "keyboard accessibility",
-        context=context,
-        cmd=cmd,
-        message="learn query export text changed",
-    )
-    selection = payload.get("selection")
-    require_registry_smoke(
-        isinstance(selection, dict),
-        context=context,
-        cmd=cmd,
-        message="learn query export selection metadata missing",
-    )
-    require_registry_smoke(
-        selection.get("fallbackEnabled") is False and selection.get("fallbackCount") == 0,
-        context=context,
-        cmd=cmd,
-        message="learn query export should not use recency fallback",
-    )
-    require_registry_smoke(
-        selection.get("selectedCount") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn query export should select one matching entry",
-    )
-    entries = payload.get("entries")
-    require_registry_smoke(
-        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
-        context=context,
-        cmd=cmd,
-        message="learn query export entries list should contain exactly one matching entry",
-    )
-    require_registry_smoke(
-        entries[0].get("id") == "learn-relevant",
-        context=context,
-        cmd=cmd,
-        message="learn query export should return the Button accessibility entry",
-    )
-    markdown = payload.get("markdown")
-    require_registry_smoke(
-        isinstance(markdown, str) and "no recency fallback" in markdown,
-        context=context,
-        cmd=cmd,
-        message="learn query export markdown should disclose that fallback is disabled",
-    )
 
 
-def assert_learning_eval_template_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn eval-template JSON") from error
-
-    source_profile = payload.get("sourceProfile")
-    require_registry_smoke(
-        payload.get("version") == 1
-        and isinstance(source_profile, dict)
-        and source_profile.get("file") == str(profile_path)
-        and source_profile.get("entryCount") >= 1,
-        context=context,
-        cmd=cmd,
-        message="learn eval-template JSON should report the source learning profile",
-    )
-    cases = payload.get("cases")
-    require_registry_smoke(
-        payload.get("caseCount") == 1
-        and isinstance(cases, list)
-        and len(cases) == 1
-        and cases[0].get("expectedSelectedIds") == ["learn-relevant"]
-        and cases[0].get("minMatchedCount") == 1
-        and cases[0].get("requireNoFallback") is True,
-        context=context,
-        cmd=cmd,
-        message="learn eval-template JSON should generate a runnable expected-selection checkpoint",
-    )
-    privacy = payload.get("privacy")
-    require_registry_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("storesRawBriefText") is True
-        and privacy.get("storesBriefHash") is False
-        and privacy.get("exposesMatchedTokens") is False,
-        context=context,
-        cmd=cmd,
-        message="learn eval-template JSON should disclose that checkpoint templates store raw brief text",
-    )
-    require_registry_smoke(
-        EXPECTED_ROUTE_BRIEF in raw and "\"brief\"" in raw,
-        context=context,
-        cmd=cmd,
-        message="learn eval-template JSON should include runnable raw brief text in checkpoint cases",
-    )
 
 
-def assert_learning_eval_template_report_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    eval_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse generated learn eval JSON") from error
-
-    require_registry_smoke(
-        payload.get("file") == str(profile_path)
-        and payload.get("source") == str(eval_path)
-        and payload.get("status") == "pass"
-        and payload.get("caseCount") == 1
-        and payload.get("passed") == 1,
-        context=context,
-        cmd=cmd,
-        message="generated learn eval-template checkpoint should pass learn --eval --strict",
-    )
-    cases = payload.get("cases")
-    require_registry_smoke(
-        isinstance(cases, list)
-        and len(cases) == 1
-        and cases[0].get("selectedEntryIds") == ["learn-relevant"]
-        and cases[0].get("missingExpectedIds") == [],
-        context=context,
-        cmd=cmd,
-        message="generated learn eval-template report should select the expected learning entry",
-    )
 
 
-def assert_learning_readiness_markdown_index(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "Readiness check index:",
-        "- Required ids:",
-        "- Optional ids:",
-        "- Status index:",
-        "- Required index:",
-    ):
-        require_registry_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learning readiness Markdown report missing {expected!r}",
-        )
 
 
 def assert_learning_signals_report_smoke(
@@ -5008,14 +3231,7 @@ def assert_learning_agent_backlog_report_smoke(
     )
 
 
-def assert_learning_relevance_smoke(
-    command_factory,
-    profile_path: Path,
-    *,
-    env: dict[str, str],
-    cwd: Path | None = None,
-    context: str,
-) -> None:
+def _assert_registry_learning_relevance_and_query(command_factory, profile_path, env, cwd, context):
     write_learning_relevance_fixture(profile_path)
     relevance_env = env.copy()
     relevance_env["DESIGN_AI_LEARNING_FILE"] = str(profile_path)
@@ -5180,7 +3396,10 @@ def assert_learning_relevance_smoke(
         context=f"{context} learn eval-template out file",
         cmd=eval_template_cmd,
     )
+    return relevance_env, eval_template_path
 
+
+def _assert_registry_learning_eval_template(command_factory, profile_path, cwd, context, relevance_env, eval_template_path):
     eval_template_check_cmd = command_factory(
         "learn",
         "--eval",
@@ -5216,6 +3435,18 @@ def assert_learning_relevance_smoke(
         env=relevance_env,
         context=f"{context} learn agent backlog Markdown report",
     )
+
+
+def assert_learning_relevance_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    relevance_env, eval_template_path = _assert_registry_learning_relevance_and_query(command_factory, profile_path, env, cwd, context)
+    _assert_registry_learning_eval_template(command_factory, profile_path, cwd, context, relevance_env, eval_template_path)
 
 
 def assert_index_roundtrip_smoke(
@@ -5436,7 +3667,6 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             "npm_config_audit": "false",
             "npm_config_fund": "false",
         })
-
         wait_for_registry_package(package_spec, retries=retries, delay=delay, env=env)
         assert_version_smoke(
             npm_exec_cmd(package_spec, "version"),

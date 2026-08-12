@@ -128,42 +128,83 @@ Current verification evidence:
 
 ### P17B - Smoke harness modularization
 
-Status: in progress. The first Website Console contract extraction is implemented
-without changing CLI behavior or smoke command order.
+Status: P17B.3 is implemented for the current source snapshot; the full release
+evidence gate passed without changing a public product contract.
 
-Current P17B.1 evidence:
+Current P17B.2 evidence:
 
-- 42 `EXPECTED_SITE_*` contract values now have one owner in
-  `smoke_domains/site_contracts.py`, while eight shared command, probe, and
-  repair validators live in `smoke_domains/site_validators.py`;
+- P17B.1 remains the verified contract/validator baseline: 42 `EXPECTED_SITE_*`
+  values have one owner in `smoke_domains/site_contracts.py`, while eight shared
+  command, probe, and repair validators live in `smoke_domains/site_validators.py`;
+- Website Console JSON and Markdown scenario fixtures now live in focused
+  `smoke_domains/site_fixtures*.py` modules, including the package-smoke intake,
+  evidence, warning, and linked-preview payloads; fixture bytes were compared
+  against the P17B.1 source snapshot;
+- Website Console output assertions now live in focused responsibility modules,
+  which `smoke_assertions.py` imports directly; exact failure-message paths
+  remain covered;
+- `site_runner.py` is the explicit ordered phase authority for installed-bin and
+  one-shot npm Website Console smoke executors; each real command block advances
+  its authority, and focused negatives reject missing, duplicate, reordered, and
+  unknown phases while retaining separate command factories and coverage;
+- the registry smoke keeps the P17B.1 normal Website Console fixture at 4387
+  UTF-8 bytes with SHA-256
+  `d5ab938931fd3be8c95ac78d7a657f484e6f469ceafa6f0319e53e9155e76f22`;
 - the original `smoke_assertions.py`, `package-smoke.py`, and `registry-smoke.py`
-  entry points preserve their existing imports and focused self-tests;
+  entry points retain their stable callable names, execution paths, and focused
+  self-test paths;
 - the extracted contract has a byte-stable SHA-256 snapshot and isolated positive
   and negative fixtures;
 - baseline parity confirms all 42 values and the command rewrite order are
   unchanged;
-- `smoke_assertions.py` decreased from 15,513 to 15,103 lines,
-  `package-smoke.py` from 24,782 to 24,705, and `registry-smoke.py` from 9,159 to
-  9,081; the new contract, validator, and self-test files are 345, 219, and 166
-  lines, with 13 functions total and no function longer than 85 lines;
+- the current snapshot adds 17 new modules and 64 extracted functions; the
+  largest new file is 354 lines and the largest extracted function is 163 lines;
+  `smoke_assertions.py` is 12,655 lines, `package-smoke.py` is 24,494 lines, and
+  `registry-smoke.py` is 9,078 lines;
 - pre-extraction focused baselines were 0.42 seconds for shared smoke assertions
   and 0.96 seconds for package-smoke self-tests;
-- pre- and post-extraction packed smoke both execute the same 716-command
-  sequence with normalized SHA-256
+- packed smoke executes 716 commands in the delivered source snapshot; the
+  captured command output remains the evidence source for the normalized
+  sequence SHA-256
   `0654a8730d42526860bb1d00c16f1c828395ffd0aca448a1f137fcb30fd24a46`;
   observed local wall time was 1,444.11 seconds before and 914.29 seconds after.
 
-1. Freeze current `package-smoke.py` and `smoke_assertions.py` behavior with
-   focused characterization tests.
-2. Extract domain modules in this order:
-   - Website Console site/bundle/handoff (contract and validator layer complete;
-     scenario payload fixtures, assertion groups, and runners remain);
-   - learning profile and skill proposals;
-   - review/evidence/pilot contracts;
-   - install/help/search/route lifecycle.
-3. Keep `package-smoke.py` and `smoke_assertions.py` as stable entry points.
-4. Move fixtures beside their domain assertions and remove cross-domain globals.
-5. Require byte-for-byte stable JSON fixture output and unchanged command order.
+Current P17B.3 evidence:
+
+- the exact sealed P17B.2 dirty baseline was applied before extraction from
+  SHA-256 `f948c975d51d0138998ce8194ba31e367bd538c10cfcaa87b662bc71bbed486a`;
+- `package-smoke.py` directly imports profile, transfer, relevance/eval,
+  agent-backlog, skill-proposal report/review, and skill-proposal apply-plan
+  responsibilities, while `registry-smoke.py` directly imports its profile,
+  transfer, relevance, and eval responsibilities; command execution remains in
+  the stable entry points rather than behind a pass-through facade;
+- agent-backlog validation is grouped by queue/handoff, runbook/effects, and
+  actions/verification; apply-plan validation is grouped by plan identity/tasks,
+  command sequence, operator stage/runbook, artifact/evidence, and
+  approval/safety, with the original public failure messages retained;
+- 30 new learning modules are all below 400 lines: the largest is 394 lines,
+  the largest new-module function is 173 lines, and the largest new entry-point
+  scenario helper is 184 lines; the entry points are now 12,655 / 20,228 / 7,311
+  lines (`smoke_assertions.py` / `package-smoke.py` / `registry-smoke.py`);
+- focused smoke assertion, Website Console contract, package-smoke, and
+  registry-smoke self-tests pass, as do F821 and Python compilation checks over
+  both entry points and every learning module;
+- the delivered snapshot passes 832/832 Node tests, eight strict audits, the
+  845-file package-content check, documentation policy, release self-tests, and
+  packed smoke;
+- packed smoke still executes the actual 716-command sequence with normalized
+  SHA-256 `0654a8730d42526860bb1d00c16f1c828395ffd0aca448a1f137fcb30fd24a46`;
+- the registry Website Console fixture remains exactly 4387 UTF-8 bytes with
+  SHA-256 `d5ab938931fd3be8c95ac78d7a657f484e6f469ceafa6f0319e53e9155e76f22`,
+  npm remains 5.1.0, and the P16 program remains at SHA-256
+  `9ca6d1421c25c30c89fc8dae84752d42770f8e78ed4a41a1df4e071da09b5338`.
+
+Next domains remain separate and unverified:
+
+1. Extract review contracts without merging them into learning ownership.
+2. Extract implementation-evidence contracts as their own domain.
+3. Extract pilot contracts only after review and evidence remain stable.
+4. Extract install/help/search/route lifecycle contracts last.
 
 Exit criteria:
 
@@ -172,6 +213,9 @@ Exit criteria:
 - Installed-bin and one-shot package smoke remain equivalent.
 - Release duration and command count are recorded before and after; no unreviewed
   reduction in coverage is allowed.
+- P17B changes only smoke-test architecture and release verification. It adds no
+  CLI, SDK, MCP, Website Console runtime, public API, package version, dependency,
+  migration, publication, external write, or P16 state change.
 
 ### P17C - Source-grounded design-system skill compiler
 

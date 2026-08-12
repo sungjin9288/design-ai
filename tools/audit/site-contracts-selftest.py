@@ -11,6 +11,11 @@ from typing import Callable
 
 from smoke_domains import site_contracts
 from smoke_domains.site_contracts import EXPECTED_SITE_BUNDLE_MCP_PROBE_IDS
+from smoke_domains.site_runner import (
+    SITE_SMOKE_PLAN,
+    SiteSmokePhaseAuthority,
+    assert_site_smoke_plan,
+)
 from smoke_domains.site_validators import (
     assert_site_bundle_mcp_probes_payload,
     assert_site_repair_apply_report_payload,
@@ -67,6 +72,29 @@ def expect_system_exit(callback: Callable[[], object], expected: str) -> None:
 
 
 def run_self_test() -> int:
+    assert_site_smoke_plan("installed-bin", actual=SITE_SMOKE_PLAN)
+    assert_site_smoke_plan("npm-exec", actual=SITE_SMOKE_PLAN)
+    expect_system_exit(
+        lambda: assert_site_smoke_plan("installed-bin", actual=SITE_SMOKE_PLAN[:-1]),
+        "phase missing",
+    )
+    expect_system_exit(
+        lambda: assert_site_smoke_plan("installed-bin", actual=SITE_SMOKE_PLAN + (SITE_SMOKE_PLAN[-1],)),
+        "phase duplicate",
+    )
+    expect_system_exit(
+        lambda: assert_site_smoke_plan(
+            "installed-bin",
+            actual=(SITE_SMOKE_PLAN[1], SITE_SMOKE_PLAN[0], *SITE_SMOKE_PLAN[2:]),
+        ),
+        "phase order changed",
+    )
+    unknown_authority = SiteSmokePhaseAuthority("npm-exec")
+    unknown_authority.advance(SITE_SMOKE_PLAN[0])
+    expect_system_exit(
+        lambda: unknown_authority.advance("unknown-phase"),
+        "phase unknown",
+    )
     snapshot = site_contract_snapshot()
     digest = hashlib.sha256(snapshot.encode("utf-8")).hexdigest()
     if digest != SITE_CONTRACT_SNAPSHOT_SHA256:
