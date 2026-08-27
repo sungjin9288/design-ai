@@ -35,6 +35,7 @@ import { runIndex } from "./index.mjs";
 import { runSearch } from "./search.mjs";
 import { runShow } from "./show.mjs";
 import { runSite } from "./site.mjs";
+import { runImage } from "./image.mjs";
 import { runStatus } from "./status.mjs";
 import { runUninstall } from "./uninstall.mjs";
 import { runUpdate } from "./update.mjs";
@@ -76,6 +77,7 @@ export const HELP_COMMANDS = [
   { topic: "learn", usage: "learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]", description: "Manage local learning preferences, usage reports, signal registry, agent backlog, skill proposals, and eval checkpoints for prompt personalization" },
   { topic: "workspace", usage: "workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]", description: "Show read-only local dogfood readiness: git, repository, learning usage, eval checkpoints, and release scripts" },
   { topic: "site", usage: "site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--linked-preview [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] [--next-actions] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]", description: "Validate Website Improvement Console exports and generate handoff artifacts" },
+  { topic: "image", usage: "image serve [--host 127.0.0.1] [--port 4318]", description: "Start the local approval-gated Image Console gateway" },
   { topic: "mcp", usage: "mcp", description: "Start the stdio MCP server for Claude Code, Codex, and other MCP clients" },
   { topic: "version", usage: "version [--json]", description: "Show CLI + plugin versions" },
   { topic: "help", usage: "help [command|--json]", description: "Show top-level or command-specific help" },
@@ -138,6 +140,7 @@ const HELP_RUNNERS = {
   learn: () => runLearn(["--help"]),
   workspace: () => runWorkspace(["--help"]),
   site: () => runSite(["--help"]),
+  image: () => runImage(["--help"]),
   mcp: () => runMcp(["--help"]),
   version: () => runVersion(["--help"]),
   help: printHelpHelp,
@@ -272,6 +275,7 @@ function printMainHelp() {
   console.log(`  ${dim("$")} design-ai check output.md --learn --yes`);
   console.log(`  ${dim("$")} design-ai workspace --learning-usage learning.usage.json --learning-eval learning-eval.json --strict`);
   console.log(`  ${dim("$")} design-ai site examples/website-improvement-workspace.json --json`);
+  console.log(`  ${dim("$")} design-ai image serve --port 4318`);
   console.log(`  ${dim("$")} design-ai mcp`);
   console.log(`  ${dim("$")} design-ai check --examples --route design-from-brief --limit 1`);
   console.log(`  ${dim("$")} design-ai check --examples --all-routes --issues-only`);

@@ -18,7 +18,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node --test cli/lib/*.test.mjs cli/sdk/*.test.mjs docs/website-console/*.test.mjs",
+    "test": "node --test cli/lib/*.test.mjs cli/sdk/*.test.mjs docs/website-console/*.test.mjs docs/image-console/*.test.mjs",
     "audit": "python3 -B tools/audit/run-all.py",
     "audit:strict": "python3 -B tools/audit/run-all.py --strict",
     "audit:runner:self-test": "python3 -B tools/audit/run-all.py --self-test",

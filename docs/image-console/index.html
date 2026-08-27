@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>design-ai Image Console</title>
+    <meta name="description" content="Local, approval-gated image prompt composition console.">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="../website-console/styles.css">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to Image Console</a>
+    <main id="main" class="image-console" tabindex="-1">
+      <header class="image-console__header">
+        <p class="image-console__eyebrow">Local, approval-gated workflow</p>
+        <h1>Image Console</h1>
+        <p>Prompt Guide composes and validates the draft first. A local provider adapter runs only after your explicit approval.</p>
+      </header>
+      <div class="image-console__layout">
+        <section class="panel" aria-labelledby="mode-heading">
+          <div class="panel__header"><div><h2 id="mode-heading">Create a prompt draft</h2><p>Generation and editing use separate request forms.</p></div></div>
+          <div class="panel__body">
+            <div class="image-mode" role="tablist" aria-label="Image workflow mode">
+              <button id="generation-tab" type="button" class="button button--primary" role="tab" tabindex="0" aria-selected="true" aria-controls="generation-panel">Generate</button>
+              <button id="editing-tab" type="button" class="button button--secondary" role="tab" tabindex="-1" aria-selected="false" aria-controls="editing-panel">Edit an asset</button>
+            </div>
+            <form id="generation-panel" data-mode="generation" role="tabpanel" aria-labelledby="generation-tab" novalidate>
+              <fieldset><legend>Generation request</legend><div class="form-grid image-form-grid">
+                <label class="field"><span>Purpose</span><input name="intent" required aria-required="true" autocomplete="off"></label>
+                <label class="field"><span>Domain</span><input name="domain" required aria-required="true" value="manufacturing"></label>
+                <label class="field"><span>Output type</span><input name="outputType" required aria-required="true" value="architecture"></label>
+                <label class="field"><span>Aspect ratio</span><select name="aspectRatio"><option>16:9</option><option>1:1</option><option>4:3</option><option>9:16</option></select></label>
+                <label class="field"><span>Language</span><select name="language"><option value="ko">Korean</option><option value="en">English</option></select></label>
+                <label class="field"><span>Audience <em>(optional)</em></span><input name="audience"></label>
+                <label class="field field--wide"><span>Exact text — one line each <em>(optional)</em></span><textarea name="exactTexts"></textarea></label>
+                <label class="field field--wide"><span>Constraints — one line each <em>(optional)</em></span><textarea name="constraints"></textarea></label>
+                <label class="field field--wide"><span>Exclusions — one line each <em>(optional)</em></span><textarea name="negativeConstraints"></textarea></label>
+              </div></fieldset>
+              <button class="button button--primary" type="submit">Compose and validate draft</button>
+            </form>
+            <form id="editing-panel" data-mode="editing" role="tabpanel" aria-labelledby="editing-tab" hidden novalidate>
+              <fieldset><legend>Editing request</legend><div class="form-grid image-form-grid">
+                <label class="field"><span>Purpose</span><input name="intent" required aria-required="true" autocomplete="off"></label>
+                <label class="field"><span>Domain</span><input name="domain" required aria-required="true" value="architecture"></label>
+                <label class="field"><span>Output type</span><input name="outputType" required aria-required="true" value="architecture_edit"></label>
+                <label class="field"><span>Aspect ratio</span><select name="aspectRatio"><option>16:9</option><option>1:1</option><option>4:3</option><option>9:16</option></select></label>
+                <label class="field"><span>Language</span><select name="language"><option value="ko">Korean</option><option value="en">English</option></select></label>
+                <label class="field"><span>Stored source asset</span><select id="reference-asset-id" name="referenceAssetId" required aria-required="true" aria-describedby="source-asset-help" disabled><option value="">Loading local assets…</option></select><small id="source-asset-help">Choose a locally stored source asset. It is rechecked before execution.</small></label>
+                <label class="field field--wide"><span>Preserve — one line each</span><textarea name="preserve"></textarea></label>
+                <label class="field field--wide"><span>Modify — one line each</span><textarea name="modify"></textarea></label>
+                <label class="field field--wide"><span>Remove — one line each</span><textarea name="remove"></textarea></label>
+                <label class="field field--wide"><span>Add — one line each <em>(optional)</em></span><textarea name="add"></textarea></label>
+                <label class="field field--wide"><span>Must not change — one line each <em>(optional)</em></span><textarea name="mustNotChange"></textarea></label>
+                <label class="field field--wide"><span>Exact text — one line each <em>(optional)</em></span><textarea name="exactTexts"></textarea></label>
+                <label class="field field--wide"><span>Constraints — one line each <em>(optional)</em></span><textarea name="constraints"></textarea></label>
+                <label class="field field--wide"><span>Exclusions — one line each <em>(optional)</em></span><textarea name="negativeConstraints"></textarea></label>
+              </div></fieldset>
+              <button class="button button--primary" type="submit">Compose and validate edit draft</button>
+            </form>
+          </div>
+        </section>
+        <aside class="image-console__preview panel" aria-labelledby="draft-heading">
+          <div class="panel__header"><div><h2 id="draft-heading">Compiled prompt preview</h2><p>Prompt text is read-only. Template internals are not displayed.</p></div></div>
+          <div class="panel__body">
+            <p id="status" class="image-status" role="status" aria-live="polite">Complete a form to create a draft.</p>
+            <div id="error" class="image-error" role="alert" aria-live="assertive" hidden></div>
+            <dl id="draft-details" class="image-details" hidden></dl>
+            <label class="field"><span>Read-only compiled prompt</span><textarea id="compiled-prompt" readonly aria-readonly="true" rows="10"></textarea></label>
+            <label class="approval-row"><input id="draft-approval" type="checkbox" disabled> <span>I reviewed this compiled prompt and approve one local provider execution.</span></label>
+            <button id="execute-draft" class="button button--primary" type="button" disabled>Generate approved image</button>
+          </div>
+        </aside>
+      </div>
+    </main>
+    <script src="./contract.js" defer></script>
+    <script src="./app.js" defer></script>
+  </body>
+</html>

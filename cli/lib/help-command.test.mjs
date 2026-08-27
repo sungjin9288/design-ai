@@ -58,6 +58,7 @@ test("runHelp lists advanced options supported by command parsers", async () => 
   assert.match(output, /learn \[--init\|--remember text\|--feedback text\|--list\|--export\|--query text\|--explain\|--recall query\|--backup\|--redact\|--verify\|--diff\|--restore\|--restore-backups \[--prune\]\|--import\|--audit \[--fix\]\|--curate\|--stats\|--usage\|--signals \[--strict\]\|--agent-backlog \[--strict\]\|--propose-skills \[--min-evidence N\] \[--review-file path\] \[--review-check\|--apply-plan\] \[--strict\]\|--eval-template\|--eval \[--strict\]\|--forget id\|--clear\] \[--json\|--report\|--patch\|--review-template\] \[--out file\]/);
   assert.match(output, /workspace \[--root path\] \[--learning-file path\] \[--learning-usage path\] \[--learning-eval path\] \[--strict\] \[--json\]/);
   assert.match(output, /site --init --name name \[--live-url url\] \[--repo-url url\|--local-path path\] \[--next-actions\]/);
+  assert.match(output, /image serve \[--host 127\.0\.0\.1\] \[--port 4318\]/);
   assert.match(output, /mcp\s+Start the stdio MCP server for Claude Code, Codex, and other MCP clients/);
   assert.match(
     output,
