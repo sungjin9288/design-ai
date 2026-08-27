@@ -222,6 +222,7 @@ nav:
       - Overview: docs/WEBSITE-IMPROVEMENT.md
       - Company Intake Template: docs/COMPANY-WEBSITE-INTAKE-TEMPLATE.md
       - Company Dogfood: docs/COMPANY-WEBSITE-DOGFOOD.md
+      - Prompt Guide Image Console: docs/integrations/prompt-guide-image-prompts.md
   - Knowledge:
       - Principles: knowledge/PRINCIPLES.md
       - Coverage report: knowledge/COVERAGE.md

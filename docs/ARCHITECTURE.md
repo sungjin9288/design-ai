@@ -120,6 +120,9 @@ The public product surface and its internal implementation have separate owners:
 | Design quality validation | `cli/lib/design-quality-contract.mjs` | Dependency-free report validation and derived-summary consistency |
 | Website Console source bundle | `docs/website-console/source-bundle.js` | Provenance and revalidation data contract without DOM access |
 | Website Console UI | `docs/website-console/app.js` | DOM, storage, graph, copy, and Markdown rendering |
+| Image Console gateway | `cli/lib/image-console-server.mjs` | Loopback-only, same-origin HTTP boundary; keeps Prompt Guide secrets server-side |
+| Image prompt workflow | `cli/lib/image-workflow.mjs` | Prompt Guide recommend/compose/validate, explicit draft approval, provider ordering, and asset manifest creation |
+| Image Console UI | `docs/image-console/` | Separate responsive generation/editing forms using Website Console token CSS without changing that console |
 | Python capability audit | `tools/audit/capability_manifest.py` | Package-independent validation of the canonical identity contract |
 
 The manifest protects names and counts; it does not dispatch runtime behavior. Each
@@ -161,3 +164,9 @@ recomputing every packaged knowledge, skill, example, and component section.
 tarball execution smoke. `npm run release:check` adds that smoke once. Release and
 publish workflows run the preflight, build their final tarball, and smoke-test that
 same artifact before release or publication.
+
+## Image Console boundary
+
+`design-ai image serve` is intentionally separate from the Website Console, SDK, and MCP. It binds only to a loopback host and serves browser files plus same-origin image routes. The browser has no Prompt Guide key or `Authorization` path; the gateway alone calls the four Prompt Guide endpoints, validates JSON, v1 response version, and pinned provenance, and never keeps a fallback catalog or template body.
+
+Generation and editing first become an in-memory read-only compiled draft. The local provider-neutral subprocess receives one separated JSON input only after explicit approval; a Prompt Guide error, lineage mismatch, invalid draft, or absent editing source creates no job. Generated media and the minimal review manifest are atomically published under the local asset root; the manifest retains prefixed prompt hashes, catalog/template provenance, response version, provider parameters, and edit source IDs but never API secrets or raw provider responses.

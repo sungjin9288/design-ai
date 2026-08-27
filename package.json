@@ -99,6 +99,7 @@
     "LICENSE",
     "README.md",
     "README.ko.md",
+    ".env.example",
     ".claude-plugin/",
     "knowledge/",
     "product-packs/",
