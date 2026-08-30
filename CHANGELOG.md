@@ -6,6 +6,10 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Added
 
+- Added focused review-smoke modules for inspect, review comparison, P6 review,
+  P7 handoff, P8 receipt, P9 intake, P10 scope proposal/approval, and browser
+  review evidence. Installed-bin and one-shot npm smoke now each advance the
+  same explicit P6-P10 phase authority at their existing command blocks.
 - Added focused Website Console smoke-domain fixture and assertion modules for
   JSON/Markdown scenarios, package intake/evidence payloads, and MCP/bundle
   contracts. The stable smoke entry point imports those responsibility modules
@@ -40,6 +44,11 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Changed
 
+- Split the existing review assertions into direct responsibility imports while
+  retaining stable entry-point callable names, real command execution, and exact
+  assertion failure behavior. Implementation evidence, pilot evidence, learning
+  proposal review, product runtime, SDK smoke, and lifecycle coverage are
+  unchanged.
 - Split the package and registry learning smoke assertions into directly imported
   profile, transfer, relevance/eval, agent-backlog, skill-proposal report/review,
   and skill-proposal apply-plan modules. The stable smoke entry points still own

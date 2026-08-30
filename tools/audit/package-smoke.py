@@ -48,6 +48,27 @@ from smoke_domains.site_validators import (
     assert_site_bundle_mcp_probes_payload,
     assert_site_mcp_probe_counts,
 )
+from smoke_domains.package_review_browser import assert_browser_verification_smoke_output
+from smoke_domains.package_review_handoff import (
+    assert_review_handoff_receipt_smoke_output,
+    assert_review_handoff_smoke_output,
+)
+from smoke_domains.package_review_quality import (
+    assert_inspect_smoke_output,
+    assert_review_comparison_smoke_output,
+    assert_review_smoke_output,
+)
+from smoke_domains.package_review_scope import (
+    assert_implementation_scope_approval_smoke_output,
+    assert_implementation_scope_proposal_smoke_output,
+    assert_target_repo_intake_smoke_output,
+)
+from smoke_domains.review_fixtures import (
+    write_browser_adapter,
+    write_implementation_scope_request,
+    write_inspect_fixture,
+)
+from smoke_domains.review_runner import ReviewSmokePhaseAuthority
 from smoke_domains.package_learning_agent_backlog_reports import (
     assert_agent_backlog_no_command_json,
     assert_agent_backlog_no_command_report_markdown,
@@ -181,12 +202,8 @@ from smoke_assertions import (
     assert_index_build_json,
     assert_index_status_json,
     assert_index_verify_json,
-    assert_inspect_json,
-    assert_implementation_scope_approval_json,
-    assert_implementation_scope_proposal_json,
     assert_implementation_evidence_json,
     assert_pilot_evidence_json,
-    assert_review_comparison_json,
     assert_specialization_benchmark_json,
     assert_install_doctor_lifecycle_output,
     assert_install_output,
@@ -208,10 +225,6 @@ from smoke_assertions import (
     assert_prompt_markdown_component_spec,
     assert_ranked_search_determinism,
     assert_ranked_search_json,
-    assert_review_handoff_json,
-    assert_review_handoff_receipt_json,
-    assert_review_workflow_json,
-    assert_target_repo_intake_json,
     assert_route_catalog_json,
     assert_route_explain_human_output,
     assert_route_json_component_spec,
@@ -6695,15 +6708,10 @@ def assert_review_smoke(
 ) -> str:
     before = source_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_review_workflow_json(
-        result.stdout,
-        source_path,
-        context=context,
-        cmd=cmd,
-    )
+    raw = assert_review_smoke_output(result.stdout, source_path, context=context, cmd=cmd)
     if source_path.read_bytes() != before:
         raise SystemExit(f"{context}: review changed the selected source file")
-    return result.stdout
+    return raw
 
 
 def assert_review_comparison_smoke(
@@ -6719,7 +6727,7 @@ def assert_review_comparison_smoke(
     baseline_before = baseline_path.read_bytes()
     candidate_before = candidate_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_review_comparison_json(
+    assert_review_comparison_smoke_output(
         result.stdout,
         baseline_path,
         candidate_path,
@@ -6742,7 +6750,7 @@ def assert_review_handoff_smoke(
 ) -> str:
     before = workflow_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_review_handoff_json(
+    raw = assert_review_handoff_smoke_output(
         result.stdout,
         workflow_path,
         recipient=recipient,
@@ -6751,7 +6759,7 @@ def assert_review_handoff_smoke(
     )
     if workflow_path.read_bytes() != before:
         raise SystemExit(f"{context}: review-handoff changed its source workflow")
-    return result.stdout
+    return raw
 
 
 def assert_review_handoff_receipt_smoke(
@@ -6765,7 +6773,7 @@ def assert_review_handoff_receipt_smoke(
 ) -> str:
     before = handoff_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_review_handoff_receipt_json(
+    raw = assert_review_handoff_receipt_smoke_output(
         result.stdout,
         handoff_path,
         consumer=consumer,
@@ -6774,7 +6782,7 @@ def assert_review_handoff_receipt_smoke(
     )
     if handoff_path.read_bytes() != before:
         raise SystemExit(f"{context}: review-handoff-verify changed its source handoff")
-    return result.stdout
+    return raw
 
 
 def assert_target_repo_intake_smoke(
@@ -6798,7 +6806,7 @@ def assert_target_repo_intake_smoke(
         check=True,
     ).stdout
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_target_repo_intake_json(
+    raw = assert_target_repo_intake_smoke_output(
         result.stdout,
         receipt_path,
         target_root,
@@ -6819,7 +6827,7 @@ def assert_target_repo_intake_smoke(
     ).stdout
     if status_after != status_before:
         raise SystemExit(f"{context}: review-intake changed the target repository")
-    return result.stdout
+    return raw
 
 
 def assert_implementation_scope_proposal_smoke(
@@ -6843,10 +6851,11 @@ def assert_implementation_scope_proposal_smoke(
         check=True,
     ).stdout
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_implementation_scope_proposal_json(
+    raw = assert_implementation_scope_proposal_smoke_output(
         result.stdout,
         intake_path,
         request_path,
+        target_root,
         consumer=consumer,
         context=context,
         cmd=cmd,
@@ -6862,7 +6871,7 @@ def assert_implementation_scope_proposal_smoke(
     ).stdout
     if status_after != status_before:
         raise SystemExit(f"{context}: review-scope changed the target repository")
-    return result.stdout
+    return raw
 
 
 def assert_implementation_scope_approval_smoke(
@@ -6886,9 +6895,10 @@ def assert_implementation_scope_approval_smoke(
         check=True,
     ).stdout
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_implementation_scope_approval_json(
+    raw = assert_implementation_scope_approval_smoke_output(
         result.stdout,
         proposal_path,
+        target_root,
         approver=approver,
         approval_ref=approval_ref,
         approved_at=approved_at,
@@ -6906,7 +6916,7 @@ def assert_implementation_scope_approval_smoke(
     ).stdout
     if status_after != status_before:
         raise SystemExit(f"{context}: review-scope-approve changed the target repository")
-    return result.stdout
+    return raw
 
 
 def assert_implementation_evidence_smoke(
@@ -6996,35 +7006,6 @@ def assert_pilot_evidence_smoke(
     if status_after != status_before:
         raise SystemExit(f"{context}: review-pilot changed the target repository")
     return result.stdout
-
-
-def write_implementation_scope_request(file_path: Path) -> None:
-    file_path.write_text(
-        json.dumps(
-            {
-                "kind": "design-ai-implementation-scope-request",
-                "schemaVersion": 1,
-                "objective": "Clarify the settings save action without changing the architecture.",
-                "intendedBehavior": ["Keep the primary action clear and keyboard accessible."],
-                "files": {
-                    "inspect": ["src/settings/**/*.tsx", "src/settings/**/*.test.tsx"],
-                    "change": ["src/settings/**/*.tsx"],
-                    "generated": [],
-                },
-                "dependencies": [],
-                "migrations": [],
-                "externalWrites": [
-                    {"system": "GitHub", "action": "push branch", "destination": "acme/site"}
-                ],
-                "verificationCommands": ["npm test", "npm run build"],
-                "risks": ["The current label may be referenced by an existing test."],
-                "preExistingChanges": [],
-                "release": {"commit": True, "push": True, "deployment": False},
-            },
-            indent=2,
-        ) + "\n",
-        encoding="utf-8",
-    )
 
 
 def write_implementation_evidence_request(file_path: Path, target_root: Path) -> None:
@@ -7143,69 +7124,6 @@ def write_pilot_record(
     file_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
 
 
-def write_inspect_fixture(file_path: Path) -> None:
-    file_path.write_text(
-        """<!doctype html>
-<html lang="ko">
-  <head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-  <body><span>휴대폰 번호</span><input name="phone"><button>저장</button></body>
-</html>
-""",
-        encoding="utf-8",
-    )
-
-
-def write_browser_adapter(file_path: Path) -> None:
-    file_path.write_text(
-        r'''#!/usr/bin/env node
-let input = "";
-for await (const chunk of process.stdin) input += chunk;
-const request = JSON.parse(input);
-const { writeFileSync } = await import("node:fs");
-const pixel = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==",
-  "base64",
-);
-const probes = [];
-for (const viewport of request.viewports) {
-  for (const check of request.checks) {
-    const kind = check === "responsive" ? "screenshot" : check === "accessibility" ? "accessibility" : "trace";
-    const file = `${check}-${viewport.name}.${kind === "screenshot" ? "png" : kind === "accessibility" ? "json" : "txt"}`;
-    const contents = kind === "screenshot"
-      ? pixel
-      : kind === "accessibility"
-        ? JSON.stringify({ role: "document", viewport: viewport.name })
-        : `${check} passed at ${viewport.name}\n`;
-    writeFileSync(file, contents);
-    probes.push({
-      check,
-      viewport: viewport.name,
-      status: "pass",
-      observedAt: new Date().toISOString(),
-      observation: `${check} passed at ${viewport.name}`,
-      artifacts: [{ kind, path: file }],
-    });
-  }
-}
-process.stdout.write(JSON.stringify({
-  kind: "design-ai-browser-probe-result",
-  schemaVersion: 1,
-  tool: { name: "package-smoke-adapter", version: "1.0.0" },
-  policy: {
-    allowedOrigin: request.networkPolicy.allowedOrigin,
-    allowedMethods: request.networkPolicy.allowedMethods,
-    crossOrigin: "blocked",
-    webSockets: "blocked",
-    downloads: "blocked",
-  },
-  probes,
-}));
-''',
-        encoding="utf-8",
-    )
-    file_path.chmod(0o755)
-
-
 def assert_inspect_smoke(
     cmd: list[str],
     source_path: Path,
@@ -7217,7 +7135,7 @@ def assert_inspect_smoke(
 ) -> str:
     before = source_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_inspect_json(result.stdout, context=context, cmd=cmd)
+    assert_inspect_smoke_output(result.stdout, context=context, cmd=cmd)
     if source_path.read_bytes() != before:
         raise SystemExit(f"{context}: inspect changed the selected source file")
     if report_path is not None:
@@ -7237,36 +7155,14 @@ def assert_browser_verification_smoke(
     source_before = source_report.read_bytes()
     target_before = sorted(path.relative_to(target_root) for path in target_root.rglob("*"))
     result = run_plain(cmd, cwd=cwd, env=env)
-    try:
-        payload = json.loads(result.stdout)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: browser verification output is not JSON: {error}") from error
-    if payload.get("kind") != "design-ai-browser-verification" or payload.get("schemaVersion") != 1:
-        raise SystemExit(f"{context}: browser verification contract identity changed")
-    summary = payload.get("summary")
-    if not isinstance(summary, dict) or summary.get("status") != "pass":
-        raise SystemExit(f"{context}: browser verification did not pass")
-    if (summary.get("passed"), summary.get("failed"), summary.get("unverified")) != (14, 0, 0):
-        raise SystemExit(f"{context}: browser verification probe counts changed")
-    boundary = payload.get("boundary")
-    attestation = boundary.get("adapterAttestation") if isinstance(boundary, dict) else None
-    if not isinstance(attestation, dict) or attestation.get("networkPolicy") != "attested":
-        raise SystemExit(f"{context}: browser adapter network-policy attestation missing")
-    if attestation.get("targetRepoMutation") != "unverified" or attestation.get("externalWrites") != "unverified":
-        raise SystemExit(f"{context}: browser adapter write boundaries must remain unverified")
-    source_contract = payload.get("sourceReport")
-    if not isinstance(source_contract, dict) or source_contract.get("postRunDigestMatch") is not True:
-        raise SystemExit(f"{context}: browser source-report post-run digest match missing")
-    if boundary.get("sourceReportDigestMatchedAfterRun") is not True:
-        raise SystemExit(f"{context}: browser boundary post-run digest match missing")
-    evidence_path = Path(str(boundary.get("localEvidencePath", "")))
-    if not (evidence_path / "browser-verification.json").is_file():
-        raise SystemExit(f"{context}: normalized browser verification sidecar missing")
-    if source_report.read_bytes() != source_before:
-        raise SystemExit(f"{context}: browser verification changed the source report")
-    target_after = sorted(path.relative_to(target_root) for path in target_root.rglob("*"))
-    if target_after != target_before:
-        raise SystemExit(f"{context}: browser verification changed the target root")
+    assert_browser_verification_smoke_output(
+        result.stdout,
+        source_report,
+        target_root,
+        source_before=source_before,
+        target_before=target_before,
+        context=context,
+    )
 
 
 def assert_prompt_stdout_smoke(
@@ -17679,6 +17575,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin start plan",
         )
+        installed_review_phase = ReviewSmokePhaseAuthority("installed-bin")
         installed_inspect_source = tmp_root / "installed-inspect-source.html"
         installed_quality_report = tmp_root / "installed-quality-report.json"
         write_inspect_fixture(installed_inspect_source)
@@ -17704,6 +17601,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin canonical review",
         )
+        installed_review_phase.advance("review-workflow")
         installed_review_workflow.write_text(installed_review_source, encoding="utf-8")
         installed_review_handoff = tmp_root / "installed-review-handoff.json"
         installed_handoff_source = assert_review_handoff_smoke(
@@ -17720,6 +17618,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin review handoff",
         )
+        installed_review_phase.advance("review-handoff")
         installed_review_handoff.write_text(installed_handoff_source, encoding="utf-8")
         installed_review_receipt_source = assert_review_handoff_receipt_smoke(
             [
@@ -17735,6 +17634,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin review handoff receipt",
         )
+        installed_review_phase.advance("review-handoff-receipt")
         installed_review_receipt = tmp_root / "installed-review-handoff-receipt.json"
         installed_review_receipt.write_text(installed_review_receipt_source, encoding="utf-8")
         installed_intake_source = assert_target_repo_intake_smoke(
@@ -17754,6 +17654,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin target repo intake",
         )
+        installed_review_phase.advance("target-repo-intake")
         installed_target_intake = tmp_root / "installed-target-repo-intake.json"
         installed_target_intake.write_text(installed_intake_source, encoding="utf-8")
         installed_scope_request = tmp_root / "installed-implementation-scope-request.json"
@@ -17776,6 +17677,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin implementation scope proposal",
         )
+        installed_review_phase.advance("implementation-scope-proposal")
         installed_scope_proposal = tmp_root / "installed-implementation-scope-proposal.json"
         installed_scope_proposal.write_text(installed_scope_source, encoding="utf-8")
         installed_scope_approval_source = assert_implementation_scope_approval_smoke(
@@ -17800,6 +17702,8 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin implementation scope approval",
         )
+        installed_review_phase.advance("implementation-scope-approval")
+        installed_review_phase.finish()
         installed_scope_approval = tmp_root / "installed-implementation-scope-approval.json"
         installed_scope_approval.write_text(installed_scope_approval_source, encoding="utf-8")
         assert_inspect_smoke(
@@ -19370,6 +19274,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec specialization benchmark",
         )
+        npx_review_phase = ReviewSmokePhaseAuthority("npm-exec")
         npx_inspect_source = npx_root / "npx-inspect-source.html"
         npx_quality_report = npx_root / "npx-quality-report.json"
         write_inspect_fixture(npx_inspect_source)
@@ -19396,6 +19301,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec canonical review",
         )
+        npx_review_phase.advance("review-workflow")
         npx_review_workflow.write_text(npx_review_source, encoding="utf-8")
         npx_review_handoff = npx_root / "npx-review-handoff.json"
         npx_handoff_source = assert_review_handoff_smoke(
@@ -19413,6 +19319,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec review handoff",
         )
+        npx_review_phase.advance("review-handoff")
         npx_review_handoff.write_text(npx_handoff_source, encoding="utf-8")
         npx_review_receipt_source = assert_review_handoff_receipt_smoke(
             npm_exec_cmd(
@@ -19429,6 +19336,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec review handoff receipt",
         )
+        npx_review_phase.advance("review-handoff-receipt")
         npx_review_receipt = tmp_root / "npx-review-handoff-receipt.json"
         npx_review_receipt.write_text(npx_review_receipt_source, encoding="utf-8")
         npx_intake_source = assert_target_repo_intake_smoke(
@@ -19449,6 +19357,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec target repo intake",
         )
+        npx_review_phase.advance("target-repo-intake")
         npx_target_intake = tmp_root / "npx-target-repo-intake.json"
         npx_target_intake.write_text(npx_intake_source, encoding="utf-8")
         npx_scope_request = tmp_root / "npx-implementation-scope-request.json"
@@ -19472,6 +19381,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec implementation scope proposal",
         )
+        npx_review_phase.advance("implementation-scope-proposal")
         npx_scope_proposal = tmp_root / "npx-implementation-scope-proposal.json"
         npx_scope_proposal.write_text(npx_scope_source, encoding="utf-8")
         npx_scope_approval_source = assert_implementation_scope_approval_smoke(
@@ -19497,6 +19407,8 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec implementation scope approval",
         )
+        npx_review_phase.advance("implementation-scope-approval")
+        npx_review_phase.finish()
         npx_scope_approval = tmp_root / "npx-implementation-scope-approval.json"
         npx_scope_approval.write_text(npx_scope_approval_source, encoding="utf-8")
         implementation_source = target_repo_intake_root / "src" / "settings" / "view.tsx"

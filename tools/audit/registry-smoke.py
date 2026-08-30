@@ -35,6 +35,8 @@ from smoke_domains.site_validators import (
     assert_site_bundle_mcp_probes_payload,
     assert_site_mcp_probe_counts,
 )
+from smoke_domains.registry_review_quality import assert_inspect_smoke_output
+from smoke_domains.review_fixtures import write_inspect_fixture
 from smoke_domains.registry_learning_eval import (
     assert_learning_eval_template_json,
     assert_learning_eval_template_report_json,
@@ -118,7 +120,6 @@ from smoke_assertions import (
     assert_index_build_json,
     assert_index_status_json,
     assert_index_verify_json,
-    assert_inspect_json,
     assert_install_doctor_lifecycle_output,
     assert_list_catalog_output,
     assert_list_catalog_json,
@@ -2660,18 +2661,6 @@ def assert_start_smoke(
     assert_start_json(result.stdout, context=context, cmd=cmd)
 
 
-def write_inspect_fixture(file_path: Path) -> None:
-    file_path.write_text(
-        """<!doctype html>
-<html lang="ko">
-  <head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-  <body><span>휴대폰 번호</span><input name="phone"><button>저장</button></body>
-</html>
-""",
-        encoding="utf-8",
-    )
-
-
 def assert_inspect_smoke(
     cmd: list[str],
     source_path: Path,
@@ -2682,7 +2671,7 @@ def assert_inspect_smoke(
 ) -> None:
     before = source_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_inspect_json(result.stdout, context=context, cmd=cmd)
+    assert_inspect_smoke_output(result.stdout, context=context, cmd=cmd)
     if source_path.read_bytes() != before:
         raise SystemExit(f"{context}: inspect changed the selected source file")
 

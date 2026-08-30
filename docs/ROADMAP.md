@@ -1,5 +1,33 @@
 # Roadmap
 
+## Phase 799 - Review smoke domain extraction (P17B.4)
+
+- [x] Used committed clean P17B.3 baseline
+  `695721ba102d3d2f2c2bd0224e862fb0d0198b70` before source edits.
+- [x] Moved only inspect, review comparison, P6 review, P7 handoff, P8 receipt,
+  P9 intake, P10 scope proposal/approval, and browser-review assertions into
+  focused modules while keeping stable smoke entry points and real command
+  execution local.
+- [x] Preserved the nine moved callable ASTs (including `review_workflow_digest`)
+  and assertion failure-message behavior, the
+  npm 5.1.0 package version, SDK smoke bytes, P16 evidence digest, registry
+  fixture digest, and normalized packed command sequence.
+- [x] Added the narrow P6-P10 phase authority for installed-bin and one-shot npm
+  paths; focused negative cases reject missing, duplicate, reordered, and
+  unknown phases without a generic command facade.
+- [x] Kept all new modules below 400 lines and each new or moved function at or
+  below 200 lines; P11/P12, learning proposal review, product runtime, SDK
+  smoke, and install/search/show/route lifecycle remain untouched.
+- [x] Passed the full release gate: 832 Node tests, eight strict audits, 856
+  packaged files, documentation policy, release self-tests, and packed
+  installed-bin/one-shot npm smoke with a disposable local npm cache.
+
+### Boundary
+
+- P17B.4 changes only review-smoke organization. It adds no dependency,
+  migration, product-runtime change, CLI/SDK/MCP API, external write, commit,
+  push, publish, or deploy.
+
 ## Phase 798 - Learning smoke domain extraction (P17B.3)
 
 - [x] Applied and verified the sealed P17B.2 dirty baseline before editing.
@@ -20,7 +48,7 @@
 - [x] Passed focused self-tests, F821 and syntax checks, 832 Node tests, eight
   strict audits, the 845-file package-content check, documentation policy,
   release self-tests, and packed smoke.
-- [ ] Extract the review domain next.
+- [x] Extracted the review domain in Phase 799.
 - [ ] Extract implementation-evidence after review remains stable.
 - [ ] Extract pilot contracts after review and evidence remain stable.
 - [ ] Extract install/help/search/route lifecycle contracts last.

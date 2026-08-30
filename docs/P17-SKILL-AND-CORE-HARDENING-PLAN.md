@@ -128,8 +128,9 @@ Current verification evidence:
 
 ### P17B - Smoke harness modularization
 
-Status: P17B.3 is implemented for the current source snapshot; the full release
-evidence gate passed without changing a public product contract.
+Status: P17B.3 is the sealed baseline at `695721ba102d3d2f2c2bd0224e862fb0d0198b70`.
+P17B.4 extracts only the review contracts and passed the release evidence gate
+without a public product contract change.
 
 Current P17B.2 evidence:
 
@@ -199,12 +200,34 @@ Current P17B.3 evidence:
   npm remains 5.1.0, and the P16 program remains at SHA-256
   `9ca6d1421c25c30c89fc8dae84752d42770f8e78ed4a41a1df4e071da09b5338`.
 
+Current P17B.4 evidence:
+
+- the committed P17B.3 baseline was verified clean at
+  `695721ba102d3d2f2c2bd0224e862fb0d0198b70` before this extraction;
+- only inspect, review comparison, P6 review, P7 handoff, P8 receipt, P9
+  intake, P10 scope proposal/approval, and their browser-review helpers move
+  into responsibility-named review modules; the stable entry points retain
+  command execution and public callable names;
+- the nine moved callable ASTs, including `review_workflow_digest` and all
+  assertion failure-message expressions,
+  match the sealed baseline; P11 implementation evidence, P12 pilot evidence,
+  learning proposal review, product runtime, SDK smoke, and lifecycle coverage
+  stay outside the extraction;
+- `review_runner.py` is the narrow ordered phase authority for installed-bin and
+  one-shot npm execution: review, handoff, receipt, intake, scope proposal, and
+  scope approval each advance at their existing real command block;
+- review modules remain below 400 lines, and each new or moved function remains
+  at or below 200 lines; package version, P16 digest, registry fixture digest,
+  SDK smoke bytes, and the normalized packed command sequence remain unchanged;
+- focused self-tests plus 832 Node tests, eight strict audits, the 856-file
+  package-content check, documentation policy, release self-tests, and packed
+  installed-bin/one-shot npm smoke passed using a disposable local npm cache.
+
 Next domains remain separate and unverified:
 
-1. Extract review contracts without merging them into learning ownership.
-2. Extract implementation-evidence contracts as their own domain.
-3. Extract pilot contracts only after review and evidence remain stable.
-4. Extract install/help/search/route lifecycle contracts last.
+1. Extract implementation-evidence contracts as their own domain.
+2. Extract pilot contracts only after review and evidence remain stable.
+3. Extract install/help/search/route lifecycle contracts last.
 
 Exit criteria:
 
