@@ -3912,6 +3912,7 @@ from smoke_domains.review_handoff import (
     assert_review_handoff_json,
     assert_review_handoff_receipt_json,
 )
+from smoke_domains.implementation_evidence import assert_implementation_evidence_json
 from smoke_domains.review_intake import assert_target_repo_intake_json
 from smoke_domains.review_quality import (
     assert_inspect_json,
@@ -3923,77 +3924,6 @@ from smoke_domains.review_scope import (
     assert_implementation_scope_proposal_json,
 )
 from smoke_domains.review_workflow import assert_review_workflow_json
-
-
-def assert_implementation_evidence_json(
-    raw: str,
-    approval_path: Path,
-    request_path: Path,
-    target_root: Path,
-    *,
-    consumer: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        evidence = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"failed to parse implementation evidence after {context}") from error
-
-    if (
-        evidence.get("kind") != "design-ai-implementation-evidence"
-        or evidence.get("schemaVersion") != 1
-        or evidence.get("status") != "attention-required"
-        or evidence.get("consumer") != consumer
-    ):
-        raise SystemExit(f"implementation evidence after {context} changed identity or status")
-    for field, source_path in (("approval", approval_path), ("request", request_path)):
-        source = source_path.read_text(encoding="utf-8")
-        artifact = evidence.get(field, {})
-        if (
-            artifact.get("reference") != str(source_path.resolve())
-            or artifact.get("source") != source
-            or artifact.get("sha256") != hashlib.sha256(source.encode("utf-8")).hexdigest()
-            or artifact.get("bytes") != len(source.encode("utf-8"))
-            or artifact.get("value") != json.loads(source)
-        ):
-            raise SystemExit(f"implementation evidence after {context} changed {field} source identity")
-    observed = evidence.get("observed", {})
-    changes = observed.get("worktreeChanges", [])
-    if (
-        observed.get("targetPath") != str(target_root)
-        or observed.get("branch") != "main"
-        or len(changes) != 1
-        or changes[0].get("path") != "src/settings/view.tsx"
-        or changes[0].get("reported") is not True
-        or changes[0].get("selector") != "src/settings/**/*.tsx"
-    ):
-        raise SystemExit(f"implementation evidence after {context} changed observed Git evidence")
-    verification = evidence.get("verification", {})
-    if (
-        verification.get("expectedCommands") != ["npm test", "npm run build"]
-        or verification.get("summary") != {"pass": 0, "fail": 0, "notRun": 2}
-        or len(evidence.get("observations", [])) != 3
-        or evidence.get("artifacts") != []
-        or not evidence.get("issues")
-    ):
-        raise SystemExit(f"implementation evidence after {context} promoted missing proof")
-    boundary = evidence.get("boundary", {})
-    if (
-        boundary.get("mode") != "read-only-evidence"
-        or boundary.get("verificationCommandsExecuted") != []
-        or boundary.get("evidenceFilesRead") != []
-        or boundary.get("applicationSourceRead") is not False
-    ):
-        raise SystemExit(f"implementation evidence after {context} changed its read boundary")
-    for field in [
-        "localWrites", "targetRepoMutation", "externalWrites", "networkCalls",
-        "implementationPerformed", "commitAuthorized", "commitPerformed",
-        "pushAuthorized", "pushPerformed", "deploymentAuthorized", "deploymentPerformed",
-    ]:
-        if boundary.get(field) is not False:
-            raise SystemExit(f"implementation evidence after {context} expanded {field}")
 
 
 def assert_pilot_evidence_json(

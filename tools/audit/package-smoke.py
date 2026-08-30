@@ -63,6 +63,15 @@ from smoke_domains.package_review_scope import (
     assert_implementation_scope_proposal_smoke_output,
     assert_target_repo_intake_smoke_output,
 )
+from smoke_domains.package_implementation_evidence import (
+    assert_implementation_evidence_smoke_output,
+)
+from smoke_domains.implementation_evidence_fixtures import (
+    implementation_evidence_request_fixture,
+)
+from smoke_domains.implementation_evidence_runner import (
+    ImplementationEvidenceSmokePhaseAuthority,
+)
 from smoke_domains.review_fixtures import (
     write_browser_adapter,
     write_implementation_scope_request,
@@ -202,7 +211,6 @@ from smoke_assertions import (
     assert_index_build_json,
     assert_index_status_json,
     assert_index_verify_json,
-    assert_implementation_evidence_json,
     assert_pilot_evidence_json,
     assert_specialization_benchmark_json,
     assert_install_doctor_lifecycle_output,
@@ -6940,7 +6948,7 @@ def assert_implementation_evidence_smoke(
         check=True,
     ).stdout
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_implementation_evidence_json(
+    assert_implementation_evidence_smoke_output(
         result.stdout,
         approval_path,
         request_path,
@@ -7017,41 +7025,7 @@ def write_implementation_evidence_request(file_path: Path, target_root: Path) ->
         check=True,
     ).stdout.strip()
     file_path.write_text(
-        json.dumps(
-            {
-                "kind": "design-ai-implementation-evidence-request",
-                "schemaVersion": 1,
-                "consumer": "package-smoke-agent",
-                "implementationStartedAt": "2026-07-15T12:01:00.000Z",
-                "implementationCompletedAt": "2026-07-15T12:02:00.000Z",
-                "executedWork": [
-                    {
-                        "statusEntry": status,
-                        "path": "src/settings/view.tsx",
-                        "summary": "Implemented the approved settings action.",
-                    }
-                ],
-                "verificationResults": [
-                    {
-                        "command": command,
-                        "status": "not-run",
-                        "startedAt": "",
-                        "completedAt": "",
-                        "exitCode": None,
-                        "summary": "Not run during package contract smoke.",
-                        "artifacts": [],
-                    }
-                    for command in ["npm test", "npm run build"]
-                ],
-                "observations": [
-                    {"id": "a11y", "category": "accessibility", "status": "unverified", "summary": "Not exercised.", "artifacts": []},
-                    {"id": "responsive", "category": "responsive", "status": "unverified", "summary": "Not exercised.", "artifacts": []},
-                    {"id": "browser", "category": "browser", "status": "unverified", "summary": "Not exercised.", "artifacts": []},
-                ],
-                "remainingRisks": [],
-            },
-            indent=2,
-        ) + "\n",
+        json.dumps(implementation_evidence_request_fixture(status), indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -19417,8 +19391,14 @@ def smoke_tarball(tarball: Path) -> None:
             "export function Settings() { return <button>Save</button>; }\n",
             encoding="utf-8",
         )
+        installed_implementation_evidence_phase = ImplementationEvidenceSmokePhaseAuthority(
+            "installed-bin"
+        )
+        npx_implementation_evidence_phase = ImplementationEvidenceSmokePhaseAuthority("npm-exec")
         implementation_evidence_request = tmp_root / "implementation-evidence-request.json"
         write_implementation_evidence_request(implementation_evidence_request, target_repo_intake_root)
+        installed_implementation_evidence_phase.advance("implementation-evidence-request")
+        npx_implementation_evidence_phase.advance("implementation-evidence-request")
         installed_implementation_evidence_source = assert_implementation_evidence_smoke(
             [
                 str(bin_path),
@@ -19439,6 +19419,8 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin implementation evidence",
         )
+        installed_implementation_evidence_phase.advance("review-evidence")
+        installed_implementation_evidence_phase.finish()
         installed_implementation_evidence = tmp_root / "installed-implementation-evidence.json"
         installed_implementation_evidence.write_text(
             installed_implementation_evidence_source,
@@ -19465,6 +19447,8 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec implementation evidence",
         )
+        npx_implementation_evidence_phase.advance("review-evidence")
+        npx_implementation_evidence_phase.finish()
         npx_implementation_evidence = tmp_root / "npx-implementation-evidence.json"
         npx_implementation_evidence.write_text(npx_implementation_evidence_source, encoding="utf-8")
 

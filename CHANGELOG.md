@@ -6,6 +6,12 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Added
 
+- Added focused P11 implementation-evidence assertion, package-adapter, request
+  fixture, and phase-authority modules. Installed-bin and one-shot npm smoke each
+  execute `review-evidence` once at their existing command blocks.
+- Added an independently runnable implementation-evidence contract self-test for
+  the canonical callable AST, positive and failure fixtures, phase ordering, and
+  unsupported executors, then connected it to `release:self-test`.
 - Added focused review-smoke modules for inspect, review comparison, P6 review,
   P7 handoff, P8 receipt, P9 intake, P10 scope proposal/approval, and browser
   review evidence. Installed-bin and one-shot npm smoke now each advance the
@@ -44,6 +50,11 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Changed
 
+- Split only the P11 implementation-evidence smoke contract into direct focused
+  imports while preserving stable package wrapper names, real command execution,
+  input and Git mutation guards, return and exception behavior, failure messages,
+  and the 716-command packed sequence. Pilot, Website Console runtime, SDK smoke,
+  registry runtime, and lifecycle domains are unchanged.
 - Split the existing review assertions into direct responsibility imports while
   retaining stable entry-point callable names, real command execution, and exact
   assertion failure behavior. Implementation evidence, pilot evidence, learning

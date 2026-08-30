@@ -1,5 +1,39 @@
 # Roadmap
 
+## Phase 800 - Implementation-evidence smoke domain extraction (P17B.5)
+
+- [x] Materialized and verified the exact P17B.4 dirty baseline at
+  `695721ba102d3d2f2c2bd0224e862fb0d0198b70` before editing; the pre-edit
+  716-command packed smoke passed in 581.77 seconds.
+- [x] Moved only the P11 implementation-evidence assertion into a focused domain
+  while preserving its `smoke_assertions` import name, exact AST digest, and all
+  seven `SystemExit` failure expressions.
+- [x] Added a focused package adapter, pure request fixture builder, and separate
+  installed-bin and one-shot npm P11 phase authorities without moving real
+  command execution or the stable wrapper guards out of `package-smoke.py`.
+- [x] Added an independently runnable contract self-test for the AST snapshot,
+  positive and existing failure fixtures, phase-sequence negatives, and
+  unsupported executors, then wired it into `release:self-test`.
+- [x] Kept all five new modules below 400 lines and every new or moved function at
+  or below 79 lines; P12 pilot, Website Console runtime, SDK smoke, registry
+  runtime, lifecycle coverage, dependencies, migrations, and package 5.1.0 are
+  unchanged.
+- [x] Preserved the 4387-byte registry Website Console fixture and the exact
+  716-command normalized sequence SHA-256
+  `0654a8730d42526860bb1d00c16f1c828395ffd0aca448a1f137fcb30fd24a46`.
+- [x] Passed the full release gate: 832 Node tests, eight strict audits, 861
+  packaged files, 0/0 documentation warnings, release self-tests, and actual
+  packed installed-bin plus one-shot npm smoke in 680.33 seconds.
+- [ ] Extract pilot contracts after review and implementation evidence remain
+  stable.
+- [ ] Extract install/help/search/route lifecycle contracts last.
+
+### Boundary
+
+- P17B.5 changes only P11 smoke-test organization. It adds no dependency,
+  migration, product-runtime change, CLI/SDK/MCP/Website Console API, package
+  version, P16 state, external write, commit, push, publish, or deploy.
+
 ## Phase 799 - Review smoke domain extraction (P17B.4)
 
 - [x] Used committed clean P17B.3 baseline
@@ -18,7 +52,7 @@
 - [x] Kept all new modules below 400 lines and each new or moved function at or
   below 200 lines; P11/P12, learning proposal review, product runtime, SDK
   smoke, and install/search/show/route lifecycle remain untouched.
-- [x] Passed the full release gate: 832 Node tests, eight strict audits, 856
+- [x] Passed the full release gate: 832 Node tests, eight strict audits, 858
   packaged files, documentation policy, release self-tests, and packed
   installed-bin/one-shot npm smoke with a disposable local npm cache.
 
@@ -49,7 +83,7 @@
   strict audits, the 845-file package-content check, documentation policy,
   release self-tests, and packed smoke.
 - [x] Extracted the review domain in Phase 799.
-- [ ] Extract implementation-evidence after review remains stable.
+- [x] Extracted implementation-evidence after review remained stable in Phase 800.
 - [ ] Extract pilot contracts after review and evidence remain stable.
 - [ ] Extract install/help/search/route lifecycle contracts last.
 

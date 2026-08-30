@@ -129,7 +129,8 @@ Current verification evidence:
 ### P17B - Smoke harness modularization
 
 Status: P17B.3 is the sealed baseline at `695721ba102d3d2f2c2bd0224e862fb0d0198b70`.
-P17B.4 extracts only the review contracts and passed the release evidence gate
+P17B.4 extracts only the review contracts, and P17B.5 extracts only the P11
+implementation-evidence smoke contract. Both passed the release evidence gate
 without a public product contract change.
 
 Current P17B.2 evidence:
@@ -219,15 +220,42 @@ Current P17B.4 evidence:
 - review modules remain below 400 lines, and each new or moved function remains
   at or below 200 lines; package version, P16 digest, registry fixture digest,
   SDK smoke bytes, and the normalized packed command sequence remain unchanged;
-- focused self-tests plus 832 Node tests, eight strict audits, the 856-file
+- focused self-tests plus 832 Node tests, eight strict audits, the 858-file
   package-content check, documentation policy, release self-tests, and packed
   installed-bin/one-shot npm smoke passed using a disposable local npm cache.
 
+Current P17B.5 evidence:
+
+- the exact P17B.4 dirty baseline at
+  `695721ba102d3d2f2c2bd0224e862fb0d0198b70` was materialized and verified
+  before editing; pre-extraction packed smoke passed in 581.77 seconds;
+- `assert_implementation_evidence_json` now has one direct domain owner while
+  remaining importable through `smoke_assertions` under the same name; its AST
+  SHA-256 remains
+  `4af3d29424a464b61740f5610826b951b209e71a02dd8063cf1630d6c4b2433d`,
+  and its seven `SystemExit` expressions remain byte-equivalent;
+- the stable package request writer and smoke wrapper keep their names, Git and
+  input mutation guards, return and exception behavior, and real `run_plain`
+  execution; a focused adapter, pure request fixture builder, and separate
+  installed-bin and one-shot npm phase authorities own only P11 validation;
+- the focused P11 self-test covers the canonical AST, positive fixture, existing
+  failure families, missing, duplicate, reordered, and unknown phases, and
+  unsupported executors; it runs through `release:self-test`;
+- all five new modules remain below 400 lines, and every new or moved function is
+  at or below 79 lines;
+- the release gate passes 832/832 Node tests, eight strict audits, the 861-file
+  package-content check, the 0/0 documentation warning policy, release self-tests,
+  and actual installed-bin plus one-shot npm packed smoke; the observed
+  post-extraction gate wall time is 680.33 seconds;
+- packed smoke retains 716 commands and normalized sequence SHA-256
+  `0654a8730d42526860bb1d00c16f1c828395ffd0aca448a1f137fcb30fd24a46`;
+  package 5.1.0, SDK smoke bytes, the 4387-byte registry Website Console fixture,
+  and the P16 program digest remain unchanged.
+
 Next domains remain separate and unverified:
 
-1. Extract implementation-evidence contracts as their own domain.
-2. Extract pilot contracts only after review and evidence remain stable.
-3. Extract install/help/search/route lifecycle contracts last.
+1. Extract pilot contracts only after review and evidence remain stable.
+2. Extract install/help/search/route lifecycle contracts last.
 
 Exit criteria:
 
