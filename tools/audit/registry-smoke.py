@@ -35,6 +35,7 @@ from smoke_domains.site_validators import (
     assert_site_bundle_mcp_probes_payload,
     assert_site_mcp_probe_counts,
 )
+from smoke_domains.image_console import assert_image_console_smoke, run_image_console_self_test
 from smoke_domains.registry_review_quality import assert_inspect_smoke_output
 from smoke_domains.review_fixtures import write_inspect_fixture
 from smoke_domains.registry_learning_eval import (
@@ -3657,6 +3658,13 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             "npm_config_fund": "false",
         })
         wait_for_registry_package(package_spec, retries=retries, delay=delay, env=env)
+        assert_image_console_smoke(
+            lambda port: npm_exec_cmd(package_spec, "image", "serve", "--host", "127.0.0.1", "--port", str(port)),
+            cwd=npx_root,
+            env=env,
+            root=tmp_root / "image-console-registry",
+            context="registry smoke npm exec Image Console",
+        )
         assert_version_smoke(
             npm_exec_cmd(package_spec, "version"),
             cwd=npx_root,
@@ -4765,6 +4773,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
 
 
 def run_self_test() -> None:
+    run_image_console_self_test()
     run_doctor_assertions_self_test(context="registry smoke install", quiet=True)
 
     with tempfile.TemporaryDirectory(prefix="design-ai-registry-smoke-self-test-") as tmp:

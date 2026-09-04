@@ -4,6 +4,19 @@
 > 영어판 전체 증빙은 [RELEASE-GATES.md](RELEASE-GATES.md)를 참고하세요.
 > 릴리스 정책 가드(`npm run release:metadata`)는 README.ko.md와 이 문서를 함께 검사해요.
 
+## 현재 소스 Image Console 증빙 (미출시)
+
+Image Console release hardening은 current-source v5.2.0 release candidate에
+포함되지만 아직 unreleased이며 published behavior가 아니에요. 결정적인 local
+mock loopback flow는
+packaged static assets, health, catalog, generation draft validation, approval 전
+rejection, approved deterministic local provider execution을 installed-bin과
+one-shot packed-tarball 경로에서 확인해요. Prompt Guide/provider-network call은
+하지 않고 임시 HOME/npm cache/provider/asset root를 격리하며 child process를
+reap하고 repository status가 바뀌지 않는지 확인해요. Registry live coverage는
+future publish 전까지 pending이에요. Package contents에는 Image Console runtime,
+static, configuration과 `cli/lib/image-prompt-contract.d.ts`가 모두 필요해요.
+
 공개된 v5.1.0의 packed-tarball smoke와 registry smoke는 installed-bin과 one-shot `npm exec` 경로에서 `design-ai site --stdin --linked-preview --strict --json`을 실행해 linked root metadata, 기존 수동 start command, process 미실행, URL 미검증, target repo 미수정 경계를 확인해요.
 
 package와 plugin manifest가 식별하는 additive P6-P13 소스는 정확한 tag의

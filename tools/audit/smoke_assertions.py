@@ -327,6 +327,7 @@ EXPECTED_HELP_TOPICS = (
     "learn",
     "workspace",
     "site",
+    "image",
     "mcp",
     "version",
     "help",
@@ -388,9 +389,13 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
     "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--linked-preview [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] [--next-actions] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+    "image": "design-ai image serve [--host 127.0.0.1] [--port 4318]",
     "mcp": "design-ai mcp",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
+}
+EXPECTED_HELP_TOPIC_DESCRIPTIONS = {
+    "image": "Start the local approval-gated Image Console gateway",
 }
 EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "install": ("Usage:", "design-ai install [--json]"),
@@ -656,6 +661,11 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "--prompt id",
         "--task id",
         "--out file",
+    ),
+    "image": (
+        "Usage:",
+        "design-ai image serve [--host 127.0.0.1] [--port 4318]",
+        "Starts the local Image Console. Prompt Guide and provider credentials stay in this server process.",
     ),
     "mcp": (
         "Usage:",
@@ -4852,7 +4862,7 @@ def passing_help_catalog_json() -> str:
             {
                 "topic": topic,
                 "usage": EXPECTED_HELP_TOPIC_USAGES[topic],
-                "description": f"{topic} help topic",
+                "description": EXPECTED_HELP_TOPIC_DESCRIPTIONS.get(topic, f"{topic} help topic"),
                 "aliases": [
                     alias
                     for alias, target in EXPECTED_HELP_ALIASES.items()
@@ -5567,6 +5577,9 @@ def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
         description = item.get("description")
         if not isinstance(description, str) or not description:
             raise SystemExit(f"help JSON after {context} topic {topic} has invalid description")
+        expected_description = EXPECTED_HELP_TOPIC_DESCRIPTIONS.get(topic)
+        if expected_description is not None and description != expected_description:
+            raise SystemExit(f"help JSON after {context} description differs for topic {topic}")
         aliases = item.get("aliases")
         if not isinstance(aliases, list) or not all(isinstance(alias, str) and alias for alias in aliases):
             raise SystemExit(f"help JSON after {context} topic {topic} has invalid aliases")
@@ -9689,6 +9702,54 @@ def run_self_test() -> None:
         expected="duplicate topics",
         scope="smoke assertions",
     )
+    missing_image_topic_catalog = json.loads(passing_help_catalog_json())
+    missing_image_topic_catalog["topics"] = [
+        topic for topic in missing_image_topic_catalog["topics"] if topic["topic"] != "image"
+    ]
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(missing_image_topic_catalog), context=context, cmd=help_cmd),
+        expected="missing expected topic(s): image",
+        scope="smoke assertions",
+    )
+    extra_image_metadata_catalog = json.loads(passing_help_catalog_json())
+    image_topic_index = list(EXPECTED_HELP_TOPICS).index("image")
+    extra_image_metadata_catalog["topics"][image_topic_index]["extra"] = "drift"
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(extra_image_metadata_catalog), context=context, cmd=help_cmd),
+        expected="topic entry",
+        scope="smoke assertions",
+    )
+    reordered_image_topic_catalog = json.loads(passing_help_catalog_json())
+    reordered_image_topic_catalog["topics"][image_topic_index], reordered_image_topic_catalog["topics"][image_topic_index - 1] = (
+        reordered_image_topic_catalog["topics"][image_topic_index - 1],
+        reordered_image_topic_catalog["topics"][image_topic_index],
+    )
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(reordered_image_topic_catalog), context=context, cmd=help_cmd),
+        expected="topic order differs",
+        scope="smoke assertions",
+    )
+    drifted_image_usage_catalog = json.loads(passing_help_catalog_json())
+    drifted_image_usage_catalog["topics"][image_topic_index]["usage"] = "design-ai image"
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(drifted_image_usage_catalog), context=context, cmd=help_cmd),
+        expected="usage differs for topic image",
+        scope="smoke assertions",
+    )
+    drifted_image_description_catalog = json.loads(passing_help_catalog_json())
+    drifted_image_description_catalog["topics"][image_topic_index]["description"] = "Image Console"
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(drifted_image_description_catalog), context=context, cmd=help_cmd),
+        expected="description differs for topic image",
+        scope="smoke assertions",
+    )
+    drifted_image_alias_catalog = json.loads(passing_help_catalog_json())
+    drifted_image_alias_catalog["topics"][image_topic_index]["aliases"] = ["img"]
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(drifted_image_alias_catalog), context=context, cmd=help_cmd),
+        expected="aliases differ for topic image",
+        scope="smoke assertions",
+    )
     help_topic_cmd = ["design-ai", "help", "search"]
     assert_help_topic_output(
         passing_help_topic_output("search"),
@@ -9707,6 +9768,12 @@ def run_self_test() -> None:
         topic="site",
         context=context,
         cmd=["design-ai", "help", "site"],
+    )
+    assert_help_topic_output(
+        passing_help_topic_output("image"),
+        topic="image",
+        context=context,
+        cmd=["design-ai", "help", "image"],
     )
     expect_self_test_failure(
         lambda: assert_help_topic_output(
@@ -9760,6 +9827,32 @@ def run_self_test() -> None:
             topic="site",
             context=context,
             cmd=["design-ai", "help", "site"],
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_help_topic_output(
+            passing_help_topic_output("image").replace(
+                "design-ai image serve [--host 127.0.0.1] [--port 4318]",
+                "design-ai image serve",
+            ),
+            topic="image",
+            context=context,
+            cmd=["design-ai", "help", "image"],
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_help_topic_output(
+            passing_help_topic_output("image").replace(
+                "Starts the local Image Console. Prompt Guide and provider credentials stay in this server process.",
+                "Starts the local Image Console.",
+            ),
+            topic="image",
+            context=context,
+            cmd=["design-ai", "help", "image"],
         ),
         expected="missing expected content",
         scope="smoke assertions",

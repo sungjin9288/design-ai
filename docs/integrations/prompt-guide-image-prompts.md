@@ -2,6 +2,37 @@
 
 `design-ai image serve` runs a loopback-only Image Console for one local operator. Prompt Guide is the sole authority for prompt templates and specialization; the browser only talks to the same-origin Design gateway. The gateway performs recommendation, composition, and validation before one explicitly approved provider subprocess execution.
 
+## Current-source release status
+
+Image Console release hardening is part of the current-source v5.2.0 release
+candidate and remains unreleased; it is not published behavior. The
+deterministic local mock loopback flow covers
+packaged static assets, health, catalog, generation draft validation, rejection
+before approval, and one approved deterministic local provider execution through
+the installed-bin and one-shot packed-tarball paths. It makes no Prompt
+Guide/provider-network call, uses isolated temporary HOME, npm cache, provider,
+and asset roots, reaps child processes, and asserts unchanged repository status.
+Registry live coverage remains pending future publish. The registry smoke
+self-test mirrors this contract without claiming post-publish coverage.
+
+This page owns the exact current-source measurement so release-facing documents
+do not copy counts that drift as the package changes. The 2026-09-04 local RC
+receipt on macOS 26.6.2, Node 24.18.0, and Python 3.12.12 records 50/50 focused
+Image Console tests with no skips, 882/882 release-preflight Node tests, 8/8
+strict audits, 880 package files, and 0/0 documentation-policy warnings. Packed
+installed-bin and one-shot smoke plus `npm run release:check` pass. Packed bytes,
+artifact digest, and wall time belong to the source-repository run receipt rather
+than this packaged page. The earlier 46-pass/4-skip observation was sandbox-
+specific and is not the current local result.
+
+Manual browser QA covers the deterministic mock composition path, approval gate,
+expected missing-provider error, desktop and mobile layouts, keyboard navigation,
+focus visibility, reduced motion, and WCAG 2.1 AA contrast. Its source-repository
+receipt is `evidence/image-console/browser-qa.md`. No `PROMPT_GUIDE_*` or
+`IMAGE_PROVIDER_*` configuration was available during this run, so a live Prompt
+Guide call and real provider generation/edit remain unverified. Registry live
+coverage remains pending future publish.
+
 ## Architecture and boundaries
 
 | Role | Owns | Must not contain |

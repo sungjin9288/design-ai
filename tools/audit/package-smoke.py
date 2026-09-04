@@ -44,6 +44,7 @@ from smoke_domains.site_assertions_evidence import (
 )
 from smoke_domains.site_contracts import EXPECTED_SITE_MCP_PROBE_COUNTS
 from smoke_domains.site_runner import SiteSmokePhaseAuthority
+from smoke_domains.image_console import assert_image_console_smoke, run_image_console_self_test
 from smoke_domains.site_validators import (
     assert_site_bundle_mcp_probes_payload,
     assert_site_mcp_probe_counts,
@@ -9170,6 +9171,7 @@ def assert_embedding_stub_provider_roundtrip_smoke(
 
 def run_self_test() -> None:
     context = "package smoke self-test"
+    run_image_console_self_test()
     cmd = ["design-ai", "doctor", "--json"]
     assert_doctor_json_clean(
         passing_doctor_report_json(),
@@ -16515,6 +16517,13 @@ def smoke_tarball(tarball: Path) -> None:
             "DESIGN_AI_PREFIX": "smoke-design-",
             "NO_COLOR": "1",
         })
+        assert_image_console_smoke(
+            lambda port: [str(bin_path), "image", "serve", "--host", "127.0.0.1", "--port", str(port)],
+            cwd=install_root,
+            env=smoke_env,
+            root=tmp_root / "image-console-installed",
+            context="package smoke installed bin Image Console",
+        )
         installed_site_phase = SiteSmokePhaseAuthority("installed-bin")
 
         assert_version_smoke(
@@ -18223,6 +18232,13 @@ def smoke_tarball(tarball: Path) -> None:
             "DESIGN_AI_PREFIX": "npx-design-",
             "NO_COLOR": "1",
         })
+        assert_image_console_smoke(
+            lambda port: npm_exec_cmd(tarball, "image", "serve", "--host", "127.0.0.1", "--port", str(port)),
+            cwd=npx_root,
+            env=npx_env,
+            root=tmp_root / "image-console-npm-exec",
+            context="package smoke npm exec Image Console",
+        )
         npm_exec_site_phase = SiteSmokePhaseAuthority("npm-exec")
         assert_version_smoke(
             npm_exec_cmd(tarball, "version"),
@@ -20089,7 +20105,27 @@ def smoke_tarball(tarball: Path) -> None:
 def pack_and_smoke() -> None:
     with tempfile.TemporaryDirectory(prefix="design-ai-pack-") as tmp:
         dist = Path(tmp)
-        run(["npm", "pack", "--pack-destination", str(dist)])
+        pack_home = dist / "home"
+        pack_cache = dist / "npm-cache"
+        pack_tmp = dist / "tmp"
+        pack_home.mkdir()
+        pack_cache.mkdir()
+        pack_tmp.mkdir()
+        pack_userconfig = pack_home / ".npmrc"
+        pack_userconfig.write_text("", encoding="utf-8")
+        pack_env = os.environ.copy()
+        pack_env.update({
+            "HOME": str(pack_home),
+            "TMPDIR": str(pack_tmp),
+            "TMP": str(pack_tmp),
+            "TEMP": str(pack_tmp),
+            "npm_config_cache": str(pack_cache),
+            "npm_config_userconfig": str(pack_userconfig),
+            "npm_config_update_notifier": "false",
+            "npm_config_audit": "false",
+            "npm_config_fund": "false",
+        })
+        run(["npm", "pack", "--pack-destination", str(dist)], env=pack_env)
         tarballs = sorted(dist.glob("*.tgz"))
         if len(tarballs) != 1:
             raise SystemExit(f"expected exactly one packed tarball, found {len(tarballs)} in {dist}")

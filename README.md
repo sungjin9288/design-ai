@@ -94,6 +94,11 @@ CLI commands include `design-ai start <brief|--from-file file|--stdin> ...`, the
 
 `design-ai image serve` starts a loopback-only, approval-gated image workflow. Prompt Guide credentials remain server-side; generation or editing creates a read-only validated draft before the configured provider-neutral local subprocess can run. See [Prompt Guide Image Console](docs/integrations/prompt-guide-image-prompts.md) for the server-only environment contract and synthetic fixtures.
 
+Image Console release hardening is included in the current-source v5.2.0 release
+candidate and remains unreleased; the public baseline is still v5.1.0. The
+deterministic local mock loopback flow makes no Prompt Guide/provider-network
+call, and its registry smoke parity remains pending future publish.
+
 See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution guide.
 
 ## Install (other agents)

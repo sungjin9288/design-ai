@@ -1,5 +1,68 @@
 # Roadmap
 
+## Current-source Image Console release evidence
+
+Image Console release hardening is part of the current-source v5.2.0 release
+candidate and remains unreleased; this is not published behavior. The
+deterministic local mock loopback flow covers
+packaged static assets, health, catalog, generation draft validation, rejection
+before approval, and one approved deterministic local provider execution through
+installed-bin and one-shot packed-tarball paths. It makes no Prompt Guide/provider-network call, uses isolated temporary HOME, npm cache, provider, and asset roots, reaps child processes, and asserts unchanged repository status. Registry live coverage remains pending future publish. Package contents require the complete
+Image Console runtime, static, configuration, and
+`cli/lib/image-prompt-contract.d.ts` artifacts.
+
+The exact current-source test, audit, package, documentation, packed-smoke,
+browser-QA, and external-verification receipt is maintained once in the
+[Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
+integration guide. Registry live coverage remains pending future publish.
+
+## Phase 801 - Image Console release integration (v5.2.0)
+
+- [x] Chose a backward-compatible minor release because the Image Console and
+  prompt-generation workflow are additive and keep the existing CLI, SDK, MCP,
+  learning, and approval boundaries intact.
+- [x] Aligned the package and Claude plugin manifests at v5.2.0.
+- [x] Converted the accumulated Image Console, skill-contract, smoke-domain,
+  external-pilot, and documentation work into one release entry.
+- [x] Added a release-metadata transition guard that keeps checking the canonical
+  Image Console receipt after the changelog moves from Unreleased to v5.2.0.
+- [x] Completed local release and browser verification without a Prompt Guide or
+  provider-network call.
+- [ ] Pass pull-request CI and merge the exact reviewed release candidate.
+- [ ] Run a controlled live Prompt Guide and real provider generation/edit check
+  when server-only configuration is available.
+- [ ] Create and push the v5.2.0 tag only after merge approval; then verify npm,
+  GitHub Release, public registry smoke, docs, and any Homebrew follow-up.
+
+### Verified
+
+- All 8 audits passed for the v5.2.0 release candidate.
+- `npm run release:check` passed with 882/882 Node tests, 880 package files,
+  0/0 documentation-policy warnings, release self-tests, and packed installed-bin
+  plus one-shot npm smoke.
+- Browser QA passed at desktop and mobile widths with keyboard navigation, visible
+  focus, 44 px targets, reduced motion, WCAG 2.1 AA contrast, no horizontal
+  overflow, and clean console output before the expected missing-provider error.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 5.1.0 → 5.2.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+
+- The complete approval-gated Image Console can be reviewed and installed under
+  one candidate identity without representing its mock proof as a live provider
+  result or a published package.
+- The same PR can prove that release-facing documentation, package contents,
+  smoke contracts, and browser evidence describe the same source tree.
+
+### What's still ahead
+
+- Pull-request CI, reviewer approval, merge, controlled live integration when
+  credentials exist, tag workflows, npm/GitHub publication, public registry
+  smoke, and post-publish distribution verification.
+
 ## Phase 800 - Implementation-evidence smoke domain extraction (P17B.5)
 
 - [x] Materialized and verified the exact P17B.4 dirty baseline at
