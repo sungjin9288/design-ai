@@ -4,11 +4,7 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ## v5.2.0 — Image Console and release reliability (2026-09)
 
-Image Console release hardening is part of the current-source v5.2.0 candidate
-and remains unreleased; it is not published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Registry live
-coverage remains pending future publish, with the canonical receipt maintained
-in
-[`docs/integrations/prompt-guide-image-prompts.md`](docs/integrations/prompt-guide-image-prompts.md).
+Image Console release hardening shipped in v5.2.0 and is published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Published registry smoke passed; a live Prompt Guide call and a real provider generation/edit remain unverified. Canonical receipt: [`docs/integrations/prompt-guide-image-prompts.md`](docs/integrations/prompt-guide-image-prompts.md).
 
 ### Added
 
@@ -116,7 +112,7 @@ in
 ### Verified
 
 - All 8 audits passed for the v5.2.0 release candidate.
-- `npm run release:check` passed with 891/891 Node tests, 886 packaged files,
+- `npm run release:check` passed with 891/891 Node tests, 884 packaged files,
   0/0 documentation-policy warnings, release self-tests, and installed-bin plus
   one-shot `npm exec` smoke against the packed tarball.
 - Image Console browser QA passed at 1440×900 and 390×844 with no horizontal

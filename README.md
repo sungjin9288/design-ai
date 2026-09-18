@@ -5,7 +5,7 @@
   <p>Give Claude Code, Codex, Cursor, or Aider a structured design practice with accessibility, Korean-market depth, human approval gates, and exact evidence from brief to implementation.</p>
   <p class="design-ai-home-actions">
     <a class="design-ai-home-action design-ai-home-action--primary" href="https://sungjin9288.github.io/design-ai/docs/QUICKSTART/">Start in 5 minutes</a>
-    <a class="design-ai-home-action" href="https://sungjin9288.github.io/design-ai/docs/DISTRIBUTION/">Install v5.1.0</a>
+    <a class="design-ai-home-action" href="https://sungjin9288.github.io/design-ai/docs/DISTRIBUTION/">Install v5.2.0</a>
   </p>
   <p class="design-ai-home-proof"><span>21 expert skills</span><span>29 MCP tools</span><span>20 SDK exports</span><span>WCAG AA by default</span></p>
 </section>
@@ -21,9 +21,10 @@
 
 > **Not a model. Not a fine-tune.** A structured corpus of design expertise + agent-ready instructions that turn a general-purpose LLM into an expert.
 
-**v5.1.0 is public.** npm Trusted Publishing, SLSA provenance, GitHub Release,
-Homebrew install/test, and public registry smoke are verified. See the
-[`external publication status`](docs/external-status.md) for exact evidence.
+**v5.2.0 is public.** npm Trusted Publishing, SLSA provenance, GitHub Release,
+Homebrew formula, and public registry smoke are verified against the published
+package. See the [`external publication status`](docs/external-status.md) for
+exact evidence.
 
 ## Coverage at a glance
 
@@ -94,10 +95,10 @@ CLI commands include `design-ai start <brief|--from-file file|--stdin> ...`, the
 
 `design-ai image serve` starts a loopback-only, approval-gated image workflow. Prompt Guide credentials remain server-side; generation or editing creates a read-only validated draft before the configured provider-neutral local subprocess can run. See [Prompt Guide Image Console](docs/integrations/prompt-guide-image-prompts.md) for the server-only environment contract and synthetic fixtures.
 
-Image Console release hardening is included in the current-source v5.2.0 release
-candidate and remains unreleased; the public baseline is still v5.1.0. The
-deterministic local mock loopback flow makes no Prompt Guide/provider-network
-call, and its registry smoke parity remains pending future publish.
+Image Console release hardening shipped in v5.2.0, the current public baseline.
+Its published registry smoke passed. The verified flow is the deterministic local
+mock loopback, which makes no Prompt Guide/provider-network call; a live Prompt
+Guide call and a real provider generation/edit remain unverified.
 
 See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution guide.
 

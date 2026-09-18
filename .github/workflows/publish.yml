@@ -83,7 +83,10 @@ jobs:
 
       - name: Smoke-test published npm package
         if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
-        run: python3 tools/audit/registry-smoke.py
+        # The default 12x10s window is 113s. The v5.2.0 publish needed about five
+        # minutes before the registry resolved the new version, so that window
+        # failed a healthy publish. 40x15s gives ten minutes.
+        run: python3 tools/audit/registry-smoke.py --retries 40 --delay 15
 
       - name: Skip publish (dry run)
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}

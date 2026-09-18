@@ -1,20 +1,21 @@
 # Roadmap
 
-## Current-source Image Console release evidence
+## Image Console release evidence
 
-Image Console release hardening is part of the current-source v5.2.0 release
-candidate and remains unreleased; this is not published behavior. The
+Image Console release hardening shipped in v5.2.0 and is published behavior.
+Published registry smoke passed; a live Prompt Guide call and a real provider
+generation/edit remain unverified. The
 deterministic local mock loopback flow covers
 packaged static assets, health, catalog, generation draft validation, rejection
 before approval, and one approved deterministic local provider execution through
-installed-bin and one-shot packed-tarball paths. It makes no Prompt Guide/provider-network call, uses isolated temporary HOME, npm cache, provider, and asset roots, reaps child processes, and asserts unchanged repository status. Registry live coverage remains pending future publish. Package contents require the complete
+installed-bin and one-shot packed-tarball paths. It makes no Prompt Guide/provider-network call, uses isolated temporary HOME, npm cache, provider, and asset roots, reaps child processes, and asserts unchanged repository status. Package contents require the complete
 Image Console runtime, static, configuration, and
 `cli/lib/image-prompt-contract.d.ts` artifacts.
 
 The exact current-source test, audit, package, documentation, packed-smoke,
 browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
-integration guide. Registry live coverage remains pending future publish.
+integration guide.
 
 ## Phase 802 - Product completion design and Image Console correctness
 
@@ -54,7 +55,7 @@ publication, live provider result, or external participation is claimed.
 ### Verified
 
 - All 8 audits passed for the v5.2.0 release candidate.
-- `npm run release:check` passed with 891/891 Node tests, 886 package files,
+- `npm run release:check` passed with 891/891 Node tests, 884 package files,
   0/0 documentation-policy warnings, release self-tests, and packed installed-bin
   plus one-shot npm smoke.
 - Browser QA passed at desktop and mobile widths with keyboard navigation, visible
