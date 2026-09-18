@@ -2770,6 +2770,1068 @@ def wait_for_registry_package(
         time.sleep(delay)
 
 
+def _registry_package_site_payloads(env, npx_root, package_spec) -> None:
+    """Registry package smoke: site JSON, tasks, next actions, and prompt payloads."""
+    assert_site_json_smoke(
+        npm_exec_cmd(package_spec, "site", "--stdin", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site JSON",
+    )
+    assert_site_next_actions_json_smoke(
+        npm_exec_cmd(package_spec, "site", "--stdin", "--next-actions", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site next-actions JSON",
+    )
+    registry_site_next_actions_out = npx_root / "site-next-actions.json"
+    assert_site_next_actions_json_file_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "site",
+            "--stdin",
+            "--next-actions",
+            "--json",
+            "--out",
+            str(registry_site_next_actions_out),
+            "--force",
+        ),
+        registry_site_next_actions_out,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site next-actions JSON out file",
+    )
+    registry_site_next_actions_human_out = npx_root / "site-next-actions.md"
+    assert_site_next_actions_human_file_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "site",
+            "--stdin",
+            "--next-actions",
+            "--out",
+            str(registry_site_next_actions_human_out),
+            "--force",
+        ),
+        registry_site_next_actions_human_out,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site next-actions human out file",
+    )
+    assert_site_sample_json_smoke(
+        npm_exec_cmd(package_spec, "site", "--sample"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site sample JSON",
+    )
+    assert_site_prompt_templates_json_smoke(
+        npm_exec_cmd(package_spec, "site", "--prompt-list", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site prompt template listing JSON",
+    )
+    assert_site_mcp_check_json_smoke(
+        npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-check", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site mcp-check JSON",
+    )
+    registry_site_mcp_check_probes_cmd = npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-check", "--probes", "--json")
+    registry_site_mcp_check_probes_payload = assert_site_mcp_check_probes_json_smoke(
+        registry_site_mcp_check_probes_cmd,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site mcp-check probes JSON",
+    )
+    assert_site_mcp_check_probes_human_smoke(
+        npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-check", "--probes"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site mcp-check probes human",
+    )
+    registry_site_mcp_check_probes_human_path = npx_root / "registry-site-mcp-check-probes.txt"
+    assert_site_mcp_check_probes_human_file_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "site",
+            "--stdin",
+            "--mcp-check",
+            "--probes",
+            "--out",
+            str(registry_site_mcp_check_probes_human_path),
+            "--force",
+        ),
+        registry_site_mcp_check_probes_human_path,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site mcp-check probes human out file",
+    )
+    registry_site_mcp_check_probes_human_emitted_path = npx_root / "registry-site-mcp-check-probes-human-emitted.txt"
+    assert_site_mcp_check_probes_human_file_smoke(
+        site_mcp_probe_embedded_command(
+            registry_site_mcp_check_probes_payload,
+            "mcpCheckProbesHumanOut",
+            registry_site_mcp_check_probes_cmd,
+            output_path=registry_site_mcp_check_probes_human_emitted_path,
+            context="registry smoke npm exec emitted site mcp-check probes human command",
+        ),
+        registry_site_mcp_check_probes_human_emitted_path,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec emitted site mcp-check probes human out file",
+    )
+    registry_site_mcp_check_probes_json_path = npx_root / "registry-site-mcp-check-probes.json"
+    assert_site_mcp_check_probes_json_file_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "site",
+            "--stdin",
+            "--mcp-check",
+            "--probes",
+            "--json",
+            "--out",
+            str(registry_site_mcp_check_probes_json_path),
+            "--force",
+        ),
+        registry_site_mcp_check_probes_json_path,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site mcp-check probes JSON out file",
+    )
+    registry_site_mcp_check_probes_emitted_path = npx_root / "registry-site-mcp-check-probes-emitted.json"
+    assert_site_mcp_check_probes_json_file_smoke(
+        site_mcp_probe_embedded_command(
+            registry_site_mcp_check_probes_payload,
+            "mcpCheckProbesJsonOut",
+            registry_site_mcp_check_probes_cmd,
+            output_path=registry_site_mcp_check_probes_emitted_path,
+            context="registry smoke npm exec emitted site mcp-check probes command",
+        ),
+        registry_site_mcp_check_probes_emitted_path,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec emitted site mcp-check probes JSON out file",
+    )
+    assert_site_mcp_plan_probes_json_smoke(
+        site_mcp_probe_embedded_command(
+            registry_site_mcp_check_probes_payload,
+            "mcpPlanProbesJson",
+            registry_site_mcp_check_probes_cmd,
+            context="registry smoke npm exec emitted site mcp-plan probes JSON command",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec emitted site mcp-plan probes JSON",
+    )
+    registry_site_mcp_plan_emitted_json_path = npx_root / "registry-site-mcp-plan-probes-emitted.json"
+    assert_site_mcp_plan_probes_json_file_smoke(
+        site_mcp_probe_embedded_command(
+            registry_site_mcp_check_probes_payload,
+            "mcpPlanProbesJsonOut",
+            registry_site_mcp_check_probes_cmd,
+            output_path=registry_site_mcp_plan_emitted_json_path,
+            context="registry smoke npm exec emitted site mcp-plan probes output command",
+        ),
+        registry_site_mcp_plan_emitted_json_path,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec emitted site mcp-plan probes JSON out file",
+    )
+
+
+def _registry_package_site_mcp_and_bundles(env, npx_root, package_spec) -> None:
+    """Registry package smoke: site MCP probes, plans, and Website Console bundles."""
+    assert_site_mcp_plan_markdown_smoke(
+        npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site mcp-plan markdown",
+    )
+    assert_site_mcp_plan_probes_markdown_smoke(
+        npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site mcp-plan probes markdown",
+    )
+    registry_site_mcp_plan_probes_payload = assert_site_mcp_plan_probes_json_smoke(
+        npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site mcp-plan probes JSON",
+    )
+    registry_site_mcp_plan_human_emitted_path = npx_root / "registry-site-mcp-plan-probes-human-emitted.txt"
+    assert_site_mcp_check_probes_human_file_smoke(
+        site_mcp_probe_embedded_command(
+            registry_site_mcp_plan_probes_payload,
+            "mcpCheckProbesHumanOut",
+            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+            output_path=registry_site_mcp_plan_human_emitted_path,
+            context="registry smoke npm exec emitted site mcp-plan probes human command",
+        ),
+        registry_site_mcp_plan_human_emitted_path,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec emitted site mcp-plan probes human out file",
+    )
+    registry_site_mcp_plan_check_json_emitted_path = npx_root / "registry-site-mcp-plan-probes-check-emitted.json"
+    assert_site_mcp_check_probes_json_file_smoke(
+        site_mcp_probe_embedded_command(
+            registry_site_mcp_plan_probes_payload,
+            "mcpCheckProbesJsonOut",
+            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+            output_path=registry_site_mcp_plan_check_json_emitted_path,
+            context="registry smoke npm exec emitted site mcp-plan probes check JSON command",
+        ),
+        registry_site_mcp_plan_check_json_emitted_path,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec emitted site mcp-plan probes check JSON out file",
+    )
+    registry_site_mcp_plan_json_emitted_path = npx_root / "registry-site-mcp-plan-probes-plan-emitted.json"
+    assert_site_mcp_plan_probes_json_file_smoke(
+        site_mcp_probe_embedded_command(
+            registry_site_mcp_plan_probes_payload,
+            "mcpPlanProbesJsonOut",
+            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
+            output_path=registry_site_mcp_plan_json_emitted_path,
+            context="registry smoke npm exec emitted site mcp-plan probes plan JSON command",
+        ),
+        registry_site_mcp_plan_json_emitted_path,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec emitted site mcp-plan probes plan JSON out file",
+    )
+    registry_site_mcp_plan_json_path = npx_root / "registry-site-mcp-plan-probes.json"
+    assert_site_mcp_plan_probes_json_file_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "site",
+            "--stdin",
+            "--mcp-plan",
+            "--probes",
+            "--json",
+            "--out",
+            str(registry_site_mcp_plan_json_path),
+            "--force",
+        ),
+        registry_site_mcp_plan_json_path,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site mcp-plan probes JSON out file",
+    )
+    registry_site_bundle_dir = npx_root / "registry-site-handoff-bundle"
+    assert_site_bundle_smoke(
+        npm_exec_cmd(package_spec, "site", "--stdin", "--bundle", "--out", str(registry_site_bundle_dir)),
+        out_dir=registry_site_bundle_dir,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site handoff bundle",
+    )
+    assert_site_bundle_check_json_smoke(
+        npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-check", "--strict", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site bundle-check JSON",
+    )
+    assert_site_bundle_compare_json_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "site",
+            str(registry_site_bundle_dir),
+            "--bundle-compare",
+            str(registry_site_bundle_dir),
+            "--strict",
+            "--json",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site bundle-compare JSON",
+    )
+    registry_site_warning_bundle_dir = npx_root / "registry-site-warning-handoff-bundle"
+    assert_site_warning_bundle_smoke(
+        npm_exec_cmd(package_spec, "site", "--stdin", "--bundle", "--out", str(registry_site_warning_bundle_dir)),
+        out_dir=registry_site_warning_bundle_dir,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site warning handoff bundle",
+    )
+    assert_site_bundle_compare_warning_strict_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "site",
+            str(registry_site_warning_bundle_dir),
+            "--bundle-compare",
+            str(registry_site_warning_bundle_dir),
+            "--strict",
+            "--json",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site warning bundle-compare strict JSON",
+    )
+    assert_site_bundle_handoff_json_smoke(
+        npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-handoff", "--strict", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site bundle-handoff JSON",
+    )
+    assert_site_bundle_repair_json_smoke(
+        npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-repair", "--json"),
+        npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-repair", "--yes", "--json"),
+        npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-check", "--strict", "--json"),
+        bundle_dir=registry_site_bundle_dir,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site bundle-repair JSON",
+    )
+    assert_site_tasks_json_smoke(
+        npm_exec_cmd(package_spec, "site", "--stdin", "--tasks"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site tasks JSON",
+    )
+    assert_site_prompt_markdown_smoke(
+        npm_exec_cmd(package_spec, "site", "--stdin", "--prompt", "codex-implementation", "--task", "task-homepage-cta"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec site task-selected prompt markdown",
+    )
+    assert_main_help_smoke(
+        npm_exec_cmd(package_spec, "help"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec main help",
+    )
+    run_expected_failure(
+        npm_exec_cmd(package_spec, EXPECTED_UNKNOWN_COMMAND),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec unknown command",
+        assertion=assert_unknown_command_failure,
+    )
+    run_expected_failure(
+        npm_exec_cmd(package_spec, "help", EXPECTED_UNKNOWN_HELP_TOPIC),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec unknown help topic",
+        assertion=assert_unknown_help_topic_failure,
+    )
+    run_expected_failure(
+        npm_exec_cmd(package_spec, "list", EXPECTED_UNKNOWN_LIST_DOMAIN),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec unknown list domain",
+        assertion=assert_unknown_list_domain_failure,
+    )
+
+
+def _registry_package_command_surface(env, npx_root, package_spec):
+    """Registry package smoke: route, search, pack, prompt, and failure-path commands."""
+    unknown_route_smokes = (
+        ("prompt", npm_exec_cmd(package_spec, "prompt", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
+        ("pack", npm_exec_cmd(package_spec, "pack", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
+        ("examples", npm_exec_cmd(package_spec, "examples", "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
+        ("check", npm_exec_cmd(package_spec, "check", "--examples", "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
+    )
+    for label, command in unknown_route_smokes:
+        run_expected_failure(
+            command,
+            cwd=npx_root,
+            env=env,
+            context=f"registry smoke npm exec unknown route id {label}",
+            assertion=assert_unknown_route_id_failure,
+        )
+    for command_name, option, suggestion in EXPECTED_UNKNOWN_OPTION_SMOKES:
+        assert_unknown_option_smoke(
+            npm_exec_cmd(package_spec, *unknown_option_args(command_name, option)),
+            command_name=command_name,
+            option=option,
+            suggestion=suggestion,
+            cwd=npx_root,
+            env=env,
+            context=f"registry smoke npm exec unknown {command_name} option",
+        )
+    run_expected_failure(
+        npm_exec_cmd(package_spec, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", EXPECTED_UNKNOWN_SEARCH_DIR),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec unknown search dir value",
+        assertion=assert_search_dir_value_failure,
+    )
+    for label, args, expected_message in EXPECTED_NUMERIC_VALUE_SMOKES:
+        assert_numeric_value_smoke(
+            npm_exec_cmd(package_spec, *args),
+            expected_message=expected_message,
+            cwd=npx_root,
+            env=env,
+            context=f"registry smoke npm exec invalid numeric value {label}",
+        )
+    help_topics = read_help_topics(npm_exec_cmd(package_spec, "help", "--json"), cwd=npx_root, env=env)
+    for topic in help_topics:
+        assert_help_topic_smoke(
+            npm_exec_cmd(package_spec, "help", topic),
+            topic=topic,
+            cwd=npx_root,
+            env=env,
+            context=f"registry smoke npm exec help topic {topic}",
+        )
+    for alias in EXPECTED_HELP_ALIASES:
+        assert_help_topic_smoke(
+            npm_exec_cmd(package_spec, "help", alias),
+            topic=alias,
+            cwd=npx_root,
+            env=env,
+            context=f"registry smoke npm exec help alias {alias}",
+        )
+    for command in EXPECTED_COMMAND_ALIAS_COMMANDS:
+        assert_command_alias_smoke(
+            npm_exec_cmd(package_spec, *command),
+            command=command,
+            cwd=npx_root,
+            env=env,
+            context=f"registry smoke npm exec command alias {' '.join(command)}",
+        )
+    assert_functional_alias_smokes(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        run_command=run_plain,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec functional alias",
+    )
+    for kind in ("skills", "commands", "agents"):
+        assert_list_smoke(
+            npm_exec_cmd(package_spec, "list", kind),
+            kind=kind,
+            cwd=npx_root,
+            env=env,
+            context=f"registry smoke npm exec list {kind}",
+        )
+        assert_list_json_smoke(
+            npm_exec_cmd(package_spec, "list", kind, "--json"),
+            kind=kind,
+            cwd=npx_root,
+            env=env,
+            context=f"registry smoke npm exec list {kind} JSON",
+        )
+    assert_search_smoke(
+        npm_exec_cmd(package_spec, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec search corpus",
+    )
+    assert_search_human_smoke(
+        npm_exec_cmd(package_spec, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec search human corpus",
+    )
+    assert_show_smoke(
+        npm_exec_cmd(package_spec, "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec show corpus",
+    )
+    assert_show_human_smoke(
+        npm_exec_cmd(package_spec, "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec show human corpus",
+    )
+    assert_show_range_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "show",
+            EXPECTED_CORPUS_SHOW_REL_PATH,
+            "--lines",
+            EXPECTED_CORPUS_SHOW_RANGE,
+            "--json",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec show line range",
+    )
+    assert_show_human_range_smoke(
+        npm_exec_cmd(package_spec, "show", EXPECTED_CORPUS_SHOW_REL_PATH, "--lines", EXPECTED_CORPUS_SHOW_RANGE),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec show human line range",
+    )
+    assert_route_catalog_smoke(
+        npm_exec_cmd(package_spec, "routes", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec routes catalog",
+    )
+    assert_route_catalog_smoke(
+        npm_exec_cmd(package_spec, "route", "--list", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec route list catalog",
+    )
+    assert_route_smoke(
+        npm_exec_cmd(package_spec, "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec route recommendation",
+    )
+    assert_route_explain_smoke(
+        npm_exec_cmd(package_spec, "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--explain"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec route explanation",
+    )
+    route_brief = npx_root / "route-brief.md"
+    write_smoke_brief(route_brief)
+    assert_route_smoke(
+        npm_exec_cmd(package_spec, "route", "--from-file", str(route_brief), "--limit", "1", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec route from file",
+    )
+    assert_route_stdin_smoke(
+        npm_exec_cmd(package_spec, "route", "--stdin", "--limit", "1", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec route stdin",
+    )
+    assert_start_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "start",
+            EXPECTED_ROUTE_BRIEF,
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--local-path",
+            str(npx_root / "declared-target-repo"),
+            "--url",
+            "https://example.com/component",
+            "--screenshot",
+            str(npx_root / "declared-screen.png"),
+            "--locale",
+            "ko-KR",
+            "--viewport",
+            "mobile",
+            "--json",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec start plan",
+    )
+    inspect_source = npx_root / "inspect-source.html"
+    write_inspect_fixture(inspect_source)
+    assert_inspect_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "inspect",
+            str(inspect_source),
+            "--brief",
+            "Review a Korean settings flow",
+            "--locale",
+            "ko-KR",
+            "--viewport",
+            "mobile",
+            "--json",
+        ),
+        inspect_source,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec HTML inspection",
+    )
+    prompt_json = npx_root / "prompt.json"
+    assert_prompt_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "prompt",
+            EXPECTED_ROUTE_BRIEF,
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--json",
+            "--out",
+            str(prompt_json),
+            "--force",
+        ),
+        prompt_json,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec prompt plan",
+    )
+    assert_prompt_stdout_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "prompt",
+            EXPECTED_ROUTE_BRIEF,
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--json",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec prompt stdout",
+    )
+    assert_prompt_markdown_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "prompt",
+            EXPECTED_ROUTE_BRIEF,
+            "--route",
+            EXPECTED_ROUTE_ID,
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec prompt markdown stdout",
+    )
+    prompt_markdown = npx_root / "prompt.md"
+    assert_prompt_markdown_file_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "prompt",
+            EXPECTED_ROUTE_BRIEF,
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--out",
+            str(prompt_markdown),
+            "--force",
+        ),
+        prompt_markdown,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec prompt markdown file",
+    )
+    assert_output_overwrite_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "prompt",
+            EXPECTED_ROUTE_BRIEF,
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--out",
+            str(prompt_markdown),
+        ),
+        prompt_markdown,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec prompt output overwrite",
+    )
+    prompt_file_json = npx_root / "prompt-from-file.json"
+    assert_prompt_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "prompt",
+            "--from-file",
+            str(route_brief),
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--json",
+            "--out",
+            str(prompt_file_json),
+            "--force",
+        ),
+        prompt_file_json,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec prompt from file",
+    )
+    prompt_stdin_json = npx_root / "prompt-stdin.json"
+    assert_prompt_stdin_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "prompt",
+            "--stdin",
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--json",
+            "--out",
+            str(prompt_stdin_json),
+            "--force",
+        ),
+        prompt_stdin_json,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec prompt stdin",
+    )
+    pack_json = npx_root / "pack.json"
+    assert_pack_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "pack",
+            EXPECTED_ROUTE_BRIEF,
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--max-bytes",
+            str(EXPECTED_PACK_MAX_BYTES),
+            "--json",
+            "--out",
+            str(pack_json),
+            "--force",
+        ),
+        pack_json,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec prompt pack",
+    )
+    assert_pack_stdout_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "pack",
+            EXPECTED_ROUTE_BRIEF,
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--max-bytes",
+            str(EXPECTED_PACK_MAX_BYTES),
+            "--json",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec pack stdout",
+    )
+    assert_pack_markdown_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "pack",
+            EXPECTED_ROUTE_BRIEF,
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--max-bytes",
+            str(EXPECTED_PACK_MAX_BYTES),
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec pack markdown stdout",
+    )
+    pack_markdown = npx_root / "pack.md"
+    assert_pack_markdown_file_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "pack",
+            EXPECTED_ROUTE_BRIEF,
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--max-bytes",
+            str(EXPECTED_PACK_MAX_BYTES),
+            "--out",
+            str(pack_markdown),
+            "--force",
+        ),
+        pack_markdown,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec pack markdown file",
+    )
+    assert_output_overwrite_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "pack",
+            EXPECTED_ROUTE_BRIEF,
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--max-bytes",
+            str(EXPECTED_PACK_MAX_BYTES),
+            "--out",
+            str(pack_markdown),
+        ),
+        pack_markdown,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec pack output overwrite",
+    )
+    pack_file_json = npx_root / "pack-from-file.json"
+    assert_pack_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "pack",
+            "--from-file",
+            str(route_brief),
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--max-bytes",
+            str(EXPECTED_PACK_MAX_BYTES),
+            "--json",
+            "--out",
+            str(pack_file_json),
+            "--force",
+        ),
+        pack_file_json,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec pack from file",
+    )
+    return help_topics
+
+
+def _registry_package_help_and_lifecycle(env, help_topics, npx_root, package_spec) -> None:
+    """Registry package smoke: help catalog, doctor, install, status, and uninstall."""
+    pack_stdin_json = npx_root / "pack-stdin.json"
+    assert_pack_stdin_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "pack",
+            "--stdin",
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--max-bytes",
+            str(EXPECTED_PACK_MAX_BYTES),
+            "--json",
+            "--out",
+            str(pack_stdin_json),
+            "--force",
+        ),
+        pack_stdin_json,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec pack stdin",
+    )
+    assert_examples_smoke(
+        npm_exec_cmd(package_spec, "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec examples corpus",
+    )
+    assert_examples_human_smoke(
+        npm_exec_cmd(package_spec, "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec examples human corpus",
+    )
+    assert_check_examples_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "check",
+            "--examples",
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--limit",
+            str(EXPECTED_CHECK_EXAMPLES_LIMIT),
+            "--strict",
+            "--json",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec check examples",
+    )
+    assert_check_all_routes_issues_only_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "check",
+            "--examples",
+            "--all-routes",
+            "--limit",
+            "1",
+            "--issues-only",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec check all routes issues only",
+    )
+    check_artifact = npx_root / EXPECTED_CHECK_ARTIFACT_NAME
+    write_check_artifact(check_artifact)
+    assert_check_artifact_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "check",
+            str(check_artifact),
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--strict",
+            "--json",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec check artifact",
+    )
+    assert_check_stdin_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "check",
+            "--stdin",
+            "--route",
+            EXPECTED_ROUTE_ID,
+            "--strict",
+            "--json",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec check stdin",
+    )
+    check_learning_artifact = npx_root / "registry-check-learning.md"
+    check_learning_profile = npx_root / "registry-check-learning.json"
+    write_check_learning_capture_artifact(check_learning_artifact)
+    assert_check_learning_capture_smoke(
+        npm_exec_cmd(
+            package_spec,
+            "check",
+            str(check_learning_artifact),
+            "--learn",
+            "--yes",
+            "--learning-file",
+            str(check_learning_profile),
+            "--json",
+        ),
+        profile_path=check_learning_profile,
+        expected_file_suffix=check_learning_artifact.name,
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec check learning capture",
+    )
+    assert_audit_smoke(
+        npm_exec_cmd(package_spec, "audit", "--strict", "--quiet"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec audit strict",
+    )
+    assert_audit_json_smoke(
+        npm_exec_cmd(package_spec, "audit", "--strict", "--quiet", "--json"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec audit JSON",
+    )
+    assert_learning_feedback_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-feedback-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec learn feedback",
+    )
+    assert_learning_init_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-init-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec learn init",
+    )
+    assert_learning_verify_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-verify-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec learn verify",
+    )
+    assert_learning_backup_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-backup-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec learn backup",
+    )
+    assert_learning_restore_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-restore-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec learn restore",
+    )
+    assert_learning_import_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-import-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec learn import",
+    )
+    assert_learning_redact_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-redact-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec learn redact",
+    )
+    assert_learning_stats_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-stats-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec learn stats",
+    )
+    assert_learning_recall_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-recall-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec learn recall",
+    )
+    assert_learning_audit_cleanup_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-audit-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec learn audit cleanup",
+    )
+    assert_learning_relevance_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-relevance-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec learning relevance",
+    )
+    assert_index_roundtrip_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-index",
+        npx_root / "registry-index-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec index roundtrip",
+    )
+    assert_ranked_search_determinism_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-ranked-search-index",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec ranked search determinism",
+    )
+    assert_embeddings_off_by_default_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        npx_root / "registry-embeddings-off-index",
+        npx_root / "registry-embeddings-off-learning.json",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec embeddings off by default",
+    )
+    assert_search_embeddings_no_provider_fallback_smoke(
+        lambda *args: npm_exec_cmd(package_spec, *args),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec search embeddings no provider fallback",
+        config_file=npx_root / "registry-no-config-here" / "config.json",
+    )
+    assert_update_dry_run_smoke(
+        npm_exec_cmd(package_spec, "update", "--dry-run"),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec update dry run",
+    )
+    assert_update_dry_run_json_smoke(
+        npm_exec_cmd(package_spec, "update", "--dry-run", "--json"),
+        prefix="registry-design-",
+        cwd=npx_root,
+        env=env,
+        context="registry smoke npm exec update dry-run JSON",
+    )
+    doctor_json = npx_root / "doctor.json"
+    status_json = npx_root / "status.json"
+    install_json = npx_root / "install.json"
+    uninstall_json = npx_root / "uninstall.json"
+    assert_install_lifecycle_smoke(
+        npm_exec_shell_cmd(
+            package_spec,
+            help_topic_script(help_topics) + " && "
+            + help_alias_script() + " && "
+            + command_alias_script() + " && "
+            "design-ai install && "
+            "design-ai doctor --json > doctor.json && "
+            "design-ai doctor --strict && "
+            "design-ai status && "
+            "design-ai status --json > status.json && "
+            "design-ai uninstall && "
+            "design-ai install --json > install.json && "
+            "design-ai uninstall --json > uninstall.json",
+        ),
+        cwd=npx_root,
+        env=env,
+        context="registry smoke install lifecycle",
+    )
+    assert_doctor_report_clean(read_doctor_report(doctor_json), context="registry smoke install")
+    assert_status_json_file(status_json, prefix="registry-design-", context="registry smoke status JSON")
+    assert_install_json_file(install_json, prefix="registry-design-", context="registry smoke install JSON")
+    assert_uninstall_json_file(uninstall_json, prefix="registry-design-", context="registry smoke uninstall JSON")
+
+
 def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> None:
     if retries < 1:
         raise SystemExit("--retries must be at least 1")
@@ -2868,1187 +3930,159 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             env=env,
             context="registry smoke npm exec workspace restore-backups JSON",
         )
-        assert_site_json_smoke(
-            npm_exec_cmd(package_spec, "site", "--stdin", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site JSON",
-        )
-        assert_site_next_actions_json_smoke(
-            npm_exec_cmd(package_spec, "site", "--stdin", "--next-actions", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site next-actions JSON",
-        )
-        registry_site_next_actions_out = npx_root / "site-next-actions.json"
-        assert_site_next_actions_json_file_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "site",
-                "--stdin",
-                "--next-actions",
-                "--json",
-                "--out",
-                str(registry_site_next_actions_out),
-                "--force",
-            ),
-            registry_site_next_actions_out,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site next-actions JSON out file",
-        )
-        registry_site_next_actions_human_out = npx_root / "site-next-actions.md"
-        assert_site_next_actions_human_file_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "site",
-                "--stdin",
-                "--next-actions",
-                "--out",
-                str(registry_site_next_actions_human_out),
-                "--force",
-            ),
-            registry_site_next_actions_human_out,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site next-actions human out file",
-        )
-        assert_site_sample_json_smoke(
-            npm_exec_cmd(package_spec, "site", "--sample"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site sample JSON",
-        )
-        assert_site_prompt_templates_json_smoke(
-            npm_exec_cmd(package_spec, "site", "--prompt-list", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site prompt template listing JSON",
-        )
-        assert_site_mcp_check_json_smoke(
-            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-check", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site mcp-check JSON",
-        )
-        registry_site_mcp_check_probes_cmd = npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-check", "--probes", "--json")
-        registry_site_mcp_check_probes_payload = assert_site_mcp_check_probes_json_smoke(
-            registry_site_mcp_check_probes_cmd,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site mcp-check probes JSON",
-        )
-        assert_site_mcp_check_probes_human_smoke(
-            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-check", "--probes"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site mcp-check probes human",
-        )
-        registry_site_mcp_check_probes_human_path = npx_root / "registry-site-mcp-check-probes.txt"
-        assert_site_mcp_check_probes_human_file_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "site",
-                "--stdin",
-                "--mcp-check",
-                "--probes",
-                "--out",
-                str(registry_site_mcp_check_probes_human_path),
-                "--force",
-            ),
-            registry_site_mcp_check_probes_human_path,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site mcp-check probes human out file",
-        )
-        registry_site_mcp_check_probes_human_emitted_path = npx_root / "registry-site-mcp-check-probes-human-emitted.txt"
-        assert_site_mcp_check_probes_human_file_smoke(
-            site_mcp_probe_embedded_command(
-                registry_site_mcp_check_probes_payload,
-                "mcpCheckProbesHumanOut",
-                registry_site_mcp_check_probes_cmd,
-                output_path=registry_site_mcp_check_probes_human_emitted_path,
-                context="registry smoke npm exec emitted site mcp-check probes human command",
-            ),
-            registry_site_mcp_check_probes_human_emitted_path,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec emitted site mcp-check probes human out file",
-        )
-        registry_site_mcp_check_probes_json_path = npx_root / "registry-site-mcp-check-probes.json"
-        assert_site_mcp_check_probes_json_file_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "site",
-                "--stdin",
-                "--mcp-check",
-                "--probes",
-                "--json",
-                "--out",
-                str(registry_site_mcp_check_probes_json_path),
-                "--force",
-            ),
-            registry_site_mcp_check_probes_json_path,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site mcp-check probes JSON out file",
-        )
-        registry_site_mcp_check_probes_emitted_path = npx_root / "registry-site-mcp-check-probes-emitted.json"
-        assert_site_mcp_check_probes_json_file_smoke(
-            site_mcp_probe_embedded_command(
-                registry_site_mcp_check_probes_payload,
-                "mcpCheckProbesJsonOut",
-                registry_site_mcp_check_probes_cmd,
-                output_path=registry_site_mcp_check_probes_emitted_path,
-                context="registry smoke npm exec emitted site mcp-check probes command",
-            ),
-            registry_site_mcp_check_probes_emitted_path,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec emitted site mcp-check probes JSON out file",
-        )
-        assert_site_mcp_plan_probes_json_smoke(
-            site_mcp_probe_embedded_command(
-                registry_site_mcp_check_probes_payload,
-                "mcpPlanProbesJson",
-                registry_site_mcp_check_probes_cmd,
-                context="registry smoke npm exec emitted site mcp-plan probes JSON command",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec emitted site mcp-plan probes JSON",
-        )
-        registry_site_mcp_plan_emitted_json_path = npx_root / "registry-site-mcp-plan-probes-emitted.json"
-        assert_site_mcp_plan_probes_json_file_smoke(
-            site_mcp_probe_embedded_command(
-                registry_site_mcp_check_probes_payload,
-                "mcpPlanProbesJsonOut",
-                registry_site_mcp_check_probes_cmd,
-                output_path=registry_site_mcp_plan_emitted_json_path,
-                context="registry smoke npm exec emitted site mcp-plan probes output command",
-            ),
-            registry_site_mcp_plan_emitted_json_path,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec emitted site mcp-plan probes JSON out file",
-        )
-        assert_site_mcp_plan_markdown_smoke(
-            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site mcp-plan markdown",
-        )
-        assert_site_mcp_plan_probes_markdown_smoke(
-            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site mcp-plan probes markdown",
-        )
-        registry_site_mcp_plan_probes_payload = assert_site_mcp_plan_probes_json_smoke(
-            npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site mcp-plan probes JSON",
-        )
-        registry_site_mcp_plan_human_emitted_path = npx_root / "registry-site-mcp-plan-probes-human-emitted.txt"
-        assert_site_mcp_check_probes_human_file_smoke(
-            site_mcp_probe_embedded_command(
-                registry_site_mcp_plan_probes_payload,
-                "mcpCheckProbesHumanOut",
-                npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
-                output_path=registry_site_mcp_plan_human_emitted_path,
-                context="registry smoke npm exec emitted site mcp-plan probes human command",
-            ),
-            registry_site_mcp_plan_human_emitted_path,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec emitted site mcp-plan probes human out file",
-        )
-        registry_site_mcp_plan_check_json_emitted_path = npx_root / "registry-site-mcp-plan-probes-check-emitted.json"
-        assert_site_mcp_check_probes_json_file_smoke(
-            site_mcp_probe_embedded_command(
-                registry_site_mcp_plan_probes_payload,
-                "mcpCheckProbesJsonOut",
-                npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
-                output_path=registry_site_mcp_plan_check_json_emitted_path,
-                context="registry smoke npm exec emitted site mcp-plan probes check JSON command",
-            ),
-            registry_site_mcp_plan_check_json_emitted_path,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec emitted site mcp-plan probes check JSON out file",
-        )
-        registry_site_mcp_plan_json_emitted_path = npx_root / "registry-site-mcp-plan-probes-plan-emitted.json"
-        assert_site_mcp_plan_probes_json_file_smoke(
-            site_mcp_probe_embedded_command(
-                registry_site_mcp_plan_probes_payload,
-                "mcpPlanProbesJsonOut",
-                npm_exec_cmd(package_spec, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
-                output_path=registry_site_mcp_plan_json_emitted_path,
-                context="registry smoke npm exec emitted site mcp-plan probes plan JSON command",
-            ),
-            registry_site_mcp_plan_json_emitted_path,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec emitted site mcp-plan probes plan JSON out file",
-        )
-        registry_site_mcp_plan_json_path = npx_root / "registry-site-mcp-plan-probes.json"
-        assert_site_mcp_plan_probes_json_file_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "site",
-                "--stdin",
-                "--mcp-plan",
-                "--probes",
-                "--json",
-                "--out",
-                str(registry_site_mcp_plan_json_path),
-                "--force",
-            ),
-            registry_site_mcp_plan_json_path,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site mcp-plan probes JSON out file",
-        )
-        registry_site_bundle_dir = npx_root / "registry-site-handoff-bundle"
-        assert_site_bundle_smoke(
-            npm_exec_cmd(package_spec, "site", "--stdin", "--bundle", "--out", str(registry_site_bundle_dir)),
-            out_dir=registry_site_bundle_dir,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site handoff bundle",
-        )
-        assert_site_bundle_check_json_smoke(
-            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-check", "--strict", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site bundle-check JSON",
-        )
-        assert_site_bundle_compare_json_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "site",
-                str(registry_site_bundle_dir),
-                "--bundle-compare",
-                str(registry_site_bundle_dir),
-                "--strict",
-                "--json",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site bundle-compare JSON",
-        )
-        registry_site_warning_bundle_dir = npx_root / "registry-site-warning-handoff-bundle"
-        assert_site_warning_bundle_smoke(
-            npm_exec_cmd(package_spec, "site", "--stdin", "--bundle", "--out", str(registry_site_warning_bundle_dir)),
-            out_dir=registry_site_warning_bundle_dir,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site warning handoff bundle",
-        )
-        assert_site_bundle_compare_warning_strict_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "site",
-                str(registry_site_warning_bundle_dir),
-                "--bundle-compare",
-                str(registry_site_warning_bundle_dir),
-                "--strict",
-                "--json",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site warning bundle-compare strict JSON",
-        )
-        assert_site_bundle_handoff_json_smoke(
-            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-handoff", "--strict", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site bundle-handoff JSON",
-        )
-        assert_site_bundle_repair_json_smoke(
-            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-repair", "--json"),
-            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-repair", "--yes", "--json"),
-            npm_exec_cmd(package_spec, "site", str(registry_site_bundle_dir), "--bundle-check", "--strict", "--json"),
-            bundle_dir=registry_site_bundle_dir,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site bundle-repair JSON",
-        )
-        assert_site_tasks_json_smoke(
-            npm_exec_cmd(package_spec, "site", "--stdin", "--tasks"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site tasks JSON",
-        )
-        assert_site_prompt_markdown_smoke(
-            npm_exec_cmd(package_spec, "site", "--stdin", "--prompt", "codex-implementation", "--task", "task-homepage-cta"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec site task-selected prompt markdown",
-        )
-        assert_main_help_smoke(
-            npm_exec_cmd(package_spec, "help"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec main help",
-        )
-        run_expected_failure(
-            npm_exec_cmd(package_spec, EXPECTED_UNKNOWN_COMMAND),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec unknown command",
-            assertion=assert_unknown_command_failure,
-        )
-        run_expected_failure(
-            npm_exec_cmd(package_spec, "help", EXPECTED_UNKNOWN_HELP_TOPIC),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec unknown help topic",
-            assertion=assert_unknown_help_topic_failure,
-        )
-        run_expected_failure(
-            npm_exec_cmd(package_spec, "list", EXPECTED_UNKNOWN_LIST_DOMAIN),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec unknown list domain",
-            assertion=assert_unknown_list_domain_failure,
-        )
-        unknown_route_smokes = (
-            ("prompt", npm_exec_cmd(package_spec, "prompt", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
-            ("pack", npm_exec_cmd(package_spec, "pack", EXPECTED_ROUTE_BRIEF, "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
-            ("examples", npm_exec_cmd(package_spec, "examples", "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
-            ("check", npm_exec_cmd(package_spec, "check", "--examples", "--route", EXPECTED_UNKNOWN_ROUTE_ID)),
-        )
-        for label, command in unknown_route_smokes:
-            run_expected_failure(
-                command,
-                cwd=npx_root,
-                env=env,
-                context=f"registry smoke npm exec unknown route id {label}",
-                assertion=assert_unknown_route_id_failure,
-            )
-        for command_name, option, suggestion in EXPECTED_UNKNOWN_OPTION_SMOKES:
-            assert_unknown_option_smoke(
-                npm_exec_cmd(package_spec, *unknown_option_args(command_name, option)),
-                command_name=command_name,
-                option=option,
-                suggestion=suggestion,
-                cwd=npx_root,
-                env=env,
-                context=f"registry smoke npm exec unknown {command_name} option",
-            )
-        run_expected_failure(
-            npm_exec_cmd(package_spec, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", EXPECTED_UNKNOWN_SEARCH_DIR),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec unknown search dir value",
-            assertion=assert_search_dir_value_failure,
-        )
-        for label, args, expected_message in EXPECTED_NUMERIC_VALUE_SMOKES:
-            assert_numeric_value_smoke(
-                npm_exec_cmd(package_spec, *args),
-                expected_message=expected_message,
-                cwd=npx_root,
-                env=env,
-                context=f"registry smoke npm exec invalid numeric value {label}",
-            )
-        help_topics = read_help_topics(npm_exec_cmd(package_spec, "help", "--json"), cwd=npx_root, env=env)
-        for topic in help_topics:
-            assert_help_topic_smoke(
-                npm_exec_cmd(package_spec, "help", topic),
-                topic=topic,
-                cwd=npx_root,
-                env=env,
-                context=f"registry smoke npm exec help topic {topic}",
-            )
-        for alias in EXPECTED_HELP_ALIASES:
-            assert_help_topic_smoke(
-                npm_exec_cmd(package_spec, "help", alias),
-                topic=alias,
-                cwd=npx_root,
-                env=env,
-                context=f"registry smoke npm exec help alias {alias}",
-            )
-        for command in EXPECTED_COMMAND_ALIAS_COMMANDS:
-            assert_command_alias_smoke(
-                npm_exec_cmd(package_spec, *command),
-                command=command,
-                cwd=npx_root,
-                env=env,
-                context=f"registry smoke npm exec command alias {' '.join(command)}",
-            )
-        assert_functional_alias_smokes(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            run_command=run_plain,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec functional alias",
-        )
-        for kind in ("skills", "commands", "agents"):
-            assert_list_smoke(
-                npm_exec_cmd(package_spec, "list", kind),
-                kind=kind,
-                cwd=npx_root,
-                env=env,
-                context=f"registry smoke npm exec list {kind}",
-            )
-            assert_list_json_smoke(
-                npm_exec_cmd(package_spec, "list", kind, "--json"),
-                kind=kind,
-                cwd=npx_root,
-                env=env,
-                context=f"registry smoke npm exec list {kind} JSON",
-            )
-        assert_search_smoke(
-            npm_exec_cmd(package_spec, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec search corpus",
-        )
-        assert_search_human_smoke(
-            npm_exec_cmd(package_spec, "search", EXPECTED_CORPUS_SEARCH_QUERY, "--dir", "knowledge", "--limit", "1"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec search human corpus",
-        )
-        assert_show_smoke(
-            npm_exec_cmd(package_spec, "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec show corpus",
-        )
-        assert_show_human_smoke(
-            npm_exec_cmd(package_spec, "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec show human corpus",
-        )
-        assert_show_range_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "show",
-                EXPECTED_CORPUS_SHOW_REL_PATH,
-                "--lines",
-                EXPECTED_CORPUS_SHOW_RANGE,
-                "--json",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec show line range",
-        )
-        assert_show_human_range_smoke(
-            npm_exec_cmd(package_spec, "show", EXPECTED_CORPUS_SHOW_REL_PATH, "--lines", EXPECTED_CORPUS_SHOW_RANGE),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec show human line range",
-        )
-        assert_route_catalog_smoke(
-            npm_exec_cmd(package_spec, "routes", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec routes catalog",
-        )
-        assert_route_catalog_smoke(
-            npm_exec_cmd(package_spec, "route", "--list", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec route list catalog",
-        )
-        assert_route_smoke(
-            npm_exec_cmd(package_spec, "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec route recommendation",
-        )
-        assert_route_explain_smoke(
-            npm_exec_cmd(package_spec, "route", EXPECTED_ROUTE_BRIEF, "--limit", "1", "--explain"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec route explanation",
-        )
-        route_brief = npx_root / "route-brief.md"
-        write_smoke_brief(route_brief)
-        assert_route_smoke(
-            npm_exec_cmd(package_spec, "route", "--from-file", str(route_brief), "--limit", "1", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec route from file",
-        )
-        assert_route_stdin_smoke(
-            npm_exec_cmd(package_spec, "route", "--stdin", "--limit", "1", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec route stdin",
-        )
-        assert_start_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "start",
-                EXPECTED_ROUTE_BRIEF,
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--local-path",
-                str(npx_root / "declared-target-repo"),
-                "--url",
-                "https://example.com/component",
-                "--screenshot",
-                str(npx_root / "declared-screen.png"),
-                "--locale",
-                "ko-KR",
-                "--viewport",
-                "mobile",
-                "--json",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec start plan",
-        )
-        inspect_source = npx_root / "inspect-source.html"
-        write_inspect_fixture(inspect_source)
-        assert_inspect_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "inspect",
-                str(inspect_source),
-                "--brief",
-                "Review a Korean settings flow",
-                "--locale",
-                "ko-KR",
-                "--viewport",
-                "mobile",
-                "--json",
-            ),
-            inspect_source,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec HTML inspection",
-        )
-        prompt_json = npx_root / "prompt.json"
-        assert_prompt_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "prompt",
-                EXPECTED_ROUTE_BRIEF,
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--json",
-                "--out",
-                str(prompt_json),
-                "--force",
-            ),
-            prompt_json,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec prompt plan",
-        )
-        assert_prompt_stdout_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "prompt",
-                EXPECTED_ROUTE_BRIEF,
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--json",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec prompt stdout",
-        )
-        assert_prompt_markdown_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "prompt",
-                EXPECTED_ROUTE_BRIEF,
-                "--route",
-                EXPECTED_ROUTE_ID,
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec prompt markdown stdout",
-        )
-        prompt_markdown = npx_root / "prompt.md"
-        assert_prompt_markdown_file_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "prompt",
-                EXPECTED_ROUTE_BRIEF,
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--out",
-                str(prompt_markdown),
-                "--force",
-            ),
-            prompt_markdown,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec prompt markdown file",
-        )
-        assert_output_overwrite_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "prompt",
-                EXPECTED_ROUTE_BRIEF,
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--out",
-                str(prompt_markdown),
-            ),
-            prompt_markdown,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec prompt output overwrite",
-        )
-        prompt_file_json = npx_root / "prompt-from-file.json"
-        assert_prompt_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "prompt",
-                "--from-file",
-                str(route_brief),
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--json",
-                "--out",
-                str(prompt_file_json),
-                "--force",
-            ),
-            prompt_file_json,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec prompt from file",
-        )
-        prompt_stdin_json = npx_root / "prompt-stdin.json"
-        assert_prompt_stdin_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "prompt",
-                "--stdin",
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--json",
-                "--out",
-                str(prompt_stdin_json),
-                "--force",
-            ),
-            prompt_stdin_json,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec prompt stdin",
-        )
-        pack_json = npx_root / "pack.json"
-        assert_pack_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "pack",
-                EXPECTED_ROUTE_BRIEF,
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--max-bytes",
-                str(EXPECTED_PACK_MAX_BYTES),
-                "--json",
-                "--out",
-                str(pack_json),
-                "--force",
-            ),
-            pack_json,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec prompt pack",
-        )
-        assert_pack_stdout_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "pack",
-                EXPECTED_ROUTE_BRIEF,
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--max-bytes",
-                str(EXPECTED_PACK_MAX_BYTES),
-                "--json",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec pack stdout",
-        )
-        assert_pack_markdown_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "pack",
-                EXPECTED_ROUTE_BRIEF,
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--max-bytes",
-                str(EXPECTED_PACK_MAX_BYTES),
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec pack markdown stdout",
-        )
-        pack_markdown = npx_root / "pack.md"
-        assert_pack_markdown_file_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "pack",
-                EXPECTED_ROUTE_BRIEF,
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--max-bytes",
-                str(EXPECTED_PACK_MAX_BYTES),
-                "--out",
-                str(pack_markdown),
-                "--force",
-            ),
-            pack_markdown,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec pack markdown file",
-        )
-        assert_output_overwrite_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "pack",
-                EXPECTED_ROUTE_BRIEF,
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--max-bytes",
-                str(EXPECTED_PACK_MAX_BYTES),
-                "--out",
-                str(pack_markdown),
-            ),
-            pack_markdown,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec pack output overwrite",
-        )
-        pack_file_json = npx_root / "pack-from-file.json"
-        assert_pack_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "pack",
-                "--from-file",
-                str(route_brief),
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--max-bytes",
-                str(EXPECTED_PACK_MAX_BYTES),
-                "--json",
-                "--out",
-                str(pack_file_json),
-                "--force",
-            ),
-            pack_file_json,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec pack from file",
-        )
-        pack_stdin_json = npx_root / "pack-stdin.json"
-        assert_pack_stdin_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "pack",
-                "--stdin",
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--max-bytes",
-                str(EXPECTED_PACK_MAX_BYTES),
-                "--json",
-                "--out",
-                str(pack_stdin_json),
-                "--force",
-            ),
-            pack_stdin_json,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec pack stdin",
-        )
-        assert_examples_smoke(
-            npm_exec_cmd(package_spec, "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec examples corpus",
-        )
-        assert_examples_human_smoke(
-            npm_exec_cmd(package_spec, "examples", "--route", EXPECTED_EXAMPLES_ROUTE, "--limit", "1"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec examples human corpus",
-        )
-        assert_check_examples_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "check",
-                "--examples",
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--limit",
-                str(EXPECTED_CHECK_EXAMPLES_LIMIT),
-                "--strict",
-                "--json",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec check examples",
-        )
-        assert_check_all_routes_issues_only_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "check",
-                "--examples",
-                "--all-routes",
-                "--limit",
-                "1",
-                "--issues-only",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec check all routes issues only",
-        )
-        check_artifact = npx_root / EXPECTED_CHECK_ARTIFACT_NAME
-        write_check_artifact(check_artifact)
-        assert_check_artifact_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "check",
-                str(check_artifact),
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--strict",
-                "--json",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec check artifact",
-        )
-        assert_check_stdin_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "check",
-                "--stdin",
-                "--route",
-                EXPECTED_ROUTE_ID,
-                "--strict",
-                "--json",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec check stdin",
-        )
-        check_learning_artifact = npx_root / "registry-check-learning.md"
-        check_learning_profile = npx_root / "registry-check-learning.json"
-        write_check_learning_capture_artifact(check_learning_artifact)
-        assert_check_learning_capture_smoke(
-            npm_exec_cmd(
-                package_spec,
-                "check",
-                str(check_learning_artifact),
-                "--learn",
-                "--yes",
-                "--learning-file",
-                str(check_learning_profile),
-                "--json",
-            ),
-            profile_path=check_learning_profile,
-            expected_file_suffix=check_learning_artifact.name,
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec check learning capture",
-        )
-        assert_audit_smoke(
-            npm_exec_cmd(package_spec, "audit", "--strict", "--quiet"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec audit strict",
-        )
-        assert_audit_json_smoke(
-            npm_exec_cmd(package_spec, "audit", "--strict", "--quiet", "--json"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec audit JSON",
-        )
-        assert_learning_feedback_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-feedback-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec learn feedback",
-        )
-        assert_learning_init_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-init-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec learn init",
-        )
-        assert_learning_verify_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-verify-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec learn verify",
-        )
-        assert_learning_backup_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-backup-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec learn backup",
-        )
-        assert_learning_restore_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-restore-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec learn restore",
-        )
-        assert_learning_import_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-import-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec learn import",
-        )
-        assert_learning_redact_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-redact-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec learn redact",
-        )
-        assert_learning_stats_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-stats-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec learn stats",
-        )
-        assert_learning_recall_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-recall-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec learn recall",
-        )
-        assert_learning_audit_cleanup_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-audit-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec learn audit cleanup",
-        )
-        assert_learning_relevance_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-relevance-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec learning relevance",
-        )
-        assert_index_roundtrip_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-index",
-            npx_root / "registry-index-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec index roundtrip",
-        )
-        assert_ranked_search_determinism_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-ranked-search-index",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec ranked search determinism",
-        )
-        assert_embeddings_off_by_default_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            npx_root / "registry-embeddings-off-index",
-            npx_root / "registry-embeddings-off-learning.json",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec embeddings off by default",
-        )
-        assert_search_embeddings_no_provider_fallback_smoke(
-            lambda *args: npm_exec_cmd(package_spec, *args),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec search embeddings no provider fallback",
-            config_file=npx_root / "registry-no-config-here" / "config.json",
-        )
-        assert_update_dry_run_smoke(
-            npm_exec_cmd(package_spec, "update", "--dry-run"),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec update dry run",
-        )
-        assert_update_dry_run_json_smoke(
-            npm_exec_cmd(package_spec, "update", "--dry-run", "--json"),
-            prefix="registry-design-",
-            cwd=npx_root,
-            env=env,
-            context="registry smoke npm exec update dry-run JSON",
-        )
-        doctor_json = npx_root / "doctor.json"
-        status_json = npx_root / "status.json"
-        install_json = npx_root / "install.json"
-        uninstall_json = npx_root / "uninstall.json"
-        assert_install_lifecycle_smoke(
-            npm_exec_shell_cmd(
-                package_spec,
-                help_topic_script(help_topics) + " && "
-                + help_alias_script() + " && "
-                + command_alias_script() + " && "
-                "design-ai install && "
-                "design-ai doctor --json > doctor.json && "
-                "design-ai doctor --strict && "
-                "design-ai status && "
-                "design-ai status --json > status.json && "
-                "design-ai uninstall && "
-                "design-ai install --json > install.json && "
-                "design-ai uninstall --json > uninstall.json",
-            ),
-            cwd=npx_root,
-            env=env,
-            context="registry smoke install lifecycle",
-        )
-        assert_doctor_report_clean(read_doctor_report(doctor_json), context="registry smoke install")
-        assert_status_json_file(status_json, prefix="registry-design-", context="registry smoke status JSON")
-        assert_install_json_file(install_json, prefix="registry-design-", context="registry smoke install JSON")
-        assert_uninstall_json_file(uninstall_json, prefix="registry-design-", context="registry smoke uninstall JSON")
+        _registry_package_site_payloads(env, npx_root, package_spec)
+        _registry_package_site_mcp_and_bundles(env, npx_root, package_spec)
+        help_topics = _registry_package_command_surface(env, npx_root, package_spec)
+        _registry_package_help_and_lifecycle(env, help_topics, npx_root, package_spec)
 
 
-def run_self_test() -> None:
-    run_image_console_self_test()
-    run_doctor_assertions_self_test(context="registry smoke install", quiet=True)
+def _self_test_doctor_and_workspace(tmp_root: Path) -> None:
+    """Registry smoke self-test: doctor report parsing plus workspace JSON, strict, and restore-backup checks."""
+    report_path = tmp_root / "doctor.json"
+    report_path.write_text(passing_doctor_report_json(), encoding="utf-8")
+    assert_doctor_report_clean(read_doctor_report(report_path), context="registry smoke install")
 
-    with tempfile.TemporaryDirectory(prefix="design-ai-registry-smoke-self-test-") as tmp:
-        tmp_root = Path(tmp)
-        report_path = tmp_root / "doctor.json"
-        report_path.write_text(passing_doctor_report_json(), encoding="utf-8")
-        assert_doctor_report_clean(read_doctor_report(report_path), context="registry smoke install")
+    invalid_json_path = tmp_root / "invalid-doctor.json"
+    invalid_json_path.write_text("{", encoding="utf-8")
+    expect_self_test_failure(
+        lambda: read_doctor_report(invalid_json_path),
+        expected="failed to parse registry smoke doctor JSON",
+        scope="registry smoke",
+    )
 
-        invalid_json_path = tmp_root / "invalid-doctor.json"
-        invalid_json_path.write_text("{", encoding="utf-8")
-        expect_self_test_failure(
-            lambda: read_doctor_report(invalid_json_path),
-            expected="failed to parse registry smoke doctor JSON",
-            scope="registry smoke",
-        )
+    ansi_path = tmp_root / "ansi-doctor.json"
+    ansi_path.write_text("\x1b[31m{}", encoding="utf-8")
+    expect_self_test_failure(
+        lambda: read_doctor_report(ansi_path),
+        expected="ANSI escape",
+        scope="registry smoke",
+    )
 
-        ansi_path = tmp_root / "ansi-doctor.json"
-        ansi_path.write_text("\x1b[31m{}", encoding="utf-8")
-        expect_self_test_failure(
-            lambda: read_doctor_report(ansi_path),
-            expected="ANSI escape",
-            scope="registry smoke",
-        )
+    missing_check_path = tmp_root / "missing-check-doctor.json"
+    missing_check_path.write_text(doctor_report_json_missing("Registry smoke check"), encoding="utf-8")
+    expect_self_test_failure(
+        lambda: assert_doctor_report_clean(
+            read_doctor_report(missing_check_path),
+            context="registry smoke install",
+        ),
+        expected="Registry smoke check=missing",
+        scope="registry smoke",
+    )
 
-        missing_check_path = tmp_root / "missing-check-doctor.json"
-        missing_check_path.write_text(doctor_report_json_missing("Registry smoke check"), encoding="utf-8")
-        expect_self_test_failure(
-            lambda: assert_doctor_report_clean(
-                read_doctor_report(missing_check_path),
-                context="registry smoke install",
-            ),
-            expected="Registry smoke check=missing",
-            scope="registry smoke",
-        )
+    expect_self_test_failure(
+        lambda: read_doctor_report(tmp_root / "missing-doctor.json"),
+        expected="failed to read registry smoke doctor JSON",
+        scope="registry smoke",
+    )
 
-        expect_self_test_failure(
-            lambda: read_doctor_report(tmp_root / "missing-doctor.json"),
-            expected="failed to read registry smoke doctor JSON",
-            scope="registry smoke",
-        )
-
-        workspace_cmd = ["design-ai", "workspace", "--json"]
-        workspace_strict_cmd = ["design-ai", "workspace", "--strict", "--json"]
-        assert_workspace_json(
-            passing_workspace_json(),
-            context="registry smoke self-test",
-            cmd=workspace_cmd,
-        )
-        assert_workspace_strict_failure_json(
-            passing_workspace_json(),
-            returncode=1,
-            context="registry smoke self-test",
-            cmd=workspace_strict_cmd,
-        )
-        assert_workspace_strict_success_json(
-            passing_workspace_strict_clean_json(),
-            returncode=0,
-            context="registry smoke self-test",
-            cmd=workspace_strict_cmd,
-        )
-        workspace_learning_eval_cmd = [
-            "design-ai",
-            "workspace",
-            "--learning-eval",
-            "learning-eval.json",
-            "--strict",
-            "--json",
-        ]
-        workspace_learning_eval_payload = json.loads(passing_workspace_strict_clean_json())
-        workspace_learning_eval_payload["learningEval"] = {
-            "source": "/tmp/learning-eval.json",
+    workspace_cmd = ["design-ai", "workspace", "--json"]
+    workspace_strict_cmd = ["design-ai", "workspace", "--strict", "--json"]
+    assert_workspace_json(
+        passing_workspace_json(),
+        context="registry smoke self-test",
+        cmd=workspace_cmd,
+    )
+    assert_workspace_strict_failure_json(
+        passing_workspace_json(),
+        returncode=1,
+        context="registry smoke self-test",
+        cmd=workspace_strict_cmd,
+    )
+    assert_workspace_strict_success_json(
+        passing_workspace_strict_clean_json(),
+        returncode=0,
+        context="registry smoke self-test",
+        cmd=workspace_strict_cmd,
+    )
+    workspace_learning_eval_cmd = [
+        "design-ai",
+        "workspace",
+        "--learning-eval",
+        "learning-eval.json",
+        "--strict",
+        "--json",
+    ]
+    workspace_learning_eval_payload = json.loads(passing_workspace_strict_clean_json())
+    workspace_learning_eval_payload["learningEval"] = {
+        "source": "/tmp/learning-eval.json",
+        "file": "/tmp/learning.json",
+        "status": "pass",
+        "caseCount": 1,
+        "passed": 1,
+        "warned": 0,
+        "failed": 0,
+        "generatedAt": "2026-05-22T00:00:02.000Z",
+        "sourceProfile": {
             "file": "/tmp/learning.json",
+            "exists": True,
+            "entryCount": 1,
+            "auditStatus": "pass",
+            "category": "",
+            "queryPresent": False,
+            "limit": 6,
+        },
+        "profileExists": True,
+        "profileEntryCount": 1,
+        "auditSummary": {
             "status": "pass",
-            "caseCount": 1,
-            "passed": 1,
-            "warned": 0,
-            "failed": 0,
-            "generatedAt": "2026-05-22T00:00:02.000Z",
-            "sourceProfile": {
-                "file": "/tmp/learning.json",
-                "exists": True,
-                "entryCount": 1,
-                "auditStatus": "pass",
-                "category": "",
-                "queryPresent": False,
-                "limit": 6,
-            },
-            "profileExists": True,
-            "profileEntryCount": 1,
+            "failures": 0,
+            "warnings": 0,
+        },
+        "privacy": {
+            "storesRawBriefText": False,
+            "storesBriefHash": True,
+            "exposesMatchedTokens": False,
+        },
+        "error": "",
+        "freshness": {
+            "status": "pass",
+            "stale": False,
+            "reason": "",
+            "profileUpdatedAt": "",
+            "checkpointGeneratedAt": "2026-05-22T00:00:02.000Z",
+            "sourceProfileFile": "/tmp/learning.json",
+            "sourceProfileEntryCount": 1,
+        },
+    }
+    assert_workspace_strict_success_json(
+        json.dumps(workspace_learning_eval_payload),
+        returncode=0,
+        context="registry smoke self-test learning-eval",
+        cmd=workspace_learning_eval_cmd,
+    )
+    workspace_restore_backups_payload = json.loads(passing_workspace_strict_clean_json())
+    workspace_restore_backups_payload["learningRestoreBackups"] = {
+        "file": "/tmp/learning.json",
+        "directory": "/tmp",
+        "pattern": "learning.restore-backup-*.json",
+        "generatedAt": "2026-05-22T00:00:07.000Z",
+        "limit": 5,
+        "totalCount": 6,
+        "count": 5,
+        "latestBackup": {
+            "file": "/tmp/learning.restore-backup-20260522T000600000Z.json",
+            "name": "learning.restore-backup-20260522T000600000Z.json",
+            "createdAt": "2026-05-22T00:06:00.000Z",
+            "modifiedAt": "2026-05-22T00:06:00.000Z",
+            "sizeBytes": 128,
+            "updatedAt": "2026-05-22T00:06:00.000Z",
+            "entryCount": 1,
             "auditSummary": {
                 "status": "pass",
                 "failures": 0,
                 "warnings": 0,
             },
-            "privacy": {
-                "storesRawBriefText": False,
-                "storesBriefHash": True,
-                "exposesMatchedTokens": False,
-            },
-            "error": "",
-            "freshness": {
-                "status": "pass",
-                "stale": False,
-                "reason": "",
-                "profileUpdatedAt": "",
-                "checkpointGeneratedAt": "2026-05-22T00:00:02.000Z",
-                "sourceProfileFile": "/tmp/learning.json",
-                "sourceProfileEntryCount": 1,
-            },
-        }
-        assert_workspace_strict_success_json(
-            json.dumps(workspace_learning_eval_payload),
-            returncode=0,
-            context="registry smoke self-test learning-eval",
-            cmd=workspace_learning_eval_cmd,
-        )
-        workspace_restore_backups_payload = json.loads(passing_workspace_strict_clean_json())
-        workspace_restore_backups_payload["learningRestoreBackups"] = {
-            "file": "/tmp/learning.json",
-            "directory": "/tmp",
-            "pattern": "learning.restore-backup-*.json",
-            "generatedAt": "2026-05-22T00:00:07.000Z",
-            "limit": 5,
-            "totalCount": 6,
-            "count": 5,
-            "latestBackup": {
-                "file": "/tmp/learning.restore-backup-20260522T000600000Z.json",
-                "name": "learning.restore-backup-20260522T000600000Z.json",
-                "createdAt": "2026-05-22T00:06:00.000Z",
-                "modifiedAt": "2026-05-22T00:06:00.000Z",
-                "sizeBytes": 128,
-                "updatedAt": "2026-05-22T00:06:00.000Z",
+            "issueCount": 0,
+            "restorePreviewCommand": "design-ai learn --restore --from-file /tmp/learning.restore-backup-20260522T000600000Z.json --file /tmp/learning.json",
+        },
+        "backups": [
+            {
+                "file": f"/tmp/learning.restore-backup-20260522T000{index}00000Z.json",
+                "name": f"learning.restore-backup-20260522T000{index}00000Z.json",
+                "createdAt": f"2026-05-22T00:0{index}:00.000Z",
+                "modifiedAt": f"2026-05-22T00:0{index}:00.000Z",
+                "sizeBytes": 128 + index,
+                "updatedAt": f"2026-05-22T00:0{index}:00.000Z",
                 "entryCount": 1,
                 "auditSummary": {
                     "status": "pass",
@@ -4056,578 +4090,616 @@ def run_self_test() -> None:
                     "warnings": 0,
                 },
                 "issueCount": 0,
-                "restorePreviewCommand": "design-ai learn --restore --from-file /tmp/learning.restore-backup-20260522T000600000Z.json --file /tmp/learning.json",
-            },
-            "backups": [
-                {
-                    "file": f"/tmp/learning.restore-backup-20260522T000{index}00000Z.json",
-                    "name": f"learning.restore-backup-20260522T000{index}00000Z.json",
-                    "createdAt": f"2026-05-22T00:0{index}:00.000Z",
-                    "modifiedAt": f"2026-05-22T00:0{index}:00.000Z",
-                    "sizeBytes": 128 + index,
-                    "updatedAt": f"2026-05-22T00:0{index}:00.000Z",
-                    "entryCount": 1,
-                    "auditSummary": {
-                        "status": "pass",
-                        "failures": 0,
-                        "warnings": 0,
-                    },
-                    "issueCount": 0,
-                    "restorePreviewCommand": (
-                        "design-ai learn --restore "
-                        f"--from-file /tmp/learning.restore-backup-20260522T000{index}00000Z.json "
-                        "--file /tmp/learning.json"
-                    ),
-                }
-                for index in range(6, 1, -1)
-            ],
-            "readiness": {
-                "status": "warn",
-                "reason": "backup-count-exceeds-keep",
-                "keep": 5,
-                "totalCount": 6,
-                "pruneCandidateCount": 1,
-            },
-            "privacy": {
-                "storesRawBriefText": False,
-                "exposesEntryTextPreview": False,
-                "mutatesProfile": False,
-            },
-            "error": "",
-        }
-        workspace_restore_backups_payload["nextActions"].append(
-            {
-                "level": "info",
-                "text": "Preview pruning older learning restore rollback backups.",
-                "command": "design-ai learn --restore-backups --file /tmp/learning.json --prune --keep 5",
+                "restorePreviewCommand": (
+                    "design-ai learn --restore "
+                    f"--from-file /tmp/learning.restore-backup-20260522T000{index}00000Z.json "
+                    "--file /tmp/learning.json"
+                ),
             }
-        )
-        assert_workspace_json(
-            json.dumps(workspace_restore_backups_payload),
+            for index in range(6, 1, -1)
+        ],
+        "readiness": {
+            "status": "warn",
+            "reason": "backup-count-exceeds-keep",
+            "keep": 5,
+            "totalCount": 6,
+            "pruneCandidateCount": 1,
+        },
+        "privacy": {
+            "storesRawBriefText": False,
+            "exposesEntryTextPreview": False,
+            "mutatesProfile": False,
+        },
+        "error": "",
+    }
+    workspace_restore_backups_payload["nextActions"].append(
+        {
+            "level": "info",
+            "text": "Preview pruning older learning restore rollback backups.",
+            "command": "design-ai learn --restore-backups --file /tmp/learning.json --prune --keep 5",
+        }
+    )
+    assert_workspace_json(
+        json.dumps(workspace_restore_backups_payload),
+        context="registry smoke self-test restore-backups",
+        cmd=workspace_cmd,
+    )
+    assert_workspace_restore_backups_payload(
+        workspace_restore_backups_payload,
+        context="registry smoke self-test restore-backups",
+        cmd=workspace_cmd,
+    )
+    missing_restore_backups_next_action = json.loads(json.dumps(workspace_restore_backups_payload))
+    missing_restore_backups_next_action["nextActions"] = [
+        action
+        for action in missing_restore_backups_next_action["nextActions"]
+        if "--restore-backups" not in action.get("command", "")
+    ]
+    expect_self_test_failure(
+        lambda: assert_workspace_restore_backups_payload(
+            missing_restore_backups_next_action,
             context="registry smoke self-test restore-backups",
             cmd=workspace_cmd,
-        )
-        assert_workspace_restore_backups_payload(
-            workspace_restore_backups_payload,
-            context="registry smoke self-test restore-backups",
-            cmd=workspace_cmd,
-        )
-        missing_restore_backups_next_action = json.loads(json.dumps(workspace_restore_backups_payload))
-        missing_restore_backups_next_action["nextActions"] = [
-            action
-            for action in missing_restore_backups_next_action["nextActions"]
-            if "--restore-backups" not in action.get("command", "")
-        ]
-        expect_self_test_failure(
-            lambda: assert_workspace_restore_backups_payload(
-                missing_restore_backups_next_action,
-                context="registry smoke self-test restore-backups",
-                cmd=workspace_cmd,
-            ),
-            expected="missing prune next action",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_workspace_strict_failure_json(
-                passing_workspace_strict_clean_json(),
-                returncode=1,
-                context="registry smoke self-test",
-                cmd=workspace_strict_cmd,
-            ),
-            expected="missing a strict readiness issue",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_workspace_strict_success_json(
-                passing_workspace_json(),
-                returncode=0,
-                context="registry smoke self-test",
-                cmd=workspace_strict_cmd,
-            ),
-            expected="readiness warnings/failures",
-            scope="registry smoke",
-        )
+        ),
+        expected="missing prune next action",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_workspace_strict_failure_json(
+            passing_workspace_strict_clean_json(),
+            returncode=1,
+            context="registry smoke self-test",
+            cmd=workspace_strict_cmd,
+        ),
+        expected="missing a strict readiness issue",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_workspace_strict_success_json(
+            passing_workspace_json(),
+            returncode=0,
+            context="registry smoke self-test",
+            cmd=workspace_strict_cmd,
+        ),
+        expected="readiness warnings/failures",
+        scope="registry smoke",
+    )
 
-        site_cmd = ["design-ai", "site", "--stdin", "--json"]
-        site_next_actions_cmd = ["design-ai", "site", "--stdin", "--next-actions", "--json"]
-        site_sample_cmd = ["design-ai", "site", "--sample"]
-        site_prompt_list_cmd = ["design-ai", "site", "--prompt-list", "--json"]
-        site_mcp_check_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--json"]
-        site_mcp_check_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--probes", "--json"]
-        site_mcp_plan_cmd = ["design-ai", "site", "--stdin", "--mcp-plan"]
-        site_mcp_plan_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-plan", "--probes"]
-        site_mcp_plan_probes_json_cmd = ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"]
-        site_tasks_cmd = ["design-ai", "site", "--stdin", "--tasks"]
-        site_prompt_cmd = [
-            "design-ai",
-            "site",
-            "--stdin",
-            "--prompt",
-            "codex-implementation",
-            "--task",
-            "task-homepage-cta",
-        ]
-        assert_site_json(passing_site_json(), context="registry smoke self-test site JSON", cmd=site_cmd)
-        assert_site_next_actions_json(
-            passing_site_next_actions_json(),
-            context="registry smoke self-test site next-actions JSON",
-            cmd=site_next_actions_cmd,
-        )
-        site_next_actions_out_path = tmp_root / "registry-site-next-actions.json"
-        site_next_actions_out_path.write_text(passing_site_next_actions_json(), encoding="utf-8")
-        site_next_actions_out_cmd = [
-            "design-ai",
-            "site",
-            "--stdin",
-            "--next-actions",
-            "--json",
-            "--out",
-            str(site_next_actions_out_path),
-            "--force",
-        ]
-        assert_site_next_actions_json_file_output(
-            f"Wrote {site_next_actions_out_path}\n",
-            site_next_actions_out_path.read_text(encoding="utf-8"),
-            output_path=str(site_next_actions_out_path),
-            context="registry smoke self-test site next-actions JSON out",
-            cmd=site_next_actions_out_cmd,
-        )
-        site_next_actions_human_out_path = tmp_root / "registry-site-next-actions.md"
-        site_next_actions_human_out_path.write_text(passing_site_next_actions_human(), encoding="utf-8")
-        site_next_actions_human_out_cmd = [
-            "design-ai",
-            "site",
-            "--stdin",
-            "--next-actions",
-            "--out",
-            str(site_next_actions_human_out_path),
-            "--force",
-        ]
-        assert_site_next_actions_human_file_output(
+
+def _self_test_site_and_mcp(tmp_root: Path) -> None:
+    """Registry smoke self-test: site payloads, Website Console bundles, MCP probes, and check artifacts."""
+    site_cmd = ["design-ai", "site", "--stdin", "--json"]
+    site_next_actions_cmd = ["design-ai", "site", "--stdin", "--next-actions", "--json"]
+    site_sample_cmd = ["design-ai", "site", "--sample"]
+    site_prompt_list_cmd = ["design-ai", "site", "--prompt-list", "--json"]
+    site_mcp_check_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--json"]
+    site_mcp_check_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-check", "--probes", "--json"]
+    site_mcp_plan_cmd = ["design-ai", "site", "--stdin", "--mcp-plan"]
+    site_mcp_plan_probes_cmd = ["design-ai", "site", "--stdin", "--mcp-plan", "--probes"]
+    site_mcp_plan_probes_json_cmd = ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"]
+    site_tasks_cmd = ["design-ai", "site", "--stdin", "--tasks"]
+    site_prompt_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--prompt",
+        "codex-implementation",
+        "--task",
+        "task-homepage-cta",
+    ]
+    assert_site_json(passing_site_json(), context="registry smoke self-test site JSON", cmd=site_cmd)
+    assert_site_next_actions_json(
+        passing_site_next_actions_json(),
+        context="registry smoke self-test site next-actions JSON",
+        cmd=site_next_actions_cmd,
+    )
+    site_next_actions_out_path = tmp_root / "registry-site-next-actions.json"
+    site_next_actions_out_path.write_text(passing_site_next_actions_json(), encoding="utf-8")
+    site_next_actions_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--next-actions",
+        "--json",
+        "--out",
+        str(site_next_actions_out_path),
+        "--force",
+    ]
+    assert_site_next_actions_json_file_output(
+        f"Wrote {site_next_actions_out_path}\n",
+        site_next_actions_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_next_actions_out_path),
+        context="registry smoke self-test site next-actions JSON out",
+        cmd=site_next_actions_out_cmd,
+    )
+    site_next_actions_human_out_path = tmp_root / "registry-site-next-actions.md"
+    site_next_actions_human_out_path.write_text(passing_site_next_actions_human(), encoding="utf-8")
+    site_next_actions_human_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--next-actions",
+        "--out",
+        str(site_next_actions_human_out_path),
+        "--force",
+    ]
+    assert_site_next_actions_human_file_output(
+        f"Wrote {site_next_actions_human_out_path}\n",
+        site_next_actions_human_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_next_actions_human_out_path),
+        context="registry smoke self-test site next-actions human out",
+        cmd=site_next_actions_human_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_site_next_actions_human_file_output(
             f"Wrote {site_next_actions_human_out_path}\n",
-            site_next_actions_human_out_path.read_text(encoding="utf-8"),
+            passing_site_next_actions_human().replace("does not call external MCPs", "may call external MCPs"),
             output_path=str(site_next_actions_human_out_path),
             context="registry smoke self-test site next-actions human out",
             cmd=site_next_actions_human_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_site_next_actions_human_file_output(
-                f"Wrote {site_next_actions_human_out_path}\n",
-                passing_site_next_actions_human().replace("does not call external MCPs", "may call external MCPs"),
-                output_path=str(site_next_actions_human_out_path),
-                context="registry smoke self-test site next-actions human out",
-                cmd=site_next_actions_human_out_cmd,
-            ),
-            expected="missing fragment",
-            scope="registry smoke",
-        )
-        assert_site_sample_json(
-            passing_site_sample_json(),
-            context="registry smoke self-test site sample",
-            cmd=site_sample_cmd,
-        )
-        assert_site_prompt_templates_json(
-            passing_site_prompt_templates_json(),
-            context="registry smoke self-test site prompt list",
-            cmd=site_prompt_list_cmd,
-        )
-        assert_site_mcp_check_json(
-            passing_site_mcp_check_json(),
-            context="registry smoke self-test site mcp-check",
-            cmd=site_mcp_check_cmd,
-        )
-        assert_site_mcp_check_probes_json(
-            passing_site_mcp_check_probes_json(),
-            context="registry smoke self-test site mcp-check probes",
-            cmd=site_mcp_check_probes_cmd,
-        )
-        assert_site_mcp_check_probes_human(
-            passing_site_mcp_check_probes_human(),
-            context="registry smoke self-test site mcp-check probes human",
-            cmd=["design-ai", "site", "--stdin", "--mcp-check", "--probes"],
-        )
-        site_mcp_check_probes_human_out_path = tmp_root / "registry-site-mcp-check-probes.txt"
-        site_mcp_check_probes_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
-        site_mcp_check_probes_human_out_cmd = [
-            "design-ai",
-            "site",
-            "--stdin",
-            "--mcp-check",
-            "--probes",
-            "--out",
-            str(site_mcp_check_probes_human_out_path),
-            "--force",
-        ]
-        assert_site_mcp_check_probes_human_file_output(
-            f"Wrote {site_mcp_check_probes_human_out_path}\n",
-            site_mcp_check_probes_human_out_path.read_text(encoding="utf-8"),
-            output_path=str(site_mcp_check_probes_human_out_path),
-            context="registry smoke self-test site mcp-check probes human out",
-            cmd=site_mcp_check_probes_human_out_cmd,
-        )
-        site_mcp_check_probes_out_path = tmp_root / "registry-site-mcp-check-probes.json"
-        site_mcp_check_probes_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
-        site_mcp_check_probes_out_cmd = [
-            "design-ai",
-            "site",
-            "--stdin",
-            "--mcp-check",
-            "--probes",
-            "--json",
-            "--out",
-            str(site_mcp_check_probes_out_path),
-            "--force",
-        ]
-        assert_site_mcp_check_probes_json_file_output(
+        ),
+        expected="missing fragment",
+        scope="registry smoke",
+    )
+    assert_site_sample_json(
+        passing_site_sample_json(),
+        context="registry smoke self-test site sample",
+        cmd=site_sample_cmd,
+    )
+    assert_site_prompt_templates_json(
+        passing_site_prompt_templates_json(),
+        context="registry smoke self-test site prompt list",
+        cmd=site_prompt_list_cmd,
+    )
+    assert_site_mcp_check_json(
+        passing_site_mcp_check_json(),
+        context="registry smoke self-test site mcp-check",
+        cmd=site_mcp_check_cmd,
+    )
+    assert_site_mcp_check_probes_json(
+        passing_site_mcp_check_probes_json(),
+        context="registry smoke self-test site mcp-check probes",
+        cmd=site_mcp_check_probes_cmd,
+    )
+    assert_site_mcp_check_probes_human(
+        passing_site_mcp_check_probes_human(),
+        context="registry smoke self-test site mcp-check probes human",
+        cmd=["design-ai", "site", "--stdin", "--mcp-check", "--probes"],
+    )
+    site_mcp_check_probes_human_out_path = tmp_root / "registry-site-mcp-check-probes.txt"
+    site_mcp_check_probes_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
+    site_mcp_check_probes_human_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-check",
+        "--probes",
+        "--out",
+        str(site_mcp_check_probes_human_out_path),
+        "--force",
+    ]
+    assert_site_mcp_check_probes_human_file_output(
+        f"Wrote {site_mcp_check_probes_human_out_path}\n",
+        site_mcp_check_probes_human_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_check_probes_human_out_path),
+        context="registry smoke self-test site mcp-check probes human out",
+        cmd=site_mcp_check_probes_human_out_cmd,
+    )
+    site_mcp_check_probes_out_path = tmp_root / "registry-site-mcp-check-probes.json"
+    site_mcp_check_probes_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
+    site_mcp_check_probes_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-check",
+        "--probes",
+        "--json",
+        "--out",
+        str(site_mcp_check_probes_out_path),
+        "--force",
+    ]
+    assert_site_mcp_check_probes_json_file_output(
+        f"Wrote {site_mcp_check_probes_out_path}\n",
+        site_mcp_check_probes_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_check_probes_out_path),
+        context="registry smoke self-test site mcp-check probes JSON out",
+        cmd=site_mcp_check_probes_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_json_file_output(
             f"Wrote {site_mcp_check_probes_out_path}\n",
-            site_mcp_check_probes_out_path.read_text(encoding="utf-8"),
+            site_mcp_check_probes_out_path.read_text(encoding="utf-8").replace(
+                '"externalCalls": false',
+                '"externalCalls": true',
+            ),
             output_path=str(site_mcp_check_probes_out_path),
             context="registry smoke self-test site mcp-check probes JSON out",
             cmd=site_mcp_check_probes_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_site_mcp_check_probes_json_file_output(
-                f"Wrote {site_mcp_check_probes_out_path}\n",
-                site_mcp_check_probes_out_path.read_text(encoding="utf-8").replace(
-                    '"externalCalls": false',
-                    '"externalCalls": true',
-                ),
-                output_path=str(site_mcp_check_probes_out_path),
-                context="registry smoke self-test site mcp-check probes JSON out",
-                cmd=site_mcp_check_probes_out_cmd,
-            ),
-            expected="without external calls",
-            scope="registry smoke",
-        )
-        mcp_protocol_cmd = ["design-ai-mcp"]
-        mcp_responses = passing_mcp_protocol_responses()
-        assert_design_ai_mcp_protocol_responses(
-            mcp_responses,
+        ),
+        expected="without external calls",
+        scope="registry smoke",
+    )
+    mcp_protocol_cmd = ["design-ai-mcp"]
+    mcp_responses = passing_mcp_protocol_responses()
+    assert_design_ai_mcp_protocol_responses(
+        mcp_responses,
+        context="registry smoke self-test design-ai MCP protocol",
+        cmd=mcp_protocol_cmd,
+    )
+    invalid_mcp_responses = json.loads(json.dumps(mcp_responses))
+    next(response for response in invalid_mcp_responses if response.get("id") == 3)["error"]["message"] = (
+        "wrong validation message"
+    )
+    expect_self_test_failure(
+        lambda: assert_design_ai_mcp_protocol_responses(
+            invalid_mcp_responses,
             context="registry smoke self-test design-ai MCP protocol",
             cmd=mcp_protocol_cmd,
-        )
-        invalid_mcp_responses = json.loads(json.dumps(mcp_responses))
-        next(response for response in invalid_mcp_responses if response.get("id") == 3)["error"]["message"] = (
-            "wrong validation message"
-        )
-        expect_self_test_failure(
-            lambda: assert_design_ai_mcp_protocol_responses(
-                invalid_mcp_responses,
-                context="registry smoke self-test design-ai MCP protocol",
-                cmd=mcp_protocol_cmd,
-            ),
-            expected="MCP invalid argument response did not preserve invalid params validation",
-            scope="registry smoke",
-        )
-        assert_site_mcp_plan_markdown(
-            passing_site_mcp_plan_markdown(),
-            context="registry smoke self-test site mcp-plan",
-            cmd=site_mcp_plan_cmd,
-        )
-        assert_site_mcp_plan_probes_markdown(
-            passing_site_mcp_plan_probes_markdown(),
-            context="registry smoke self-test site mcp-plan probes",
-            cmd=site_mcp_plan_probes_cmd,
-        )
-        assert_site_mcp_plan_probes_json(
-            passing_site_mcp_plan_json(probes=True),
-            context="registry smoke self-test site mcp-plan probes JSON",
-            cmd=site_mcp_plan_probes_json_cmd,
-        )
-        site_mcp_plan_json_out_path = tmp_root / "registry-site-mcp-plan-probes.json"
-        site_mcp_plan_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
-        site_mcp_plan_json_out_cmd = [
-            "design-ai",
-            "site",
-            "--stdin",
-            "--mcp-plan",
-            "--probes",
-            "--json",
-            "--out",
-            str(site_mcp_plan_json_out_path),
-            "--force",
-        ]
-        assert_site_mcp_plan_probes_json_file_output(
-            f"Wrote {site_mcp_plan_json_out_path}\n",
-            site_mcp_plan_json_out_path.read_text(encoding="utf-8"),
-            output_path=str(site_mcp_plan_json_out_path),
-            context="registry smoke self-test site mcp-plan probes JSON out",
-            cmd=site_mcp_plan_json_out_cmd,
-        )
-        site_mcp_plan_human_out_path = tmp_root / "registry-site-mcp-plan-probes-human.txt"
-        site_mcp_plan_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
-        site_mcp_plan_human_out_cmd = site_mcp_probe_embedded_command(
-            json.loads(passing_site_mcp_plan_json(probes=True)),
-            "mcpCheckProbesHumanOut",
-            site_mcp_plan_probes_json_cmd,
-            output_path=str(site_mcp_plan_human_out_path),
-            context="registry smoke self-test site mcp-plan probes emitted human out command",
-        )
-        assert_site_mcp_check_probes_human_file_output(
+        ),
+        expected="MCP invalid argument response did not preserve invalid params validation",
+        scope="registry smoke",
+    )
+    assert_site_mcp_plan_markdown(
+        passing_site_mcp_plan_markdown(),
+        context="registry smoke self-test site mcp-plan",
+        cmd=site_mcp_plan_cmd,
+    )
+    assert_site_mcp_plan_probes_markdown(
+        passing_site_mcp_plan_probes_markdown(),
+        context="registry smoke self-test site mcp-plan probes",
+        cmd=site_mcp_plan_probes_cmd,
+    )
+    assert_site_mcp_plan_probes_json(
+        passing_site_mcp_plan_json(probes=True),
+        context="registry smoke self-test site mcp-plan probes JSON",
+        cmd=site_mcp_plan_probes_json_cmd,
+    )
+    site_mcp_plan_json_out_path = tmp_root / "registry-site-mcp-plan-probes.json"
+    site_mcp_plan_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
+    site_mcp_plan_json_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-plan",
+        "--probes",
+        "--json",
+        "--out",
+        str(site_mcp_plan_json_out_path),
+        "--force",
+    ]
+    assert_site_mcp_plan_probes_json_file_output(
+        f"Wrote {site_mcp_plan_json_out_path}\n",
+        site_mcp_plan_json_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_plan_json_out_path),
+        context="registry smoke self-test site mcp-plan probes JSON out",
+        cmd=site_mcp_plan_json_out_cmd,
+    )
+    site_mcp_plan_human_out_path = tmp_root / "registry-site-mcp-plan-probes-human.txt"
+    site_mcp_plan_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
+    site_mcp_plan_human_out_cmd = site_mcp_probe_embedded_command(
+        json.loads(passing_site_mcp_plan_json(probes=True)),
+        "mcpCheckProbesHumanOut",
+        site_mcp_plan_probes_json_cmd,
+        output_path=str(site_mcp_plan_human_out_path),
+        context="registry smoke self-test site mcp-plan probes emitted human out command",
+    )
+    assert_site_mcp_check_probes_human_file_output(
+        f"Wrote {site_mcp_plan_human_out_path}\n",
+        site_mcp_plan_human_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_plan_human_out_path),
+        context="registry smoke self-test site mcp-plan probes emitted human out",
+        cmd=site_mcp_plan_human_out_cmd,
+    )
+    site_mcp_plan_check_json_out_path = tmp_root / "registry-site-mcp-plan-probes-check.json"
+    site_mcp_plan_check_json_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
+    site_mcp_plan_check_json_out_cmd = site_mcp_probe_embedded_command(
+        json.loads(passing_site_mcp_plan_json(probes=True)),
+        "mcpCheckProbesJsonOut",
+        site_mcp_plan_probes_json_cmd,
+        output_path=str(site_mcp_plan_check_json_out_path),
+        context="registry smoke self-test site mcp-plan probes emitted check JSON out command",
+    )
+    assert_site_mcp_check_probes_json_file_output(
+        f"Wrote {site_mcp_plan_check_json_out_path}\n",
+        site_mcp_plan_check_json_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_plan_check_json_out_path),
+        context="registry smoke self-test site mcp-plan probes emitted check JSON out",
+        cmd=site_mcp_plan_check_json_out_cmd,
+    )
+    site_mcp_plan_emitted_json_out_path = tmp_root / "registry-site-mcp-plan-probes-emitted.json"
+    site_mcp_plan_emitted_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
+    site_mcp_plan_emitted_json_out_cmd = site_mcp_probe_embedded_command(
+        json.loads(passing_site_mcp_plan_json(probes=True)),
+        "mcpPlanProbesJsonOut",
+        site_mcp_plan_probes_json_cmd,
+        output_path=str(site_mcp_plan_emitted_json_out_path),
+        context="registry smoke self-test site mcp-plan probes emitted plan JSON out command",
+    )
+    assert_site_mcp_plan_probes_json_file_output(
+        f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
+        site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_plan_emitted_json_out_path),
+        context="registry smoke self-test site mcp-plan probes emitted plan JSON out",
+        cmd=site_mcp_plan_emitted_json_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_human_file_output(
             f"Wrote {site_mcp_plan_human_out_path}\n",
-            site_mcp_plan_human_out_path.read_text(encoding="utf-8"),
+            site_mcp_plan_human_out_path.read_text(encoding="utf-8").replace(
+                "Probe commands:",
+                "Probe notes:",
+            ),
             output_path=str(site_mcp_plan_human_out_path),
             context="registry smoke self-test site mcp-plan probes emitted human out",
             cmd=site_mcp_plan_human_out_cmd,
-        )
-        site_mcp_plan_check_json_out_path = tmp_root / "registry-site-mcp-plan-probes-check.json"
-        site_mcp_plan_check_json_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
-        site_mcp_plan_check_json_out_cmd = site_mcp_probe_embedded_command(
-            json.loads(passing_site_mcp_plan_json(probes=True)),
-            "mcpCheckProbesJsonOut",
-            site_mcp_plan_probes_json_cmd,
-            output_path=str(site_mcp_plan_check_json_out_path),
-            context="registry smoke self-test site mcp-plan probes emitted check JSON out command",
-        )
-        assert_site_mcp_check_probes_json_file_output(
+        ),
+        expected="Probe commands",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_json_file_output(
             f"Wrote {site_mcp_plan_check_json_out_path}\n",
-            site_mcp_plan_check_json_out_path.read_text(encoding="utf-8"),
+            site_mcp_plan_check_json_out_path.read_text(encoding="utf-8").replace(
+                '"externalCalls": false',
+                '"externalCalls": true',
+            ),
             output_path=str(site_mcp_plan_check_json_out_path),
             context="registry smoke self-test site mcp-plan probes emitted check JSON out",
             cmd=site_mcp_plan_check_json_out_cmd,
-        )
-        site_mcp_plan_emitted_json_out_path = tmp_root / "registry-site-mcp-plan-probes-emitted.json"
-        site_mcp_plan_emitted_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
-        site_mcp_plan_emitted_json_out_cmd = site_mcp_probe_embedded_command(
-            json.loads(passing_site_mcp_plan_json(probes=True)),
-            "mcpPlanProbesJsonOut",
-            site_mcp_plan_probes_json_cmd,
-            output_path=str(site_mcp_plan_emitted_json_out_path),
-            context="registry smoke self-test site mcp-plan probes emitted plan JSON out command",
-        )
-        assert_site_mcp_plan_probes_json_file_output(
+        ),
+        expected="external calls",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_plan_probes_json_file_output(
             f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
-            site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8"),
+            site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8").replace(
+                '"targetRepoMutation": false',
+                '"targetRepoMutation": true',
+            ),
             output_path=str(site_mcp_plan_emitted_json_out_path),
             context="registry smoke self-test site mcp-plan probes emitted plan JSON out",
             cmd=site_mcp_plan_emitted_json_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_site_mcp_check_probes_human_file_output(
-                f"Wrote {site_mcp_plan_human_out_path}\n",
-                site_mcp_plan_human_out_path.read_text(encoding="utf-8").replace(
-                    "Probe commands:",
-                    "Probe notes:",
-                ),
-                output_path=str(site_mcp_plan_human_out_path),
-                context="registry smoke self-test site mcp-plan probes emitted human out",
-                cmd=site_mcp_plan_human_out_cmd,
+        ),
+        expected="local/read-only",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_plan_probes_json_file_output(
+            f"Wrote {site_mcp_plan_json_out_path}\n",
+            site_mcp_plan_json_out_path.read_text(encoding="utf-8").replace(
+                '"targetRepoMutation": false',
+                '"targetRepoMutation": true',
             ),
-            expected="Probe commands",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_site_mcp_check_probes_json_file_output(
-                f"Wrote {site_mcp_plan_check_json_out_path}\n",
-                site_mcp_plan_check_json_out_path.read_text(encoding="utf-8").replace(
-                    '"externalCalls": false',
-                    '"externalCalls": true',
-                ),
-                output_path=str(site_mcp_plan_check_json_out_path),
-                context="registry smoke self-test site mcp-plan probes emitted check JSON out",
-                cmd=site_mcp_plan_check_json_out_cmd,
+            output_path=str(site_mcp_plan_json_out_path),
+            context="registry smoke self-test site mcp-plan probes JSON out",
+            cmd=site_mcp_plan_json_out_cmd,
+        ),
+        expected="local/read-only",
+        scope="registry smoke",
+    )
+    assert_site_tasks_json(
+        passing_site_tasks_json(),
+        context="registry smoke self-test site tasks",
+        cmd=site_tasks_cmd,
+    )
+    assert_site_prompt_markdown(
+        passing_site_prompt_markdown(),
+        context="registry smoke self-test site prompt",
+        cmd=site_prompt_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_site_prompt_markdown(
+            passing_site_prompt_markdown().replace(
+                "Work in the target website repository, not in this design-ai repository.",
+                "Work in this design-ai repository.",
             ),
-            expected="external calls",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_site_mcp_plan_probes_json_file_output(
-                f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
-                site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8").replace(
-                    '"targetRepoMutation": false',
-                    '"targetRepoMutation": true',
-                ),
-                output_path=str(site_mcp_plan_emitted_json_out_path),
-                context="registry smoke self-test site mcp-plan probes emitted plan JSON out",
-                cmd=site_mcp_plan_emitted_json_out_cmd,
-            ),
-            expected="local/read-only",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_site_mcp_plan_probes_json_file_output(
-                f"Wrote {site_mcp_plan_json_out_path}\n",
-                site_mcp_plan_json_out_path.read_text(encoding="utf-8").replace(
-                    '"targetRepoMutation": false',
-                    '"targetRepoMutation": true',
-                ),
-                output_path=str(site_mcp_plan_json_out_path),
-                context="registry smoke self-test site mcp-plan probes JSON out",
-                cmd=site_mcp_plan_json_out_cmd,
-            ),
-            expected="local/read-only",
-            scope="registry smoke",
-        )
-        assert_site_tasks_json(
-            passing_site_tasks_json(),
-            context="registry smoke self-test site tasks",
-            cmd=site_tasks_cmd,
-        )
-        assert_site_prompt_markdown(
-            passing_site_prompt_markdown(),
-            context="registry smoke self-test site prompt",
+            context="registry smoke self-test site prompt drift",
             cmd=site_prompt_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_site_prompt_markdown(
-                passing_site_prompt_markdown().replace(
-                    "Work in the target website repository, not in this design-ai repository.",
-                    "Work in this design-ai repository.",
-                ),
-                context="registry smoke self-test site prompt drift",
-                cmd=site_prompt_cmd,
-            ),
-            expected="missing expected content",
-            scope="registry smoke",
-        )
+        ),
+        expected="missing expected content",
+        scope="registry smoke",
+    )
 
-        check_learning_profile_path = tmp_root / "check-learning.json"
-        check_learning_entries = [
+    check_learning_profile_path = tmp_root / "check-learning.json"
+    check_learning_entries = [
+        {
+            "id": "learn-check-keyboard",
+            "category": "accessibility",
+            "text": "Improve future outputs by addressing Keyboard and focus behavior: No keyboard or focus behavior note detected.",
+            "source": "check:artifact",
+            "createdAt": "2026-05-22T00:00:00.000Z",
+        },
+        {
+            "id": "learn-check-responsive",
+            "category": "workflow",
+            "text": "Improve future outputs by addressing Responsive behavior: No mobile/desktop/responsive behavior note detected.",
+            "source": "check:artifact",
+            "createdAt": "2026-05-22T00:00:01.000Z",
+        },
+        {
+            "id": "learn-check-screen-reader",
+            "category": "accessibility",
+            "text": "Improve future outputs by addressing Screen-reader semantics: No screen-reader or ARIA behavior note detected.",
+            "source": "check:artifact",
+            "createdAt": "2026-05-22T00:00:02.000Z",
+        },
+        {
+            "id": "learn-check-misuse",
+            "category": "workflow",
+            "text": "Improve future outputs by addressing Misuse guidance: No Don't/avoid/anti-pattern guidance detected.",
+            "source": "check:artifact",
+            "createdAt": "2026-05-22T00:00:03.000Z",
+        },
+    ]
+    check_learning_profile_path.write_text(
+        json.dumps(
             {
-                "id": "learn-check-keyboard",
-                "category": "accessibility",
-                "text": "Improve future outputs by addressing Keyboard and focus behavior: No keyboard or focus behavior note detected.",
-                "source": "check:artifact",
-                "createdAt": "2026-05-22T00:00:00.000Z",
-            },
-            {
-                "id": "learn-check-responsive",
-                "category": "workflow",
-                "text": "Improve future outputs by addressing Responsive behavior: No mobile/desktop/responsive behavior note detected.",
-                "source": "check:artifact",
-                "createdAt": "2026-05-22T00:00:01.000Z",
-            },
-            {
-                "id": "learn-check-screen-reader",
-                "category": "accessibility",
-                "text": "Improve future outputs by addressing Screen-reader semantics: No screen-reader or ARIA behavior note detected.",
-                "source": "check:artifact",
-                "createdAt": "2026-05-22T00:00:02.000Z",
-            },
-            {
-                "id": "learn-check-misuse",
-                "category": "workflow",
-                "text": "Improve future outputs by addressing Misuse guidance: No Don't/avoid/anti-pattern guidance detected.",
-                "source": "check:artifact",
-                "createdAt": "2026-05-22T00:00:03.000Z",
-            },
-        ]
-        check_learning_profile_path.write_text(
-            json.dumps(
-                {
-                    "version": 1,
-                    "updatedAt": "2026-05-22T00:00:03.000Z",
-                    "entries": check_learning_entries,
-                },
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        check_learning_cmd = [
-            "design-ai",
-            "check",
-            "/tmp/check-learning.md",
-            "--learn",
-            "--yes",
-            "--learning-file",
-            str(check_learning_profile_path),
-            "--json",
-        ]
-        check_learning_payload = {
-            "filePath": "/tmp/check-learning.md",
-            "status": "warn",
-            "passes": 5,
-            "warnings": 4,
-            "failures": 0,
-            "total": 9,
-            "score": "5/9",
-            "results": [],
-            "learningCapture": {
-                "file": str(check_learning_profile_path),
-                "dryRun": False,
-                "applied": True,
-                "source": "check:artifact",
-                "candidateCount": 4,
-                "addedCount": 4,
-                "skippedCount": 0,
-                "count": 4,
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:03.000Z",
                 "entries": check_learning_entries,
-                "skipped": [],
             },
-        }
-        assert_check_learning_capture_json(
-            json.dumps(check_learning_payload),
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    check_learning_cmd = [
+        "design-ai",
+        "check",
+        "/tmp/check-learning.md",
+        "--learn",
+        "--yes",
+        "--learning-file",
+        str(check_learning_profile_path),
+        "--json",
+    ]
+    check_learning_payload = {
+        "filePath": "/tmp/check-learning.md",
+        "status": "warn",
+        "passes": 5,
+        "warnings": 4,
+        "failures": 0,
+        "total": 9,
+        "score": "5/9",
+        "results": [],
+        "learningCapture": {
+            "file": str(check_learning_profile_path),
+            "dryRun": False,
+            "applied": True,
+            "source": "check:artifact",
+            "candidateCount": 4,
+            "addedCount": 4,
+            "skippedCount": 0,
+            "count": 4,
+            "entries": check_learning_entries,
+            "skipped": [],
+        },
+    }
+    assert_check_learning_capture_json(
+        json.dumps(check_learning_payload),
+        profile_path=check_learning_profile_path,
+        expected_file_suffix="check-learning.md",
+        context="registry smoke self-test",
+        cmd=check_learning_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_check_learning_capture_json(
+            json.dumps({
+                **check_learning_payload,
+                "learningCapture": {
+                    **check_learning_payload["learningCapture"],
+                    "addedCount": 3,
+                },
+            }),
             profile_path=check_learning_profile_path,
             expected_file_suffix="check-learning.md",
             context="registry smoke self-test",
             cmd=check_learning_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_check_learning_capture_json(
-                json.dumps({
-                    **check_learning_payload,
-                    "learningCapture": {
-                        **check_learning_payload["learningCapture"],
-                        "addedCount": 3,
-                    },
-                }),
-                profile_path=check_learning_profile_path,
-                expected_file_suffix="check-learning.md",
-                context="registry smoke self-test",
-                cmd=check_learning_cmd,
-            ),
-            expected="check learning capture counts changed",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_check_learning_capture_json(
-                json.dumps({
-                    **check_learning_payload,
-                    "learningCapture": {
-                        **check_learning_payload["learningCapture"],
-                        "source": "check:component-spec",
-                    },
-                }),
-                profile_path=check_learning_profile_path,
-                expected_file_suffix="check-learning.md",
-                context="registry smoke self-test",
-                cmd=check_learning_cmd,
-            ),
-            expected="check learning capture metadata changed",
-            scope="registry smoke",
-        )
+        ),
+        expected="check learning capture counts changed",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_check_learning_capture_json(
+            json.dumps({
+                **check_learning_payload,
+                "learningCapture": {
+                    **check_learning_payload["learningCapture"],
+                    "source": "check:component-spec",
+                },
+            }),
+            profile_path=check_learning_profile_path,
+            expected_file_suffix="check-learning.md",
+            context="registry smoke self-test",
+            cmd=check_learning_cmd,
+        ),
+        expected="check learning capture metadata changed",
+        scope="registry smoke",
+    )
 
-        learning_feedback_path = tmp_root / "learning-feedback.json"
-        learning_feedback_payload = {
-            "file": str(learning_feedback_path),
-            "count": 1,
-            "feedback": {
-                "outcome": "keep",
-                "category": "workflow",
-                "instruction": "Repeat in future outputs: Keep audit findings short and evidence-led",
-            },
-            "entry": {
-                "id": "registry-feedback-entry",
-                "category": "workflow",
-                "text": "Repeat in future outputs: Keep audit findings short and evidence-led",
-                "source": "feedback:keep",
-                "createdAt": "2026-05-22T00:00:00.000Z",
-            },
-        }
-        learn_feedback_cmd = [
-            "design-ai",
-            "learn",
-            "--feedback",
-            "Keep audit findings short and evidence-led",
-            "--outcome",
-            "keep",
-            "--file",
-            str(learning_feedback_path),
-            "--json",
-        ]
-        assert_learning_feedback_json(
-            json.dumps(learning_feedback_payload),
+
+def _self_test_learning_init_and_backup(tmp_root: Path) -> None:
+    """Registry smoke self-test: learn init, feedback, verify, and backup contracts."""
+    learning_feedback_path = tmp_root / "learning-feedback.json"
+    learning_feedback_payload = {
+        "file": str(learning_feedback_path),
+        "count": 1,
+        "feedback": {
+            "outcome": "keep",
+            "category": "workflow",
+            "instruction": "Repeat in future outputs: Keep audit findings short and evidence-led",
+        },
+        "entry": {
+            "id": "registry-feedback-entry",
+            "category": "workflow",
+            "text": "Repeat in future outputs: Keep audit findings short and evidence-led",
+            "source": "feedback:keep",
+            "createdAt": "2026-05-22T00:00:00.000Z",
+        },
+    }
+    learn_feedback_cmd = [
+        "design-ai",
+        "learn",
+        "--feedback",
+        "Keep audit findings short and evidence-led",
+        "--outcome",
+        "keep",
+        "--file",
+        str(learning_feedback_path),
+        "--json",
+    ]
+    assert_learning_feedback_json(
+        json.dumps(learning_feedback_payload),
+        profile_path=learning_feedback_path,
+        outcome="keep",
+        category="workflow",
+        expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
+        expected_count=1,
+        context="registry smoke self-test",
+        cmd=learn_feedback_cmd,
+    )
+    learning_feedback_out_path = tmp_root / "registry-learning-feedback-out.json"
+    learning_feedback_out_path.write_text(json.dumps(learning_feedback_payload), encoding="utf-8")
+    learn_feedback_out_cmd = [
+        "design-ai",
+        "learn",
+        "--feedback",
+        "Keep audit findings short and evidence-led",
+        "--outcome",
+        "keep",
+        "--file",
+        str(learning_feedback_path),
+        "--json",
+        "--out",
+        str(learning_feedback_out_path),
+        "--force",
+    ]
+    assert_output_write_success(
+        f"Wrote {learning_feedback_out_path}\n",
+        context="registry smoke self-test feedback out",
+        cmd=learn_feedback_out_cmd,
+        expected_path=str(learning_feedback_out_path),
+    )
+    assert_learning_feedback_json(
+        learning_feedback_out_path.read_text(encoding="utf-8"),
+        profile_path=learning_feedback_path,
+        outcome="keep",
+        category="workflow",
+        expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
+        expected_count=1,
+        context="registry smoke self-test feedback out file",
+        cmd=learn_feedback_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_feedback_json(
+            json.dumps({
+                **learning_feedback_payload,
+                "feedback": {
+                    **learning_feedback_payload["feedback"],
+                    "outcome": "avoid",
+                },
+            }),
             profile_path=learning_feedback_path,
             outcome="keep",
             category="workflow",
@@ -4635,130 +4707,132 @@ def run_self_test() -> None:
             expected_count=1,
             context="registry smoke self-test",
             cmd=learn_feedback_cmd,
-        )
-        learning_feedback_out_path = tmp_root / "registry-learning-feedback-out.json"
-        learning_feedback_out_path.write_text(json.dumps(learning_feedback_payload), encoding="utf-8")
-        learn_feedback_out_cmd = [
-            "design-ai",
-            "learn",
-            "--feedback",
-            "Keep audit findings short and evidence-led",
-            "--outcome",
-            "keep",
-            "--file",
-            str(learning_feedback_path),
-            "--json",
-            "--out",
-            str(learning_feedback_out_path),
-            "--force",
-        ]
-        assert_output_write_success(
-            f"Wrote {learning_feedback_out_path}\n",
+        ),
+        expected="learn feedback outcome changed",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            "Wrote different-feedback.json\n",
             context="registry smoke self-test feedback out",
             cmd=learn_feedback_out_cmd,
             expected_path=str(learning_feedback_out_path),
-        )
-        assert_learning_feedback_json(
-            learning_feedback_out_path.read_text(encoding="utf-8"),
-            profile_path=learning_feedback_path,
-            outcome="keep",
-            category="workflow",
-            expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
-            expected_count=1,
-            context="registry smoke self-test feedback out file",
-            cmd=learn_feedback_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_feedback_json(
-                json.dumps({
-                    **learning_feedback_payload,
-                    "feedback": {
-                        **learning_feedback_payload["feedback"],
-                        "outcome": "avoid",
-                    },
-                }),
-                profile_path=learning_feedback_path,
-                outcome="keep",
-                category="workflow",
-                expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
-                expected_count=1,
-                context="registry smoke self-test",
-                cmd=learn_feedback_cmd,
-            ),
-            expected="learn feedback outcome changed",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_output_write_success(
-                "Wrote different-feedback.json\n",
-                context="registry smoke self-test feedback out",
-                cmd=learn_feedback_out_cmd,
-                expected_path=str(learning_feedback_out_path),
-            ),
-            expected="output write success",
-            scope="registry smoke",
-        )
+        ),
+        expected="output write success",
+        scope="registry smoke",
+    )
 
-        learning_init_path = tmp_root / "learning-init.json"
-        learning_init_entries = [
-            {
-                "id": "learn-init-preference",
-                "category": "preference",
-                "text": "Recommend one best path instead of broad options.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:00.000Z",
-            },
-            {
-                "id": "learn-init-workflow",
-                "category": "workflow",
-                "text": "Read repository context before changing files.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:01.000Z",
-            },
-            {
-                "id": "learn-init-accessibility",
-                "category": "accessibility",
-                "text": "Keep WCAG 2.1 AA checks explicit.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:02.000Z",
-            },
-            {
-                "id": "learn-init-korean",
-                "category": "korean",
-                "text": "Prefer Pretendard for Korean product UI.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:03.000Z",
-            },
-            {
-                "id": "learn-init-brand",
-                "category": "brand",
-                "text": "Use restrained product UI language.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:04.000Z",
-            },
-            {
-                "id": "learn-init-constraint",
-                "category": "constraint",
-                "text": "Do not call external AI APIs during local learning.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:05.000Z",
-            },
-        ]
-        learning_init_payload = {
-            "file": str(learning_init_path),
-            "dryRun": True,
-            "applied": False,
+    learning_init_path = tmp_root / "learning-init.json"
+    learning_init_entries = [
+        {
+            "id": "learn-init-preference",
+            "category": "preference",
+            "text": "Recommend one best path instead of broad options.",
             "source": "init:local-dogfood",
-            "candidateCount": 6,
-            "addedCount": 6,
-            "skippedCount": 0,
-            "count": 6,
-            "entries": learning_init_entries,
-            "skipped": [],
-        }
-        learn_init_cmd = ["design-ai", "learn", "--init", "--file", str(learning_init_path), "--json"]
-        assert_learning_init_json(
-            json.dumps(learning_init_payload),
+            "createdAt": "2026-05-22T00:00:00.000Z",
+        },
+        {
+            "id": "learn-init-workflow",
+            "category": "workflow",
+            "text": "Read repository context before changing files.",
+            "source": "init:local-dogfood",
+            "createdAt": "2026-05-22T00:00:01.000Z",
+        },
+        {
+            "id": "learn-init-accessibility",
+            "category": "accessibility",
+            "text": "Keep WCAG 2.1 AA checks explicit.",
+            "source": "init:local-dogfood",
+            "createdAt": "2026-05-22T00:00:02.000Z",
+        },
+        {
+            "id": "learn-init-korean",
+            "category": "korean",
+            "text": "Prefer Pretendard for Korean product UI.",
+            "source": "init:local-dogfood",
+            "createdAt": "2026-05-22T00:00:03.000Z",
+        },
+        {
+            "id": "learn-init-brand",
+            "category": "brand",
+            "text": "Use restrained product UI language.",
+            "source": "init:local-dogfood",
+            "createdAt": "2026-05-22T00:00:04.000Z",
+        },
+        {
+            "id": "learn-init-constraint",
+            "category": "constraint",
+            "text": "Do not call external AI APIs during local learning.",
+            "source": "init:local-dogfood",
+            "createdAt": "2026-05-22T00:00:05.000Z",
+        },
+    ]
+    learning_init_payload = {
+        "file": str(learning_init_path),
+        "dryRun": True,
+        "applied": False,
+        "source": "init:local-dogfood",
+        "candidateCount": 6,
+        "addedCount": 6,
+        "skippedCount": 0,
+        "count": 6,
+        "entries": learning_init_entries,
+        "skipped": [],
+    }
+    learn_init_cmd = ["design-ai", "learn", "--init", "--file", str(learning_init_path), "--json"]
+    assert_learning_init_json(
+        json.dumps(learning_init_payload),
+        profile_path=learning_init_path,
+        dry_run=True,
+        added_count=6,
+        skipped_count=0,
+        count=6,
+        context="registry smoke self-test",
+        cmd=learn_init_cmd,
+    )
+    assert_learning_init_json(
+        json.dumps({
+            **learning_init_payload,
+            "dryRun": False,
+            "applied": True,
+        }),
+        profile_path=learning_init_path,
+        dry_run=False,
+        added_count=6,
+        skipped_count=0,
+        count=6,
+        context="registry smoke self-test",
+        cmd=["design-ai", "learn", "--init", "--yes", "--file", str(learning_init_path), "--json"],
+    )
+    duplicate_init_payload = {
+        **learning_init_payload,
+        "dryRun": False,
+        "applied": True,
+        "addedCount": 0,
+        "skippedCount": 6,
+        "entries": [],
+        "skipped": [
+            {
+                "reason": "duplicate-entry-text",
+                "category": entry["category"],
+                "textPreview": entry["text"],
+            }
+            for entry in learning_init_entries
+        ],
+    }
+    assert_learning_init_json(
+        json.dumps(duplicate_init_payload),
+        profile_path=learning_init_path,
+        dry_run=False,
+        added_count=0,
+        skipped_count=6,
+        count=6,
+        context="registry smoke self-test",
+        cmd=["design-ai", "learn", "--init", "--yes", "--file", str(learning_init_path), "--json"],
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_init_json(
+            json.dumps({**learning_init_payload, "candidateCount": 5}),
             profile_path=learning_init_path,
             dry_run=True,
             added_count=6,
@@ -4766,837 +4840,813 @@ def run_self_test() -> None:
             count=6,
             context="registry smoke self-test",
             cmd=learn_init_cmd,
-        )
-        assert_learning_init_json(
+        ),
+        expected="learn init counts changed",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_init_json(
             json.dumps({
                 **learning_init_payload,
-                "dryRun": False,
-                "applied": True,
+                "entries": [
+                    {
+                        **learning_init_entries[0],
+                        "category": "workflow",
+                    },
+                    *learning_init_entries[1:],
+                ],
             }),
             profile_path=learning_init_path,
-            dry_run=False,
+            dry_run=True,
             added_count=6,
             skipped_count=0,
             count=6,
             context="registry smoke self-test",
-            cmd=["design-ai", "learn", "--init", "--yes", "--file", str(learning_init_path), "--json"],
-        )
-        duplicate_init_payload = {
-            **learning_init_payload,
-            "dryRun": False,
-            "applied": True,
-            "addedCount": 0,
-            "skippedCount": 6,
-            "entries": [],
-            "skipped": [
-                {
-                    "reason": "duplicate-entry-text",
-                    "category": entry["category"],
-                    "textPreview": entry["text"],
-                }
-                for entry in learning_init_entries
-            ],
-        }
-        assert_learning_init_json(
-            json.dumps(duplicate_init_payload),
-            profile_path=learning_init_path,
-            dry_run=False,
-            added_count=0,
-            skipped_count=6,
-            count=6,
-            context="registry smoke self-test",
-            cmd=["design-ai", "learn", "--init", "--yes", "--file", str(learning_init_path), "--json"],
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_init_json(
-                json.dumps({**learning_init_payload, "candidateCount": 5}),
-                profile_path=learning_init_path,
-                dry_run=True,
-                added_count=6,
-                skipped_count=0,
-                count=6,
-                context="registry smoke self-test",
-                cmd=learn_init_cmd,
-            ),
-            expected="learn init counts changed",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_init_json(
-                json.dumps({
-                    **learning_init_payload,
-                    "entries": [
-                        {
-                            **learning_init_entries[0],
-                            "category": "workflow",
-                        },
-                        *learning_init_entries[1:],
-                    ],
-                }),
-                profile_path=learning_init_path,
-                dry_run=True,
-                added_count=6,
-                skipped_count=0,
-                count=6,
-                context="registry smoke self-test",
-                cmd=learn_init_cmd,
-            ),
-            expected="learn init entry categories changed",
-            scope="registry smoke",
-        )
+            cmd=learn_init_cmd,
+        ),
+        expected="learn init entry categories changed",
+        scope="registry smoke",
+    )
 
-        learning_verify_path = tmp_root / "learning-verify.json"
-        learning_verify_payload = {
-            "source": str(learning_verify_path),
-            "importable": True,
-            "count": 2,
-            "auditSummary": {
-                "status": "warn",
-                "failures": 0,
-                "warnings": 1,
+    learning_verify_path = tmp_root / "learning-verify.json"
+    learning_verify_payload = {
+        "source": str(learning_verify_path),
+        "importable": True,
+        "count": 2,
+        "auditSummary": {
+            "status": "warn",
+            "failures": 0,
+            "warnings": 1,
+        },
+        "issues": [
+            {
+                "level": "warning",
+                "code": "duplicate-entry-id",
+                "entryId": "registry-verify-entry",
+                "message": "Entry id duplicates registry-verify-entry and can make deletion ambiguous.",
             },
-            "issues": [
-                {
-                    "level": "warning",
-                    "code": "duplicate-entry-id",
-                    "entryId": "registry-verify-entry",
-                    "message": "Entry id duplicates registry-verify-entry and can make deletion ambiguous.",
-                },
-            ],
-            "entries": [
-                {
-                    "id": "registry-verify-entry",
-                    "category": "brand",
-                    "source": "import:registry-smoke",
-                    "createdAt": "2026-05-22T00:00:00.000Z",
-                    "textPreview": "Use quiet enterprise language",
-                },
-                {
-                    "id": "registry-verify-entry",
-                    "category": "korean",
-                    "source": "import:cli",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                    "textPreview": "Prefer dense Korean mobile layouts",
-                },
-            ],
-        }
-        learn_verify_cmd = ["design-ai", "learn", "--verify", "--from-file", str(learning_verify_path), "--json"]
-        assert_learning_verify_json(
-            json.dumps(learning_verify_payload),
+        ],
+        "entries": [
+            {
+                "id": "registry-verify-entry",
+                "category": "brand",
+                "source": "import:registry-smoke",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+                "textPreview": "Use quiet enterprise language",
+            },
+            {
+                "id": "registry-verify-entry",
+                "category": "korean",
+                "source": "import:cli",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+                "textPreview": "Prefer dense Korean mobile layouts",
+            },
+        ],
+    }
+    learn_verify_cmd = ["design-ai", "learn", "--verify", "--from-file", str(learning_verify_path), "--json"]
+    assert_learning_verify_json(
+        json.dumps(learning_verify_payload),
+        source=str(learning_verify_path),
+        context="registry smoke self-test",
+        cmd=learn_verify_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_verify_json(
+            json.dumps({**learning_verify_payload, "importable": False}),
             source=str(learning_verify_path),
             context="registry smoke self-test",
             cmd=learn_verify_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_verify_json(
-                json.dumps({**learning_verify_payload, "importable": False}),
-                source=str(learning_verify_path),
-                context="registry smoke self-test",
-                cmd=learn_verify_cmd,
-            ),
-            expected="learn verify importable flag changed",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_verify_json(
-                json.dumps({
-                    **learning_verify_payload,
-                    "issues": [
-                        {
-                            **learning_verify_payload["issues"][0],
-                            "code": "duplicate-entry-text",
-                        },
-                    ],
-                }),
-                source=str(learning_verify_path),
-                context="registry smoke self-test",
-                cmd=learn_verify_cmd,
-            ),
-            expected="learn verify duplicate-id warning changed",
-            scope="registry smoke",
-        )
-        learning_verify_out_path = tmp_root / "learning-verify-out.json"
-        learn_verify_out_cmd = [
-            "design-ai",
-            "learn",
-            "--verify",
-            "--from-file",
-            str(learning_verify_path),
-            "--json",
-            "--out",
-            str(learning_verify_out_path),
-            "--force",
-        ]
-        learning_verify_out_path.write_text(json.dumps(learning_verify_payload), encoding="utf-8")
-        assert_output_write_success(
-            f"Wrote {learning_verify_out_path}\n",
+        ),
+        expected="learn verify importable flag changed",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_verify_json(
+            json.dumps({
+                **learning_verify_payload,
+                "issues": [
+                    {
+                        **learning_verify_payload["issues"][0],
+                        "code": "duplicate-entry-text",
+                    },
+                ],
+            }),
+            source=str(learning_verify_path),
+            context="registry smoke self-test",
+            cmd=learn_verify_cmd,
+        ),
+        expected="learn verify duplicate-id warning changed",
+        scope="registry smoke",
+    )
+    learning_verify_out_path = tmp_root / "learning-verify-out.json"
+    learn_verify_out_cmd = [
+        "design-ai",
+        "learn",
+        "--verify",
+        "--from-file",
+        str(learning_verify_path),
+        "--json",
+        "--out",
+        str(learning_verify_out_path),
+        "--force",
+    ]
+    learning_verify_out_path.write_text(json.dumps(learning_verify_payload), encoding="utf-8")
+    assert_output_write_success(
+        f"Wrote {learning_verify_out_path}\n",
+        context="registry smoke self-test verify out",
+        cmd=learn_verify_out_cmd,
+        expected_path=str(learning_verify_out_path),
+    )
+    assert_learning_verify_json(
+        learning_verify_out_path.read_text(encoding="utf-8"),
+        source=str(learning_verify_path),
+        context="registry smoke self-test verify out file",
+        cmd=learn_verify_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            "Wrote different-verify.json\n",
             context="registry smoke self-test verify out",
             cmd=learn_verify_out_cmd,
             expected_path=str(learning_verify_out_path),
-        )
-        assert_learning_verify_json(
-            learning_verify_out_path.read_text(encoding="utf-8"),
-            source=str(learning_verify_path),
-            context="registry smoke self-test verify out file",
-            cmd=learn_verify_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_output_write_success(
-                "Wrote different-verify.json\n",
-                context="registry smoke self-test verify out",
-                cmd=learn_verify_out_cmd,
-                expected_path=str(learning_verify_out_path),
-            ),
-            expected="output write success",
-            scope="registry smoke",
-        )
+        ),
+        expected="output write success",
+        scope="registry smoke",
+    )
 
-        learning_backup_path = tmp_root / "learning-backup.json"
-        learning_backup_payload = {
-            "file": str(learning_backup_path),
-            "version": 1,
-            "updatedAt": "2026-05-22T00:00:01.000Z",
-            "exportedAt": "2026-05-22T00:01:00.000Z",
-            "count": 2,
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
+    learning_backup_path = tmp_root / "learning-backup.json"
+    learning_backup_payload = {
+        "file": str(learning_backup_path),
+        "version": 1,
+        "updatedAt": "2026-05-22T00:00:01.000Z",
+        "exportedAt": "2026-05-22T00:01:00.000Z",
+        "count": 2,
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "entries": [
+            {
+                "id": "registry-backup-brand",
+                "category": "brand",
+                "text": "Use quiet enterprise language",
+                "source": "registry-smoke",
+                "createdAt": "2026-05-22T00:00:00.000Z",
             },
-            "entries": [
-                {
-                    "id": "registry-backup-brand",
-                    "category": "brand",
-                    "text": "Use quiet enterprise language",
-                    "source": "registry-smoke",
-                    "createdAt": "2026-05-22T00:00:00.000Z",
-                },
-                {
-                    "id": "registry-backup-korean",
-                    "category": "korean",
-                    "text": "Prefer dense Korean mobile layouts",
-                    "source": "feedback:keep",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                },
-            ],
-        }
-        learn_backup_cmd = ["design-ai", "learn", "--backup", "--file", str(learning_backup_path), "--json"]
-        assert_learning_backup_json(
-            json.dumps(learning_backup_payload),
+            {
+                "id": "registry-backup-korean",
+                "category": "korean",
+                "text": "Prefer dense Korean mobile layouts",
+                "source": "feedback:keep",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+            },
+        ],
+    }
+    learn_backup_cmd = ["design-ai", "learn", "--backup", "--file", str(learning_backup_path), "--json"]
+    assert_learning_backup_json(
+        json.dumps(learning_backup_payload),
+        profile_path=learning_backup_path,
+        context="registry smoke self-test",
+        cmd=learn_backup_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_backup_json(
+            json.dumps({**learning_backup_payload, "entries": []}),
             profile_path=learning_backup_path,
             context="registry smoke self-test",
             cmd=learn_backup_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_backup_json(
-                json.dumps({**learning_backup_payload, "entries": []}),
-                profile_path=learning_backup_path,
-                context="registry smoke self-test",
-                cmd=learn_backup_cmd,
-            ),
-            expected="learn backup entries list changed",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_backup_json(
-                json.dumps({
-                    **learning_backup_payload,
-                    "entries": [
-                        {
-                            **learning_backup_payload["entries"][0],
-                            "text": "",
-                        },
-                        learning_backup_payload["entries"][1],
-                    ],
-                }),
-                profile_path=learning_backup_path,
-                context="registry smoke self-test",
-                cmd=learn_backup_cmd,
-            ),
-            expected="learn backup entries should preserve full text",
-            scope="registry smoke",
-        )
-        learning_backup_out_path = tmp_root / "learning-backup-out.json"
-        learn_backup_out_cmd = [
-            "design-ai",
-            "learn",
-            "--backup",
-            "--file",
-            str(learning_backup_path),
-            "--json",
-            "--out",
-            str(learning_backup_out_path),
-            "--force",
-        ]
-        learning_backup_out_path.write_text(json.dumps(learning_backup_payload), encoding="utf-8")
-        assert_output_write_success(
-            f"Wrote {learning_backup_out_path}\n",
+        ),
+        expected="learn backup entries list changed",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_backup_json(
+            json.dumps({
+                **learning_backup_payload,
+                "entries": [
+                    {
+                        **learning_backup_payload["entries"][0],
+                        "text": "",
+                    },
+                    learning_backup_payload["entries"][1],
+                ],
+            }),
+            profile_path=learning_backup_path,
+            context="registry smoke self-test",
+            cmd=learn_backup_cmd,
+        ),
+        expected="learn backup entries should preserve full text",
+        scope="registry smoke",
+    )
+    learning_backup_out_path = tmp_root / "learning-backup-out.json"
+    learn_backup_out_cmd = [
+        "design-ai",
+        "learn",
+        "--backup",
+        "--file",
+        str(learning_backup_path),
+        "--json",
+        "--out",
+        str(learning_backup_out_path),
+        "--force",
+    ]
+    learning_backup_out_path.write_text(json.dumps(learning_backup_payload), encoding="utf-8")
+    assert_output_write_success(
+        f"Wrote {learning_backup_out_path}\n",
+        context="registry smoke self-test backup out",
+        cmd=learn_backup_out_cmd,
+        expected_path=str(learning_backup_out_path),
+    )
+    assert_learning_backup_json(
+        learning_backup_out_path.read_text(encoding="utf-8"),
+        profile_path=learning_backup_path,
+        context="registry smoke self-test backup out file",
+        cmd=learn_backup_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            "Wrote different-backup.json\n",
             context="registry smoke self-test backup out",
             cmd=learn_backup_out_cmd,
             expected_path=str(learning_backup_out_path),
-        )
-        assert_learning_backup_json(
-            learning_backup_out_path.read_text(encoding="utf-8"),
-            profile_path=learning_backup_path,
-            context="registry smoke self-test backup out file",
-            cmd=learn_backup_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_output_write_success(
-                "Wrote different-backup.json\n",
-                context="registry smoke self-test backup out",
-                cmd=learn_backup_out_cmd,
-                expected_path=str(learning_backup_out_path),
-            ),
-            expected="output write success",
-            scope="registry smoke",
-        )
+        ),
+        expected="output write success",
+        scope="registry smoke",
+    )
 
-        learning_restore_path = tmp_root / "learning-restore.json"
-        learning_restore_source_path = tmp_root / "learning-restore-source.json"
-        learning_restore_default_backup_path = tmp_root / "learning-restore.restore-backup-20260602T000000000Z.json"
-        learning_restore_explicit_backup_path = tmp_root / "learning-restore-rollback.json"
-        learning_restore_payload = {
-            "file": str(learning_restore_path),
-            "source": str(learning_restore_source_path),
-            "dryRun": True,
-            "applied": False,
-            "restorable": True,
-            "backupFile": str(learning_restore_default_backup_path),
-            "backupCreated": False,
-            "backupEntryCount": 1,
-            "rollbackCommand": f"design-ai learn --restore --from-file {learning_restore_default_backup_path} --file {learning_restore_path} --dry-run",
-            "previousCount": 1,
-            "restoredCount": 3,
-            "removedCount": 0,
-            "addedCount": 2,
+
+def _self_test_learning_restore_and_redact(tmp_root: Path) -> None:
+    """Registry smoke self-test: learn restore, import, redaction, and restore-backup pruning contracts."""
+    learning_restore_path = tmp_root / "learning-restore.json"
+    learning_restore_source_path = tmp_root / "learning-restore-source.json"
+    learning_restore_default_backup_path = tmp_root / "learning-restore.restore-backup-20260602T000000000Z.json"
+    learning_restore_explicit_backup_path = tmp_root / "learning-restore-rollback.json"
+    learning_restore_payload = {
+        "file": str(learning_restore_path),
+        "source": str(learning_restore_source_path),
+        "dryRun": True,
+        "applied": False,
+        "restorable": True,
+        "backupFile": str(learning_restore_default_backup_path),
+        "backupCreated": False,
+        "backupEntryCount": 1,
+        "rollbackCommand": f"design-ai learn --restore --from-file {learning_restore_default_backup_path} --file {learning_restore_path} --dry-run",
+        "previousCount": 1,
+        "restoredCount": 3,
+        "removedCount": 0,
+        "addedCount": 2,
+        "metadataChangedCount": 1,
+        "idConflictCount": 1,
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "diff": {
+            "comparisonOnlyCount": 2,
             "metadataChangedCount": 1,
             "idConflictCount": 1,
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-            "diff": {
-                "comparisonOnlyCount": 2,
-                "metadataChangedCount": 1,
-                "idConflictCount": 1,
-            },
+        },
+        "privacy": {
+            "mutatesProfile": False,
+        },
+    }
+    learn_restore_cmd = [
+        "design-ai",
+        "learn",
+        "--restore",
+        "--from-file",
+        str(learning_restore_source_path),
+        "--dry-run",
+        "--file",
+        str(learning_restore_path),
+        "--json",
+    ]
+    assert_learning_restore_json(
+        json.dumps(learning_restore_payload),
+        profile_path=learning_restore_path,
+        source=str(learning_restore_source_path),
+        dry_run=True,
+        context="registry smoke self-test",
+        cmd=learn_restore_cmd,
+    )
+    assert_learning_restore_json(
+        json.dumps({
+            **learning_restore_payload,
+            "source": "stdin",
+            "dryRun": False,
+            "applied": True,
+            "backupFile": str(learning_restore_explicit_backup_path),
+            "backupCreated": True,
+            "rollbackCommand": f"design-ai learn --restore --from-file {learning_restore_explicit_backup_path} --file {learning_restore_path} --dry-run",
             "privacy": {
-                "mutatesProfile": False,
+                "mutatesProfile": True,
             },
-        }
-        learn_restore_cmd = [
+        }),
+        profile_path=learning_restore_path,
+        source="stdin",
+        dry_run=False,
+        backup_path=learning_restore_explicit_backup_path,
+        context="registry smoke self-test",
+        cmd=[
             "design-ai",
             "learn",
             "--restore",
-            "--from-file",
-            str(learning_restore_source_path),
-            "--dry-run",
+            "--stdin",
+            "--yes",
             "--file",
             str(learning_restore_path),
+            "--backup-file",
+            str(learning_restore_explicit_backup_path),
             "--json",
-        ]
-        assert_learning_restore_json(
-            json.dumps(learning_restore_payload),
+        ],
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_restore_json(
+            json.dumps({**learning_restore_payload, "addedCount": 1}),
             profile_path=learning_restore_path,
             source=str(learning_restore_source_path),
             dry_run=True,
             context="registry smoke self-test",
             cmd=learn_restore_cmd,
-        )
-        assert_learning_restore_json(
-            json.dumps({
-                **learning_restore_payload,
-                "source": "stdin",
-                "dryRun": False,
-                "applied": True,
-                "backupFile": str(learning_restore_explicit_backup_path),
-                "backupCreated": True,
-                "rollbackCommand": f"design-ai learn --restore --from-file {learning_restore_explicit_backup_path} --file {learning_restore_path} --dry-run",
-                "privacy": {
-                    "mutatesProfile": True,
-                },
-            }),
-            profile_path=learning_restore_path,
-            source="stdin",
-            dry_run=False,
-            backup_path=learning_restore_explicit_backup_path,
-            context="registry smoke self-test",
-            cmd=[
-                "design-ai",
-                "learn",
-                "--restore",
-                "--stdin",
-                "--yes",
-                "--file",
-                str(learning_restore_path),
-                "--backup-file",
-                str(learning_restore_explicit_backup_path),
-                "--json",
-            ],
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_restore_json(
-                json.dumps({**learning_restore_payload, "addedCount": 1}),
-                profile_path=learning_restore_path,
-                source=str(learning_restore_source_path),
-                dry_run=True,
-                context="registry smoke self-test",
-                cmd=learn_restore_cmd,
-            ),
-            expected="learn restore added count changed",
-            scope="registry smoke",
-        )
+        ),
+        expected="learn restore added count changed",
+        scope="registry smoke",
+    )
 
-        learning_restore_inventory_path = tmp_root / "learning-restore.restore-backup-20260602T000500000Z.json"
-        learning_restore_older_inventory_path = tmp_root / "learning-restore.restore-backup-20260602T000400000Z.json"
-        learning_restore_inventory_entry = {
-            "file": str(learning_restore_inventory_path),
-            "name": learning_restore_inventory_path.name,
-            "createdAt": "2026-06-02T00:05:00.000Z",
-            "entryCount": 1,
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-            "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_inventory_path} --file {learning_restore_path} --dry-run",
-        }
-        learning_restore_backups_payload = {
-            "file": str(learning_restore_path),
-            "directory": str(learning_restore_path.parent),
-            "pattern": "learning-restore.restore-backup-*.json",
-            "limit": 1,
-            "totalCount": 2,
-            "count": 1,
-            "backups": [learning_restore_inventory_entry],
-            "privacy": {
-                "mutatesProfile": False,
-            },
-        }
-        learn_restore_backups_cmd = [
-            "design-ai",
-            "learn",
-            "--restore-backups",
-            "--file",
-            str(learning_restore_path),
-            "--limit",
-            "1",
-            "--json",
-        ]
-        assert_learning_restore_backups_json(
-            json.dumps(learning_restore_backups_payload),
+    learning_restore_inventory_path = tmp_root / "learning-restore.restore-backup-20260602T000500000Z.json"
+    learning_restore_older_inventory_path = tmp_root / "learning-restore.restore-backup-20260602T000400000Z.json"
+    learning_restore_inventory_entry = {
+        "file": str(learning_restore_inventory_path),
+        "name": learning_restore_inventory_path.name,
+        "createdAt": "2026-06-02T00:05:00.000Z",
+        "entryCount": 1,
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_inventory_path} --file {learning_restore_path} --dry-run",
+    }
+    learning_restore_backups_payload = {
+        "file": str(learning_restore_path),
+        "directory": str(learning_restore_path.parent),
+        "pattern": "learning-restore.restore-backup-*.json",
+        "limit": 1,
+        "totalCount": 2,
+        "count": 1,
+        "backups": [learning_restore_inventory_entry],
+        "privacy": {
+            "mutatesProfile": False,
+        },
+    }
+    learn_restore_backups_cmd = [
+        "design-ai",
+        "learn",
+        "--restore-backups",
+        "--file",
+        str(learning_restore_path),
+        "--limit",
+        "1",
+        "--json",
+    ]
+    assert_learning_restore_backups_json(
+        json.dumps(learning_restore_backups_payload),
+        profile_path=learning_restore_path,
+        backup_path=learning_restore_inventory_path,
+        context="registry smoke self-test",
+        cmd=learn_restore_backups_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_restore_backups_json(
+            json.dumps({**learning_restore_backups_payload, "totalCount": 0}),
             profile_path=learning_restore_path,
             backup_path=learning_restore_inventory_path,
             context="registry smoke self-test",
             cmd=learn_restore_backups_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_restore_backups_json(
-                json.dumps({**learning_restore_backups_payload, "totalCount": 0}),
-                profile_path=learning_restore_path,
-                backup_path=learning_restore_inventory_path,
-                context="registry smoke self-test",
-                cmd=learn_restore_backups_cmd,
-            ),
-            expected="learn restore-backups should find rollback backups",
-            scope="registry smoke",
-        )
+        ),
+        expected="learn restore-backups should find rollback backups",
+        scope="registry smoke",
+    )
 
-        learning_restore_older_inventory_entry = {
-            **learning_restore_inventory_entry,
-            "file": str(learning_restore_older_inventory_path),
-            "name": learning_restore_older_inventory_path.name,
-            "createdAt": "2026-06-02T00:04:00.000Z",
-            "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_older_inventory_path} --file {learning_restore_path} --dry-run",
-        }
-        learning_restore_backups_prune_payload = {
-            **learning_restore_backups_payload,
+    learning_restore_older_inventory_entry = {
+        **learning_restore_inventory_entry,
+        "file": str(learning_restore_older_inventory_path),
+        "name": learning_restore_older_inventory_path.name,
+        "createdAt": "2026-06-02T00:04:00.000Z",
+        "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_older_inventory_path} --file {learning_restore_path} --dry-run",
+    }
+    learning_restore_backups_prune_payload = {
+        **learning_restore_backups_payload,
+        "prune": {
+            "dryRun": True,
+            "applied": False,
+            "keep": 1,
+            "retainedCount": 1,
+            "candidateCount": 1,
+            "deletedCount": 0,
+            "failureCount": 0,
+            "retained": [learning_restore_inventory_entry],
+            "candidates": [learning_restore_older_inventory_entry],
+            "deleted": [],
+            "failures": [],
+        },
+        "privacy": {
+            "mutatesProfile": False,
+            "deletesBackupFiles": False,
+        },
+    }
+    learn_restore_backups_prune_cmd = [
+        "design-ai",
+        "learn",
+        "--restore-backups",
+        "--prune",
+        "--keep",
+        "1",
+        "--file",
+        str(learning_restore_path),
+        "--json",
+    ]
+    assert_learning_restore_backups_prune_json(
+        json.dumps(learning_restore_backups_prune_payload),
+        profile_path=learning_restore_path,
+        deleted_path=learning_restore_older_inventory_path,
+        dry_run=True,
+        context="registry smoke self-test",
+        cmd=learn_restore_backups_prune_cmd,
+    )
+    assert_learning_restore_backups_prune_json(
+        json.dumps({
+            **learning_restore_backups_prune_payload,
             "prune": {
-                "dryRun": True,
-                "applied": False,
-                "keep": 1,
-                "retainedCount": 1,
-                "candidateCount": 1,
-                "deletedCount": 0,
-                "failureCount": 0,
-                "retained": [learning_restore_inventory_entry],
-                "candidates": [learning_restore_older_inventory_entry],
-                "deleted": [],
-                "failures": [],
+                **learning_restore_backups_prune_payload["prune"],
+                "dryRun": False,
+                "applied": True,
+                "deletedCount": 1,
+                "deleted": [learning_restore_older_inventory_entry],
             },
             "privacy": {
                 "mutatesProfile": False,
-                "deletesBackupFiles": False,
+                "deletesBackupFiles": True,
             },
-        }
-        learn_restore_backups_prune_cmd = [
-            "design-ai",
-            "learn",
-            "--restore-backups",
-            "--prune",
-            "--keep",
-            "1",
-            "--file",
-            str(learning_restore_path),
-            "--json",
-        ]
-        assert_learning_restore_backups_prune_json(
-            json.dumps(learning_restore_backups_prune_payload),
+        }),
+        profile_path=learning_restore_path,
+        deleted_path=learning_restore_older_inventory_path,
+        dry_run=False,
+        context="registry smoke self-test",
+        cmd=[*learn_restore_backups_prune_cmd[:-1], "--yes", "--json"],
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_restore_backups_prune_json(
+            json.dumps({
+                **learning_restore_backups_prune_payload,
+                "prune": {
+                    **learning_restore_backups_prune_payload["prune"],
+                    "candidateCount": 0,
+                },
+            }),
             profile_path=learning_restore_path,
             deleted_path=learning_restore_older_inventory_path,
             dry_run=True,
             context="registry smoke self-test",
             cmd=learn_restore_backups_prune_cmd,
-        )
-        assert_learning_restore_backups_prune_json(
-            json.dumps({
-                **learning_restore_backups_prune_payload,
-                "prune": {
-                    **learning_restore_backups_prune_payload["prune"],
-                    "dryRun": False,
-                    "applied": True,
-                    "deletedCount": 1,
-                    "deleted": [learning_restore_older_inventory_entry],
-                },
-                "privacy": {
-                    "mutatesProfile": False,
-                    "deletesBackupFiles": True,
-                },
-            }),
-            profile_path=learning_restore_path,
-            deleted_path=learning_restore_older_inventory_path,
-            dry_run=False,
-            context="registry smoke self-test",
-            cmd=[*learn_restore_backups_prune_cmd[:-1], "--yes", "--json"],
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_restore_backups_prune_json(
-                json.dumps({
-                    **learning_restore_backups_prune_payload,
-                    "prune": {
-                        **learning_restore_backups_prune_payload["prune"],
-                        "candidateCount": 0,
-                    },
-                }),
-                profile_path=learning_restore_path,
-                deleted_path=learning_restore_older_inventory_path,
-                dry_run=True,
-                context="registry smoke self-test",
-                cmd=learn_restore_backups_prune_cmd,
-            ),
-            expected="learn restore-backups prune candidate count changed",
-            scope="registry smoke",
-        )
+        ),
+        expected="learn restore-backups prune candidate count changed",
+        scope="registry smoke",
+    )
 
-        learning_import_path = tmp_root / "learning-import.json"
-        learning_import_payload = {
-            "file": str(learning_import_path),
-            "dryRun": True,
-            "applied": False,
-            "importedCount": 2,
-            "addedCount": 1,
-            "skippedCount": 1,
-            "count": 2,
-            "added": [
-                {
-                    "id": "registry-import-generated",
-                    "category": "korean",
-                    "source": "import:cli",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                    "textPreview": "Prefer dense Korean mobile layouts",
-                },
-            ],
-            "skipped": [
-                {
-                    "reason": "duplicate-entry-text",
-                    "category": "brand",
-                    "textPreview": "Use quiet enterprise language",
-                },
-            ],
-        }
-        learn_import_cmd = [
+    learning_import_path = tmp_root / "learning-import.json"
+    learning_import_payload = {
+        "file": str(learning_import_path),
+        "dryRun": True,
+        "applied": False,
+        "importedCount": 2,
+        "addedCount": 1,
+        "skippedCount": 1,
+        "count": 2,
+        "added": [
+            {
+                "id": "registry-import-generated",
+                "category": "korean",
+                "source": "import:cli",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+                "textPreview": "Prefer dense Korean mobile layouts",
+            },
+        ],
+        "skipped": [
+            {
+                "reason": "duplicate-entry-text",
+                "category": "brand",
+                "textPreview": "Use quiet enterprise language",
+            },
+        ],
+    }
+    learn_import_cmd = [
+        "design-ai",
+        "learn",
+        "--import",
+        "--from-file",
+        str(tmp_root / "registry-import-source.json"),
+        "--dry-run",
+        "--file",
+        str(learning_import_path),
+        "--json",
+    ]
+    assert_learning_import_json(
+        json.dumps(learning_import_payload),
+        profile_path=learning_import_path,
+        dry_run=True,
+        context="registry smoke self-test",
+        cmd=learn_import_cmd,
+    )
+    learning_import_out_path = tmp_root / "registry-learning-import-out.json"
+    learning_import_out_path.write_text(json.dumps(learning_import_payload), encoding="utf-8")
+    learn_import_out_cmd = [
+        "design-ai",
+        "learn",
+        "--import",
+        "--from-file",
+        str(tmp_root / "registry-import-source.json"),
+        "--dry-run",
+        "--file",
+        str(learning_import_path),
+        "--json",
+        "--out",
+        str(learning_import_out_path),
+        "--force",
+    ]
+    assert_output_write_success(
+        f"Wrote {learning_import_out_path}\n",
+        context="registry smoke self-test import out",
+        cmd=learn_import_out_cmd,
+        expected_path=str(learning_import_out_path),
+    )
+    assert_learning_import_json(
+        learning_import_out_path.read_text(encoding="utf-8"),
+        profile_path=learning_import_path,
+        dry_run=True,
+        context="registry smoke self-test import out file",
+        cmd=learn_import_out_cmd,
+    )
+    assert_learning_import_json(
+        json.dumps({**learning_import_payload, "dryRun": False, "applied": True}),
+        profile_path=learning_import_path,
+        dry_run=False,
+        context="registry smoke self-test",
+        cmd=[
             "design-ai",
             "learn",
             "--import",
-            "--from-file",
-            str(tmp_root / "registry-import-source.json"),
-            "--dry-run",
+            "--stdin",
+            "--yes",
             "--file",
             str(learning_import_path),
             "--json",
-        ]
-        assert_learning_import_json(
-            json.dumps(learning_import_payload),
+        ],
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_import_json(
+            json.dumps({**learning_import_payload, "addedCount": 2}),
             profile_path=learning_import_path,
             dry_run=True,
             context="registry smoke self-test",
             cmd=learn_import_cmd,
-        )
-        learning_import_out_path = tmp_root / "registry-learning-import-out.json"
-        learning_import_out_path.write_text(json.dumps(learning_import_payload), encoding="utf-8")
-        learn_import_out_cmd = [
-            "design-ai",
-            "learn",
-            "--import",
-            "--from-file",
-            str(tmp_root / "registry-import-source.json"),
-            "--dry-run",
-            "--file",
-            str(learning_import_path),
-            "--json",
-            "--out",
-            str(learning_import_out_path),
-            "--force",
-        ]
-        assert_output_write_success(
-            f"Wrote {learning_import_out_path}\n",
+        ),
+        expected="learn import counts changed",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            "Wrote different-import.json\n",
             context="registry smoke self-test import out",
             cmd=learn_import_out_cmd,
             expected_path=str(learning_import_out_path),
-        )
-        assert_learning_import_json(
-            learning_import_out_path.read_text(encoding="utf-8"),
+        ),
+        expected="output write success",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_import_json(
+            json.dumps({
+                **learning_import_payload,
+                "skipped": [
+                    {
+                        **learning_import_payload["skipped"][0],
+                        "reason": "duplicate-entry-id",
+                    },
+                ],
+            }),
             profile_path=learning_import_path,
             dry_run=True,
-            context="registry smoke self-test import out file",
-            cmd=learn_import_out_cmd,
-        )
-        assert_learning_import_json(
-            json.dumps({**learning_import_payload, "dryRun": False, "applied": True}),
-            profile_path=learning_import_path,
-            dry_run=False,
             context="registry smoke self-test",
-            cmd=[
-                "design-ai",
-                "learn",
-                "--import",
-                "--stdin",
-                "--yes",
-                "--file",
-                str(learning_import_path),
-                "--json",
-            ],
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_import_json(
-                json.dumps({**learning_import_payload, "addedCount": 2}),
-                profile_path=learning_import_path,
-                dry_run=True,
-                context="registry smoke self-test",
-                cmd=learn_import_cmd,
-            ),
-            expected="learn import counts changed",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_output_write_success(
-                "Wrote different-import.json\n",
-                context="registry smoke self-test import out",
-                cmd=learn_import_out_cmd,
-                expected_path=str(learning_import_out_path),
-            ),
-            expected="output write success",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_import_json(
-                json.dumps({
-                    **learning_import_payload,
-                    "skipped": [
-                        {
-                            **learning_import_payload["skipped"][0],
-                            "reason": "duplicate-entry-id",
-                        },
-                    ],
-                }),
-                profile_path=learning_import_path,
-                dry_run=True,
-                context="registry smoke self-test",
-                cmd=learn_import_cmd,
-            ),
-            expected="learn import duplicate skip metadata changed",
-            scope="registry smoke",
-        )
+            cmd=learn_import_cmd,
+        ),
+        expected="learn import duplicate skip metadata changed",
+        scope="registry smoke",
+    )
 
-        learning_redact_path = tmp_root / "learning-redact.json"
-        learning_redact_payload = {
-            "file": str(learning_redact_path),
-            "redacted": True,
-            "count": 2,
-            "redactedCount": 1,
-            "sourceAuditSummary": {
-                "status": "warn",
-                "failures": 0,
-                "warnings": 1,
+    learning_redact_path = tmp_root / "learning-redact.json"
+    learning_redact_payload = {
+        "file": str(learning_redact_path),
+        "redacted": True,
+        "count": 2,
+        "redactedCount": 1,
+        "sourceAuditSummary": {
+            "status": "warn",
+            "failures": 0,
+            "warnings": 1,
+        },
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "redactions": [
+            {
+                "entryId": "registry-sensitive",
+                "codes": [
+                    "sensitive-secret-assignment",
+                    "sensitive-openai-secret-key",
+                ],
             },
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
+        ],
+        "entries": [
+            {
+                "id": "registry-sensitive",
+                "category": "constraint",
+                "source": "registry-smoke",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+                "text": (
+                    "Never include [REDACTED:secret-assignment]: "
+                    "[REDACTED:openai-secret-key] in shared learning profiles"
+                ),
             },
-            "redactions": [
-                {
-                    "entryId": "registry-sensitive",
-                    "codes": [
-                        "sensitive-secret-assignment",
-                        "sensitive-openai-secret-key",
-                    ],
-                },
-            ],
-            "entries": [
-                {
-                    "id": "registry-sensitive",
-                    "category": "constraint",
-                    "source": "registry-smoke",
-                    "createdAt": "2026-05-22T00:00:00.000Z",
-                    "text": (
-                        "Never include [REDACTED:secret-assignment]: "
-                        "[REDACTED:openai-secret-key] in shared learning profiles"
-                    ),
-                },
-                {
-                    "id": "registry-clean",
-                    "category": "korean",
-                    "source": "registry-smoke",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                    "text": "Prefer dense Korean mobile layouts",
-                },
-            ],
-        }
-        learn_redact_cmd = ["design-ai", "learn", "--redact", "--file", str(learning_redact_path), "--json"]
-        assert_learning_redact_json(
-            json.dumps(learning_redact_payload),
+            {
+                "id": "registry-clean",
+                "category": "korean",
+                "source": "registry-smoke",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+                "text": "Prefer dense Korean mobile layouts",
+            },
+        ],
+    }
+    learn_redact_cmd = ["design-ai", "learn", "--redact", "--file", str(learning_redact_path), "--json"]
+    assert_learning_redact_json(
+        json.dumps(learning_redact_payload),
+        profile_path=learning_redact_path,
+        context="registry smoke self-test",
+        cmd=learn_redact_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_redact_json(
+            json.dumps({**learning_redact_payload, "redactedCount": 0}),
             profile_path=learning_redact_path,
             context="registry smoke self-test",
             cmd=learn_redact_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_redact_json(
-                json.dumps({**learning_redact_payload, "redactedCount": 0}),
-                profile_path=learning_redact_path,
-                context="registry smoke self-test",
-                cmd=learn_redact_cmd,
-            ),
-            expected="learn redact metadata changed",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_redact_json(
-                json.dumps({
-                    **learning_redact_payload,
-                    "redactions": [
-                        {
-                            "entryId": "registry-sensitive",
-                            "codes": ["sensitive-secret-assignment"],
-                        },
-                    ],
-                }),
-                profile_path=learning_redact_path,
-                context="registry smoke self-test",
-                cmd=learn_redact_cmd,
-            ),
-            expected="learn redact redactions changed",
-            scope="registry smoke",
-        )
+        ),
+        expected="learn redact metadata changed",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_redact_json(
+            json.dumps({
+                **learning_redact_payload,
+                "redactions": [
+                    {
+                        "entryId": "registry-sensitive",
+                        "codes": ["sensitive-secret-assignment"],
+                    },
+                ],
+            }),
+            profile_path=learning_redact_path,
+            context="registry smoke self-test",
+            cmd=learn_redact_cmd,
+        ),
+        expected="learn redact redactions changed",
+        scope="registry smoke",
+    )
 
-        learning_profile_path = tmp_root / "learning-stats.json"
-        learning_stats_payload = {
-            "file": str(learning_profile_path),
-            "exists": True,
-            "version": 1,
-            "updatedAt": "2026-05-22T00:00:03.000Z",
-            "count": 3,
-            "categoryCounts": {
-                "brand": 1,
-                "accessibility": 1,
-                "korean": 1,
-            },
-            "sourceCounts": {
-                "registry-smoke": 1,
-                "feedback:keep": 1,
-                "import:cli": 1,
-            },
-            "oldestEntry": {
-                "id": "registry-brand",
-                "category": "brand",
-                "source": "registry-smoke",
-                "createdAt": "2026-05-22T00:00:00.000Z",
-                "textPreview": "Use quiet enterprise brand language",
-            },
-            "latestEntry": {
-                "id": "registry-korean",
-                "category": "korean",
-                "source": "import:cli",
-                "createdAt": "2026-05-22T00:00:03.000Z",
-                "textPreview": "Prefer dense Korean mobile layouts with compact controls",
-            },
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-        }
-        learn_stats_cmd = ["design-ai", "learn", "--stats", "--file", str(learning_profile_path), "--json"]
-        assert_learning_stats_json(
-            json.dumps(learning_stats_payload),
+
+def _self_test_learning_stats_and_eval(tmp_root: Path) -> None:
+    """Registry smoke self-test: learn stats, query export, and evaluation-template contracts."""
+    learning_profile_path = tmp_root / "learning-stats.json"
+    learning_stats_payload = {
+        "file": str(learning_profile_path),
+        "exists": True,
+        "version": 1,
+        "updatedAt": "2026-05-22T00:00:03.000Z",
+        "count": 3,
+        "categoryCounts": {
+            "brand": 1,
+            "accessibility": 1,
+            "korean": 1,
+        },
+        "sourceCounts": {
+            "registry-smoke": 1,
+            "feedback:keep": 1,
+            "import:cli": 1,
+        },
+        "oldestEntry": {
+            "id": "registry-brand",
+            "category": "brand",
+            "source": "registry-smoke",
+            "createdAt": "2026-05-22T00:00:00.000Z",
+            "textPreview": "Use quiet enterprise brand language",
+        },
+        "latestEntry": {
+            "id": "registry-korean",
+            "category": "korean",
+            "source": "import:cli",
+            "createdAt": "2026-05-22T00:00:03.000Z",
+            "textPreview": "Prefer dense Korean mobile layouts with compact controls",
+        },
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+    }
+    learn_stats_cmd = ["design-ai", "learn", "--stats", "--file", str(learning_profile_path), "--json"]
+    assert_learning_stats_json(
+        json.dumps(learning_stats_payload),
+        profile_path=learning_profile_path,
+        context="registry smoke self-test",
+        cmd=learn_stats_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_stats_json(
+            json.dumps({
+                **learning_stats_payload,
+                "sourceCounts": {
+                    "registry-smoke": 3,
+                },
+            }),
             profile_path=learning_profile_path,
             context="registry smoke self-test",
             cmd=learn_stats_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_stats_json(
-                json.dumps({
-                    **learning_stats_payload,
-                    "sourceCounts": {
-                        "registry-smoke": 3,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                context="registry smoke self-test",
-                cmd=learn_stats_cmd,
-            ),
-            expected="learn stats source distribution changed",
-            scope="registry smoke",
-        )
-        learning_stats_out_path = Path(tmp) / "registry-learning-stats-out.json"
-        learning_stats_out_path.write_text(json.dumps(learning_stats_payload), encoding="utf-8")
-        learn_stats_out_cmd = [
-            "design-ai",
-            "learn",
-            "--stats",
-            "--file",
-            str(learning_profile_path),
-            "--json",
-            "--out",
-            str(learning_stats_out_path),
-            "--force",
-        ]
-        assert_output_write_success(
-            f"Wrote {learning_stats_out_path}\n",
+        ),
+        expected="learn stats source distribution changed",
+        scope="registry smoke",
+    )
+    learning_stats_out_path = tmp_root / "registry-learning-stats-out.json"
+    learning_stats_out_path.write_text(json.dumps(learning_stats_payload), encoding="utf-8")
+    learn_stats_out_cmd = [
+        "design-ai",
+        "learn",
+        "--stats",
+        "--file",
+        str(learning_profile_path),
+        "--json",
+        "--out",
+        str(learning_stats_out_path),
+        "--force",
+    ]
+    assert_output_write_success(
+        f"Wrote {learning_stats_out_path}\n",
+        context="registry smoke self-test stats out",
+        cmd=learn_stats_out_cmd,
+        expected_path=str(learning_stats_out_path),
+    )
+    assert_learning_stats_json(
+        learning_stats_out_path.read_text(encoding="utf-8"),
+        profile_path=learning_profile_path,
+        context="registry smoke self-test stats out file",
+        cmd=learn_stats_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            "Wrote different-stats.json\n",
             context="registry smoke self-test stats out",
             cmd=learn_stats_out_cmd,
             expected_path=str(learning_stats_out_path),
-        )
-        assert_learning_stats_json(
-            learning_stats_out_path.read_text(encoding="utf-8"),
-            profile_path=learning_profile_path,
-            context="registry smoke self-test stats out file",
-            cmd=learn_stats_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_output_write_success(
-                "Wrote different-stats.json\n",
-                context="registry smoke self-test stats out",
-                cmd=learn_stats_out_cmd,
-                expected_path=str(learning_stats_out_path),
-            ),
-            expected="output write success",
-            scope="registry smoke",
-        )
-        learn_stats_human_cmd = ["design-ai", "learn", "--stats", "--file", str(learning_profile_path)]
-        assert_learning_stats_human(
+        ),
+        expected="output write success",
+        scope="registry smoke",
+    )
+    learn_stats_human_cmd = ["design-ai", "learn", "--stats", "--file", str(learning_profile_path)]
+    assert_learning_stats_human(
+        "\n".join([
+            "design-ai learn",
+            "Local learning profile stats",
+            f"File: {learning_profile_path}",
+            "Exists: yes",
+            "Entries: 3",
+            "Updated: 2026-05-22T00:00:03.000Z",
+            "Audit: pass (0 failure(s), 0 warning(s))",
+            "Categories: brand 1, accessibility 1, korean 1",
+            "Sources: registry-smoke 1, feedback:keep 1, import:cli 1",
+            "",
+            "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
+            "        registry-korean - 2026-05-22T00:00:03.000Z",
+            "Oldest: [brand] Use quiet enterprise brand language",
+            "        registry-brand - 2026-05-22T00:00:00.000Z",
+        ]),
+        context="registry smoke self-test",
+        cmd=learn_stats_human_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_stats_human(
             "\n".join([
                 "design-ai learn",
                 "Local learning profile stats",
@@ -5606,7 +5656,6 @@ def run_self_test() -> None:
                 "Updated: 2026-05-22T00:00:03.000Z",
                 "Audit: pass (0 failure(s), 0 warning(s))",
                 "Categories: brand 1, accessibility 1, korean 1",
-                "Sources: registry-smoke 1, feedback:keep 1, import:cli 1",
                 "",
                 "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
                 "        registry-korean - 2026-05-22T00:00:03.000Z",
@@ -5615,789 +5664,791 @@ def run_self_test() -> None:
             ]),
             context="registry smoke self-test",
             cmd=learn_stats_human_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_stats_human(
-                "\n".join([
-                    "design-ai learn",
-                    "Local learning profile stats",
-                    f"File: {learning_profile_path}",
-                    "Exists: yes",
-                    "Entries: 3",
-                    "Updated: 2026-05-22T00:00:03.000Z",
-                    "Audit: pass (0 failure(s), 0 warning(s))",
-                    "Categories: brand 1, accessibility 1, korean 1",
-                    "",
-                    "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
-                    "        registry-korean - 2026-05-22T00:00:03.000Z",
-                    "Oldest: [brand] Use quiet enterprise brand language",
-                    "        registry-brand - 2026-05-22T00:00:00.000Z",
-                ]),
-                context="registry smoke self-test",
-                cmd=learn_stats_human_cmd,
-            ),
-            expected="learn stats human output missing 'Sources: registry-smoke 1, feedback:keep 1, import:cli 1'",
-            scope="registry smoke",
-        )
+        ),
+        expected="learn stats human output missing 'Sources: registry-smoke 1, feedback:keep 1, import:cli 1'",
+        scope="registry smoke",
+    )
 
-        learning_relevance_path = tmp_root / "learning-relevance.json"
-        learning_query_payload = {
-            "file": str(learning_relevance_path),
-            "exists": True,
-            "version": 1,
-            "updatedAt": "2026-05-22T00:00:02.000Z",
-            "category": "",
+    learning_relevance_path = tmp_root / "learning-relevance.json"
+    learning_query_payload = {
+        "file": str(learning_relevance_path),
+        "exists": True,
+        "version": 1,
+        "updatedAt": "2026-05-22T00:00:02.000Z",
+        "category": "",
+        "query": "keyboard accessibility",
+        "limit": 2,
+        "entries": [
+            {
+                "id": "learn-relevant",
+                "category": "accessibility",
+                "text": "Prioritize keyboard accessibility details for Button component API specs",
+                "source": "registry-smoke",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+            },
+        ],
+        "count": 1,
+        "totalCount": 3,
+        "selection": {
+            "mode": "brief-relevance",
             "query": "keyboard accessibility",
-            "limit": 2,
-            "entries": [
+            "candidateCount": 3,
+            "matchedCount": 1,
+            "queryTokenCount": 2,
+            "fallbackEnabled": False,
+            "selectedCount": 1,
+            "fallbackCount": 0,
+            "selected": [
                 {
                     "id": "learn-relevant",
                     "category": "accessibility",
-                    "text": "Prioritize keyboard accessibility details for Button component API specs",
-                    "source": "registry-smoke",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
+                    "score": 4,
+                    "matchedTokens": ["keyboard", "accessibility"],
+                    "reason": "brief-match",
                 },
             ],
-            "count": 1,
-            "totalCount": 3,
-            "selection": {
-                "mode": "brief-relevance",
-                "query": "keyboard accessibility",
-                "candidateCount": 3,
-                "matchedCount": 1,
-                "queryTokenCount": 2,
-                "fallbackEnabled": False,
-                "selectedCount": 1,
-                "fallbackCount": 0,
-                "selected": [
-                    {
-                        "id": "learn-relevant",
-                        "category": "accessibility",
-                        "score": 4,
-                        "matchedTokens": ["keyboard", "accessibility"],
-                        "reason": "brief-match",
-                    },
-                ],
-            },
-        }
-        learn_query_cmd = [
-            "design-ai",
-            "learn",
-            "--list",
-            "--query",
-            "keyboard accessibility",
-            "--explain",
-            "--limit",
-            "2",
-            "--json",
-        ]
-        assert_learning_query_json(
-            json.dumps(learning_query_payload),
+        },
+    }
+    learn_query_cmd = [
+        "design-ai",
+        "learn",
+        "--list",
+        "--query",
+        "keyboard accessibility",
+        "--explain",
+        "--limit",
+        "2",
+        "--json",
+    ]
+    assert_learning_query_json(
+        json.dumps(learning_query_payload),
+        profile_path=learning_relevance_path,
+        context="registry smoke self-test",
+        cmd=learn_query_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_query_json(
+            json.dumps({
+                **learning_query_payload,
+                "selection": {
+                    **learning_query_payload["selection"],
+                    "selected": [
+                        {
+                            **learning_query_payload["selection"]["selected"][0],
+                            "matchedTokens": ["keyboard"],
+                        },
+                    ],
+                },
+            }),
             profile_path=learning_relevance_path,
             context="registry smoke self-test",
             cmd=learn_query_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_query_json(
-                json.dumps({
-                    **learning_query_payload,
-                    "selection": {
-                        **learning_query_payload["selection"],
-                        "selected": [
-                            {
-                                **learning_query_payload["selection"]["selected"][0],
-                                "matchedTokens": ["keyboard"],
-                            },
-                        ],
-                    },
-                }),
-                profile_path=learning_relevance_path,
-                context="registry smoke self-test",
-                cmd=learn_query_cmd,
-            ),
-            expected="learn query explain should include matched query tokens",
-            scope="registry smoke",
-        )
-        learn_query_human_cmd = [
-            "design-ai",
-            "learn",
-            "--list",
-            "--query",
-            "keyboard accessibility",
-            "--explain",
-            "--limit",
-            "2",
-        ]
-        assert_learning_query_human(
+        ),
+        expected="learn query explain should include matched query tokens",
+        scope="registry smoke",
+    )
+    learn_query_human_cmd = [
+        "design-ai",
+        "learn",
+        "--list",
+        "--query",
+        "keyboard accessibility",
+        "--explain",
+        "--limit",
+        "2",
+    ]
+    assert_learning_query_human(
+        "\n".join([
+            "design-ai learn",
+            "Local learning profile",
+            f"File: {learning_relevance_path}",
+            "Entries: 1/3",
+            "Query: keyboard accessibility",
+            "Limit: 2",
+            "Explain: selection score, matched tokens, and reason",
+            "",
+            "1. [accessibility] Prioritize keyboard accessibility details for Button component API specs",
+            "   learn-relevant · 2026-05-22T00:00:01.000Z",
+            "   score 2.114533 · matched accessibility, keyboard · reason brief-match",
+        ]),
+        context="registry smoke self-test",
+        cmd=learn_query_human_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_query_human(
             "\n".join([
-                "design-ai learn",
                 "Local learning profile",
-                f"File: {learning_relevance_path}",
                 "Entries: 1/3",
                 "Query: keyboard accessibility",
                 "Limit: 2",
                 "Explain: selection score, matched tokens, and reason",
-                "",
-                "1. [accessibility] Prioritize keyboard accessibility details for Button component API specs",
-                "   learn-relevant · 2026-05-22T00:00:01.000Z",
-                "   score 2.114533 · matched accessibility, keyboard · reason brief-match",
+                "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
+                "matched accessibility, keyboard",
             ]),
             context="registry smoke self-test",
             cmd=learn_query_human_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_query_human(
-                "\n".join([
-                    "Local learning profile",
-                    "Entries: 1/3",
-                    "Query: keyboard accessibility",
-                    "Limit: 2",
-                    "Explain: selection score, matched tokens, and reason",
-                    "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
-                    "matched accessibility, keyboard",
-                ]),
-                context="registry smoke self-test",
-                cmd=learn_query_human_cmd,
-            ),
-            expected="learn query human output missing 'reason brief-match'",
-            scope="registry smoke",
-        )
+        ),
+        expected="learn query human output missing 'reason brief-match'",
+        scope="registry smoke",
+    )
 
-        learning_query_export_payload = {
-            "file": str(learning_relevance_path),
-            "category": "",
-            "limit": 2,
+    learning_query_export_payload = {
+        "file": str(learning_relevance_path),
+        "category": "",
+        "limit": 2,
+        "query": "keyboard accessibility",
+        "selection": {
+            "mode": "brief-relevance",
             "query": "keyboard accessibility",
-            "selection": {
-                "mode": "brief-relevance",
-                "query": "keyboard accessibility",
-                "candidateCount": 3,
-                "matchedCount": 1,
-                "queryTokenCount": 2,
-                "fallbackEnabled": False,
-                "selectedCount": 1,
-                "fallbackCount": 0,
-                "selected": [
-                    {
-                        "id": "learn-relevant",
-                        "category": "accessibility",
-                        "score": 4,
-                        "matchedTokens": ["keyboard", "accessibility"],
-                        "reason": "brief-match",
-                    },
-                ],
+            "candidateCount": 3,
+            "matchedCount": 1,
+            "queryTokenCount": 2,
+            "fallbackEnabled": False,
+            "selectedCount": 1,
+            "fallbackCount": 0,
+            "selected": [
+                {
+                    "id": "learn-relevant",
+                    "category": "accessibility",
+                    "score": 4,
+                    "matchedTokens": ["keyboard", "accessibility"],
+                    "reason": "brief-match",
+                },
+            ],
+        },
+        "entries": learning_query_payload["entries"],
+        "empty": False,
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "markdown": "Learning selection: brief relevance (1/3 matched; no recency fallback).\nPrioritize keyboard accessibility details",
+    }
+    learn_query_export_cmd = [
+        "design-ai",
+        "learn",
+        "--export",
+        "--query",
+        "keyboard accessibility",
+        "--limit",
+        "2",
+        "--json",
+    ]
+    assert_learning_query_export_json(
+        json.dumps(learning_query_export_payload),
+        profile_path=learning_relevance_path,
+        context="registry smoke self-test",
+        cmd=learn_query_export_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_query_export_json(
+            json.dumps({
+                **learning_query_export_payload,
+                "selection": {
+                    **learning_query_export_payload["selection"],
+                    "fallbackEnabled": True,
+                },
+            }),
+            profile_path=learning_relevance_path,
+            context="registry smoke self-test",
+            cmd=learn_query_export_cmd,
+        ),
+        expected="learn query export should not use recency fallback",
+        scope="registry smoke",
+    )
+
+    learning_eval_template_path = tmp_root / "learning-eval-template.json"
+    learning_eval_template_payload = {
+        "version": 1,
+        "generatedAt": "2026-06-01T00:00:02.000Z",
+        "sourceProfile": {
+            "file": str(learning_relevance_path),
+            "exists": True,
+            "entryCount": 3,
+            "auditStatus": "pass",
+            "category": "accessibility",
+            "query": EXPECTED_ROUTE_BRIEF,
+            "limit": 6,
+        },
+        "selection": {
+            "mode": "brief-relevance",
+            "candidateCount": 1,
+            "matchedCount": 1,
+            "selectedCount": 1,
+            "queryTokenCount": 7,
+            "fallbackCount": 0,
+        },
+        "caseCount": 1,
+        "cases": [
+            {
+                "id": "eval-1-0123456789",
+                "brief": EXPECTED_ROUTE_BRIEF,
+                "category": "accessibility",
+                "limit": 1,
+                "expectedSelectedIds": ["learn-relevant"],
+                "minMatchedCount": 1,
+                "requireNoFallback": True,
             },
-            "entries": learning_query_payload["entries"],
-            "empty": False,
+        ],
+        "recommendations": [],
+        "privacy": {
+            "storesRawBriefText": True,
+            "storesBriefHash": False,
+            "exposesMatchedTokens": False,
+        },
+    }
+    learn_eval_template_cmd = [
+        "design-ai",
+        "learn",
+        "--eval-template",
+        "--query",
+        EXPECTED_ROUTE_BRIEF,
+        "--file",
+        str(learning_relevance_path),
+        "--json",
+    ]
+    assert_learning_eval_template_json(
+        json.dumps(learning_eval_template_payload),
+        profile_path=learning_relevance_path,
+        context="registry smoke self-test",
+        cmd=learn_eval_template_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_eval_template_json(
+            json.dumps({
+                **learning_eval_template_payload,
+                "privacy": {
+                    **learning_eval_template_payload["privacy"],
+                    "storesRawBriefText": False,
+                },
+            }),
+            profile_path=learning_relevance_path,
+            context="registry smoke self-test",
+            cmd=learn_eval_template_cmd,
+        ),
+        expected="learn eval-template JSON should disclose that checkpoint templates store raw brief text",
+        scope="registry smoke",
+    )
+    assert_learning_eval_template_report_json(
+        json.dumps({
+            "file": str(learning_relevance_path),
+            "source": str(learning_eval_template_path),
+            "profileExists": True,
+            "profileEntryCount": 3,
+            "checkpointVersion": 1,
+            "defaultLimit": 12,
+            "defaultCategory": "",
+            "status": "pass",
+            "caseCount": 1,
+            "passed": 1,
+            "warned": 0,
+            "failed": 0,
             "auditSummary": {
                 "status": "pass",
                 "failures": 0,
                 "warnings": 0,
             },
-            "markdown": "Learning selection: brief relevance (1/3 matched; no recency fallback).\nPrioritize keyboard accessibility details",
-        }
-        learn_query_export_cmd = [
-            "design-ai",
-            "learn",
-            "--export",
-            "--query",
-            "keyboard accessibility",
-            "--limit",
-            "2",
-            "--json",
-        ]
-        assert_learning_query_export_json(
-            json.dumps(learning_query_export_payload),
-            profile_path=learning_relevance_path,
-            context="registry smoke self-test",
-            cmd=learn_query_export_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_query_export_json(
-                json.dumps({
-                    **learning_query_export_payload,
-                    "selection": {
-                        **learning_query_export_payload["selection"],
-                        "fallbackEnabled": True,
-                    },
-                }),
-                profile_path=learning_relevance_path,
-                context="registry smoke self-test",
-                cmd=learn_query_export_cmd,
-            ),
-            expected="learn query export should not use recency fallback",
-            scope="registry smoke",
-        )
-
-        learning_eval_template_path = tmp_root / "learning-eval-template.json"
-        learning_eval_template_payload = {
-            "version": 1,
-            "generatedAt": "2026-06-01T00:00:02.000Z",
-            "sourceProfile": {
-                "file": str(learning_relevance_path),
-                "exists": True,
-                "entryCount": 3,
-                "auditStatus": "pass",
-                "category": "accessibility",
-                "query": EXPECTED_ROUTE_BRIEF,
-                "limit": 6,
-            },
-            "selection": {
-                "mode": "brief-relevance",
-                "candidateCount": 1,
-                "matchedCount": 1,
-                "selectedCount": 1,
-                "queryTokenCount": 7,
-                "fallbackCount": 0,
-            },
-            "caseCount": 1,
             "cases": [
                 {
                     "id": "eval-1-0123456789",
-                    "brief": EXPECTED_ROUTE_BRIEF,
-                    "category": "accessibility",
-                    "limit": 1,
-                    "expectedSelectedIds": ["learn-relevant"],
-                    "minMatchedCount": 1,
-                    "requireNoFallback": True,
+                    "status": "pass",
+                    "selectedEntryIds": ["learn-relevant"],
+                    "missingExpectedIds": [],
                 },
             ],
             "recommendations": [],
             "privacy": {
-                "storesRawBriefText": True,
-                "storesBriefHash": False,
+                "storesRawBriefText": False,
+                "storesBriefHash": True,
                 "exposesMatchedTokens": False,
             },
-        }
-        learn_eval_template_cmd = [
+        }),
+        profile_path=learning_relevance_path,
+        eval_path=learning_eval_template_path,
+        context="registry smoke self-test generated eval-template checkpoint",
+        cmd=[
             "design-ai",
             "learn",
-            "--eval-template",
-            "--query",
-            EXPECTED_ROUTE_BRIEF,
+            "--eval",
+            "--from-file",
+            str(learning_eval_template_path),
             "--file",
             str(learning_relevance_path),
+            "--strict",
             "--json",
-        ]
-        assert_learning_eval_template_json(
-            json.dumps(learning_eval_template_payload),
-            profile_path=learning_relevance_path,
-            context="registry smoke self-test",
-            cmd=learn_eval_template_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_eval_template_json(
-                json.dumps({
-                    **learning_eval_template_payload,
-                    "privacy": {
-                        **learning_eval_template_payload["privacy"],
-                        "storesRawBriefText": False,
-                    },
-                }),
-                profile_path=learning_relevance_path,
-                context="registry smoke self-test",
-                cmd=learn_eval_template_cmd,
-            ),
-            expected="learn eval-template JSON should disclose that checkpoint templates store raw brief text",
-            scope="registry smoke",
-        )
-        assert_learning_eval_template_report_json(
-            json.dumps({
-                "file": str(learning_relevance_path),
-                "source": str(learning_eval_template_path),
-                "profileExists": True,
-                "profileEntryCount": 3,
-                "checkpointVersion": 1,
-                "defaultLimit": 12,
-                "defaultCategory": "",
-                "status": "pass",
-                "caseCount": 1,
-                "passed": 1,
-                "warned": 0,
-                "failed": 0,
-                "auditSummary": {
-                    "status": "pass",
-                    "failures": 0,
-                    "warnings": 0,
-                },
-                "cases": [
-                    {
-                        "id": "eval-1-0123456789",
-                        "status": "pass",
-                        "selectedEntryIds": ["learn-relevant"],
-                        "missingExpectedIds": [],
-                    },
-                ],
-                "recommendations": [],
-                "privacy": {
-                    "storesRawBriefText": False,
-                    "storesBriefHash": True,
-                    "exposesMatchedTokens": False,
-                },
-            }),
-            profile_path=learning_relevance_path,
-            eval_path=learning_eval_template_path,
-            context="registry smoke self-test generated eval-template checkpoint",
-            cmd=[
-                "design-ai",
-                "learn",
-                "--eval",
-                "--from-file",
-                str(learning_eval_template_path),
-                "--file",
-                str(learning_relevance_path),
-                "--strict",
-                "--json",
-            ],
-        )
-        learning_readiness_markdown = "\n".join([
-            "# Learning Signal Registry Report",
-            "",
-            "## Readiness Summary",
-            "- Required ready: yes",
-            "- Required checks: 4/4",
-            "- Blocking checks: 0",
-            "- Optional gaps: 1",
-            "Readiness check index:",
-            "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
-            "- Optional ids: usage-sidecar, check-capture",
-            "- Status index: learning-profile=pass, usage-sidecar=info, eval-signals=pass, check-capture=info, workspace-readiness=pass, agent-development=pass",
-            "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
-        ])
-        learn_signals_report_cmd = [
-            "design-ai",
-            "learn",
-            "--signals",
-            "--file",
-            str(learning_relevance_path),
-            "--report",
-        ]
-        assert_learning_readiness_markdown_index(
-            learning_readiness_markdown,
+        ],
+    )
+    learning_readiness_markdown = "\n".join([
+        "# Learning Signal Registry Report",
+        "",
+        "## Readiness Summary",
+        "- Required ready: yes",
+        "- Required checks: 4/4",
+        "- Blocking checks: 0",
+        "- Optional gaps: 1",
+        "Readiness check index:",
+        "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
+        "- Optional ids: usage-sidecar, check-capture",
+        "- Status index: learning-profile=pass, usage-sidecar=info, eval-signals=pass, check-capture=info, workspace-readiness=pass, agent-development=pass",
+        "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+    ])
+    learn_signals_report_cmd = [
+        "design-ai",
+        "learn",
+        "--signals",
+        "--file",
+        str(learning_relevance_path),
+        "--report",
+    ]
+    assert_learning_readiness_markdown_index(
+        learning_readiness_markdown,
+        context="registry smoke self-test learn signals Markdown report",
+        cmd=learn_signals_report_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_readiness_markdown_index(
+            learning_readiness_markdown.replace("Readiness check index:", "Readiness check summary:"),
             context="registry smoke self-test learn signals Markdown report",
             cmd=learn_signals_report_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_readiness_markdown_index(
-                learning_readiness_markdown.replace("Readiness check index:", "Readiness check summary:"),
-                context="registry smoke self-test learn signals Markdown report",
-                cmd=learn_signals_report_cmd,
-            ),
-            expected="learning readiness Markdown report missing 'Readiness check index:'",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_readiness_markdown_index(
-                learning_readiness_markdown.replace("- Required index:", "- Required lookup:"),
-                context="registry smoke self-test learn signals Markdown report",
-                cmd=learn_signals_report_cmd,
-            ),
-            expected="learning readiness Markdown report missing '- Required index:'",
-            scope="registry smoke",
-        )
+        ),
+        expected="learning readiness Markdown report missing 'Readiness check index:'",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_readiness_markdown_index(
+            learning_readiness_markdown.replace("- Required index:", "- Required lookup:"),
+            context="registry smoke self-test learn signals Markdown report",
+            cmd=learn_signals_report_cmd,
+        ),
+        expected="learning readiness Markdown report missing '- Required index:'",
+        scope="registry smoke",
+    )
 
-        learning_relevance_payload = {
-            "learningContext": {
-                "selection": {
-                    "mode": "brief-relevance",
-                    "query": EXPECTED_ROUTE_BRIEF,
-                    "candidateCount": 3,
-                    "matchedCount": 1,
-                    "selectedCount": 1,
-                    "fallbackCount": 0,
-                    "selected": [
-                        {
-                            "id": "learn-relevant",
-                            "category": "accessibility",
-                            "score": 10,
-                            "matchedTokens": ["button", "accessibility"],
-                            "reason": "brief-match",
-                        },
-                    ],
-                },
-                "entries": [
+
+def _self_test_learning_relevance_and_retrieval(tmp_root: Path) -> None:
+    """Registry smoke self-test: learn relevance, audit cleanup, retrieval index, and ranked-search determinism."""
+    learning_relevance_payload = {
+        "learningContext": {
+            "selection": {
+                "mode": "brief-relevance",
+                "query": EXPECTED_ROUTE_BRIEF,
+                "candidateCount": 3,
+                "matchedCount": 1,
+                "selectedCount": 1,
+                "fallbackCount": 0,
+                "selected": [
                     {
                         "id": "learn-relevant",
                         "category": "accessibility",
-                        "text": "Prioritize keyboard accessibility details for Button component API specs",
+                        "score": 10,
+                        "matchedTokens": ["button", "accessibility"],
+                        "reason": "brief-match",
                     },
                 ],
             },
-            "prompt": (
-                "Learning selection: brief relevance\n"
-                "Prioritize keyboard accessibility details for Button component API specs"
-            ),
-        }
-        learning_relevance_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-learning", "--json"]
-        assert_learning_relevance_context(
-            learning_relevance_payload,
+            "entries": [
+                {
+                    "id": "learn-relevant",
+                    "category": "accessibility",
+                    "text": "Prioritize keyboard accessibility details for Button component API specs",
+                },
+            ],
+        },
+        "prompt": (
+            "Learning selection: brief relevance\n"
+            "Prioritize keyboard accessibility details for Button component API specs"
+        ),
+    }
+    learning_relevance_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-learning", "--json"]
+    assert_learning_relevance_context(
+        learning_relevance_payload,
+        context="registry smoke self-test",
+        cmd=learning_relevance_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_relevance_context(
+            {
+                **learning_relevance_payload,
+                "learningContext": {
+                    **learning_relevance_payload["learningContext"],
+                    "entries": [
+                        {
+                            "id": "learn-unrelated-newer",
+                            "category": "korean",
+                            "text": "Prefer dense Korean mobile checkout layout",
+                        },
+                    ],
+                },
+            },
             context="registry smoke self-test",
             cmd=learning_relevance_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_relevance_context(
-                {
-                    **learning_relevance_payload,
-                    "learningContext": {
-                        **learning_relevance_payload["learningContext"],
-                        "entries": [
-                            {
-                                "id": "learn-unrelated-newer",
-                                "category": "korean",
-                                "text": "Prefer dense Korean mobile checkout layout",
-                            },
-                        ],
-                    },
-                },
-                context="registry smoke self-test",
-                cmd=learning_relevance_cmd,
-            ),
-            expected="brief relevance should pick the Button accessibility entry",
-            scope="registry smoke",
-        )
+        ),
+        expected="brief relevance should pick the Button accessibility entry",
+        scope="registry smoke",
+    )
 
-        recall_payload = {
-            "recall": {
-                "query": EXPECTED_ROUTE_BRIEF,
-                "mode": "lexical",
-                "candidateCount": 42,
-                "selectedCount": 1,
-                "selected": [
-                    {
-                        "id": "knowledge/components/INDEX.md",
-                        "score": 9.5,
-                        "matchedTokens": ["button", "component"],
-                    },
-                ],
-                "markdown": (
-                    "## Recalled design knowledge\n\n"
-                    "- knowledge/components/INDEX.md\n"
-                    "  - Component index"
-                ),
-            },
-        }
-        recall_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-recall", "--json"]
-        assert_recall_context(recall_payload, context="registry smoke self-test", cmd=recall_cmd)
-        expect_self_test_failure(
-            lambda: assert_recall_context(
-                {**recall_payload, "recall": {**recall_payload["recall"], "selectedCount": 0, "selected": []}},
-                context="registry smoke self-test",
-                cmd=recall_cmd,
-            ),
-            expected="recall should select at least one corpus file",
-            scope="registry smoke",
-        )
-
-        learning_audit_path = tmp_root / "learning-audit.json"
-        duplicate_command_args = [
-            "design-ai",
-            "learn",
-            "--file",
-            str(learning_audit_path),
-            "--forget",
-            "registry-audit-b",
-            "--yes",
-        ]
-        sensitive_command_args = [
-            "design-ai",
-            "learn",
-            "--file",
-            str(learning_audit_path),
-            "--forget",
-            "registry-audit-c",
-            "--yes",
-        ]
-        learning_audit_payload = {
-            "file": str(learning_audit_path),
-            "exists": True,
-            "count": 3,
-            "categoryCounts": {
-                "workflow": 2,
-                "constraint": 1,
-            },
-            "summary": {
-                "status": "warn",
-                "failures": 0,
-                "warnings": 2,
-            },
-            "issues": [
+    recall_payload = {
+        "recall": {
+            "query": EXPECTED_ROUTE_BRIEF,
+            "mode": "lexical",
+            "candidateCount": 42,
+            "selectedCount": 1,
+            "selected": [
                 {
-                    "level": "warning",
-                    "code": "duplicate-entry-text",
-                    "entryId": "registry-audit-b",
-                    "message": "Entry duplicates registry-audit-a in the same category.",
-                },
-                {
-                    "level": "warning",
-                    "code": "sensitive-secret-assignment",
-                    "entryId": "registry-audit-c",
-                    "message": "Entry may contain a secret-like assignment.",
+                    "id": "knowledge/components/INDEX.md",
+                    "score": 9.5,
+                    "matchedTokens": ["button", "component"],
                 },
             ],
-            "suggestions": [
-                {
-                    "issueCode": "duplicate-entry-text",
-                    "entryId": "registry-audit-b",
-                    "action": "remove-duplicate",
-                    "message": "Remove the duplicate entry.",
-                    "commandArgs": duplicate_command_args,
-                    "command": " ".join(duplicate_command_args),
-                },
-                {
-                    "issueCode": "sensitive-secret-assignment",
-                    "entryId": "registry-audit-c",
-                    "action": "remove-or-redact-sensitive-content",
-                    "message": "Remove this entry or re-add a redacted preference.",
-                    "commandArgs": sensitive_command_args,
-                    "command": " ".join(sensitive_command_args),
-                },
-            ],
-        }
-        learn_audit_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_audit_path), "--json"]
-        assert_learning_audit_cleanup_json(
-            json.dumps(learning_audit_payload),
-            profile_path=learning_audit_path,
+            "markdown": (
+                "## Recalled design knowledge\n\n"
+                "- knowledge/components/INDEX.md\n"
+                "  - Component index"
+            ),
+        },
+    }
+    recall_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-recall", "--json"]
+    assert_recall_context(recall_payload, context="registry smoke self-test", cmd=recall_cmd)
+    expect_self_test_failure(
+        lambda: assert_recall_context(
+            {**recall_payload, "recall": {**recall_payload["recall"], "selectedCount": 0, "selected": []}},
             context="registry smoke self-test",
-            cmd=learn_audit_cmd,
-        )
-        learning_audit_fix_payload = {
-            "file": str(learning_audit_path),
-            "dryRun": True,
-            "applied": False,
-            "before": {
-                "status": "warn",
-                "failures": 0,
-                "warnings": 2,
+            cmd=recall_cmd,
+        ),
+        expected="recall should select at least one corpus file",
+        scope="registry smoke",
+    )
+
+    learning_audit_path = tmp_root / "learning-audit.json"
+    duplicate_command_args = [
+        "design-ai",
+        "learn",
+        "--file",
+        str(learning_audit_path),
+        "--forget",
+        "registry-audit-b",
+        "--yes",
+    ]
+    sensitive_command_args = [
+        "design-ai",
+        "learn",
+        "--file",
+        str(learning_audit_path),
+        "--forget",
+        "registry-audit-c",
+        "--yes",
+    ]
+    learning_audit_payload = {
+        "file": str(learning_audit_path),
+        "exists": True,
+        "count": 3,
+        "categoryCounts": {
+            "workflow": 2,
+            "constraint": 1,
+        },
+        "summary": {
+            "status": "warn",
+            "failures": 0,
+            "warnings": 2,
+        },
+        "issues": [
+            {
+                "level": "warning",
+                "code": "duplicate-entry-text",
+                "entryId": "registry-audit-b",
+                "message": "Entry duplicates registry-audit-a in the same category.",
             },
-            "cleanupCount": 2,
-            "cleanup": [
+            {
+                "level": "warning",
+                "code": "sensitive-secret-assignment",
+                "entryId": "registry-audit-c",
+                "message": "Entry may contain a secret-like assignment.",
+            },
+        ],
+        "suggestions": [
+            {
+                "issueCode": "duplicate-entry-text",
+                "entryId": "registry-audit-b",
+                "action": "remove-duplicate",
+                "message": "Remove the duplicate entry.",
+                "commandArgs": duplicate_command_args,
+                "command": " ".join(duplicate_command_args),
+            },
+            {
+                "issueCode": "sensitive-secret-assignment",
+                "entryId": "registry-audit-c",
+                "action": "remove-or-redact-sensitive-content",
+                "message": "Remove this entry or re-add a redacted preference.",
+                "commandArgs": sensitive_command_args,
+                "command": " ".join(sensitive_command_args),
+            },
+        ],
+    }
+    learn_audit_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_audit_path), "--json"]
+    assert_learning_audit_cleanup_json(
+        json.dumps(learning_audit_payload),
+        profile_path=learning_audit_path,
+        context="registry smoke self-test",
+        cmd=learn_audit_cmd,
+    )
+    learning_audit_fix_payload = {
+        "file": str(learning_audit_path),
+        "dryRun": True,
+        "applied": False,
+        "before": {
+            "status": "warn",
+            "failures": 0,
+            "warnings": 2,
+        },
+        "cleanupCount": 2,
+        "cleanup": [
+            {
+                "entryId": "registry-audit-b",
+                "issueCodes": ["duplicate-entry-text"],
+                "actions": ["remove-duplicate"],
+                "commandArgs": duplicate_command_args,
+                "command": " ".join(duplicate_command_args),
+            },
+            {
+                "entryId": "registry-audit-c",
+                "issueCodes": ["sensitive-secret-assignment"],
+                "actions": ["remove-or-redact-sensitive-content"],
+                "commandArgs": sensitive_command_args,
+                "command": " ".join(sensitive_command_args),
+            },
+        ],
+        "skipped": [],
+        "removed": [],
+        "after": None,
+    }
+    learn_audit_fix_cmd = [
+        "design-ai",
+        "learn",
+        "--audit",
+        "--fix",
+        "--dry-run",
+        "--file",
+        str(learning_audit_path),
+        "--json",
+    ]
+    assert_learning_audit_fix_json(
+        json.dumps(learning_audit_fix_payload),
+        profile_path=learning_audit_path,
+        dry_run=True,
+        context="registry smoke self-test",
+        cmd=learn_audit_fix_cmd,
+    )
+    assert_learning_audit_fix_json(
+        json.dumps({
+            **learning_audit_fix_payload,
+            "dryRun": False,
+            "applied": True,
+            "removed": [
                 {
-                    "entryId": "registry-audit-b",
-                    "issueCodes": ["duplicate-entry-text"],
-                    "actions": ["remove-duplicate"],
-                    "commandArgs": duplicate_command_args,
-                    "command": " ".join(duplicate_command_args),
+                    "id": "registry-audit-b",
+                    "category": "workflow",
+                    "source": "registry-smoke",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                    "textPreview": "Prefer release notes that state evidence before claims",
                 },
                 {
-                    "entryId": "registry-audit-c",
-                    "issueCodes": ["sensitive-secret-assignment"],
-                    "actions": ["remove-or-redact-sensitive-content"],
-                    "commandArgs": sensitive_command_args,
-                    "command": " ".join(sensitive_command_args),
+                    "id": "registry-audit-c",
+                    "category": "constraint",
+                    "source": "registry-smoke",
+                    "createdAt": "2026-05-22T00:00:02.000Z",
+                    "textPreview": "Never include api_key=redacted placeholders in prompt context",
                 },
             ],
-            "skipped": [],
-            "removed": [],
-            "after": None,
-        }
-        learn_audit_fix_cmd = [
+            "after": {
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+            },
+        }),
+        profile_path=learning_audit_path,
+        dry_run=False,
+        context="registry smoke self-test",
+        cmd=[
             "design-ai",
             "learn",
             "--audit",
             "--fix",
-            "--dry-run",
+            "--yes",
             "--file",
             str(learning_audit_path),
             "--json",
-        ]
-        assert_learning_audit_fix_json(
-            json.dumps(learning_audit_fix_payload),
+        ],
+    )
+    learn_audit_human_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_audit_path)]
+    assert_learning_audit_cleanup_human(
+        "\n".join([
+            "design-ai learn",
+            "Local learning profile audit",
+            "Status: warn",
+            "Suggested cleanup:",
+            "- remove-duplicate (registry-audit-b): Remove the duplicate entry.",
+            "  design-ai learn --file /tmp/learning.json --forget registry-audit-b --yes",
+            "- remove-or-redact-sensitive-content (registry-audit-c): Remove sensitive content.",
+            "  design-ai learn --file /tmp/learning.json --forget registry-audit-c --yes",
+        ]),
+        context="registry smoke self-test",
+        cmd=learn_audit_human_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_audit_cleanup_json(
+            json.dumps({**learning_audit_payload, "suggestions": []}),
+            profile_path=learning_audit_path,
+            context="registry smoke self-test",
+            cmd=learn_audit_cmd,
+        ),
+        expected="learn audit duplicate cleanup suggestion changed",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_audit_fix_json(
+            json.dumps({**learning_audit_fix_payload, "cleanup": []}),
             profile_path=learning_audit_path,
             dry_run=True,
             context="registry smoke self-test",
             cmd=learn_audit_fix_cmd,
-        )
-        assert_learning_audit_fix_json(
-            json.dumps({
-                **learning_audit_fix_payload,
-                "dryRun": False,
-                "applied": True,
-                "removed": [
-                    {
-                        "id": "registry-audit-b",
-                        "category": "workflow",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:01.000Z",
-                        "textPreview": "Prefer release notes that state evidence before claims",
-                    },
-                    {
-                        "id": "registry-audit-c",
-                        "category": "constraint",
-                        "source": "registry-smoke",
-                        "createdAt": "2026-05-22T00:00:02.000Z",
-                        "textPreview": "Never include api_key=redacted placeholders in prompt context",
-                    },
-                ],
-                "after": {
-                    "status": "pass",
-                    "failures": 0,
-                    "warnings": 0,
-                },
-            }),
-            profile_path=learning_audit_path,
-            dry_run=False,
-            context="registry smoke self-test",
-            cmd=[
-                "design-ai",
-                "learn",
-                "--audit",
-                "--fix",
-                "--yes",
-                "--file",
-                str(learning_audit_path),
-                "--json",
-            ],
-        )
-        learn_audit_human_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_audit_path)]
-        assert_learning_audit_cleanup_human(
-            "\n".join([
-                "design-ai learn",
-                "Local learning profile audit",
-                "Status: warn",
-                "Suggested cleanup:",
-                "- remove-duplicate (registry-audit-b): Remove the duplicate entry.",
-                "  design-ai learn --file /tmp/learning.json --forget registry-audit-b --yes",
-                "- remove-or-redact-sensitive-content (registry-audit-c): Remove sensitive content.",
-                "  design-ai learn --file /tmp/learning.json --forget registry-audit-c --yes",
-            ]),
+        ),
+        expected="learn audit fix cleanup entry changed: registry-audit-b",
+        scope="registry smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_audit_cleanup_human(
+            "Local learning profile audit\nStatus: warn\n",
             context="registry smoke self-test",
             cmd=learn_audit_human_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_audit_cleanup_json(
-                json.dumps({**learning_audit_payload, "suggestions": []}),
-                profile_path=learning_audit_path,
-                context="registry smoke self-test",
-                cmd=learn_audit_cmd,
-            ),
-            expected="learn audit duplicate cleanup suggestion changed",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_audit_fix_json(
-                json.dumps({**learning_audit_fix_payload, "cleanup": []}),
-                profile_path=learning_audit_path,
-                dry_run=True,
-                context="registry smoke self-test",
-                cmd=learn_audit_fix_cmd,
-            ),
-            expected="learn audit fix cleanup entry changed: registry-audit-b",
-            scope="registry smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_audit_cleanup_human(
-                "Local learning profile audit\nStatus: warn\n",
-                context="registry smoke self-test",
-                cmd=learn_audit_human_cmd,
-            ),
-            expected="learn audit human output missing 'Suggested cleanup:'",
-            scope="registry smoke",
-        )
+        ),
+        expected="learn audit human output missing 'Suggested cleanup:'",
+        scope="registry smoke",
+    )
 
-        index_dir = str(tmp_root / "registry-index-self-test")
-        index_build_cmd = ["design-ai", "index", "--build", "--json"]
-        assert_index_build_json(
-            passing_index_build_json(index_dir),
+    index_dir = str(tmp_root / "registry-index-self-test")
+    index_build_cmd = ["design-ai", "index", "--build", "--json"]
+    assert_index_build_json(
+        passing_index_build_json(index_dir),
+        index_dir=index_dir,
+        context="registry smoke self-test",
+        cmd=index_build_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_index_build_json(
+            "{",
             index_dir=index_dir,
             context="registry smoke self-test",
             cmd=index_build_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_index_build_json(
-                "{",
-                index_dir=index_dir,
-                context="registry smoke self-test",
-                cmd=index_build_cmd,
-            ),
-            expected="failed to parse index build JSON",
-            scope="registry smoke",
-        )
+        ),
+        expected="failed to parse index build JSON",
+        scope="registry smoke",
+    )
 
-        index_status_cmd = ["design-ai", "index", "--status", "--json"]
-        assert_index_status_json(
-            passing_index_status_json(index_dir),
-            index_dir=index_dir,
-            context="registry smoke self-test",
-            cmd=index_status_cmd,
-        )
-        assert_index_status_json(
+    index_status_cmd = ["design-ai", "index", "--status", "--json"]
+    assert_index_status_json(
+        passing_index_status_json(index_dir),
+        index_dir=index_dir,
+        context="registry smoke self-test",
+        cmd=index_status_cmd,
+    )
+    assert_index_status_json(
+        passing_index_status_json(index_dir, with_embeddings=True),
+        index_dir=index_dir,
+        context="registry smoke self-test embeddings",
+        cmd=index_status_cmd,
+        expect_embeddings=True,
+    )
+    expect_self_test_failure(
+        lambda: assert_index_status_json(
             passing_index_status_json(index_dir, with_embeddings=True),
             index_dir=index_dir,
-            context="registry smoke self-test embeddings",
+            context="registry smoke self-test embeddings unexpected",
             cmd=index_status_cmd,
-            expect_embeddings=True,
-        )
-        expect_self_test_failure(
-            lambda: assert_index_status_json(
-                passing_index_status_json(index_dir, with_embeddings=True),
-                index_dir=index_dir,
-                context="registry smoke self-test embeddings unexpected",
-                cmd=index_status_cmd,
-                expect_embeddings=False,
-            ),
-            expected="embeddings is not null when embeddings were not built",
-            scope="registry smoke",
-        )
+            expect_embeddings=False,
+        ),
+        expected="embeddings is not null when embeddings were not built",
+        scope="registry smoke",
+    )
 
-        index_verify_cmd = ["design-ai", "index", "--verify", "--json"]
-        assert_index_verify_json(
-            passing_index_verify_json(index_dir),
+    index_verify_cmd = ["design-ai", "index", "--verify", "--json"]
+    assert_index_verify_json(
+        passing_index_verify_json(index_dir),
+        index_dir=index_dir,
+        context="registry smoke self-test",
+        cmd=index_verify_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_index_verify_json(
+            json.dumps({**json.loads(passing_index_verify_json(index_dir)), "ok": False}),
             index_dir=index_dir,
             context="registry smoke self-test",
             cmd=index_verify_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_index_verify_json(
-                json.dumps({**json.loads(passing_index_verify_json(index_dir)), "ok": False}),
-                index_dir=index_dir,
-                context="registry smoke self-test",
-                cmd=index_verify_cmd,
-            ),
-            expected="ok is not true",
-            scope="registry smoke",
-        )
+        ),
+        expected="ok is not true",
+        scope="registry smoke",
+    )
 
-        ranked_search_cmd = ["design-ai", "search", EXPECTED_CORPUS_SEARCH_QUERY, "--ranked", "--json"]
-        ranked_search_json = passing_ranked_search_json()
-        assert_ranked_search_json(
+    ranked_search_cmd = ["design-ai", "search", EXPECTED_CORPUS_SEARCH_QUERY, "--ranked", "--json"]
+    ranked_search_json = passing_ranked_search_json()
+    assert_ranked_search_json(
+        ranked_search_json,
+        context="registry smoke self-test",
+        cmd=ranked_search_cmd,
+    )
+    assert_ranked_search_determinism(
+        ranked_search_json,
+        ranked_search_json,
+        context="registry smoke self-test",
+        cmd=ranked_search_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_ranked_search_determinism(
             ranked_search_json,
+            passing_ranked_search_json(backend="lexical"),
             context="registry smoke self-test",
             cmd=ranked_search_cmd,
-        )
-        assert_ranked_search_determinism(
-            ranked_search_json,
-            ranked_search_json,
-            context="registry smoke self-test",
-            cmd=ranked_search_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_ranked_search_determinism(
-                ranked_search_json,
-                passing_ranked_search_json(backend="lexical"),
-                context="registry smoke self-test",
-                cmd=ranked_search_cmd,
-            ),
-            expected="differs between identical runs",
-            scope="registry smoke",
-        )
+        ),
+        expected="differs between identical runs",
+        scope="registry smoke",
+    )
 
-        ranked_search_fallback_json = passing_ranked_search_json(backend="lexical")
-        assert_ranked_search_json(
-            ranked_search_fallback_json,
-            context="registry smoke self-test fallback",
+    ranked_search_fallback_json = passing_ranked_search_json(backend="lexical")
+    assert_ranked_search_json(
+        ranked_search_fallback_json,
+        context="registry smoke self-test fallback",
+        cmd=ranked_search_cmd,
+        expected_backend="lexical",
+    )
+    expect_self_test_failure(
+        lambda: assert_ranked_search_json(
+            passing_ranked_search_json(backend="embeddings"),
+            context="registry smoke self-test fallback mismatch",
             cmd=ranked_search_cmd,
             expected_backend="lexical",
-        )
-        expect_self_test_failure(
-            lambda: assert_ranked_search_json(
-                passing_ranked_search_json(backend="embeddings"),
-                context="registry smoke self-test fallback mismatch",
-                cmd=ranked_search_cmd,
-                expected_backend="lexical",
-            ),
-            expected="backend differs from expected backend",
-            scope="registry smoke",
-        )
+        ),
+        expected="backend differs from expected backend",
+        scope="registry smoke",
+    )
+
+
+def run_self_test() -> None:
+    run_image_console_self_test()
+    run_doctor_assertions_self_test(context="registry smoke install", quiet=True)
+
+    with tempfile.TemporaryDirectory(prefix="design-ai-registry-smoke-self-test-") as tmp:
+        tmp_root = Path(tmp)
+        _self_test_doctor_and_workspace(tmp_root)
+
+        _self_test_site_and_mcp(tmp_root)
+
+        _self_test_learning_init_and_backup(tmp_root)
+
+        _self_test_learning_restore_and_redact(tmp_root)
+
+        _self_test_learning_stats_and_eval(tmp_root)
+
+        _self_test_learning_relevance_and_retrieval(tmp_root)
 
     expect_self_test_failure(
         lambda: smoke_registry_package("self-test-package", retries=0, delay=0),

@@ -8265,6 +8265,7191 @@ def assert_embedding_stub_provider_roundtrip_smoke(
     )
 
 
+def _self_test_check_site_and_mcp(context, tmp):
+    """Package smoke self-test: check artifacts, site payloads, and MCP probe contracts."""
+    tarball_root = Path(tmp) / "tarball-root" / "package" / "cli" / "lib"
+    tarball_root.mkdir(parents=True)
+    packed_manifest_path = tarball_root / "capability-manifest.json"
+    packed_manifest_path.write_text(
+        json.dumps(EXPECTED_CAPABILITIES),
+        encoding="utf-8",
+    )
+    packed_manifest_tarball = Path(tmp) / "capability-manifest.tgz"
+    with tarfile.open(packed_manifest_tarball, "w:gz") as archive:
+        archive.add(
+            packed_manifest_path,
+            arcname="package/cli/lib/capability-manifest.json",
+        )
+    assert_tarball_capability_manifest(packed_manifest_tarball)
+
+    drifted_capabilities = json.loads(json.dumps(EXPECTED_CAPABILITIES))
+    drifted_capabilities["routes"][0] = "design-review-drifted"
+    packed_manifest_path.write_text(
+        json.dumps(drifted_capabilities),
+        encoding="utf-8",
+    )
+    drifted_manifest_tarball = Path(tmp) / "capability-manifest-drifted.tgz"
+    with tarfile.open(drifted_manifest_tarball, "w:gz") as archive:
+        archive.add(
+            packed_manifest_path,
+            arcname="package/cli/lib/capability-manifest.json",
+        )
+    expect_self_test_failure(
+        lambda: assert_tarball_capability_manifest(drifted_manifest_tarball),
+        expected="differs from the verified source contract",
+        scope="package smoke packed capability manifest",
+    )
+
+    report_path = Path(tmp) / "doctor.json"
+    report_path.write_text(passing_doctor_report_json(), encoding="utf-8")
+    assert_doctor_report_file(report_path, context=context)
+    expect_self_test_failure(
+        lambda: assert_doctor_report_file(Path(tmp) / "missing.json", context=context),
+        expected="failed to read doctor JSON",
+        scope="package smoke",
+    )
+
+    site_next_actions_out_path = Path(tmp) / "site-next-actions.json"
+    site_next_actions_out_path.write_text(passing_site_next_actions_json(), encoding="utf-8")
+    site_next_actions_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--next-actions",
+        "--json",
+        "--out",
+        str(site_next_actions_out_path),
+        "--force",
+    ]
+    assert_site_next_actions_json_file_output(
+        f"Wrote {site_next_actions_out_path}\n",
+        site_next_actions_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_next_actions_out_path),
+        context=f"{context} site next-actions JSON out",
+        cmd=site_next_actions_out_cmd,
+    )
+    site_next_actions_human_out_path = Path(tmp) / "site-next-actions.md"
+    site_next_actions_human_out_path.write_text(passing_site_next_actions_human(), encoding="utf-8")
+    site_next_actions_human_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--next-actions",
+        "--out",
+        str(site_next_actions_human_out_path),
+        "--force",
+    ]
+    assert_site_next_actions_human_file_output(
+        f"Wrote {site_next_actions_human_out_path}\n",
+        site_next_actions_human_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_next_actions_human_out_path),
+        context=f"{context} site next-actions human out",
+        cmd=site_next_actions_human_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_site_next_actions_human_file_output(
+            f"Wrote {site_next_actions_human_out_path}\n",
+            passing_site_next_actions_human().replace("does not call external MCPs", "may call external MCPs"),
+            output_path=str(site_next_actions_human_out_path),
+            context=f"{context} site next-actions human out",
+            cmd=site_next_actions_human_out_cmd,
+        ),
+        expected="missing fragment",
+        scope="package smoke",
+    )
+
+    site_mcp_check_probes_out_path = Path(tmp) / "site-mcp-check-probes.json"
+    site_mcp_check_probes_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
+    site_mcp_check_probes_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-check",
+        "--probes",
+        "--json",
+        "--out",
+        str(site_mcp_check_probes_out_path),
+        "--force",
+    ]
+    assert_site_mcp_check_probes_json_file_output(
+        f"Wrote {site_mcp_check_probes_out_path}\n",
+        site_mcp_check_probes_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_check_probes_out_path),
+        context=f"{context} site mcp-check probes JSON out",
+        cmd=site_mcp_check_probes_out_cmd,
+    )
+    assert_site_mcp_check_probes_human(
+        passing_site_mcp_check_probes_human(),
+        context=f"{context} site mcp-check probes human",
+        cmd=["design-ai", "site", "--stdin", "--mcp-check", "--probes"],
+    )
+    site_mcp_check_probes_human_out_path = Path(tmp) / "site-mcp-check-probes.txt"
+    site_mcp_check_probes_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
+    site_mcp_check_probes_human_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-check",
+        "--probes",
+        "--out",
+        str(site_mcp_check_probes_human_out_path),
+        "--force",
+    ]
+    assert_site_mcp_check_probes_human_file_output(
+        f"Wrote {site_mcp_check_probes_human_out_path}\n",
+        site_mcp_check_probes_human_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_check_probes_human_out_path),
+        context=f"{context} site mcp-check probes human out",
+        cmd=site_mcp_check_probes_human_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_json_file_output(
+            f"Wrote {site_mcp_check_probes_out_path}\n",
+            site_mcp_check_probes_out_path.read_text(encoding="utf-8").replace(
+                '"externalCalls": false',
+                '"externalCalls": true',
+            ),
+            output_path=str(site_mcp_check_probes_out_path),
+            context=f"{context} site mcp-check probes JSON out",
+            cmd=site_mcp_check_probes_out_cmd,
+        ),
+        expected="without external calls",
+        scope="package smoke",
+    )
+
+    site_mcp_plan_json_out_path = Path(tmp) / "site-mcp-plan-probes.json"
+    site_mcp_plan_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
+    site_mcp_plan_json_out_cmd = [
+        "design-ai",
+        "site",
+        "--stdin",
+        "--mcp-plan",
+        "--probes",
+        "--json",
+        "--out",
+        str(site_mcp_plan_json_out_path),
+        "--force",
+    ]
+    assert_site_mcp_plan_probes_json_file_output(
+        f"Wrote {site_mcp_plan_json_out_path}\n",
+        site_mcp_plan_json_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_plan_json_out_path),
+        context=f"{context} site mcp-plan probes JSON out",
+        cmd=site_mcp_plan_json_out_cmd,
+    )
+    site_mcp_plan_human_out_path = Path(tmp) / "site-mcp-plan-probes-human.txt"
+    site_mcp_plan_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
+    site_mcp_plan_human_out_cmd = site_mcp_probe_embedded_command(
+        json.loads(passing_site_mcp_plan_json(probes=True)),
+        "mcpCheckProbesHumanOut",
+        ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+        output_path=str(site_mcp_plan_human_out_path),
+        context=f"{context} site mcp-plan probes emitted human out command",
+    )
+    assert_site_mcp_check_probes_human_file_output(
+        f"Wrote {site_mcp_plan_human_out_path}\n",
+        site_mcp_plan_human_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_plan_human_out_path),
+        context=f"{context} site mcp-plan probes emitted human out",
+        cmd=site_mcp_plan_human_out_cmd,
+    )
+    site_mcp_plan_check_json_out_path = Path(tmp) / "site-mcp-plan-probes-check.json"
+    site_mcp_plan_check_json_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
+    site_mcp_plan_check_json_out_cmd = site_mcp_probe_embedded_command(
+        json.loads(passing_site_mcp_plan_json(probes=True)),
+        "mcpCheckProbesJsonOut",
+        ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+        output_path=str(site_mcp_plan_check_json_out_path),
+        context=f"{context} site mcp-plan probes emitted check JSON out command",
+    )
+    assert_site_mcp_check_probes_json_file_output(
+        f"Wrote {site_mcp_plan_check_json_out_path}\n",
+        site_mcp_plan_check_json_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_plan_check_json_out_path),
+        context=f"{context} site mcp-plan probes emitted check JSON out",
+        cmd=site_mcp_plan_check_json_out_cmd,
+    )
+    site_mcp_plan_emitted_json_out_path = Path(tmp) / "site-mcp-plan-probes-emitted.json"
+    site_mcp_plan_emitted_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
+    site_mcp_plan_emitted_json_out_cmd = site_mcp_probe_embedded_command(
+        json.loads(passing_site_mcp_plan_json(probes=True)),
+        "mcpPlanProbesJsonOut",
+        ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"],
+        output_path=str(site_mcp_plan_emitted_json_out_path),
+        context=f"{context} site mcp-plan probes emitted plan JSON out command",
+    )
+    assert_site_mcp_plan_probes_json_file_output(
+        f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
+        site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8"),
+        output_path=str(site_mcp_plan_emitted_json_out_path),
+        context=f"{context} site mcp-plan probes emitted plan JSON out",
+        cmd=site_mcp_plan_emitted_json_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_human_file_output(
+            f"Wrote {site_mcp_plan_human_out_path}\n",
+            site_mcp_plan_human_out_path.read_text(encoding="utf-8").replace(
+                "Probe commands:",
+                "Probe notes:",
+            ),
+            output_path=str(site_mcp_plan_human_out_path),
+            context=f"{context} site mcp-plan probes emitted human out",
+            cmd=site_mcp_plan_human_out_cmd,
+        ),
+        expected="Probe commands",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_check_probes_json_file_output(
+            f"Wrote {site_mcp_plan_check_json_out_path}\n",
+            site_mcp_plan_check_json_out_path.read_text(encoding="utf-8").replace(
+                '"externalCalls": false',
+                '"externalCalls": true',
+            ),
+            output_path=str(site_mcp_plan_check_json_out_path),
+            context=f"{context} site mcp-plan probes emitted check JSON out",
+            cmd=site_mcp_plan_check_json_out_cmd,
+        ),
+        expected="external calls",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_plan_probes_json_file_output(
+            f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
+            site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8").replace(
+                '"targetRepoMutation": false',
+                '"targetRepoMutation": true',
+            ),
+            output_path=str(site_mcp_plan_emitted_json_out_path),
+            context=f"{context} site mcp-plan probes emitted plan JSON out",
+            cmd=site_mcp_plan_emitted_json_out_cmd,
+        ),
+        expected="local/read-only",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_site_mcp_plan_probes_json_file_output(
+            f"Wrote {site_mcp_plan_json_out_path}\n",
+            site_mcp_plan_json_out_path.read_text(encoding="utf-8").replace(
+                '"externalCalls": false',
+                '"externalCalls": true',
+            ),
+            output_path=str(site_mcp_plan_json_out_path),
+            context=f"{context} site mcp-plan probes JSON out",
+            cmd=site_mcp_plan_json_out_cmd,
+        ),
+        expected="local/read-only",
+        scope="package smoke",
+    )
+
+    check_learning_profile_path = Path(tmp) / "check-learning.json"
+    check_learning_entries = [
+        {
+            "id": "learn-check-keyboard",
+            "category": "accessibility",
+            "text": "Improve future outputs by addressing Keyboard and focus behavior: No keyboard or focus behavior note detected.",
+            "source": "check:artifact",
+            "createdAt": "2026-05-22T00:00:00.000Z",
+        },
+        {
+            "id": "learn-check-responsive",
+            "category": "workflow",
+            "text": "Improve future outputs by addressing Responsive behavior: No mobile/desktop/responsive behavior note detected.",
+            "source": "check:artifact",
+            "createdAt": "2026-05-22T00:00:01.000Z",
+        },
+        {
+            "id": "learn-check-screen-reader",
+            "category": "accessibility",
+            "text": "Improve future outputs by addressing Screen-reader semantics: No screen-reader or ARIA behavior note detected.",
+            "source": "check:artifact",
+            "createdAt": "2026-05-22T00:00:02.000Z",
+        },
+        {
+            "id": "learn-check-misuse",
+            "category": "workflow",
+            "text": "Improve future outputs by addressing Misuse guidance: No Don't/avoid/anti-pattern guidance detected.",
+            "source": "check:artifact",
+            "createdAt": "2026-05-22T00:00:03.000Z",
+        },
+    ]
+    check_learning_profile_path.write_text(
+        json.dumps(
+            {
+                "version": 1,
+                "updatedAt": "2026-05-22T00:00:03.000Z",
+                "entries": check_learning_entries,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    check_learning_cmd = [
+        "design-ai",
+        "check",
+        "check-learning.md",
+        "--learn",
+        "--yes",
+        "--learning-file",
+        str(check_learning_profile_path),
+        "--json",
+    ]
+    check_learning_payload = {
+        "filePath": "/tmp/check-learning.md",
+        "status": "warn",
+        "passes": 5,
+        "warnings": 4,
+        "failures": 0,
+        "total": 9,
+        "score": "5/9",
+        "results": [],
+        "learningCapture": {
+            "file": str(check_learning_profile_path),
+            "dryRun": False,
+            "applied": True,
+            "source": "check:artifact",
+            "candidateCount": 4,
+            "addedCount": 4,
+            "skippedCount": 0,
+            "count": 4,
+            "entries": check_learning_entries,
+            "skipped": [],
+        },
+    }
+    assert_check_learning_capture_json(
+        json.dumps(check_learning_payload),
+        profile_path=check_learning_profile_path,
+        expected_file_suffix="check-learning.md",
+        context=context,
+        cmd=check_learning_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_check_learning_capture_json(
+            json.dumps({
+                **check_learning_payload,
+                "learningCapture": {
+                    **check_learning_payload["learningCapture"],
+                    "addedCount": 3,
+                },
+            }),
+            profile_path=check_learning_profile_path,
+            expected_file_suffix="check-learning.md",
+            context=context,
+            cmd=check_learning_cmd,
+        ),
+        expected="check learning capture counts changed",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_check_learning_capture_json(
+            json.dumps({
+                **check_learning_payload,
+                "learningCapture": {
+                    **check_learning_payload["learningCapture"],
+                    "source": "check:component-spec",
+                },
+            }),
+            profile_path=check_learning_profile_path,
+            expected_file_suffix="check-learning.md",
+            context=context,
+            cmd=check_learning_cmd,
+        ),
+        expected="check learning capture metadata changed",
+        scope="package smoke",
+    )
+
+    learning_profile_path = Path(tmp) / "learning.json"
+    learn_feedback_cmd = [
+        "design-ai",
+        "learn",
+        "--feedback",
+        "Keep audit findings short and evidence-led",
+        "--outcome",
+        "keep",
+        "--file",
+        str(learning_profile_path),
+        "--json",
+    ]
+    learning_feedback_payload = {
+        "file": str(learning_profile_path),
+        "feedback": {
+            "outcome": "keep",
+            "category": "workflow",
+            "instruction": "Repeat in future outputs: Keep audit findings short and evidence-led",
+        },
+        "entry": {
+            "id": "learn-feedback",
+            "category": "workflow",
+            "text": "Repeat in future outputs: Keep audit findings short and evidence-led",
+            "source": "feedback:keep",
+            "createdAt": "2026-05-22T00:00:00.000Z",
+        },
+        "count": 1,
+    }
+    assert_learning_feedback_json(
+        json.dumps(learning_feedback_payload),
+        profile_path=learning_profile_path,
+        outcome="keep",
+        category="workflow",
+        expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
+        expected_count=1,
+        context=context,
+        cmd=learn_feedback_cmd,
+    )
+    learning_feedback_out_path = Path(tmp) / "learning-feedback-out.json"
+    learning_feedback_out_path.write_text(json.dumps(learning_feedback_payload), encoding="utf-8")
+    learn_feedback_out_cmd = [
+        "design-ai",
+        "learn",
+        "--feedback",
+        "Keep audit findings short and evidence-led",
+        "--outcome",
+        "keep",
+        "--file",
+        str(learning_profile_path),
+        "--json",
+        "--out",
+        str(learning_feedback_out_path),
+        "--force",
+    ]
+    assert_output_write_success(
+        f"Wrote {learning_feedback_out_path}\n",
+        context=f"{context} feedback out",
+        cmd=learn_feedback_out_cmd,
+        expected_path=str(learning_feedback_out_path),
+    )
+    assert_learning_feedback_json(
+        learning_feedback_out_path.read_text(encoding="utf-8"),
+        profile_path=learning_profile_path,
+        outcome="keep",
+        category="workflow",
+        expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
+        expected_count=1,
+        context=f"{context} feedback out file",
+        cmd=learn_feedback_out_cmd,
+    )
+    return learn_feedback_cmd, learn_feedback_out_cmd, learning_feedback_out_path, learning_feedback_payload, learning_profile_path
+
+
+def _self_test_learn_init_import_backup(context, learn_feedback_cmd, learn_feedback_out_cmd, learning_feedback_out_path, learning_feedback_payload, learning_profile_path, tmp):
+    """Package smoke self-test: learn init, import, and backup contracts."""
+    expect_self_test_failure(
+        lambda: assert_learning_feedback_json(
+            json.dumps({
+                **learning_feedback_payload,
+                "entry": {
+                    **learning_feedback_payload["entry"],
+                    "source": "cli",
+                },
+            }),
+            profile_path=learning_profile_path,
+            outcome="keep",
+            category="workflow",
+            expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
+            expected_count=1,
+            context=context,
+            cmd=learn_feedback_cmd,
+        ),
+        expected="learn feedback source should preserve the outcome",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            "Wrote different-feedback.json\n",
+            context=f"{context} feedback out",
+            cmd=learn_feedback_out_cmd,
+            expected_path=str(learning_feedback_out_path),
+        ),
+        expected="output write success",
+        scope="package smoke",
+    )
+
+    learn_init_cmd = [
+        "design-ai",
+        "learn",
+        "--init",
+        "--yes",
+        "--file",
+        str(learning_profile_path),
+        "--json",
+    ]
+    learning_init_entries = [
+        {
+            "id": "learn-init-preference",
+            "category": "preference",
+            "text": "Prefer concise, evidence-led design recommendations with one best path and explicit tradeoffs.",
+            "source": "init:local-dogfood",
+            "createdAt": "2026-05-22T00:00:00.000Z",
+        },
+        {
+            "id": "learn-init-workflow",
+            "category": "workflow",
+            "text": "For implementation work, inspect repository context first, keep edits scoped, and run meaningful verification before handoff.",
+            "source": "init:local-dogfood",
+            "createdAt": "2026-05-22T00:00:01.000Z",
+        },
+        {
+            "id": "learn-init-a11y",
+            "category": "accessibility",
+            "text": "For non-trivial UI, include keyboard navigation, visible focus, screen-reader behavior, and WCAG 2.1 AA contrast notes.",
+            "source": "init:local-dogfood",
+            "createdAt": "2026-05-22T00:00:02.000Z",
+        },
+        {
+            "id": "learn-init-korean",
+            "category": "korean",
+            "text": "When Korean users or Korean copy are involved, use Pretendard, Korean typography line-height, dense mobile conventions, and a consistent honorific level.",
+            "source": "init:local-dogfood",
+            "createdAt": "2026-05-22T00:00:03.000Z",
+        },
+        {
+            "id": "learn-init-brand",
+            "category": "brand",
+            "text": "Use restrained product UI language for internal tools and avoid decorative marketing phrasing unless explicitly requested.",
+            "source": "init:local-dogfood",
+            "createdAt": "2026-05-22T00:00:04.000Z",
+        },
+        {
+            "id": "learn-init-constraint",
+            "category": "constraint",
+            "text": "Do not add external AI APIs, embeddings, telemetry, or fine-tuning behavior without explicit approval.",
+            "source": "init:local-dogfood",
+            "createdAt": "2026-05-22T00:00:05.000Z",
+        },
+    ]
+    learning_init_payload = {
+        "file": str(learning_profile_path),
+        "dryRun": False,
+        "applied": True,
+        "source": "init:local-dogfood",
+        "candidateCount": 6,
+        "addedCount": 6,
+        "skippedCount": 0,
+        "count": 6,
+        "entries": learning_init_entries,
+        "skipped": [],
+    }
+    assert_learning_init_json(
+        json.dumps(learning_init_payload),
+        profile_path=learning_profile_path,
+        dry_run=False,
+        added_count=6,
+        skipped_count=0,
+        count=6,
+        context=context,
+        cmd=learn_init_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_init_json(
+            json.dumps({
+                **learning_init_payload,
+                "source": "cli",
+            }),
+            profile_path=learning_profile_path,
+            dry_run=False,
+            added_count=6,
+            skipped_count=0,
+            count=6,
+            context=context,
+            cmd=learn_init_cmd,
+        ),
+        expected="learn init source changed",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_init_json(
+            json.dumps({
+                **learning_init_payload,
+                "entries": [
+                    {
+                        **learning_init_entries[0],
+                        "category": "workflow",
+                    },
+                    *learning_init_entries[1:],
+                ],
+            }),
+            profile_path=learning_profile_path,
+            dry_run=False,
+            added_count=6,
+            skipped_count=0,
+            count=6,
+            context=context,
+            cmd=learn_init_cmd,
+        ),
+        expected="learn init entry categories changed",
+        scope="package smoke",
+    )
+
+    learn_import_cmd = [
+        "design-ai",
+        "learn",
+        "--import",
+        "--from-file",
+        str(Path(tmp) / "import.json"),
+        "--dry-run",
+        "--file",
+        str(learning_profile_path),
+        "--json",
+    ]
+    learning_import_payload = {
+        "file": str(learning_profile_path),
+        "dryRun": True,
+        "applied": False,
+        "importedCount": 2,
+        "addedCount": 1,
+        "skippedCount": 1,
+        "added": [
+            {
+                "id": "learn-new",
+                "category": "korean",
+                "source": "import:cli",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+                "textPreview": "Prefer dense Korean mobile layouts",
+            },
+        ],
+        "skipped": [
+            {
+                "id": "learn-existing",
+                "category": "brand",
+                "source": "import:package-smoke",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+                "textPreview": "Use quiet enterprise language",
+                "reason": "duplicate-entry-text",
+            },
+        ],
+        "count": 2,
+    }
+    assert_learning_import_json(
+        json.dumps(learning_import_payload),
+        profile_path=learning_profile_path,
+        dry_run=True,
+        context=context,
+        cmd=learn_import_cmd,
+    )
+    learning_import_out_path = Path(tmp) / "learning-import-out.json"
+    learning_import_out_path.write_text(json.dumps(learning_import_payload), encoding="utf-8")
+    learn_import_out_cmd = [
+        "design-ai",
+        "learn",
+        "--import",
+        "--from-file",
+        str(Path(tmp) / "import.json"),
+        "--dry-run",
+        "--file",
+        str(learning_profile_path),
+        "--json",
+        "--out",
+        str(learning_import_out_path),
+        "--force",
+    ]
+    assert_output_write_success(
+        f"Wrote {learning_import_out_path}\n",
+        context=f"{context} import out",
+        cmd=learn_import_out_cmd,
+        expected_path=str(learning_import_out_path),
+    )
+    assert_learning_import_json(
+        learning_import_out_path.read_text(encoding="utf-8"),
+        profile_path=learning_profile_path,
+        dry_run=True,
+        context=f"{context} import out file",
+        cmd=learn_import_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_import_json(
+            json.dumps({**learning_import_payload, "addedCount": 2}),
+            profile_path=learning_profile_path,
+            dry_run=True,
+            context=context,
+            cmd=learn_import_cmd,
+        ),
+        expected="learn import added count changed",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            "Wrote different-import.json\n",
+            context=f"{context} import out",
+            cmd=learn_import_out_cmd,
+            expected_path=str(learning_import_out_path),
+        ),
+        expected="output write success",
+        scope="package smoke",
+    )
+
+    learning_backup_payload = {
+        "file": str(learning_profile_path),
+        "version": 1,
+        "updatedAt": "2026-05-22T00:00:00.000Z",
+        "exportedAt": "2026-05-22T00:01:00.000Z",
+        "count": 1,
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "entries": [
+            {
+                "id": "learn-existing",
+                "category": "brand",
+                "text": "Use quiet enterprise language",
+                "source": "package-smoke",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+            },
+        ],
+    }
+    learn_backup_cmd = ["design-ai", "learn", "--backup", "--file", str(learning_profile_path), "--json"]
+    assert_learning_backup_json(
+        json.dumps(learning_backup_payload),
+        profile_path=learning_profile_path,
+        expected_count=1,
+        expected_status="pass",
+        context=context,
+        cmd=learn_backup_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_backup_json(
+            json.dumps({**learning_backup_payload, "entries": []}),
+            profile_path=learning_profile_path,
+            expected_count=1,
+            expected_status="pass",
+            context=context,
+            cmd=learn_backup_cmd,
+        ),
+        expected="learn backup entries list changed",
+        scope="package smoke",
+    )
+
+    learning_redact_payload = {
+        "file": str(learning_profile_path),
+        "version": 1,
+        "updatedAt": "2026-05-22T00:00:01.000Z",
+        "exportedAt": "2026-05-24T00:00:00.000Z",
+        "redacted": True,
+        "count": 2,
+        "redactedCount": 1,
+        "sourceAuditSummary": {
+            "status": "warn",
+            "failures": 0,
+            "warnings": 2,
+        },
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "redactions": [
+            {
+                "entryId": "learn-sensitive",
+                "category": "constraint",
+                "codes": ["sensitive-secret-assignment", "sensitive-openai-secret-key"],
+                "textPreview": "Never include [REDACTED:secret-assignment] [REDACTED:openai-secret-key] in shared...",
+            },
+        ],
+        "entries": [
+            {
+                "id": "learn-sensitive",
+                "category": "constraint",
+                "text": "Never include [REDACTED:secret-assignment] [REDACTED:openai-secret-key] in shared learning profiles",
+                "source": "package-smoke",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+            },
+            {
+                "id": "learn-clean",
+                "category": "korean",
+                "text": "Prefer dense Korean mobile layouts",
+                "source": "package-smoke",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+            },
+        ],
+    }
+    learn_redact_cmd = ["design-ai", "learn", "--redact", "--file", str(learning_profile_path), "--json"]
+    assert_learning_redact_json(
+        json.dumps(learning_redact_payload),
+        profile_path=learning_profile_path,
+        expected_count=2,
+        expected_redacted_count=1,
+        context=context,
+        cmd=learn_redact_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_redact_json(
+            json.dumps({**learning_redact_payload, "redactedCount": 0}),
+            profile_path=learning_profile_path,
+            expected_count=2,
+            expected_redacted_count=1,
+            context=context,
+            cmd=learn_redact_cmd,
+        ),
+        expected="learn redact redactedCount changed",
+        scope="package smoke",
+    )
+
+    learning_verify_payload = {
+        "source": str(Path(tmp) / "learning-backup.json"),
+        "importable": True,
+        "count": 1,
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "issues": [],
+        "entries": [
+            {
+                "id": "learn-existing",
+                "category": "brand",
+                "source": "import:package-smoke",
+                "createdAt": "2026-05-22T00:00:00.000Z",
+                "textPreview": "Use quiet enterprise language",
+            },
+        ],
+    }
+    learn_verify_cmd = ["design-ai", "learn", "--verify", "--from-file", str(Path(tmp) / "learning-backup.json"), "--json"]
+    assert_learning_verify_json(
+        json.dumps(learning_verify_payload),
+        source=str(Path(tmp) / "learning-backup.json"),
+        expected_count=1,
+        expected_status="pass",
+        context=context,
+        cmd=learn_verify_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_verify_json(
+            json.dumps({**learning_verify_payload, "importable": False}),
+            source=str(Path(tmp) / "learning-backup.json"),
+            expected_count=1,
+            expected_status="pass",
+            context=context,
+            cmd=learn_verify_cmd,
+        ),
+        expected="learn verify importable flag changed",
+        scope="package smoke",
+    )
+    learning_verify_out_path = Path(tmp) / "learning-verify-out.json"
+    learn_verify_out_cmd = [
+        "design-ai",
+        "learn",
+        "--verify",
+        "--from-file",
+        str(Path(tmp) / "learning-backup.json"),
+        "--json",
+        "--out",
+        str(learning_verify_out_path),
+        "--force",
+    ]
+    learning_verify_out_path.write_text(json.dumps(learning_verify_payload), encoding="utf-8")
+    assert_output_write_success(
+        f"Wrote {learning_verify_out_path}\n",
+        context=f"{context} verify out",
+        cmd=learn_verify_out_cmd,
+        expected_path=str(learning_verify_out_path),
+    )
+    assert_learning_verify_json(
+        learning_verify_out_path.read_text(encoding="utf-8"),
+        source=str(Path(tmp) / "learning-backup.json"),
+        expected_count=1,
+        expected_status="pass",
+        context=f"{context} verify out file",
+        cmd=learn_verify_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            "Wrote different-verify.json\n",
+            context=f"{context} verify out",
+            cmd=learn_verify_out_cmd,
+            expected_path=str(learning_verify_out_path),
+        ),
+        expected="output write success",
+        scope="package smoke",
+    )
+
+    learning_diff_path = Path(tmp) / "learning-diff.json"
+    return learning_diff_path
+
+
+def _self_test_learn_restore_and_prune(context, learning_diff_path, learning_profile_path, tmp):
+    """Package smoke self-test: learn restore, diff, and backup pruning contracts."""
+    learning_diff_payload = {
+        "file": str(learning_profile_path),
+        "source": str(learning_diff_path),
+        "generatedAt": "2026-05-22T00:01:00.000Z",
+        "profileExists": True,
+        "profileUpdatedAt": "2026-05-22T00:00:00.000Z",
+        "comparisonUpdatedAt": "2026-05-22T00:00:03.000Z",
+        "profileCount": 1,
+        "comparisonCount": 3,
+        "profileAuditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "comparisonAuditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "sameTextCount": 1,
+        "profileOnlyCount": 0,
+        "comparisonOnlyCount": 2,
+        "metadataChangedCount": 1,
+        "idConflictCount": 1,
+        "profileOnly": [],
+        "comparisonOnly": [
+            {
+                "id": "learn-new",
+                "category": "korean",
+                "source": "backup",
+                "createdAt": "2026-05-22T00:00:02.000Z",
+                "textPreview": "Prefer dense Korean mobile layouts",
+            },
+            {
+                "id": "learn-existing",
+                "category": "workflow",
+                "source": "backup",
+                "createdAt": "2026-05-22T00:00:03.000Z",
+                "textPreview": "Use a release checklist before handoff",
+            },
+        ],
+        "metadataChanged": [
+            {
+                "key": "brand\nuse quiet enterprise language",
+                "changedFields": ["id", "source", "createdAt"],
+                "profile": {
+                    "id": "learn-existing",
+                    "category": "brand",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                    "textPreview": "Use quiet enterprise language",
+                },
+                "comparison": {
+                    "id": "learn-existing-restored",
+                    "category": "brand",
+                    "source": "backup",
+                    "createdAt": "2026-05-22T00:00:01.000Z",
+                    "textPreview": "Use quiet enterprise language",
+                },
+            },
+        ],
+        "idConflicts": [
+            {
+                "id": "learn-existing",
+                "profile": {
+                    "id": "learn-existing",
+                    "category": "brand",
+                    "source": "package-smoke",
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                    "textPreview": "Use quiet enterprise language",
+                },
+                "comparison": {
+                    "id": "learn-existing",
+                    "category": "workflow",
+                    "source": "backup",
+                    "createdAt": "2026-05-22T00:00:03.000Z",
+                    "textPreview": "Use a release checklist before handoff",
+                },
+            },
+        ],
+        "recommendations": [],
+        "privacy": {
+            "storesRawBriefText": False,
+            "exposesEntryTextPreview": True,
+            "mutatesProfile": False,
+        },
+    }
+    learn_diff_cmd = [
+        "design-ai",
+        "learn",
+        "--diff",
+        "--from-file",
+        str(learning_diff_path),
+        "--file",
+        str(learning_profile_path),
+        "--json",
+    ]
+    assert_learning_diff_json(
+        json.dumps(learning_diff_payload),
+        profile_path=learning_profile_path,
+        source=str(learning_diff_path),
+        context=context,
+        cmd=learn_diff_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_diff_json(
+            json.dumps({**learning_diff_payload, "comparisonOnlyCount": 1}),
+            profile_path=learning_profile_path,
+            source=str(learning_diff_path),
+            context=context,
+            cmd=learn_diff_cmd,
+        ),
+        expected="learn diff comparison-only count changed",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_diff_json(
+            json.dumps({
+                **learning_diff_payload,
+                "privacy": {
+                    **learning_diff_payload["privacy"],
+                    "mutatesProfile": True,
+                },
+            }),
+            profile_path=learning_profile_path,
+            source=str(learning_diff_path),
+            context=context,
+            cmd=learn_diff_cmd,
+        ),
+        expected="learn diff should report read-only privacy behavior",
+        scope="package smoke",
+    )
+
+    learning_restore_path = Path(tmp) / "learning-restore.json"
+    learning_restore_backup_path = Path(tmp) / "learning.restore-backup-20260522T000100000Z.json"
+    learning_restore_backup_prune_path = Path(tmp) / "learning.restore-backup-20260522T000000000Z.json"
+    learning_restore_payload = {
+        "file": str(learning_profile_path),
+        "source": str(learning_restore_path),
+        "generatedAt": "2026-05-22T00:01:00.000Z",
+        "dryRun": True,
+        "applied": False,
+        "restorable": True,
+        "profileExists": True,
+        "backupFile": str(learning_restore_backup_path),
+        "backupCreated": False,
+        "backupEntryCount": 1,
+        "backupUpdatedAt": "2026-05-22T00:00:00.000Z",
+        "rollbackCommand": f"design-ai learn --restore --from-file {learning_restore_backup_path} --file {learning_profile_path} --dry-run",
+        "previousUpdatedAt": "2026-05-22T00:00:00.000Z",
+        "restoredUpdatedAt": "2026-05-22T00:00:03.000Z",
+        "previousCount": 1,
+        "restoredCount": 3,
+        "removedCount": 0,
+        "addedCount": 2,
+        "sameTextCount": 1,
+        "metadataChangedCount": 1,
+        "idConflictCount": 1,
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "issues": [],
+        "diff": {
+            "profileOnlyCount": 0,
+            "comparisonOnlyCount": 2,
+            "metadataChangedCount": 1,
+            "idConflictCount": 1,
+            "profileOnly": [],
+            "comparisonOnly": learning_diff_payload["comparisonOnly"],
+            "metadataChanged": learning_diff_payload["metadataChanged"],
+            "idConflicts": learning_diff_payload["idConflicts"],
+        },
+        "privacy": {
+            "storesRawBriefText": False,
+            "exposesEntryTextPreview": True,
+            "mutatesProfile": False,
+        },
+    }
+    learn_restore_cmd = [
+        "design-ai",
+        "learn",
+        "--restore",
+        "--from-file",
+        str(learning_restore_path),
+        "--dry-run",
+        "--file",
+        str(learning_profile_path),
+        "--json",
+    ]
+    assert_learning_restore_json(
+        json.dumps(learning_restore_payload),
+        profile_path=learning_profile_path,
+        source=str(learning_restore_path),
+        dry_run=True,
+        context=context,
+        cmd=learn_restore_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_restore_json(
+            json.dumps({**learning_restore_payload, "restoredCount": 2}),
+            profile_path=learning_profile_path,
+            source=str(learning_restore_path),
+            dry_run=True,
+            context=context,
+            cmd=learn_restore_cmd,
+        ),
+        expected="learn restore restored count changed",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_restore_json(
+            json.dumps({**learning_restore_payload, "backupCreated": True}),
+            profile_path=learning_profile_path,
+            source=str(learning_restore_path),
+            dry_run=True,
+            context=context,
+            cmd=learn_restore_cmd,
+        ),
+        expected="learn restore backup created flag changed",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_restore_json(
+            json.dumps({
+                **learning_restore_payload,
+                "privacy": {
+                    **learning_restore_payload["privacy"],
+                    "mutatesProfile": True,
+                },
+            }),
+            profile_path=learning_profile_path,
+            source=str(learning_restore_path),
+            dry_run=True,
+            context=context,
+            cmd=learn_restore_cmd,
+        ),
+        expected="learn restore privacy mutation flag changed",
+        scope="package smoke",
+    )
+
+    learning_restore_backups_payload = {
+        "file": str(learning_profile_path),
+        "directory": str(learning_profile_path.parent),
+        "pattern": "learning.restore-backup-*.json",
+        "generatedAt": "2026-05-22T00:02:00.000Z",
+        "limit": 1,
+        "totalCount": 1,
+        "count": 1,
+        "backups": [
+            {
+                "file": str(learning_restore_backup_path),
+                "name": learning_restore_backup_path.name,
+                "createdAt": "2026-05-22T00:01:00.000Z",
+                "modifiedAt": "2026-05-22T00:01:00.000Z",
+                "sizeBytes": 512,
+                "updatedAt": "2026-05-22T00:00:00.000Z",
+                "entryCount": 1,
+                "auditSummary": {
+                    "status": "pass",
+                    "failures": 0,
+                    "warnings": 0,
+                },
+                "issueCount": 0,
+                "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_backup_path} --file {learning_profile_path} --dry-run",
+            },
+        ],
+        "privacy": {
+            "storesRawBriefText": False,
+            "exposesEntryTextPreview": False,
+            "mutatesProfile": False,
+        },
+    }
+    learn_restore_backups_cmd = [
+        "design-ai",
+        "learn",
+        "--restore-backups",
+        "--file",
+        str(learning_profile_path),
+        "--limit",
+        "1",
+        "--json",
+    ]
+    assert_learning_restore_backups_json(
+        json.dumps(learning_restore_backups_payload),
+        profile_path=learning_profile_path,
+        backup_path=learning_restore_backup_path,
+        context=context,
+        cmd=learn_restore_backups_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_restore_backups_json(
+            json.dumps({**learning_restore_backups_payload, "totalCount": 0}),
+            profile_path=learning_profile_path,
+            backup_path=learning_restore_backup_path,
+            context=context,
+            cmd=learn_restore_backups_cmd,
+        ),
+        expected="learn restore-backups should find rollback backups",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_restore_backups_json(
+            json.dumps({
+                **learning_restore_backups_payload,
+                "privacy": {
+                    **learning_restore_backups_payload["privacy"],
+                    "mutatesProfile": True,
+                },
+            }),
+            profile_path=learning_profile_path,
+            backup_path=learning_restore_backup_path,
+            context=context,
+            cmd=learn_restore_backups_cmd,
+        ),
+        expected="learn restore-backups privacy mutation flag changed",
+        scope="package smoke",
+    )
+
+    learning_restore_backups_prune_payload = {
+        **learning_restore_backups_payload,
+        "totalCount": 2,
+        "prune": {
+            "dryRun": True,
+            "applied": False,
+            "keep": 1,
+            "retainedCount": 1,
+            "candidateCount": 1,
+            "deletedCount": 0,
+            "failureCount": 0,
+            "retained": learning_restore_backups_payload["backups"],
+            "candidates": [
+                {
+                    **learning_restore_backups_payload["backups"][0],
+                    "file": str(learning_restore_backup_prune_path),
+                    "name": learning_restore_backup_prune_path.name,
+                    "createdAt": "2026-05-22T00:00:00.000Z",
+                    "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_backup_prune_path} --file {learning_profile_path} --dry-run",
+                },
+            ],
+            "deleted": [],
+            "failures": [],
+        },
+        "privacy": {
+            "storesRawBriefText": False,
+            "exposesEntryTextPreview": False,
+            "mutatesProfile": False,
+            "deletesBackupFiles": False,
+        },
+    }
+    learn_restore_backups_prune_cmd = [
+        "design-ai",
+        "learn",
+        "--restore-backups",
+        "--prune",
+        "--keep",
+        "1",
+        "--file",
+        str(learning_profile_path),
+        "--json",
+    ]
+    assert_learning_restore_backups_prune_json(
+        json.dumps(learning_restore_backups_prune_payload),
+        profile_path=learning_profile_path,
+        deleted_path=learning_restore_backup_prune_path,
+        dry_run=True,
+        context=context,
+        cmd=learn_restore_backups_prune_cmd,
+    )
+    assert_learning_restore_backups_prune_json(
+        json.dumps({
+            **learning_restore_backups_prune_payload,
+            "prune": {
+                **learning_restore_backups_prune_payload["prune"],
+                "dryRun": False,
+                "applied": True,
+                "deletedCount": 1,
+                "deleted": learning_restore_backups_prune_payload["prune"]["candidates"],
+            },
+            "privacy": {
+                **learning_restore_backups_prune_payload["privacy"],
+                "deletesBackupFiles": True,
+            },
+        }),
+        profile_path=learning_profile_path,
+        deleted_path=learning_restore_backup_prune_path,
+        dry_run=False,
+        context=context,
+        cmd=[*learn_restore_backups_prune_cmd[:-1], "--yes", "--json"],
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_restore_backups_prune_json(
+            json.dumps({
+                **learning_restore_backups_prune_payload,
+                "prune": {
+                    **learning_restore_backups_prune_payload["prune"],
+                    "candidateCount": 0,
+                },
+            }),
+            profile_path=learning_profile_path,
+            deleted_path=learning_restore_backup_prune_path,
+            dry_run=True,
+            context=context,
+            cmd=learn_restore_backups_prune_cmd,
+        ),
+        expected="learn restore-backups prune candidate count changed",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_restore_backups_prune_json(
+            json.dumps({
+                **learning_restore_backups_prune_payload,
+                "privacy": {
+                    **learning_restore_backups_prune_payload["privacy"],
+                    "deletesBackupFiles": True,
+                },
+            }),
+            profile_path=learning_profile_path,
+            deleted_path=learning_restore_backup_prune_path,
+            dry_run=True,
+            context=context,
+            cmd=learn_restore_backups_prune_cmd,
+        ),
+        expected="learn restore-backups prune privacy flags changed",
+        scope="package smoke",
+    )
+
+    learning_stats_payload = {
+        "file": str(learning_profile_path),
+        "exists": True,
+        "version": 1,
+        "updatedAt": "2026-05-22T00:00:03.000Z",
+        "count": 3,
+        "categoryCounts": {
+            "brand": 1,
+            "accessibility": 1,
+            "korean": 1,
+        },
+        "sourceCounts": {
+            "package-smoke": 1,
+            "feedback:keep": 1,
+            "import:cli": 1,
+        },
+        "oldestEntry": {
+            "id": "learn-brand",
+            "category": "brand",
+            "source": "package-smoke",
+            "createdAt": "2026-05-22T00:00:00.000Z",
+            "textPreview": "Use quiet enterprise brand language",
+        },
+        "latestEntry": {
+            "id": "learn-korean",
+            "category": "korean",
+            "source": "import:cli",
+            "createdAt": "2026-05-22T00:00:03.000Z",
+            "textPreview": "Prefer dense Korean mobile layouts with compact controls",
+        },
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+    }
+    learn_stats_cmd = ["design-ai", "learn", "--stats", "--file", str(learning_profile_path), "--json"]
+    assert_learning_stats_json(
+        json.dumps(learning_stats_payload),
+        profile_path=learning_profile_path,
+        context=context,
+        cmd=learn_stats_cmd,
+    )
+    return learn_stats_cmd, learning_stats_payload
+
+
+def _self_test_learn_query_and_export(context, learn_stats_cmd, learning_profile_path, learning_stats_payload, tmp):
+    """Package smoke self-test: learn list, explain, query, and export contracts."""
+    expect_self_test_failure(
+        lambda: assert_learning_stats_json(
+            json.dumps({
+                **learning_stats_payload,
+                "sourceCounts": {
+                    "package-smoke": 3,
+                },
+            }),
+            profile_path=learning_profile_path,
+            context=context,
+            cmd=learn_stats_cmd,
+        ),
+        expected="learn stats source distribution changed",
+        scope="package smoke",
+    )
+    learning_stats_out_path = Path(tmp) / "learning-stats-out.json"
+    learning_stats_out_path.write_text(json.dumps(learning_stats_payload), encoding="utf-8")
+    learn_stats_out_cmd = [
+        "design-ai",
+        "learn",
+        "--stats",
+        "--file",
+        str(learning_profile_path),
+        "--json",
+        "--out",
+        str(learning_stats_out_path),
+        "--force",
+    ]
+    assert_output_write_success(
+        f"Wrote {learning_stats_out_path}\n",
+        context=f"{context} stats out",
+        cmd=learn_stats_out_cmd,
+        expected_path=str(learning_stats_out_path),
+    )
+    assert_learning_stats_json(
+        learning_stats_out_path.read_text(encoding="utf-8"),
+        profile_path=learning_profile_path,
+        context=f"{context} stats out file",
+        cmd=learn_stats_out_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_output_write_success(
+            "Wrote different-stats.json\n",
+            context=f"{context} stats out",
+            cmd=learn_stats_out_cmd,
+            expected_path=str(learning_stats_out_path),
+        ),
+        expected="output write success",
+        scope="package smoke",
+    )
+    learn_stats_human_cmd = ["design-ai", "learn", "--stats", "--file", str(learning_profile_path)]
+    assert_learning_stats_human(
+        "\n".join([
+            "design-ai learn",
+            "Local learning profile stats",
+            f"File: {learning_profile_path}",
+            "Exists: yes",
+            "Entries: 3",
+            "Updated: 2026-05-22T00:00:03.000Z",
+            "Audit: pass (0 failure(s), 0 warning(s))",
+            "Categories: brand 1, accessibility 1, korean 1",
+            "Sources: package-smoke 1, feedback:keep 1, import:cli 1",
+            "",
+            "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
+            "        learn-korean · 2026-05-22T00:00:03.000Z",
+            "Oldest: [brand] Use quiet enterprise brand language",
+            "        learn-brand · 2026-05-22T00:00:00.000Z",
+        ]),
+        context=context,
+        cmd=learn_stats_human_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_stats_human(
+            "\n".join([
+                "design-ai learn",
+                "Local learning profile stats",
+                f"File: {learning_profile_path}",
+                "Exists: yes",
+                "Entries: 3",
+                "Updated: 2026-05-22T00:00:03.000Z",
+                "Audit: pass (0 failure(s), 0 warning(s))",
+                "Categories: brand 1, accessibility 1, korean 1",
+                "",
+                "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
+                "        learn-korean · 2026-05-22T00:00:03.000Z",
+                "Oldest: [brand] Use quiet enterprise brand language",
+                "        learn-brand · 2026-05-22T00:00:00.000Z",
+            ]),
+            context=context,
+            cmd=learn_stats_human_cmd,
+        ),
+        expected="learn stats human output missing 'Sources: package-smoke 1, feedback:keep 1, import:cli 1'",
+        scope="package smoke",
+    )
+
+    learning_query_payload = {
+        "file": str(learning_profile_path),
+        "version": 1,
+        "updatedAt": "2026-05-22T00:00:02.000Z",
+        "category": "",
+        "query": "keyboard accessibility",
+        "limit": 2,
+        "entries": [
+            {
+                "id": "learn-relevant",
+                "category": "accessibility",
+                "text": "Prioritize keyboard accessibility details for Button component API specs",
+                "source": "package-smoke",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+            },
+        ],
+        "count": 1,
+        "totalCount": 3,
+        "selection": {
+            "mode": "brief-relevance",
+            "query": "keyboard accessibility",
+            "candidateCount": 3,
+            "matchedCount": 1,
+            "queryTokenCount": 2,
+            "fallbackEnabled": False,
+            "selectedCount": 1,
+            "fallbackCount": 0,
+            "selected": [
+                {
+                    "id": "learn-relevant",
+                    "category": "accessibility",
+                    "score": 2.114533,
+                    "matchedTokens": ["accessibility", "keyboard"],
+                    "reason": "brief-match",
+                },
+            ],
+        },
+    }
+    learn_query_cmd = [
+        "design-ai",
+        "learn",
+        "--list",
+        "--query",
+        "keyboard accessibility",
+        "--explain",
+        "--limit",
+        "2",
+        "--json",
+    ]
+    assert_learning_query_json(
+        json.dumps(learning_query_payload),
+        profile_path=learning_profile_path,
+        context=context,
+        cmd=learn_query_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_query_json(
+            json.dumps({
+                **learning_query_payload,
+                "selection": {
+                    **learning_query_payload["selection"],
+                    "selected": [
+                        {
+                            **learning_query_payload["selection"]["selected"][0],
+                            "matchedTokens": ["keyboard"],
+                        },
+                    ],
+                },
+            }),
+            profile_path=learning_profile_path,
+            context=context,
+            cmd=learn_query_cmd,
+        ),
+        expected="learn query explain should include matched query tokens",
+        scope="package smoke",
+    )
+    learn_query_human_cmd = [
+        "design-ai",
+        "learn",
+        "--list",
+        "--query",
+        "keyboard accessibility",
+        "--explain",
+        "--limit",
+        "2",
+    ]
+    assert_learning_query_human(
+        "\n".join([
+            "design-ai learn",
+            "Local learning profile",
+            f"File: {learning_profile_path}",
+            "Entries: 1/3",
+            "Query: keyboard accessibility",
+            "Limit: 2",
+            "Explain: selection score, matched tokens, and reason",
+            "",
+            "1. [accessibility] Prioritize keyboard accessibility details for Button component API specs",
+            "   learn-relevant · 2026-05-22T00:00:01.000Z",
+            "   score 2.114533 · matched accessibility, keyboard · reason brief-match",
+        ]),
+        context=context,
+        cmd=learn_query_human_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_query_human(
+            "\n".join([
+                "Local learning profile",
+                "Entries: 1/3",
+                "Query: keyboard accessibility",
+                "Limit: 2",
+                "Explain: selection score, matched tokens, and reason",
+                "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
+                "matched accessibility, keyboard",
+            ]),
+            context=context,
+            cmd=learn_query_human_cmd,
+        ),
+        expected="learn query human output missing 'reason brief-match'",
+        scope="package smoke",
+    )
+
+    learning_query_export_payload = {
+        "file": str(learning_profile_path),
+        "category": "",
+        "limit": 2,
+        "query": "keyboard accessibility",
+        "selection": {
+            "mode": "brief-relevance",
+            "query": "keyboard accessibility",
+            "candidateCount": 3,
+            "matchedCount": 1,
+            "queryTokenCount": 2,
+            "fallbackEnabled": False,
+            "selectedCount": 1,
+            "fallbackCount": 0,
+            "selected": [
+                {
+                    "id": "learn-relevant",
+                    "category": "accessibility",
+                    "score": 2.114533,
+                    "matchedTokens": ["accessibility", "keyboard"],
+                    "reason": "brief-match",
+                },
+            ],
+        },
+        "entries": learning_query_payload["entries"],
+        "empty": False,
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "markdown": "Learning selection: brief relevance (1/3 matched; no recency fallback).\nPrioritize keyboard accessibility details",
+    }
+    learn_query_export_cmd = [
+        "design-ai",
+        "learn",
+        "--export",
+        "--query",
+        "keyboard accessibility",
+        "--limit",
+        "2",
+        "--json",
+    ]
+    assert_learning_query_export_json(
+        json.dumps(learning_query_export_payload),
+        profile_path=learning_profile_path,
+        context=context,
+        cmd=learn_query_export_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_query_export_json(
+            json.dumps({
+                **learning_query_export_payload,
+                "selection": {
+                    **learning_query_export_payload["selection"],
+                    "fallbackEnabled": True,
+                },
+            }),
+            profile_path=learning_profile_path,
+            context=context,
+            cmd=learn_query_export_cmd,
+        ),
+        expected="learn query export should not use recency fallback",
+        scope="package smoke",
+    )
+
+    learning_relevance_payload = {
+        "learningContext": {
+            "selection": {
+                "mode": "brief-relevance",
+                "query": EXPECTED_ROUTE_BRIEF,
+                "candidateCount": 3,
+                "matchedCount": 1,
+                "selectedCount": 1,
+                "fallbackCount": 0,
+                "selected": [
+                    {
+                        "id": "learn-relevant",
+                        "category": "accessibility",
+                        "score": 10,
+                        "matchedTokens": ["button", "accessibility"],
+                        "reason": "brief-match",
+                    },
+                ],
+            },
+            "entries": [
+                {
+                    "id": "learn-relevant",
+                    "category": "accessibility",
+                    "text": "Prioritize keyboard accessibility details for Button component API specs",
+                },
+            ],
+        },
+        "prompt": (
+            "Learning selection: brief relevance\n"
+            "Prioritize keyboard accessibility details for Button component API specs"
+        ),
+        "learningUsage": {
+            "recorded": True,
+            "event": {
+                "id": "learn-use-prompt",
+                "command": "prompt",
+                "routeId": EXPECTED_ROUTE_ID,
+                "profileFile": str(learning_profile_path),
+                "briefHash": "0123456789abcdef",
+                "selectedEntryIds": ["learn-relevant"],
+                "selectedCount": 1,
+                "candidateCount": 3,
+                "matchedCount": 1,
+                "fallbackCount": 0,
+                "queryTokenCount": 6,
+                "auditStatus": "pass",
+                "createdAt": "2026-06-01T00:00:00.000Z",
+            },
+        },
+    }
+    learning_relevance_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-learning", "--json"]
+    assert_learning_relevance_context(
+        learning_relevance_payload,
+        context=context,
+        cmd=learning_relevance_cmd,
+    )
+    assert_learning_usage_payload(
+        learning_relevance_payload,
+        expected_command="prompt",
+        context=context,
+        cmd=learning_relevance_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_relevance_context(
+            {
+                **learning_relevance_payload,
+                "learningContext": {
+                    **learning_relevance_payload["learningContext"],
+                    "entries": [
+                        {
+                            "id": "learn-unrelated-newer",
+                            "category": "korean",
+                            "text": "Prefer dense Korean mobile checkout layout",
+                        },
+                    ],
+                },
+            },
+            context=context,
+            cmd=learning_relevance_cmd,
+        ),
+        expected="brief relevance should pick the Button accessibility entry",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_usage_payload(
+            {
+                **learning_relevance_payload,
+                "learningUsage": {
+                    **learning_relevance_payload["learningUsage"],
+                    "event": {
+                        **learning_relevance_payload["learningUsage"]["event"],
+                        "brief": EXPECTED_ROUTE_BRIEF,
+                        "briefHash": "",
+                    },
+                },
+            },
+            expected_command="prompt",
+            context=context,
+            cmd=learning_relevance_cmd,
+        ),
+        expected="learningUsage event should store a short brief hash",
+        scope="package smoke",
+    )
+
+    recall_payload = {
+        "recall": {
+            "query": EXPECTED_ROUTE_BRIEF,
+            "mode": "lexical",
+            "candidateCount": 42,
+            "selectedCount": 2,
+            "selected": [
+                {
+                    "id": "knowledge/components/INDEX.md",
+                    "score": 9.5,
+                    "matchedTokens": ["button", "component"],
+                },
+                {
+                    "id": "knowledge/a11y/keyboard-and-focus.md",
+                    "score": 4.2,
+                    "matchedTokens": ["accessibility"],
+                },
+            ],
+            "markdown": (
+                "## Recalled design knowledge\n\n"
+                "- knowledge/components/INDEX.md\n"
+                "  - Component index\n"
+                "- knowledge/a11y/keyboard-and-focus.md\n"
+                "  - Keyboard and focus"
+            ),
+        },
+        "prompt": (
+            "Recalled corpus knowledge:\n\n"
+            "## Recalled design knowledge\n\n"
+            "- knowledge/components/INDEX.md"
+        ),
+    }
+    recall_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-recall", "--json"]
+    assert_recall_context(recall_payload, context=context, cmd=recall_cmd)
+    expect_self_test_failure(
+        lambda: assert_recall_context(
+            {**recall_payload, "recall": {**recall_payload["recall"], "mode": "embeddings"}},
+            context=context,
+            cmd=recall_cmd,
+        ),
+        expected="recall should use the deterministic lexical scorer",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_recall_context(
+            {**recall_payload, "recall": {**recall_payload["recall"], "selectedCount": 0, "selected": []}},
+            context=context,
+            cmd=recall_cmd,
+        ),
+        expected="recall should select at least one corpus file",
+        scope="package smoke",
+    )
+
+    learning_usage_path = Path(tmp) / "learning.usage.json"
+    learning_usage_path.write_text(
+        json.dumps({
+            "version": 1,
+            "updatedAt": "2026-06-01T00:00:01.000Z",
+            "profileFile": str(learning_profile_path),
+            "events": [
+                {
+                    **learning_relevance_payload["learningUsage"]["event"],
+                    "id": "learn-use-prompt",
+                    "command": "prompt",
+                },
+                {
+                    **learning_relevance_payload["learningUsage"]["event"],
+                    "id": "learn-use-pack",
+                    "command": "pack",
+                    "createdAt": "2026-06-01T00:00:01.000Z",
+                },
+            ],
+        }),
+        encoding="utf-8",
+    )
+    assert_learning_usage_sidecar(
+        learning_usage_path,
+        expected_commands=["prompt", "pack"],
+        context=context,
+        cmd=learning_relevance_cmd,
+    )
+    return learning_relevance_cmd, learning_relevance_payload, learning_usage_path
+
+
+def _self_test_learn_usage_and_signals(context, learning_profile_path, learning_relevance_cmd, learning_relevance_payload, learning_usage_path, tmp) -> None:
+    """Package smoke self-test: learn usage capture and signal report contracts."""
+    learning_usage_report_payload = {
+        "file": str(learning_profile_path),
+        "usageFile": str(learning_usage_path),
+        "exists": True,
+        "profileExists": True,
+        "profileFile": str(learning_profile_path),
+        "version": 1,
+        "updatedAt": "2026-06-01T00:00:01.000Z",
+        "eventCount": 2,
+        "profileEntryCount": 3,
+        "usedEntryCount": 1,
+        "unusedEntryCount": 2,
+        "staleSelectedEntryCount": 0,
+        "commandCounts": {
+            "prompt": 1,
+            "pack": 1,
+        },
+        "routeCounts": {
+            EXPECTED_ROUTE_ID: 2,
+        },
+        "categoryCounts": {
+            "all": 2,
+        },
+        "auditStatusCounts": {
+            "pass": 2,
+        },
+        "selectedEntryCounts": {
+            "learn-relevant": 2,
+        },
+        "topSelectedEntries": [
+            {
+                "id": "learn-relevant",
+                "category": "accessibility",
+                "source": "package-smoke",
+                "textPreview": "Prioritize keyboard accessibility details for Button component API specs",
+                "usageCount": 2,
+                "latestUsedAt": "2026-06-01T00:00:01.000Z",
+                "commands": {
+                    "prompt": 1,
+                    "pack": 1,
+                },
+                "routes": {
+                    EXPECTED_ROUTE_ID: 2,
+                },
+            },
+        ],
+        "unusedEntryIds": ["learn-unrelated-newer", "learn-brand"],
+        "staleSelectedEntryIds": [],
+        "oldestEvent": {
+            **learning_relevance_payload["learningUsage"]["event"],
+            "id": "learn-use-prompt",
+            "command": "prompt",
+        },
+        "latestEvent": {
+            **learning_relevance_payload["learningUsage"]["event"],
+            "id": "learn-use-pack",
+            "command": "pack",
+            "createdAt": "2026-06-01T00:00:01.000Z",
+        },
+        "recentEvents": [
+            {
+                **learning_relevance_payload["learningUsage"]["event"],
+                "id": "learn-use-pack",
+                "command": "pack",
+                "createdAt": "2026-06-01T00:00:01.000Z",
+            },
+        ],
+        "recommendations": [],
+        "privacy": {
+            "storesRawBriefText": False,
+            "storesBriefHash": True,
+            "storesSelectedEntryIds": True,
+        },
+    }
+    learn_usage_cmd = ["design-ai", "learn", "--usage", "--file", str(learning_profile_path), "--usage-file", str(learning_usage_path), "--json"]
+    assert_learning_usage_report_json(
+        json.dumps(learning_usage_report_payload),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=learn_usage_cmd,
+    )
+    assert_learning_usage_report_human(
+        "\n".join([
+            "design-ai learn",
+            "Local learning usage report",
+            f"Usage sidecar: {learning_usage_path}",
+            "Events: 2",
+            "Top selected entries:",
+            "Recent events:",
+            "Privacy: usage events store selected entry ids and a short brief hash",
+        ]),
+        context=context,
+        cmd=learn_usage_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_usage_report_json(
+            json.dumps({
+                **learning_usage_report_payload,
+                "latestEvent": {
+                    **learning_usage_report_payload["latestEvent"],
+                    "brief": EXPECTED_ROUTE_BRIEF,
+                    "briefHash": "",
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_usage_cmd,
+        ),
+        expected="learn usage report should keep event details privacy-preserving",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_usage_sidecar(
+            learning_usage_path.with_name("missing-usage.json"),
+            expected_commands=["prompt", "pack"],
+            context=context,
+            cmd=learning_relevance_cmd,
+        ),
+        expected="learning usage sidecar file should be written",
+        scope="package smoke",
+    )
+
+    learn_signals_cmd = [
+        "design-ai",
+        "learn",
+        "--signals",
+        "--file",
+        str(learning_profile_path),
+        "--usage-file",
+        str(learning_usage_path),
+        "--from-file",
+        str(Path(tmp)),
+        "--json",
+    ]
+    learning_signal_payload = {
+        "version": 1,
+        "generatedAt": "2026-06-02T00:00:00.000Z",
+        "status": "pass",
+        "file": str(learning_profile_path),
+        "signalSource": str(Path(tmp)),
+        "learning": {
+            "exists": True,
+            "version": 1,
+            "updatedAt": "2026-06-01T00:00:00.000Z",
+            "count": 3,
+            "categoryCounts": {"workflow": 2, "brand": 1},
+            "sourceCounts": {"feedback:keep": 2, "check:artifact": 1},
+            "auditSummary": {"status": "pass", "failures": 0, "warnings": 0},
+        },
+        "usage": {
+            "usageFile": str(learning_usage_path),
+            "exists": True,
+            "eventCount": 2,
+            "usedEntryCount": 2,
+            "unusedEntryCount": 1,
+            "staleSelectedEntryCount": 0,
+            "commandCounts": {"prompt": 1, "pack": 1},
+            "routeCounts": {EXPECTED_ROUTE_ID: 2},
+            "latestEvent": learning_usage_report_payload["latestEvent"],
+            "privacy": learning_usage_report_payload["privacy"],
+        },
+        "evals": {
+            "source": str(Path(tmp)),
+            "count": 1,
+            "reports": 1,
+            "templates": 0,
+            "failed": 0,
+            "warned": 0,
+            "passed": 1,
+            "files": [
+                {
+                    "file": str(Path(tmp) / "route-eval-report.json"),
+                    "exists": True,
+                    "kind": "route-eval",
+                    "shape": "report",
+                    "status": "pass",
+                    "caseCount": 1,
+                    "passed": 1,
+                    "warned": 0,
+                    "failed": 0,
+                    "generatedAt": "2026-06-02T00:00:00.000Z",
+                    "error": "",
+                },
+            ],
+        },
+        "checkCapture": {
+            "count": 1,
+            "categoryCounts": {"workflow": 1},
+            "sourceCounts": {"check:artifact": 1},
+            "latestEntries": [
+                {
+                    "id": "learn-check",
+                    "category": "workflow",
+                    "source": "check:artifact",
+                    "createdAt": "2026-06-01T00:00:00.000Z",
+                    "textPreview": "Improve future outputs by addressing responsive QA.",
+                },
+            ],
+        },
+        "workspace": {
+            "root": str(Path(tmp)),
+            "version": "4.55.0",
+            "git": {"isRepo": True, "branch": "main", "clean": True, "ahead": 0, "behind": 0},
+            "repository": {"status": "pass", "canonical": True},
+            "learning": {"status": "pass", "reason": ""},
+            "learningUsage": {"status": "pass", "reason": ""},
+            "learningEval": {"status": "pass", "reason": ""},
+            "nextActionCounts": {},
+            "nextActionCount": 0,
+        },
+        "readiness": {
+            "version": 1,
+            "status": "pass",
+            "summary": "Required and optional local learning signal surfaces are complete.",
+            "requiredPassCount": 4,
+            "requiredCount": 4,
+            "requiredReady": True,
+            "blockingCount": 0,
+            "optionalGapCount": 0,
+            "blockingChecks": [],
+            "optionalGaps": [],
+            "optionalGapDetails": [],
+            "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
+            "optionalCheckIds": ["usage-sidecar", "check-capture"],
+            "checkStatusById": {
+                "learning-profile": "pass",
+                "usage-sidecar": "pass",
+                "eval-signals": "pass",
+                "check-capture": "pass",
+                "workspace-readiness": "pass",
+                "agent-development": "pass",
+            },
+            "checkRequiredById": {
+                "learning-profile": True,
+                "usage-sidecar": False,
+                "eval-signals": True,
+                "check-capture": False,
+                "workspace-readiness": True,
+                "agent-development": True,
+            },
+            "checkCountByStatus": {
+                "pass": 6,
+                "info": 0,
+                "warn": 0,
+                "fail": 0,
+                "missing": 0,
+                "template": 0,
+                "unknown": 0,
+            },
+            "requiredCheckCountByStatus": {
+                "pass": 4,
+                "info": 0,
+                "warn": 0,
+                "fail": 0,
+                "missing": 0,
+                "template": 0,
+                "unknown": 0,
+            },
+            "optionalCheckCountByStatus": {
+                "pass": 2,
+                "info": 0,
+                "warn": 0,
+                "fail": 0,
+                "missing": 0,
+                "template": 0,
+                "unknown": 0,
+            },
+            "checks": [
+                {"id": "learning-profile", "label": "Learning profile", "status": "pass", "required": True, "summary": "Profile is ready."},
+                {"id": "usage-sidecar", "label": "Usage sidecar", "status": "pass", "required": False, "summary": "Usage is ready."},
+                {"id": "eval-signals", "label": "Eval signals", "status": "pass", "required": True, "summary": "Eval is ready."},
+                {"id": "check-capture", "label": "Check learning capture", "status": "pass", "required": False, "summary": "Check capture is ready."},
+                {"id": "workspace-readiness", "label": "Workspace readiness", "status": "pass", "required": True, "summary": "Workspace is ready."},
+                {"id": "agent-development", "label": "Agent development backlog", "status": "pass", "required": True, "summary": "Agent backlog is ready."},
+            ],
+        },
+        "agentDevelopment": {
+            "status": "pass",
+            "actionCount": 1,
+            "p0Count": 0,
+            "p1Count": 0,
+            "p2Count": 1,
+            "p3Count": 0,
+            "actions": [
+                {
+                    "rank": 1,
+                    "id": "agent-skill-proposal-preview",
+                    "priority": "p2",
+                    "category": "skill-evolution",
+                    "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                    "rationale": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                    "command": "design-ai learn --propose-skills --json",
+                    "evidence": {"checkCaptureCount": 1},
+                },
+            ],
+            "privacy": {
+                "mutatesProfile": False,
+                "mutatesSkillFiles": False,
+                "callsExternalAiApis": False,
+                "storesRawBriefText": False,
+            },
+        },
+        "recommendations": [],
+        "privacy": {
+            "mutatesProfile": False,
+            "storesRawBriefText": False,
+            "exposesEntryTextPreview": True,
+            "readsSignalFilesOnly": True,
+        },
+    }
+    assert_learning_signal_report_json(
+        json.dumps(learning_signal_payload),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=learn_signals_cmd,
+    )
+    assert_learning_signal_report_human(
+        "\n".join([
+            "design-ai learn",
+            "Learning signal registry",
+            f"Signal source: {Path(tmp)}",
+            "Learning audit: pass",
+            "Eval signals:",
+            "Workspace readiness:",
+            "Agent development backlog:",
+            "Privacy: signal registry is read-only",
+        ]),
+        context=context,
+        cmd=learn_signals_cmd,
+    )
+    assert_learning_signal_report_markdown(
+        "\n".join([
+            "# Learning Signal Registry Report",
+            "",
+            f"- Learning file: {learning_profile_path}",
+            f"- Usage file: {learning_usage_path}",
+            "## Readiness Summary",
+            "- Required ready: yes",
+            "- Required checks: 4/4",
+            "- Blocking checks: 0",
+            "- Optional gaps: 0",
+            "Readiness check index:",
+            "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
+            "- Optional ids: usage-sidecar, check-capture",
+            "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
+            "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+            "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+            "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+            "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+            "## Learning Profile",
+            "## Usage Signals",
+            "## Eval Signals",
+            "## Check Capture",
+            "## Workspace Readiness",
+            "## Agent Development Backlog",
+            "```bash",
+            "design-ai learn --propose-skills --json",
+            "```",
+            "## Privacy And Boundaries",
+            "- Mutates learning profile: no",
+            "- Stores raw brief text: no",
+            "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.",
+        ]),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=[*learn_signals_cmd[:-1], "--report"],
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_signal_report_markdown(
+            "\n".join([
+                "# Learning Signal Registry Report",
+                "",
+                f"- Learning file: {learning_profile_path}",
+                f"- Usage file: {learning_usage_path}",
+                "## Readiness Summary",
+                "- Required ready: yes",
+                "- Required checks: 4/4",
+                "- Blocking checks: 0",
+                "- Optional gaps: 0",
+                "Readiness checks:",
+                "## Learning Profile",
+                "## Usage Signals",
+                "## Eval Signals",
+                "## Check Capture",
+                "## Workspace Readiness",
+                "## Agent Development Backlog",
+                "```bash",
+                "design-ai learn --propose-skills --json",
+                "```",
+                "## Privacy And Boundaries",
+                "- Mutates learning profile: no",
+                "- Stores raw brief text: no",
+                "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.",
+            ]),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_signals_cmd[:-1], "--report"],
+        ),
+        expected="learn signals Markdown report missing 'Readiness check index:'",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_signal_report_json(
+            json.dumps({
+                **learning_signal_payload,
+                "evals": {
+                    **learning_signal_payload["evals"],
+                    "files": [],
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_signals_cmd,
+        ),
+        expected="learn signals JSON should include route eval signal files",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_signal_report_json(
+            json.dumps({
+                **learning_signal_payload,
+                "agentDevelopment": {
+                    **learning_signal_payload["agentDevelopment"],
+                    "status": "warn",
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_signals_cmd,
+            require_agent_status_pass=True,
+        ),
+        expected="learn signals JSON should include passing agent development backlog actions",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_signal_report_json(
+            json.dumps({
+                **learning_signal_payload,
+                "agentDevelopment": {
+                    **learning_signal_payload["agentDevelopment"],
+                    "privacy": {
+                        **learning_signal_payload["agentDevelopment"]["privacy"],
+                        "callsExternalAiApis": True,
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_signals_cmd,
+        ),
+        expected="learn signals JSON should keep agent development backlog local and preview-only",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_signal_report_human(
+            "\n".join([
+                "design-ai learn",
+                "Learning signal registry",
+                "Signal source:",
+                "Learning audit:",
+                "Eval signals:",
+                "Privacy: signal registry is read-only",
+            ]),
+            context=context,
+            cmd=learn_signals_cmd,
+        ),
+        expected="learn signals human output missing 'Workspace readiness:'",
+        scope="package smoke",
+    )
+
+
+def _self_test_learn_agent_backlog(learning_profile_path, learning_usage_path, tmp):
+    """Package smoke self-test: learn agent-backlog readiness contracts."""
+    learn_agent_backlog_cmd = [
+        "design-ai",
+        "learn",
+        "--agent-backlog",
+        "--file",
+        str(learning_profile_path),
+        "--usage-file",
+        str(learning_usage_path),
+        "--from-file",
+        str(Path(tmp)),
+        "--json",
+    ]
+    agent_backlog_refresh_args = [
+        "design-ai",
+        "learn",
+        "--agent-backlog",
+        "--from-file",
+        str(Path(tmp)),
+        "--file",
+        str(learning_profile_path),
+        "--usage-file",
+        str(learning_usage_path),
+        "--strict",
+        "--json",
+    ]
+    agent_backlog_refresh_command = " ".join(agent_backlog_refresh_args)
+    return agent_backlog_refresh_args, agent_backlog_refresh_command, learn_agent_backlog_cmd
+
+
+def _self_test_learn_skill_proposals(agent_backlog_refresh_args, agent_backlog_refresh_command, context, learn_agent_backlog_cmd, learning_profile_path, learning_usage_path, tmp):
+    """Package smoke self-test: learn skill-proposal generation contracts."""
+    learning_agent_backlog_payload = {
+        "version": 1,
+        "generatedAt": "2026-06-02T00:00:05.000Z",
+        "status": "pass",
+        "signalStatus": "pass",
+        "file": str(learning_profile_path),
+        "usageFile": str(learning_usage_path),
+        "signalSource": str(Path(tmp)),
+        "counts": {
+            "actions": 1,
+            "p0": 0,
+            "p1": 0,
+            "p2": 1,
+            "p3": 0,
+            "learningEntries": 3,
+            "usageEvents": 2,
+            "evalSignals": 1,
+            "checkCaptures": 1,
+            "workspaceNextActions": 0,
+        },
+        "actions": [
+            {
+                "rank": 1,
+                "id": "agent-skill-proposal-preview",
+                "priority": "p2",
+                "category": "skill-evolution",
+                "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                "rationale": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                "command": "design-ai learn --propose-skills --json",
+                "evidence": {"checkCaptureCount": 1},
+            },
+        ],
+        "actionPlan": {
+            "version": 1,
+            "stepCount": 1,
+            "nextStep": {
+                "rank": 1,
+                "actionId": "agent-skill-proposal-preview",
+                "priority": "p2",
+                "category": "skill-evolution",
+                "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                "command": "design-ai learn --propose-skills --json",
+                "expectedOutcome": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                "verification": [
+                    "Run the command and inspect the preview/report output before applying any follow-up changes.",
+                    "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
+                ],
+                "requiresReviewBeforeMutation": False,
+                "commandSafety": {
+                    "level": "read-only",
+                    "writesLocalFiles": False,
+                    "mutatesLocalState": False,
+                    "requiresCleanWorkspace": False,
+                    "detectedFlags": [],
+                    "reason": "Command is preview/report oriented and has no detected mutation flags.",
+                },
+            },
+            "steps": [
+                {
+                    "rank": 1,
+                    "actionId": "agent-skill-proposal-preview",
+                    "priority": "p2",
+                    "category": "skill-evolution",
+                    "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                    "command": "design-ai learn --propose-skills --json",
+                    "expectedOutcome": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
+                    "verification": [
+                        "Run the command and inspect the preview/report output before applying any follow-up changes.",
+                        "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
+                    ],
+                    "requiresReviewBeforeMutation": False,
+                    "commandSafety": {
+                        "level": "read-only",
+                        "writesLocalFiles": False,
+                        "mutatesLocalState": False,
+                        "requiresCleanWorkspace": False,
+                        "detectedFlags": [],
+                        "outputTargets": [],
+                        "profileTargets": [],
+                        "usageTargets": [],
+                        "mutationFlags": [],
+                        "reason": "Command is preview/report oriented and has no detected mutation flags.",
+                    },
+                },
+            ],
+            "safetySummary": {
+                "total": 1,
+                "readOnly": 1,
+                "writesLocalFile": 0,
+                "mutatesLocalState": 0,
+                "requiresCleanWorkspace": 0,
+                "requiresReviewBeforeMutation": 0,
+            },
+            "executionQueue": {
+                "orderedCount": 1,
+                "commandManifestCount": 1,
+                "previewCount": 1,
+                "fileWriteReviewCount": 0,
+                "mutationReviewCount": 0,
+                "nextActionId": "agent-skill-proposal-preview",
+                "nextCommand": "design-ai learn --propose-skills --json",
+                "nextCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                "nextCommandRunPolicy": "preview-only",
+                "nextCommandSelection": {
+                    "strategy": "first-command-in-safety-ordered-queue",
+                    "safetyOrder": ["read-only", "writes-local-file", "mutates-local-state"],
+                    "actionId": "agent-skill-proposal-preview",
+                    "rank": 1,
+                    "safetyLevel": "read-only",
+                    "runPolicy": "preview-only",
+                    "planNextActionId": "agent-skill-proposal-preview",
+                    "planNextActionRank": 1,
+                    "matchesPlanNextAction": True,
+                    "reason": "Selected the ranked next action because it is first in the safety-ordered queue.",
+                },
+                "nextCommandAlignment": {
+                    "strategy": "compare-operator-runbook-next-command-to-execution-queue-next-command",
+                    "operatorStage": "execute",
+                    "operatorActionId": "agent-skill-proposal-preview",
+                    "operatorCommand": "design-ai learn --propose-skills --json",
+                    "operatorCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                    "queueActionId": "agent-skill-proposal-preview",
+                    "queueCommand": "design-ai learn --propose-skills --json",
+                    "queueCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                    "rankedNextActionId": "agent-skill-proposal-preview",
+                    "matchesQueueNextCommand": True,
+                    "matchesQueueNextAction": True,
+                    "operatorRunsBeforeQueueCommand": False,
+                    "queueMatchesRankedNextAction": True,
+                    "reason": "Operator runbook starts with the same command as the safety-ordered execution queue.",
+                },
+                "operatorHandoff": {
+                    "version": 1,
+                    "decision": "run-shared-command",
+                    "state": {
+                        "version": 1,
+                        "status": "ready",
+                        "ready": True,
+                        "hasCommand": True,
+                        "complete": False,
+                        "canRunWithoutReview": True,
+                        "requiresGate": False,
+                        "requiresRefresh": True,
+                        "summary": "The handoff command can be presented or run, then refreshed with the focused backlog check.",
+                    },
+                    "source": "operator-runbook",
+                    "phase": "execute",
+                    "label": "Run agent-skill-proposal-preview",
+                    "command": "design-ai learn --propose-skills --json",
+                    "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                    "actionId": "agent-skill-proposal-preview",
+                    "rank": 1,
+                    "runPolicy": "preview-only",
+                    "required": True,
+                    "isGate": False,
+                    "nextQueueActionId": "agent-skill-proposal-preview",
+                    "nextQueueCommand": "design-ai learn --propose-skills --json",
+                    "nextQueueCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                    "nextQueueCommandRequiresGate": False,
+                    "operatorGateAppliesToNextQueueAction": False,
+                    "nextQueueActionBlockedByGate": False,
+                    "refreshCommand": agent_backlog_refresh_command,
+                    "refreshCommandArgs": agent_backlog_refresh_args,
+                    "refreshCommandLabel": "Refresh focused agent backlog after review",
+                    "refreshCommandRequired": True,
+                    "reviewLevel": "clear",
+                    "requiresOperatorReview": False,
+                    "reason": "Run the shared operator and queue command next.",
+                },
+                "commandEffectSummary": {
+                    "totalCommands": 1,
+                    "writesLocalFileCount": 0,
+                    "mutatesLocalStateCount": 0,
+                    "requiresCleanWorkspaceCount": 0,
+                    "outputTargetCount": 0,
+                    "profileTargetCount": 0,
+                    "usageTargetCount": 0,
+                    "mutationFlagCount": 0,
+                    "outputTargets": [],
+                    "profileTargets": [],
+                    "usageTargets": [],
+                    "mutationFlags": [],
+                },
+                "commandEffectReview": {
+                    "level": "clear",
+                    "requiresOperatorReview": False,
+                    "headline": "No command target or mutation flag exposure detected.",
+                    "checklist": [
+                        "No command target or mutation flag exposure detected.",
+                    ],
+                    "gatePhaseSummary": {
+                        "count": 1,
+                        "requiredCount": 1,
+                        "optionalCount": 0,
+                        "phases": ["refresh"],
+                        "hasBefore": False,
+                        "hasAfter": False,
+                        "hasRefresh": True,
+                    },
+                    "gateRunbook": {
+                        "before": [],
+                        "after": [],
+                        "refresh": [
+                            {
+                                "phase": "refresh",
+                                "label": "Refresh focused agent backlog after review",
+                                "command": agent_backlog_refresh_command,
+                                "commandArgs": agent_backlog_refresh_args,
+                                "required": True,
+                            },
+                        ],
+                        "other": [],
+                    },
+                    "gateCommands": [
+                        {
+                            "phase": "refresh",
+                            "label": "Refresh focused agent backlog after review",
+                            "command": agent_backlog_refresh_command,
+                            "commandArgs": agent_backlog_refresh_args,
+                            "required": True,
+                        },
+                    ],
+                },
+                "operatorRunbook": {
+                    "version": 1,
+                    "stageCount": 4,
+                    "commandCount": 2,
+                    "requiredCommandCount": 2,
+                    "reviewLevel": "clear",
+                    "requiresOperatorReview": False,
+                    "phases": ["before", "execute", "after", "refresh"],
+                    "nextStage": "execute",
+                    "nextCommandLabel": "Run agent-skill-proposal-preview",
+                    "nextCommand": "design-ai learn --propose-skills --json",
+                    "nextCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                    "nextCommandRequired": True,
+                    "nextCommandRunPolicy": "preview-only",
+                    "nextCommandSelection": {
+                        "strategy": "first-command-in-operator-runbook-stage-order",
+                        "stageOrder": ["before", "execute", "after", "refresh"],
+                        "stage": "execute",
+                        "label": "Run agent-skill-proposal-preview",
+                        "command": "design-ai learn --propose-skills --json",
+                        "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "actionId": "agent-skill-proposal-preview",
+                        "rank": 1,
+                        "required": True,
+                        "runPolicy": "preview-only",
+                        "reason": "Selected the first command in the execute stage using operator runbook stage order.",
+                    },
+                    "stages": [
+                        {
+                            "phase": "before",
+                            "label": "Run before executing backlog commands",
+                            "commandCount": 0,
+                            "requiredCount": 0,
+                            "commands": [],
+                        },
+                        {
+                            "phase": "execute",
+                            "label": "Execute reviewed backlog commands",
+                            "commandCount": 1,
+                            "requiredCount": 1,
+                            "commands": [
+                                {
+                                    "phase": "execute",
+                                    "rank": 1,
+                                    "actionId": "agent-skill-proposal-preview",
+                                    "label": "Run agent-skill-proposal-preview",
+                                    "command": "design-ai learn --propose-skills --json",
+                                    "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                                    "required": True,
+                                    "safetyLevel": "read-only",
+                                    "runPolicy": "preview-only",
+                                    "requiresReviewBeforeMutation": False,
+                                },
+                            ],
+                        },
+                        {
+                            "phase": "after",
+                            "label": "Run after executing backlog commands",
+                            "commandCount": 0,
+                            "requiredCount": 0,
+                            "commands": [],
+                        },
+                        {
+                            "phase": "refresh",
+                            "label": "Refresh backlog status after execution",
+                            "commandCount": 1,
+                            "requiredCount": 1,
+                            "commands": [
+                                {
+                                    "phase": "refresh",
+                                    "label": "Refresh focused agent backlog after review",
+                                    "command": agent_backlog_refresh_command,
+                                    "commandArgs": agent_backlog_refresh_args,
+                                    "required": True,
+                                },
+                            ],
+                        },
+                    ],
+                },
+                "ordered": [
+                    {
+                        "rank": 1,
+                        "actionId": "agent-skill-proposal-preview",
+                        "priority": "p2",
+                        "category": "skill-evolution",
+                        "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                        "command": "design-ai learn --propose-skills --json",
+                        "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "safetyLevel": "read-only",
+                        "runPolicy": "preview-only",
+                        "commandEffects": {
+                            "writesLocalFiles": False,
+                            "mutatesLocalState": False,
+                            "requiresCleanWorkspace": False,
+                            "detectedFlags": [],
+                            "mutationFlags": [],
+                            "outputTargets": [],
+                            "profileTargets": [],
+                            "usageTargets": [],
+                            "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
+                        },
+                        "requiresReviewBeforeMutation": False,
+                    },
+                ],
+                "commandManifest": [
+                    {
+                        "rank": 1,
+                        "actionId": "agent-skill-proposal-preview",
+                        "command": "design-ai learn --propose-skills --json",
+                        "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "safetyLevel": "read-only",
+                        "runPolicy": "preview-only",
+                        "commandEffects": {
+                            "writesLocalFiles": False,
+                            "mutatesLocalState": False,
+                            "requiresCleanWorkspace": False,
+                            "detectedFlags": [],
+                            "mutationFlags": [],
+                            "outputTargets": [],
+                            "profileTargets": [],
+                            "usageTargets": [],
+                            "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
+                        },
+                        "requiresReviewBeforeMutation": False,
+                    },
+                ],
+                "preview": [
+                    {
+                        "rank": 1,
+                        "actionId": "agent-skill-proposal-preview",
+                        "priority": "p2",
+                        "category": "skill-evolution",
+                        "title": "Preview skill instruction deltas from repeated check-capture signals.",
+                        "command": "design-ai learn --propose-skills --json",
+                        "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
+                        "safetyLevel": "read-only",
+                        "runPolicy": "preview-only",
+                        "commandEffects": {
+                            "writesLocalFiles": False,
+                            "mutatesLocalState": False,
+                            "requiresCleanWorkspace": False,
+                            "detectedFlags": [],
+                            "mutationFlags": [],
+                            "outputTargets": [],
+                            "profileTargets": [],
+                            "usageTargets": [],
+                            "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
+                        },
+                        "requiresReviewBeforeMutation": False,
+                    },
+                ],
+                "fileWriteReview": [],
+                "mutationReview": [],
+            },
+            "verification": [
+                {
+                    "label": "Refresh signal registry JSON",
+                    "command": "design-ai learn --signals --from-file . --json",
+                },
+                {
+                    "label": "Save signal registry Markdown handoff",
+                    "command": "design-ai learn --signals --from-file . --report --out learning-signals.md",
+                },
+                {
+                    "label": "Gate focused agent backlog",
+                    "command": agent_backlog_refresh_command,
+                    "commandArgs": agent_backlog_refresh_args,
+                },
+            ],
+            "boundaries": {
+                "reportMutatesProfile": False,
+                "reportMutatesSkillFiles": False,
+                "reportCallsExternalAiApis": False,
+                "generatedFromLocalSignals": True,
+            },
+        },
+        "readiness": {
+            "version": 1,
+            "status": "pass",
+            "summary": "Required and optional local learning signal surfaces are complete.",
+            "requiredPassCount": 4,
+            "requiredCount": 4,
+            "requiredReady": True,
+            "blockingCount": 0,
+            "optionalGapCount": 0,
+            "blockingChecks": [],
+            "optionalGaps": [],
+            "optionalGapDetails": [],
+            "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
+            "optionalCheckIds": ["usage-sidecar", "check-capture"],
+            "checkStatusById": {
+                "learning-profile": "pass",
+                "usage-sidecar": "pass",
+                "eval-signals": "pass",
+                "check-capture": "pass",
+                "workspace-readiness": "pass",
+                "agent-development": "pass",
+            },
+            "checkRequiredById": {
+                "learning-profile": True,
+                "usage-sidecar": False,
+                "eval-signals": True,
+                "check-capture": False,
+                "workspace-readiness": True,
+                "agent-development": True,
+            },
+            "checkCountByStatus": {
+                "pass": 6,
+                "info": 0,
+                "warn": 0,
+                "fail": 0,
+                "missing": 0,
+                "template": 0,
+                "unknown": 0,
+            },
+            "requiredCheckCountByStatus": {
+                "pass": 4,
+                "info": 0,
+                "warn": 0,
+                "fail": 0,
+                "missing": 0,
+                "template": 0,
+                "unknown": 0,
+            },
+            "optionalCheckCountByStatus": {
+                "pass": 2,
+                "info": 0,
+                "warn": 0,
+                "fail": 0,
+                "missing": 0,
+                "template": 0,
+                "unknown": 0,
+            },
+            "checks": [
+                {
+                    "id": "learning-profile",
+                    "label": "Learning profile",
+                    "status": "pass",
+                    "required": True,
+                    "summary": "Profile has 3 entries with 0 audit failure(s) and 0 warning(s).",
+                    "evidence": {"entries": 3},
+                },
+                {
+                    "id": "usage-sidecar",
+                    "label": "Usage sidecar",
+                    "status": "pass",
+                    "required": False,
+                    "summary": "Usage sidecar has 2 event(s) and 0 stale selected id(s).",
+                    "evidence": {"events": 2},
+                },
+                {
+                    "id": "eval-signals",
+                    "label": "Eval signals",
+                    "status": "pass",
+                    "required": True,
+                    "summary": "Eval signals include 1 report(s), 0 unresolved template(s), 0 failed report(s), and 0 warned report(s).",
+                    "evidence": {"files": 1},
+                },
+                {
+                    "id": "check-capture",
+                    "label": "Check learning capture",
+                    "status": "pass",
+                    "required": False,
+                    "summary": "Profile includes 1 check-capture learning entry.",
+                    "evidence": {"entries": 1},
+                },
+                {
+                    "id": "workspace-readiness",
+                    "label": "Workspace readiness",
+                    "status": "pass",
+                    "required": True,
+                    "summary": "Workspace has 0 fail action(s), 0 warn action(s), and 0 total next action(s).",
+                    "evidence": {"nextActionCount": 0},
+                },
+                {
+                    "id": "agent-development",
+                    "label": "Agent development backlog",
+                    "status": "pass",
+                    "required": True,
+                    "summary": "Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
+                    "evidence": {"actions": 1},
+                },
+            ],
+        },
+        "commands": {
+            "signalsJson": "design-ai learn --signals --from-file . --json",
+            "signalsReport": "design-ai learn --signals --from-file . --report --out learning-signals.md",
+        },
+        "recommendations": [],
+        "privacy": {
+            "mutatesProfile": False,
+            "mutatesSkillFiles": False,
+            "callsExternalAiApis": False,
+            "storesRawBriefText": False,
+            "readsSignalFilesOnly": True,
+        },
+    }
+    assert_agent_backlog_report_json(
+        json.dumps(learning_agent_backlog_payload),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=learn_agent_backlog_cmd,
+        require_status_pass=True,
+    )
+    return learning_agent_backlog_payload
+
+
+def _self_test_learn_proposal_reports(agent_backlog_refresh_args, agent_backlog_refresh_command, context, learn_agent_backlog_cmd, learning_agent_backlog_payload, learning_profile_path, learning_usage_path, tmp):
+    """Package smoke self-test: learn skill-proposal report contracts."""
+    missing_readiness_payload = json.loads(json.dumps(learning_agent_backlog_payload))
+    missing_readiness_payload.pop("readiness", None)
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_report_json(
+            json.dumps(missing_readiness_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        ),
+        expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
+        scope="package smoke",
+    )
+    no_command_agent_backlog_payload = {
+        "version": 1,
+        "generatedAt": "2026-06-02T00:00:06.000Z",
+        "status": "pass",
+        "signalStatus": "pass",
+        "file": str(learning_profile_path),
+        "usageFile": str(learning_usage_path),
+        "signalSource": str(Path(tmp)),
+        "counts": {
+            "actions": 0,
+            "p0": 0,
+            "p1": 0,
+            "p2": 0,
+            "p3": 0,
+            "learningEntries": 3,
+            "usageEvents": 2,
+            "evalSignals": 1,
+            "checkCaptures": 0,
+            "workspaceNextActions": 0,
+        },
+        "actions": [],
+        "actionPlan": {
+            "version": 1,
+            "stepCount": 0,
+            "nextStep": None,
+            "steps": [],
+            "safetySummary": {
+                "total": 0,
+                "readOnly": 0,
+                "writesLocalFile": 0,
+                "mutatesLocalState": 0,
+                "requiresCleanWorkspace": 0,
+                "requiresReviewBeforeMutation": 0,
+            },
+            "executionQueue": {
+                "orderedCount": 0,
+                "commandManifestCount": 0,
+                "previewCount": 0,
+                "fileWriteReviewCount": 0,
+                "mutationReviewCount": 0,
+                "nextActionId": "",
+                "nextCommand": "",
+                "nextCommandArgs": [],
+                "nextCommandRunPolicy": "",
+                "nextCommandSelection": {
+                    "strategy": "first-command-in-safety-ordered-queue",
+                    "safetyOrder": ["read-only", "writes-local-file", "mutates-local-state"],
+                    "actionId": "",
+                    "rank": None,
+                    "safetyLevel": "",
+                    "runPolicy": "",
+                    "planNextActionId": "",
+                    "planNextActionRank": None,
+                    "matchesPlanNextAction": False,
+                    "reason": "No command-bearing backlog action is available.",
+                },
+                "nextCommandAlignment": {
+                    "strategy": "compare-operator-runbook-next-command-to-execution-queue-next-command",
+                    "operatorStage": "refresh",
+                    "operatorActionId": "",
+                    "operatorCommand": agent_backlog_refresh_command,
+                    "operatorCommandArgs": agent_backlog_refresh_args,
+                    "queueActionId": "",
+                    "queueCommand": "",
+                    "queueCommandArgs": [],
+                    "rankedNextActionId": "",
+                    "matchesQueueNextCommand": False,
+                    "matchesQueueNextAction": False,
+                    "operatorRunsBeforeQueueCommand": False,
+                    "queueMatchesRankedNextAction": False,
+                    "reason": EXPECTED_AGENT_BACKLOG_EMPTY_QUEUE_ALIGNMENT_REASON,
+                },
+                "operatorHandoff": {
+                    "version": 1,
+                    "decision": "none",
+                    "state": {
+                        "version": 1,
+                        "status": "no-command",
+                        "ready": True,
+                        "hasCommand": False,
+                        "complete": True,
+                        "canRunWithoutReview": False,
+                        "requiresGate": False,
+                        "requiresRefresh": False,
+                        "summary": "Focused agent backlog is clear; no handoff command is required.",
+                    },
+                    "source": "",
+                    "phase": "",
+                    "label": "",
+                    "command": "",
+                    "commandArgs": [],
+                    "actionId": "",
+                    "rank": None,
+                    "runPolicy": "",
+                    "required": False,
+                    "isGate": False,
+                    "nextQueueActionId": "",
+                    "nextQueueCommand": "",
+                    "nextQueueCommandArgs": [],
+                    "nextQueueCommandRequiresGate": False,
+                    "operatorGateAppliesToNextQueueAction": False,
+                    "nextQueueActionBlockedByGate": False,
+                    "refreshCommand": agent_backlog_refresh_command,
+                    "refreshCommandArgs": agent_backlog_refresh_args,
+                    "refreshCommandLabel": "Refresh focused agent backlog after review",
+                    "refreshCommandRequired": False,
+                    "reviewLevel": "clear",
+                    "requiresOperatorReview": False,
+                    "reason": EXPECTED_AGENT_BACKLOG_NO_COMMAND_HANDOFF_REASON,
+                },
+                "commandEffectReview": {
+                    "level": "clear",
+                    "requiresOperatorReview": False,
+                    "headline": "No command target or mutation flag exposure detected.",
+                    "checklist": ["No command target or mutation flag exposure detected."],
+                    "gatePhaseSummary": {
+                        "count": 1,
+                        "requiredCount": 0,
+                        "optionalCount": 1,
+                        "phases": ["refresh"],
+                        "hasBefore": False,
+                        "hasAfter": False,
+                        "hasRefresh": True,
+                    },
+                    "gateRunbook": {
+                        "before": [],
+                        "after": [],
+                        "refresh": [
+                            {
+                                "phase": "refresh",
+                                "label": "Refresh focused agent backlog after review",
+                                "command": agent_backlog_refresh_command,
+                                "commandArgs": agent_backlog_refresh_args,
+                                "required": False,
+                            },
+                        ],
+                        "other": [],
+                    },
+                    "gateCommands": [
+                        {
+                            "phase": "refresh",
+                            "label": "Refresh focused agent backlog after review",
+                            "command": agent_backlog_refresh_command,
+                            "commandArgs": agent_backlog_refresh_args,
+                            "required": False,
+                        },
+                    ],
+                },
+                "operatorRunbook": {
+                    "version": 1,
+                    "stageCount": 4,
+                    "commandCount": 1,
+                    "requiredCommandCount": 0,
+                    "reviewLevel": "clear",
+                    "requiresOperatorReview": False,
+                    "phases": ["before", "execute", "after", "refresh"],
+                    "nextStage": "refresh",
+                    "nextCommandLabel": "Refresh focused agent backlog after review",
+                    "nextCommand": agent_backlog_refresh_command,
+                    "nextCommandArgs": agent_backlog_refresh_args,
+                    "nextCommandRequired": False,
+                    "nextCommandRunPolicy": "",
+                    "nextCommandSelection": {
+                        "strategy": "first-command-in-operator-runbook-stage-order",
+                        "stageOrder": ["before", "execute", "after", "refresh"],
+                        "stage": "refresh",
+                        "label": "Refresh focused agent backlog after review",
+                        "command": agent_backlog_refresh_command,
+                        "commandArgs": agent_backlog_refresh_args,
+                        "actionId": "",
+                        "rank": None,
+                        "required": False,
+                        "runPolicy": "",
+                        "reason": EXPECTED_AGENT_BACKLOG_REFRESH_ONLY_RUNBOOK_REASON,
+                    },
+                },
+                "ordered": [],
+                "commandManifest": [],
+                "preview": [],
+                "fileWriteReview": [],
+                "mutationReview": [],
+            },
+            "verification": [
+                {
+                    "label": "Gate focused agent backlog",
+                    "command": agent_backlog_refresh_command,
+                    "commandArgs": agent_backlog_refresh_args,
+                },
+            ],
+            "boundaries": {
+                "reportMutatesProfile": False,
+                "reportMutatesSkillFiles": False,
+                "reportCallsExternalAiApis": False,
+                "generatedFromLocalSignals": True,
+            },
+        },
+        "readiness": {
+            "version": 1,
+            "status": "pass",
+            "summary": "Required local learning signal surfaces are ready; optional evidence gaps remain.",
+            "requiredPassCount": 4,
+            "requiredCount": 4,
+            "requiredReady": True,
+            "blockingCount": 0,
+            "optionalGapCount": 1,
+            "blockingChecks": [],
+            "optionalGaps": ["check-capture"],
+            "optionalGapDetails": [
+                {
+                    "id": "check-capture",
+                    "label": "Check learning capture",
+                    "status": "info",
+                    "summary": "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+                    "reason": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON,
+                    "nextCondition": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION,
+                    "automationPolicy": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY,
+                },
+            ],
+            "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
+            "optionalCheckIds": ["usage-sidecar", "check-capture"],
+            "checkStatusById": {
+                "learning-profile": "pass",
+                "usage-sidecar": "pass",
+                "eval-signals": "pass",
+                "check-capture": "info",
+                "workspace-readiness": "pass",
+                "agent-development": "pass",
+            },
+            "checkRequiredById": {
+                "learning-profile": True,
+                "usage-sidecar": False,
+                "eval-signals": True,
+                "check-capture": False,
+                "workspace-readiness": True,
+                "agent-development": True,
+            },
+            "checkCountByStatus": {
+                "pass": 5,
+                "info": 1,
+                "warn": 0,
+                "fail": 0,
+                "missing": 0,
+                "template": 0,
+                "unknown": 0,
+            },
+            "requiredCheckCountByStatus": {
+                "pass": 4,
+                "info": 0,
+                "warn": 0,
+                "fail": 0,
+                "missing": 0,
+                "template": 0,
+                "unknown": 0,
+            },
+            "optionalCheckCountByStatus": {
+                "pass": 1,
+                "info": 1,
+                "warn": 0,
+                "fail": 0,
+                "missing": 0,
+                "template": 0,
+                "unknown": 0,
+            },
+            "checks": [
+                {
+                    "id": "learning-profile",
+                    "label": "Learning profile",
+                    "status": "pass",
+                    "required": True,
+                    "summary": "Profile has 3 entries with 0 audit failure(s) and 0 warning(s).",
+                    "evidence": {"entries": 3},
+                },
+                {
+                    "id": "usage-sidecar",
+                    "label": "Usage sidecar",
+                    "status": "pass",
+                    "required": False,
+                    "summary": "Usage sidecar has 2 event(s) and 0 stale selected id(s).",
+                    "evidence": {"events": 2},
+                },
+                {
+                    "id": "eval-signals",
+                    "label": "Eval signals",
+                    "status": "pass",
+                    "required": True,
+                    "summary": "Eval signals include 1 report(s), 0 unresolved template(s), 0 failed report(s), and 0 warned report(s).",
+                    "evidence": {"files": 1},
+                },
+                {
+                    "id": "check-capture",
+                    "label": "Check learning capture",
+                    "status": "info",
+                    "required": False,
+                    "summary": "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+                    "evidence": {"entries": 0},
+                },
+                {
+                    "id": "workspace-readiness",
+                    "label": "Workspace readiness",
+                    "status": "pass",
+                    "required": True,
+                    "summary": "Workspace has 0 fail action(s), 0 warn action(s), and 0 total next action(s).",
+                    "evidence": {"nextActionCount": 0},
+                },
+                {
+                    "id": "agent-development",
+                    "label": "Agent development backlog",
+                    "status": "pass",
+                    "required": True,
+                    "summary": "Agent backlog has 0 action(s): 0 P0, 0 P1, 0 P2, 0 P3.",
+                    "evidence": {"actions": 0},
+                },
+            ],
+        },
+        "commands": {
+            "signalsJson": "design-ai learn --signals --from-file . --json",
+            "signalsReport": "design-ai learn --signals --from-file . --report --out learning-signals.md",
+            "agentBacklogJson": agent_backlog_refresh_command,
+            "agentBacklogJsonArgs": agent_backlog_refresh_args,
+        },
+        "recommendations": [],
+        "privacy": {
+            "mutatesProfile": False,
+            "mutatesSkillFiles": False,
+            "callsExternalAiApis": False,
+            "storesRawBriefText": False,
+            "readsSignalFilesOnly": True,
+        },
+    }
+    assert_agent_backlog_no_command_json(
+        json.dumps(no_command_agent_backlog_payload),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=learn_agent_backlog_cmd,
+    )
+    no_command_agent_backlog_markdown = "\n".join([
+        "# Agent Development Backlog Report",
+        "",
+        f"- Learning file: {learning_profile_path}",
+        f"- Usage file: {learning_usage_path}",
+        "## Summary",
+        "- Actions: 0",
+        "- Check captures: 0",
+        "## Signal Readiness",
+        "- Required ready: yes",
+        "- Required checks: 4/4",
+        "- Blocking checks: 0",
+        "- Optional gaps: 1",
+        "Readiness check index:",
+        "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
+        "- Optional ids: usage-sidecar, check-capture",
+        "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=info, workspace-readiness=pass, agent-development=pass",
+        "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+        "- Status counts: pass=5, info=1, warn=0, fail=0, missing=0, template=0, unknown=0",
+        "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+        "- Optional status counts: pass=1, info=1, warn=0, fail=0, missing=0, template=0, unknown=0",
+        "Readiness checks:",
+        "- check-capture [optional] info: No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
+        "- agent-development [required] pass: Agent backlog has 0 action(s): 0 P0, 0 P1, 0 P2, 0 P3.",
+        "Optional gap details:",
+        f"- check-capture: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON}",
+        f"  Next condition: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION}",
+        f"  Automation policy: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY}",
+        "## Backlog Actions",
+        "No agent development backlog actions emitted.",
+        "## Action Plan",
+        "Safety summary:",
+        "- Read-only: 0",
+        "- Writes local file: 0",
+        "- Mutates local state: 0",
+        "Execution queue:",
+        "- Preview/read-only commands: 0",
+        "- Local file-write review commands: 0",
+        "- Local mutation review commands: 0",
+        "- Ordered commands: 0",
+        "- Command manifest entries: 0",
+        "- Command effect review: No command target or mutation flag exposure detected.",
+        "- Operator runbook: 4 stage(s), 1 command(s), 0 required",
+        f"- Operator next command: refresh: `{agent_backlog_refresh_command}`",
+        "- Operator next command selection: first-command-in-operator-runbook-stage-order",
+        "- Recommended next command selection: first-command-in-safety-ordered-queue",
+        "- Operator/queue next command alignment: different",
+        "- Operator handoff state: no-command; ready yes; can run without review no; refresh optional",
+        "- Operator handoff summary: Focused agent backlog is clear; no handoff command is required.",
+        f"- Operator handoff refresh: {agent_backlog_refresh_command}",
+        "No execution steps emitted.",
+        "## Follow-Up Commands",
+        "design-ai learn --signals --from-file . --json",
+        "## Privacy And Boundaries",
+        "- Mutates learning profile: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+        "This report is read-only evidence",
+    ])
+    assert_agent_backlog_no_command_report_markdown(
+        no_command_agent_backlog_markdown,
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+    )
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_no_command_report_markdown(
+            no_command_agent_backlog_markdown.replace("Optional gap details:", "Optional evidence details:"),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+        ),
+        expected="no-command learn agent backlog Markdown report missing 'Optional gap details:'",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_no_command_report_markdown(
+            no_command_agent_backlog_markdown.replace("Readiness check index:", "Readiness check summary:"),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+        ),
+        expected="no-command learn agent backlog Markdown report missing 'Readiness check index:'",
+        scope="package smoke",
+    )
+    optional_gap_detail_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+    optional_gap_detail_drift_payload["readiness"].pop("optionalGapDetails", None)
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_no_command_json(
+            json.dumps(optional_gap_detail_drift_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        ),
+        expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
+        scope="package smoke",
+    )
+    check_index_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+    check_index_drift_payload["readiness"].pop("checkStatusById", None)
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_no_command_json(
+            json.dumps(check_index_drift_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        ),
+        expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
+        scope="package smoke",
+    )
+    check_count_index_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+    check_count_index_drift_payload["readiness"].pop("checkCountByStatus", None)
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_no_command_json(
+            json.dumps(check_count_index_drift_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        ),
+        expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
+        scope="package smoke",
+    )
+    refresh_reason_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
+    refresh_reason_drift_payload["actionPlan"]["executionQueue"]["operatorRunbook"]["nextCommandSelection"]["reason"] = (
+        "Selected the first command in the refresh stage using operator runbook stage order."
+    )
+    return refresh_reason_drift_payload
+
+
+def _self_test_learn_proposal_review(agent_backlog_refresh_command, context, learn_agent_backlog_cmd, learning_agent_backlog_payload, learning_profile_path, learning_usage_path, refresh_reason_drift_payload, tmp):
+    """Package smoke self-test: learn skill-proposal review contracts."""
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_no_command_json(
+            json.dumps(refresh_reason_drift_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        ),
+        expected="no-command learn agent backlog JSON should preserve optional refresh-only runbook reason",
+        scope="package smoke",
+    )
+    assert_agent_backlog_report_human(
+        "\n".join([
+            "design-ai learn",
+            "Agent development backlog",
+            f"Signal source: {Path(tmp)}",
+            "Backlog actions:",
+            "Action plan:",
+            "safety summary:",
+            "execution queue:",
+            "next action:",
+            "next command:",
+            "next command policy:",
+            "queue order:",
+            "command manifest:",
+            "command effects:",
+            "command effect review:",
+            "command effect gate phases:",
+            "command effect gate runbook:",
+            "command effect gates:",
+            "operator runbook:",
+            "operator next command:",
+            "refresh:",
+            "safety: read-only",
+            "requires mutation review: no",
+            "design-ai learn --propose-skills --json",
+            "Privacy: agent backlog is read-only",
+        ]),
+        context=context,
+        cmd=learn_agent_backlog_cmd,
+    )
+    assert_agent_backlog_report_markdown(
+        "\n".join([
+            "# Agent Development Backlog Report",
+            "",
+            f"- Learning file: {learning_profile_path}",
+            f"- Usage file: {learning_usage_path}",
+            "## Summary",
+            "## Signal Readiness",
+            "- Required ready: yes",
+            "- Required checks: 4/4",
+            "- Blocking checks: 0",
+            "- Optional gaps: 0",
+            "Readiness check index:",
+            "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
+            "- Optional ids: usage-sidecar, check-capture",
+            "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
+            "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+            "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+            "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+            "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+            "Readiness checks:",
+            "- check-capture [optional] pass: Profile includes 1 check-capture learning entry.",
+            "- agent-development [required] pass: Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
+            "## Backlog Actions",
+            "design-ai learn --propose-skills --json",
+            "## Action Plan",
+            "Safety summary:",
+            "- Read-only: 1",
+            "- Writes local file: 0",
+            "- Mutates local state: 0",
+            "Execution queue:",
+            "- Preview/read-only commands: 1",
+            "- Local file-write review commands: 0",
+            "- Local mutation review commands: 0",
+            "- Ordered commands: 1",
+            "- Command manifest entries: 1",
+            "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
+            "- Command effect review: No command target or mutation flag exposure detected.",
+            "- Command effect gate phases: refresh (1/1 required)",
+            "- Command effect gate runbook: before 0, after 0, refresh 1",
+            "- Command effect gates:",
+            "refresh: Refresh focused agent backlog after review",
+            agent_backlog_refresh_command,
+            "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
+            "- Operator next command: execute: `design-ai learn --propose-skills --json`",
+            "- Operator handoff state: ready; ready yes; can run without review yes; refresh required",
+            "- Recommended next action: agent-skill-proposal-preview",
+            "- Recommended next command policy: preview-only",
+            "Recommended next command:",
+            "Queue order:",
+            "1. agent-skill-proposal-preview (read-only, preview-only)",
+            "Command manifest:",
+            "1. agent-skill-proposal-preview - preview-only (read-only)",
+            "- Command safety: read-only",
+            "- Writes local files: no",
+            "- Mutates local state: no",
+            "- Requires mutation review: no",
+            agent_backlog_refresh_command,
+            "## Follow-Up Commands",
+            "design-ai learn --signals --from-file . --json",
+            "## Privacy And Boundaries",
+            "- Mutates learning profile: no",
+            "- Mutates skill files: no",
+            "- Calls external AI APIs: no",
+            "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.",
+        ]),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+    )
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_report_json(
+            json.dumps({
+                **learning_agent_backlog_payload,
+                "counts": {
+                    **learning_agent_backlog_payload["counts"],
+                    "evalSignals": 0,
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        ),
+        expected="learn agent backlog JSON should include focused backlog counts",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_report_json(
+            json.dumps({
+                **learning_agent_backlog_payload,
+                "actionPlan": {
+                    **learning_agent_backlog_payload["actionPlan"],
+                    "steps": [],
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        ),
+        expected="learn agent backlog JSON should include executable action plan steps and verification",
+        scope="package smoke",
+    )
+    missing_safety_summary_payload = json.loads(json.dumps(learning_agent_backlog_payload))
+    missing_safety_summary_payload["actionPlan"].pop("safetySummary", None)
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_report_json(
+            json.dumps(missing_safety_summary_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        ),
+        expected="learn agent backlog JSON should include executable action plan steps and verification",
+        scope="package smoke",
+    )
+    missing_execution_queue_payload = json.loads(json.dumps(learning_agent_backlog_payload))
+    missing_execution_queue_payload["actionPlan"].pop("executionQueue", None)
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_report_json(
+            json.dumps(missing_execution_queue_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        ),
+        expected="learn agent backlog JSON should include executable action plan steps and verification",
+        scope="package smoke",
+    )
+    unsafe_action_plan_payload = json.loads(json.dumps(learning_agent_backlog_payload))
+    unsafe_action_plan_payload["actionPlan"]["steps"][0].pop("commandSafety", None)
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_report_json(
+            json.dumps(unsafe_action_plan_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        ),
+        expected="learn agent backlog JSON should include executable action plan steps and verification",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_report_json(
+            json.dumps({
+                **learning_agent_backlog_payload,
+                "privacy": {
+                    **learning_agent_backlog_payload["privacy"],
+                    "mutatesSkillFiles": True,
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_agent_backlog_cmd,
+        ),
+        expected="learn agent backlog JSON should keep read-only local privacy boundaries",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_agent_backlog_report_markdown(
+            "\n".join([
+                "# Agent Development Backlog Report",
+                f"- Learning file: {learning_profile_path}",
+                f"- Usage file: {learning_usage_path}",
+                "## Summary",
+                "## Signal Readiness",
+                "- Required ready: yes",
+                "- Required checks: 4/4",
+                "- Blocking checks: 0",
+                "- Optional gaps: 0",
+                "Readiness check index:",
+                "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
+                "- Optional ids: usage-sidecar, check-capture",
+                "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
+                "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
+                "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
+                "Readiness checks:",
+                "- check-capture [optional] pass: Profile includes 1 check-capture learning entry.",
+                "- agent-development [required] pass: Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
+                "## Backlog Actions",
+                "design-ai learn --propose-skills --json",
+                "## Action Plan",
+                "Safety summary:",
+                "- Read-only: 1",
+                "- Writes local file: 0",
+                "- Mutates local state: 0",
+                "Execution queue:",
+                "- Preview/read-only commands: 1",
+                "- Local file-write review commands: 0",
+                "- Local mutation review commands: 0",
+                "- Ordered commands: 1",
+                "- Command manifest entries: 1",
+                "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
+                "- Command effect review: No command target or mutation flag exposure detected.",
+                "- Command effect gate phases: refresh (1/1 required)",
+                "- Command effect gate runbook: before 0, after 0, refresh 1",
+                "- Command effect gates:",
+                "refresh: Refresh focused agent backlog after review",
+                agent_backlog_refresh_command,
+                "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
+                "- Operator next command: execute: `design-ai learn --propose-skills --json`",
+                "- Operator handoff state: ready; ready yes; can run without review yes; refresh required",
+                "- Recommended next action: agent-skill-proposal-preview",
+                "- Recommended next command policy: preview-only",
+                "Recommended next command:",
+                "Queue order:",
+                "1. agent-skill-proposal-preview (read-only, preview-only)",
+                "Command manifest:",
+                "1. agent-skill-proposal-preview - preview-only (read-only)",
+                "- Command safety: read-only",
+                "- Writes local files: no",
+                "- Mutates local state: no",
+                "- Requires mutation review: no",
+                agent_backlog_refresh_command,
+                "## Follow-Up Commands",
+                "design-ai learn --signals --from-file . --json",
+                "## Privacy And Boundaries",
+                "- Mutates learning profile: no",
+                "- Mutates skill files: yes",
+                "- Calls external AI APIs: no",
+                "This report is read-only evidence",
+            ]),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
+        ),
+        expected="learn agent backlog Markdown report missing '- Mutates skill files: no'",
+        scope="package smoke",
+    )
+
+    learn_skill_proposals_cmd = [
+        "design-ai",
+        "learn",
+        "--propose-skills",
+        "--file",
+        str(learning_profile_path),
+        "--usage-file",
+        str(learning_usage_path),
+        "--from-file",
+        str(Path(tmp)),
+        "--json",
+    ]
+    learning_skill_proposal_payload = {
+        "version": 1,
+        "generatedAt": "2026-06-02T00:00:00.000Z",
+        "file": str(learning_profile_path),
+        "usageFile": str(learning_usage_path),
+        "signalSource": str(Path(tmp)),
+        "dryRun": True,
+        "applied": False,
+        "minEvidenceCount": 2,
+        "checkCaptureCount": 2,
+        "candidateCount": 1,
+        "count": 1,
+        "proposalCount": 1,
+        "skippedCount": 0,
+        "pendingReviewCount": 1,
+        "reviewedCount": 0,
+        "reviewFile": "",
+        "review": {
+            "file": "",
+            "exists": False,
+            "status": "not-configured",
+            "decisionCount": 0,
+            "matchedCount": 0,
+            "staleCount": 0,
+            "pendingCount": 1,
+            "acceptedCount": 0,
+            "rejectedCount": 0,
+            "appliedCount": 0,
+            "deferredCount": 0,
+            "clearedCount": 0,
+            "warnings": [],
+        },
+        "status": "warn",
+        "signalStatus": "pass",
+        "proposals": [
+            {
+                "id": "skill-proposal-component-spec-writer-abcdef1234",
+                "candidateSkill": "component-spec-writer",
+                "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
+                "title": "Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+                "riskLevel": "low",
+                "reviewStatus": "pending",
+                "reviewClearsStrict": False,
+                "category": "accessibility",
+                "routeIds": [EXPECTED_ROUTE_ID],
+                "sourceIssueCount": 2,
+                "proposedInstructionDelta": "Add a pre-handoff accessibility checkpoint.",
+                "verificationCommand": f"node cli/bin/design-ai.mjs check --examples --route {EXPECTED_ROUTE_ID} --limit 1 --strict --json",
+                "evidenceSources": [
+                    {
+                        "kind": "check-capture",
+                        "entryId": "learn-skill-proposal-a",
+                        "category": "accessibility",
+                        "source": f"check:{EXPECTED_ROUTE_ID}",
+                        "routeId": EXPECTED_ROUTE_ID,
+                        "textPreview": "Improve future outputs by addressing Keyboard and focus behavior.",
+                    },
+                    {
+                        "kind": "check-capture",
+                        "entryId": "learn-skill-proposal-b",
+                        "category": "accessibility",
+                        "source": f"check:{EXPECTED_ROUTE_ID}",
+                        "routeId": EXPECTED_ROUTE_ID,
+                        "textPreview": "Improve future outputs by addressing Screen reader behavior.",
+                    },
+                ],
+            },
+        ],
+        "skipped": [],
+        "recommendations": [],
+        "privacy": {
+            "mutatesProfile": False,
+            "mutatesSkillFiles": False,
+            "callsExternalAiApis": False,
+            "storesRawBriefText": False,
+            "exposesEntryTextPreview": True,
+        },
+    }
+    assert_skill_proposal_report_json(
+        json.dumps(learning_skill_proposal_payload),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=learn_skill_proposals_cmd,
+    )
+    learning_skill_proposal_review_path = learning_profile_path.with_name("skill-proposals.review.json")
+    assert_skill_proposal_review_json(
+        json.dumps({
+            **learning_skill_proposal_payload,
+            "status": "pass",
+            "pendingReviewCount": 0,
+            "reviewedCount": 1,
+            "reviewFile": str(learning_skill_proposal_review_path),
+            "review": {
+                **learning_skill_proposal_payload["review"],
+                "file": str(learning_skill_proposal_review_path),
+                "exists": True,
+                "status": "pass",
+                "decisionCount": 1,
+                "matchedCount": 1,
+                "pendingCount": 0,
+                "appliedCount": 1,
+                "clearedCount": 1,
+            },
+            "proposals": [
+                {
+                    **learning_skill_proposal_payload["proposals"][0],
+                    "reviewStatus": "applied",
+                    "reviewClearsStrict": True,
+                    "reviewDecision": {
+                        "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
+                        "status": "applied",
+                        "reviewedAt": "2026-06-11T00:00:00.000Z",
+                        "reviewer": "package-smoke",
+                        "note": "Instruction delta manually applied.",
+                    },
+                },
+            ],
+        }),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        review_path=learning_skill_proposal_review_path,
+        context=context,
+        cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--json"],
+    )
+    learning_skill_proposal_review_check_payload = {
+        "version": 1,
+        "kind": "skill-proposal-review-check",
+        "generatedAt": "2026-06-11T00:05:00.000Z",
+        "file": str(learning_profile_path),
+        "usageFile": str(learning_usage_path),
+        "signalSource": str(Path(tmp)),
+        "reviewFile": str(learning_skill_proposal_review_path),
+        "status": "pass",
+        "proposalStatus": "pass",
+        "signalStatus": "pass",
+        "proposalCount": 1,
+        "pendingReviewCount": 0,
+        "reviewedCount": 1,
+        "review": {
+            **learning_skill_proposal_payload["review"],
+            "file": str(learning_skill_proposal_review_path),
+            "exists": True,
+            "status": "pass",
+            "decisionCount": 1,
+            "matchedCount": 1,
+            "pendingCount": 0,
+            "appliedCount": 1,
+            "clearedCount": 1,
+        },
+        "summary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+            "passes": 5,
+            "total": 5,
+        },
+        "checks": [
+            {"id": "review-file-configured", "level": "pass", "passed": True, "message": "A skill proposal review file is configured.", "evidence": {}},
+            {"id": "review-file-exists", "level": "pass", "passed": True, "message": "The review file exists.", "evidence": {}},
+            {"id": "review-file-valid", "level": "pass", "passed": True, "message": "The review file is valid and has a decisions array.", "evidence": {}},
+            {"id": "current-proposals-cleared", "level": "pass", "passed": True, "message": "All current proposals are applied or rejected.", "evidence": {}},
+            {"id": "no-stale-review-decisions", "level": "pass", "passed": True, "message": "No stale review decisions were found.", "evidence": {}},
+        ],
+        "recommendations": [{"level": "info", "text": "Review decisions clear the current skill proposal gate."}],
+        "privacy": {
+            "mutatesProfile": False,
+            "mutatesSkillFiles": False,
+            "callsExternalAiApis": False,
+            "storesRawBriefText": False,
+            "exposesEntryTextPreview": False,
+        },
+    }
+    assert_skill_proposal_review_check_json(
+        json.dumps(learning_skill_proposal_review_check_payload),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        review_path=learning_skill_proposal_review_path,
+        context=context,
+        cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--json"],
+    )
+    return learn_skill_proposals_cmd, learning_skill_proposal_payload, learning_skill_proposal_review_check_payload, learning_skill_proposal_review_path
+
+
+def _self_test_learn_proposal_review_files(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_review_path, learning_usage_path, tmp):
+    """Package smoke self-test: learn skill-proposal review file contracts."""
+    learning_skill_proposal_review_check_markdown = "\n".join([
+        "# Skill Proposal Review Check",
+        "",
+        "- Generated: 2026-06-11T00:05:00.000Z",
+        "- Status: pass",
+        "- Proposal status: pass",
+        "- Signal status: pass",
+        f"- File: {learning_profile_path}",
+        f"- Usage sidecar: {learning_usage_path}",
+        f"- Signal source: {Path(tmp)}",
+        f"- Review file: {learning_skill_proposal_review_path}",
+        "- Proposals: 1",
+        "- Pending review: 0",
+        "- Reviewed: 1",
+        "",
+        "## Checks",
+        "",
+        "- pass: review-file-configured - A skill proposal review file is configured.",
+        "- pass: review-file-exists - The review file exists.",
+        "- pass: review-file-valid - The review file is valid and has a decisions array.",
+        "- pass: current-proposals-cleared - All current proposals are applied or rejected.",
+        "- pass: no-stale-review-decisions - No stale review decisions were found.",
+        "",
+        "## Review Summary",
+        "",
+        "- Exists: yes",
+        "- Status: pass",
+        "- Decisions: 1",
+        "- Matched: 1",
+        "- Stale: 0",
+        "- Applied: 1",
+        "- Rejected: 0",
+        "- Accepted: 0",
+        "- Deferred: 0",
+        "",
+        "## Recommendations",
+        "",
+        "- info: Review decisions clear the current skill proposal gate.",
+        "",
+        "## Privacy And Boundaries",
+        "",
+        "- Mutates learning profile: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+        "- Stores raw brief text: no",
+    ])
+    assert_skill_proposal_review_check_markdown(
+        learning_skill_proposal_review_check_markdown,
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        review_path=learning_skill_proposal_review_path,
+        context=context,
+        cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--report"],
+    )
+    learning_skill_proposal_apply_plan_review_path = learning_profile_path.with_name("skill-proposals.accepted.review.json")
+    learning_skill_proposal_apply_plan_decision_command_safety = {
+        "level": "local-output",
+        "writesLocalFiles": True,
+        "writesOutputArtifact": True,
+        "mutatesLocalState": True,
+        "mutatesProfile": False,
+        "mutatesReviewFile": False,
+        "mutatesSkillFiles": False,
+        "callsExternalAiApis": False,
+        "requiresCleanWorkspace": False,
+        "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
+    }
+    return learning_skill_proposal_apply_plan_decision_command_safety, learning_skill_proposal_apply_plan_review_path, learning_skill_proposal_review_check_markdown
+
+
+def _self_test_learn_apply_plan(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_apply_plan_decision_command_safety, learning_skill_proposal_apply_plan_review_path, learning_skill_proposal_payload, learning_usage_path, tmp):
+    """Package smoke self-test: learn apply-plan generation and patch contracts."""
+    learning_skill_proposal_apply_plan_payload = {
+        "version": 1,
+        "kind": "skill-proposal-apply-plan",
+        "generatedAt": "2026-06-11T00:10:00.000Z",
+        "file": str(learning_profile_path),
+        "usageFile": str(learning_usage_path),
+        "signalSource": str(Path(tmp)),
+        "reviewFile": str(learning_skill_proposal_apply_plan_review_path),
+        "status": "warn",
+        "proposalStatus": "warn",
+        "signalStatus": "pass",
+        "candidateCount": 1,
+        "proposalCount": 1,
+        "acceptedCount": 1,
+        "count": 1,
+        "pendingReviewCount": 1,
+        "reviewedCount": 1,
+        "review": {
+            **learning_skill_proposal_payload["review"],
+            "file": str(learning_skill_proposal_apply_plan_review_path),
+            "exists": True,
+            "status": "pass",
+            "decisionCount": 1,
+            "matchedCount": 1,
+            "pendingCount": 1,
+            "acceptedCount": 1,
+        },
+        "tasks": [
+            {
+                "id": "apply-1-skill-proposal-component-spec-writer-abcdef1234",
+                "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
+                "title": "Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+                "candidateSkill": "component-spec-writer",
+                "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
+                "category": "accessibility",
+                "riskLevel": "low",
+                "routeIds": [EXPECTED_ROUTE_ID],
+                "sourceIssueCount": 2,
+                "proposedInstructionDelta": "Add a pre-handoff accessibility checkpoint.",
+                "verificationCommand": f"node cli/bin/design-ai.mjs check --examples --route {EXPECTED_ROUTE_ID} --limit 1 --strict --json",
+                "manualSteps": [
+                    "Open skills/component-spec-writer/SKILL.md and inspect the relevant checklist or playbook section.",
+                    "Merge the proposed instruction delta manually instead of pasting duplicate generated text.",
+                    "Run the verification command and inspect any route-specific failures before marking the work complete.",
+                    "After the skill edit and verification pass, update the review decision from `accepted` to `applied`.",
+                ],
+                "safetyChecklist": [
+                    "Do not edit learning.json as part of this apply plan.",
+                    "Do not call external AI APIs, embeddings, or fine-tuning jobs.",
+                ],
+                "evidenceSources": learning_skill_proposal_payload["proposals"][0]["evidenceSources"],
+                "reviewDecision": {
+                    "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
+                    "status": "accepted",
+                    "reviewedAt": "2026-06-11T00:10:00.000Z",
+                    "reviewer": "package-smoke",
+                    "note": "Instruction delta accepted for manual apply.",
+                },
+            },
+        ],
+        "commands": {
+            "reviewCheckJson": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+            "reviewCheckReport": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+            "proposalPatchPreview": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+            "strictGate": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --strict --json",
+        },
+        "commandArgs": {
+            "reviewCheckJson": [
+                "design-ai", "learn", "--propose-skills",
+                "--file", str(learning_profile_path),
+                "--usage-file", str(learning_usage_path),
+                "--from-file", str(Path(tmp)),
+                "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                "--review-check", "--json",
+            ],
+            "reviewCheckReport": [
+                "design-ai", "learn", "--propose-skills",
+                "--file", str(learning_profile_path),
+                "--usage-file", str(learning_usage_path),
+                "--from-file", str(Path(tmp)),
+                "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+            ],
+            "proposalPatchPreview": [
+                "design-ai", "learn", "--propose-skills",
+                "--file", str(learning_profile_path),
+                "--usage-file", str(learning_usage_path),
+                "--from-file", str(Path(tmp)),
+                "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                "--patch", "--out", "skill-proposals.patch",
+            ],
+            "strictGate": [
+                "design-ai", "learn", "--propose-skills",
+                "--file", str(learning_profile_path),
+                "--usage-file", str(learning_usage_path),
+                "--from-file", str(Path(tmp)),
+                "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                "--strict", "--json",
+            ],
+        },
+        "commandContract": {
+            "version": 1,
+            "valid": True,
+            "status": "pass",
+            "commandCount": 4,
+            "checkCount": 18,
+            "passCount": 18,
+            "warningCount": 0,
+            "requiredKeys": [
+                "reviewCheckJson",
+                "reviewCheckReport",
+                "proposalPatchPreview",
+                "strictGate",
+            ],
+            "missingCommandKeys": [],
+            "unexpectedCommandKeys": [],
+            "baseCommand": ["design-ai", "learn", "--propose-skills"],
+            "reviewFileRequired": True,
+            "reviewFile": str(learning_skill_proposal_apply_plan_review_path),
+            "forbiddenFlags": ["--yes"],
+            "failureCount": 0,
+            "failedCheckIds": [],
+            "failedChecks": [],
+            "nextCommandKey": "reviewCheckJson",
+            "nextCommand": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+            "nextCommandArgs": [
+                "design-ai", "learn", "--propose-skills",
+                "--file", str(learning_profile_path),
+                "--usage-file", str(learning_usage_path),
+                "--from-file", str(Path(tmp)),
+                "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                "--review-check", "--json",
+            ],
+            "nextCommandRunPolicy": "preview-only",
+            "nextCommandSafety": {
+                "level": "read-only",
+                "writesLocalFiles": False,
+                "mutatesLocalState": False,
+                "mutatesProfile": False,
+                "mutatesReviewFile": False,
+                "mutatesSkillFiles": False,
+                "callsExternalAiApis": False,
+                "requiresCleanWorkspace": False,
+                "reason": "The next apply-plan follow-up command only checks proposal review readiness and does not mutate local state.",
+            },
+            "commandSequenceCount": 4,
+            "commandSequenceSummary": {
+                "executable": True,
+                "blocked": False,
+                "stepCount": 4,
+                "readOnlyStepCount": 2,
+                "localOutputStepCount": 2,
+                "writesLocalFiles": True,
+                "writesOutputArtifacts": True,
+                "mutatesProfile": False,
+                "mutatesReviewFile": False,
+                "mutatesSkillFiles": False,
+                "callsExternalAiApis": False,
+                "requiresCleanWorkspace": False,
+                "runPolicy": "mixed-preview-local-output",
+                "reason": "The sequence combines read-only readiness checks with local output artifact previews; it does not mutate learning, review, or skill files.",
+            },
+            "commandSequenceKeys": [
+                "reviewCheckJson",
+                "reviewCheckReport",
+                "proposalPatchPreview",
+                "strictGate",
+            ],
+            "commandSequenceByKey": {
+                "reviewCheckJson": {
+                    "key": "reviewCheckJson",
+                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+                    "runPolicy": "preview-only",
+                    "safety": {"level": "read-only"},
+                },
+                "reviewCheckReport": {
+                    "key": "reviewCheckReport",
+                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                    "runPolicy": "output-artifact",
+                    "safety": {"level": "local-output"},
+                },
+                "proposalPatchPreview": {
+                    "key": "proposalPatchPreview",
+                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                    "runPolicy": "output-artifact",
+                    "safety": {"level": "local-output"},
+                },
+                "strictGate": {
+                    "key": "strictGate",
+                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --strict --json",
+                    "runPolicy": "strict-readiness-gate",
+                    "safety": {"level": "read-only"},
+                },
+            },
+            "commandSequence": [
+                {
+                    "step": 1,
+                    "key": "reviewCheckJson",
+                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+                    "commandArgs": [
+                        "design-ai", "learn", "--propose-skills",
+                        "--file", str(learning_profile_path),
+                        "--usage-file", str(learning_usage_path),
+                        "--from-file", str(Path(tmp)),
+                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                        "--review-check", "--json",
+                    ],
+                    "runPolicy": "preview-only",
+                    "safety": {
+                        "level": "read-only",
+                        "writesLocalFiles": False,
+                        "writesOutputArtifact": False,
+                        "mutatesLocalState": False,
+                        "mutatesProfile": False,
+                        "mutatesReviewFile": False,
+                        "mutatesSkillFiles": False,
+                        "callsExternalAiApis": False,
+                        "requiresCleanWorkspace": False,
+                        "reason": "This follow-up command validates readiness without writing local files or mutating local state.",
+                    },
+                },
+                {
+                    "step": 2,
+                    "key": "reviewCheckReport",
+                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                    "commandArgs": [
+                        "design-ai", "learn", "--propose-skills",
+                        "--file", str(learning_profile_path),
+                        "--usage-file", str(learning_usage_path),
+                        "--from-file", str(Path(tmp)),
+                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                        "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                    ],
+                    "runPolicy": "output-artifact",
+                    "safety": {
+                        "level": "local-output",
+                        "writesLocalFiles": True,
+                        "writesOutputArtifact": True,
+                        "mutatesLocalState": True,
+                        "mutatesProfile": False,
+                        "mutatesReviewFile": False,
+                        "mutatesSkillFiles": False,
+                        "callsExternalAiApis": False,
+                        "requiresCleanWorkspace": False,
+                        "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
+                    },
+                },
+                {
+                    "step": 3,
+                    "key": "proposalPatchPreview",
+                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                    "commandArgs": [
+                        "design-ai", "learn", "--propose-skills",
+                        "--file", str(learning_profile_path),
+                        "--usage-file", str(learning_usage_path),
+                        "--from-file", str(Path(tmp)),
+                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                        "--patch", "--out", "skill-proposals.patch",
+                    ],
+                    "runPolicy": "output-artifact",
+                    "safety": {
+                        "level": "local-output",
+                        "writesLocalFiles": True,
+                        "writesOutputArtifact": True,
+                        "mutatesLocalState": True,
+                        "mutatesProfile": False,
+                        "mutatesReviewFile": False,
+                        "mutatesSkillFiles": False,
+                        "callsExternalAiApis": False,
+                        "requiresCleanWorkspace": False,
+                        "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
+                    },
+                },
+                {
+                    "step": 4,
+                    "key": "strictGate",
+                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --strict --json",
+                    "commandArgs": [
+                        "design-ai", "learn", "--propose-skills",
+                        "--file", str(learning_profile_path),
+                        "--usage-file", str(learning_usage_path),
+                        "--from-file", str(Path(tmp)),
+                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                        "--strict", "--json",
+                    ],
+                    "runPolicy": "strict-readiness-gate",
+                    "safety": {
+                        "level": "read-only",
+                        "writesLocalFiles": False,
+                        "writesOutputArtifact": False,
+                        "mutatesLocalState": False,
+                        "mutatesProfile": False,
+                        "mutatesReviewFile": False,
+                        "mutatesSkillFiles": False,
+                        "callsExternalAiApis": False,
+                        "requiresCleanWorkspace": False,
+                        "reason": "This follow-up command validates readiness without writing local files or mutating local state.",
+                    },
+                },
+            ],
+            "operatorRunbook": {
+                "version": 1,
+                "executable": True,
+                "blocked": False,
+                "stageCount": 4,
+                "requiredStageCount": 3,
+                "commandStageCount": 3,
+                "nextStageKey": "previewArtifacts",
+                "nextStageCommandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                "nextRequiredStageKey": "manualSkillEdit",
+                "nextRequiredStageCommandKeys": [],
+                "nextRequiredCommandStageKey": "reviewReadiness",
+                "nextRequiredCommandStageCommandKeys": ["reviewCheckJson"],
+                "stageSelection": {
+                    "strategy": "optional-preview-before-required-manual-edit",
+                    "decision": {
+                        "action": "offer-optional-preview",
+                        "stageKey": "previewArtifacts",
+                        "stageKind": "local-output-preview",
+                        "required": False,
+                        "hasCommands": True,
+                        "commandCount": 2,
+                        "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                        "commands": [
+                            {
+                                "step": 2,
+                                "key": "reviewCheckReport",
+                                "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                                "commandArgs": [
+                                    "design-ai", "learn", "--propose-skills",
+                                    "--file", str(learning_profile_path),
+                                    "--usage-file", str(learning_usage_path),
+                                    "--from-file", str(Path(tmp)),
+                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                    "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                                ],
+                                "runPolicy": "output-artifact",
+                                "safetyLevel": "local-output",
+                                "safety": learning_skill_proposal_apply_plan_decision_command_safety,
+                                "writesLocalFiles": True,
+                                "writesOutputArtifact": True,
+                                "mutatesLocalState": True,
+                                "mutatesProfile": False,
+                                "mutatesReviewFile": False,
+                                "mutatesSkillFiles": False,
+                                "callsExternalAiApis": False,
+                                "requiresCleanWorkspace": False,
+                            },
+                            {
+                                "step": 3,
+                                "key": "proposalPatchPreview",
+                                "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                                "commandArgs": [
+                                    "design-ai", "learn", "--propose-skills",
+                                    "--file", str(learning_profile_path),
+                                    "--usage-file", str(learning_usage_path),
+                                    "--from-file", str(Path(tmp)),
+                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                    "--patch", "--out", "skill-proposals.patch",
+                                ],
+                                "runPolicy": "output-artifact",
+                                "safetyLevel": "local-output",
+                                "safety": learning_skill_proposal_apply_plan_decision_command_safety,
+                                "writesLocalFiles": True,
+                                "writesOutputArtifact": True,
+                                "mutatesLocalState": True,
+                                "mutatesProfile": False,
+                                "mutatesReviewFile": False,
+                                "mutatesSkillFiles": False,
+                                "callsExternalAiApis": False,
+                                "requiresCleanWorkspace": False,
+                            },
+                        ],
+                        "commandByKey": {
+                            "reviewCheckReport": {
+                                "step": 2,
+                                "key": "reviewCheckReport",
+                                "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                                "commandArgs": [
+                                    "design-ai", "learn", "--propose-skills",
+                                    "--file", str(learning_profile_path),
+                                    "--usage-file", str(learning_usage_path),
+                                    "--from-file", str(Path(tmp)),
+                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                    "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                                ],
+                                "runPolicy": "output-artifact",
+                                "safetyLevel": "local-output",
+                                "safety": learning_skill_proposal_apply_plan_decision_command_safety,
+                                "writesLocalFiles": True,
+                                "writesOutputArtifact": True,
+                                "mutatesLocalState": True,
+                                "mutatesProfile": False,
+                                "mutatesReviewFile": False,
+                                "mutatesSkillFiles": False,
+                                "callsExternalAiApis": False,
+                                "requiresCleanWorkspace": False,
+                            },
+                            "proposalPatchPreview": {
+                                "step": 3,
+                                "key": "proposalPatchPreview",
+                                "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                                "commandArgs": [
+                                    "design-ai", "learn", "--propose-skills",
+                                    "--file", str(learning_profile_path),
+                                    "--usage-file", str(learning_usage_path),
+                                    "--from-file", str(Path(tmp)),
+                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                    "--patch", "--out", "skill-proposals.patch",
+                                ],
+                                "runPolicy": "output-artifact",
+                                "safetyLevel": "local-output",
+                                "safety": learning_skill_proposal_apply_plan_decision_command_safety,
+                                "writesLocalFiles": True,
+                                "writesOutputArtifact": True,
+                                "mutatesLocalState": True,
+                                "mutatesProfile": False,
+                                "mutatesReviewFile": False,
+                                "mutatesSkillFiles": False,
+                                "callsExternalAiApis": False,
+                                "requiresCleanWorkspace": False,
+                            },
+                        },
+                        "commandStepByKey": {
+                            "reviewCheckReport": 2,
+                            "proposalPatchPreview": 3,
+                        },
+                        "commandRunPolicyByKey": {
+                            "reviewCheckReport": "output-artifact",
+                            "proposalPatchPreview": "output-artifact",
+                        },
+                        "commandSafetyLevelByKey": {
+                            "reviewCheckReport": "local-output",
+                            "proposalPatchPreview": "local-output",
+                        },
+                        "commandArgsByKey": {
+                            "reviewCheckReport": [
+                                "design-ai", "learn", "--propose-skills",
+                                "--file", str(learning_profile_path),
+                                "--usage-file", str(learning_usage_path),
+                                "--from-file", str(Path(tmp)),
+                                "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                            ],
+                            "proposalPatchPreview": [
+                                "design-ai", "learn", "--propose-skills",
+                                "--file", str(learning_profile_path),
+                                "--usage-file", str(learning_usage_path),
+                                "--from-file", str(Path(tmp)),
+                                "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                "--patch", "--out", "skill-proposals.patch",
+                            ],
+                        },
+                        "commandStringByKey": {
+                            "reviewCheckReport": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                            "proposalPatchPreview": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
+                        },
+                        "commandDisplayLabelByKey": {
+                            "reviewCheckReport": "Review check Markdown report",
+                            "proposalPatchPreview": "Skill proposal patch preview",
+                        },
+                        "commandDescriptionByKey": {
+                            "reviewCheckReport": "Generate a Markdown review-check artifact for accepted proposal readiness.",
+                            "proposalPatchPreview": "Generate a unified diff preview for accepted skill proposal edits.",
+                        },
+                        "commandOutputArtifactByKey": {
+                            "reviewCheckReport": "skill-proposal-review-check.md",
+                            "proposalPatchPreview": "skill-proposals.patch",
+                        },
+                        "commandOutputArtifactTypeByKey": {
+                            "reviewCheckReport": "markdown-report",
+                            "proposalPatchPreview": "unified-diff",
+                        },
+                        "commandOutputArtifactActionByKey": {
+                            "reviewCheckReport": "render-markdown-report",
+                            "proposalPatchPreview": "render-unified-diff-preview",
+                        },
+                        "commandOutputArtifactMediaTypeByKey": {
+                            "reviewCheckReport": "text/markdown",
+                            "proposalPatchPreview": "text/x-diff",
+                        },
+                        "commandOutputArtifactDispositionByKey": {
+                            "reviewCheckReport": "review-only",
+                            "proposalPatchPreview": "manual-apply-preview",
+                        },
+                        "commandOutputArtifactManualApplyCandidateByKey": {
+                            "reviewCheckReport": False,
+                            "proposalPatchPreview": True,
+                        },
+                        "commandOutputArtifactRequiresManualReviewByKey": {
+                            "reviewCheckReport": False,
+                            "proposalPatchPreview": True,
+                        },
+                        "commandOutputArtifactReviewInstructionByKey": {
+                            "reviewCheckReport": "Review the Markdown readiness report before changing proposal review status.",
+                            "proposalPatchPreview": "Review the unified diff manually before applying any skill-file edits.",
+                        },
+                        "commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey": {
+                            "reviewCheckReport": False,
+                            "proposalPatchPreview": True,
+                        },
+                        "commandOutputArtifactApplyPreconditionIdsByKey": {
+                            "reviewCheckReport": [],
+                            "proposalPatchPreview": ["manual-review", "clean-workspace"],
+                        },
+                        "commandOutputArtifactApplyPreconditionLabelsByKey": {
+                            "reviewCheckReport": [],
+                            "proposalPatchPreview": ["Manual review completed", "Clean workspace confirmed"],
+                        },
+                        "commandOutputArtifactApplyPreconditionsByKey": {
+                            "reviewCheckReport": [],
+                            "proposalPatchPreview": [
+                                {"id": "manual-review", "label": "Manual review completed", "required": True},
+                                {"id": "clean-workspace", "label": "Clean workspace confirmed", "required": True},
+                            ],
+                        },
+                        "commandOutputArtifactApplyPreconditionCountByKey": {
+                            "reviewCheckReport": 0,
+                            "proposalPatchPreview": 2,
+                        },
+                        "commandOutputArtifactRequiredApplyPreconditionCountByKey": {
+                            "reviewCheckReport": 0,
+                            "proposalPatchPreview": 2,
+                        },
+                        "commandOutputArtifactSatisfiedApplyPreconditionCountByKey": {
+                            "reviewCheckReport": 0,
+                            "proposalPatchPreview": 0,
+                        },
+                        "commandOutputArtifactPendingApplyPreconditionCountByKey": {
+                            "reviewCheckReport": 0,
+                            "proposalPatchPreview": 2,
+                        },
+                        "commandOutputArtifactRequiredPendingApplyPreconditionCountByKey": {
+                            "reviewCheckReport": 0,
+                            "proposalPatchPreview": 2,
+                        },
+                        "commandOutputArtifactManualApplyReadyByKey": {
+                            "reviewCheckReport": False,
+                            "proposalPatchPreview": False,
+                        },
+                        "commandOutputArtifactManualApplyStatusByKey": {
+                            "reviewCheckReport": "not-applicable",
+                            "proposalPatchPreview": "blocked",
+                        },
+                        "commandOutputArtifactManualApplyStatusLabelByKey": {
+                            "reviewCheckReport": "Review only",
+                            "proposalPatchPreview": "Blocked",
+                        },
+                        "commandOutputArtifactManualApplyStatusToneByKey": {
+                            "reviewCheckReport": "neutral",
+                            "proposalPatchPreview": "warning",
+                        },
+                        "commandOutputArtifactManualApplyBlockedReasonByKey": {
+                            "reviewCheckReport": "This output artifact is review-only and cannot be applied.",
+                            "proposalPatchPreview": "Complete required apply preconditions before applying this patch preview.",
+                        },
+                        "commandOutputArtifactManualApplyBlockedReasonCodeByKey": {
+                            "reviewCheckReport": "not-manual-apply-candidate",
+                            "proposalPatchPreview": "required-preconditions-pending",
+                        },
+                        "nextCommandEntry": {
+                            "step": 2,
+                            "key": "reviewCheckReport",
+                            "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                            "commandArgs": [
+                                "design-ai", "learn", "--propose-skills",
+                                "--file", str(learning_profile_path),
+                                "--usage-file", str(learning_usage_path),
+                                "--from-file", str(Path(tmp)),
+                                "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                                "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                            ],
+                            "runPolicy": "output-artifact",
+                            "safetyLevel": "local-output",
+                            "safety": learning_skill_proposal_apply_plan_decision_command_safety,
+                            "writesLocalFiles": True,
+                            "writesOutputArtifact": True,
+                            "mutatesLocalState": True,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                        },
+                        "nextCommandKey": "reviewCheckReport",
+                        "nextCommandDisplayLabel": "Review check Markdown report",
+                        "nextCommandDescription": "Generate a Markdown review-check artifact for accepted proposal readiness.",
+                        "nextCommandOutputArtifact": "skill-proposal-review-check.md",
+                        "nextCommandOutputArtifactType": "markdown-report",
+                        "nextCommandOutputArtifactAction": "render-markdown-report",
+                        "nextCommandOutputArtifactMediaType": "text/markdown",
+                        "nextCommandOutputArtifactDisposition": "review-only",
+                        "nextCommandOutputArtifactManualApplyCandidate": False,
+                        "nextCommandOutputArtifactRequiresManualReview": False,
+                        "nextCommandOutputArtifactReviewInstruction": "Review the Markdown readiness report before changing proposal review status.",
+                        "nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply": False,
+                        "nextCommandOutputArtifactApplyPreconditionIds": [],
+                        "nextCommandOutputArtifactApplyPreconditionLabels": [],
+                        "nextCommandOutputArtifactApplyPreconditions": [],
+                        "nextCommandOutputArtifactApplyPreconditionCount": 0,
+                        "nextCommandOutputArtifactRequiredApplyPreconditionCount": 0,
+                        "nextCommandOutputArtifactSatisfiedApplyPreconditionCount": 0,
+                        "nextCommandOutputArtifactPendingApplyPreconditionCount": 0,
+                        "nextCommandOutputArtifactRequiredPendingApplyPreconditionCount": 0,
+                        "nextCommandOutputArtifactManualApplyReady": False,
+                        "nextCommandOutputArtifactManualApplyStatus": "not-applicable",
+                        "nextCommandOutputArtifactManualApplyStatusLabel": "Review only",
+                        "nextCommandOutputArtifactManualApplyStatusTone": "neutral",
+                        "nextCommandOutputArtifactManualApplyBlockedReason": "This output artifact is review-only and cannot be applied.",
+                        "nextCommandOutputArtifactManualApplyBlockedReasonCode": "not-manual-apply-candidate",
+                        "nextCommandStep": 2,
+                        "nextCommand": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
+                        "nextCommandArgs": [
+                            "design-ai", "learn", "--propose-skills",
+                            "--file", str(learning_profile_path),
+                            "--usage-file", str(learning_usage_path),
+                            "--from-file", str(Path(tmp)),
+                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
+                            "--review-check", "--report", "--out", "skill-proposal-review-check.md",
+                        ],
+                        "nextCommandRunPolicy": "output-artifact",
+                        "nextCommandSafetyLevel": "local-output",
+                        "nextCommandSafety": learning_skill_proposal_apply_plan_decision_command_safety,
+                        "runPolicy": "optional-local-output-preview",
+                        "safety": {
+                            "level": "local-output",
+                            "writesLocalFiles": True,
+                            "writesOutputArtifacts": True,
+                            "mutatesLocalState": True,
+                            "mutatesProfile": False,
+                            "mutatesReviewFile": False,
+                            "mutatesSkillFiles": False,
+                            "callsExternalAiApis": False,
+                            "requiresCleanWorkspace": False,
+                            "reason": "The selected decision only writes optional local preview artifacts and does not mutate learning, review, or skill files.",
+                        },
+                        "nextRequiredStageKey": "manualSkillEdit",
+                        "nextRequiredCommandStageKey": "reviewReadiness",
+                        "requiresOperatorActionBeforeRequiredCommands": True,
+                        "reason": "Offer optional local preview artifacts first; the required path still starts with manual skill edits before read-only command gates.",
+                    },
+                    "stageOrder": ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
+                    "nextStageKey": "previewArtifacts",
+                    "nextStageCommandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                    "nextStage": {
+                        "key": "previewArtifacts",
+                        "step": 1,
+                        "label": "Generate optional review artifacts",
+                        "kind": "local-output-preview",
+                        "required": False,
+                        "hasCommands": True,
+                        "commandCount": 2,
+                        "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                        "writesLocalFiles": True,
+                        "writesOutputArtifacts": True,
+                        "mutatesLocalState": True,
+                        "mutatesProfile": False,
+                        "mutatesReviewFile": False,
+                        "mutatesSkillFiles": False,
+                        "callsExternalAiApis": False,
+                        "requiresCleanWorkspace": False,
+                        "reason": "Optional Markdown review and patch preview artifacts can be generated before manual skill edits.",
+                    },
+                    "nextRequiredStageKey": "manualSkillEdit",
+                    "nextRequiredStageCommandKeys": [],
+                    "nextRequiredStage": {
+                        "key": "manualSkillEdit",
+                        "step": 2,
+                        "label": "Apply accepted skill deltas manually",
+                        "kind": "manual-review",
+                        "required": True,
+                        "hasCommands": False,
+                        "commandCount": 0,
+                        "commandKeys": [],
+                        "writesLocalFiles": False,
+                        "writesOutputArtifacts": False,
+                        "mutatesLocalState": False,
+                        "mutatesProfile": False,
+                        "mutatesReviewFile": False,
+                        "mutatesSkillFiles": False,
+                        "callsExternalAiApis": False,
+                        "requiresCleanWorkspace": False,
+                        "reason": "No apply-plan command mutates skill files; the operator must manually edit accepted skill deltas after review.",
+                    },
+                    "nextRequiredCommandStageKey": "reviewReadiness",
+                    "nextRequiredCommandStageCommandKeys": ["reviewCheckJson"],
+                    "nextRequiredCommandStage": {
+                        "key": "reviewReadiness",
+                        "step": 3,
+                        "label": "Run review readiness check",
+                        "kind": "read-only-check",
+                        "required": True,
+                        "hasCommands": True,
+                        "commandCount": 1,
+                        "commandKeys": ["reviewCheckJson"],
+                        "writesLocalFiles": False,
+                        "writesOutputArtifacts": False,
+                        "mutatesLocalState": False,
+                        "mutatesProfile": False,
+                        "mutatesReviewFile": False,
+                        "mutatesSkillFiles": False,
+                        "callsExternalAiApis": False,
+                        "requiresCleanWorkspace": False,
+                        "reason": "Run the read-only review check after manual skill edits to verify proposal review state.",
+                    },
+                    "reason": "Offer optional local preview artifacts first, then require the manual skill edit before read-only review and strict gates.",
+                },
+                "stageKeys": ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
+                "stageByKey": {
+                    "previewArtifacts": {
+                        "step": 1,
+                        "key": "previewArtifacts",
+                        "kind": "local-output-preview",
+                        "required": False,
+                        "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                        "commands": [{"key": "reviewCheckReport"}, {"key": "proposalPatchPreview"}],
+                    },
+                    "manualSkillEdit": {
+                        "step": 2,
+                        "key": "manualSkillEdit",
+                        "kind": "manual-review",
+                        "required": True,
+                        "commandKeys": [],
+                        "commands": [],
+                    },
+                    "reviewReadiness": {
+                        "step": 3,
+                        "key": "reviewReadiness",
+                        "kind": "read-only-check",
+                        "required": True,
+                        "commandKeys": ["reviewCheckJson"],
+                        "commands": [{"key": "reviewCheckJson"}],
+                    },
+                    "strictGate": {
+                        "step": 4,
+                        "key": "strictGate",
+                        "kind": "read-only-gate",
+                        "required": True,
+                        "commandKeys": ["strictGate"],
+                        "commands": [{"key": "strictGate"}],
+                    },
+                },
+                "stages": [
+                    {
+                        "step": 1,
+                        "key": "previewArtifacts",
+                        "kind": "local-output-preview",
+                        "required": False,
+                        "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
+                        "commands": [{"key": "reviewCheckReport"}, {"key": "proposalPatchPreview"}],
+                    },
+                    {
+                        "step": 2,
+                        "key": "manualSkillEdit",
+                        "kind": "manual-review",
+                        "required": True,
+                        "commandKeys": [],
+                        "commands": [],
+                    },
+                    {
+                        "step": 3,
+                        "key": "reviewReadiness",
+                        "kind": "read-only-check",
+                        "required": True,
+                        "commandKeys": ["reviewCheckJson"],
+                        "commands": [{"key": "reviewCheckJson"}],
+                    },
+                    {
+                        "step": 4,
+                        "key": "strictGate",
+                        "kind": "read-only-gate",
+                        "required": True,
+                        "commandKeys": ["strictGate"],
+                        "commands": [{"key": "strictGate"}],
+                    },
+                ],
+                "reason": "Generate optional local review artifacts, apply accepted skill deltas manually, then run read-only review and strict readiness gates.",
+            },
+            "nextAction": "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
+            "checks": [
+                {"id": "required-command-keys-present", "level": "pass", "passed": True},
+                {"id": "no-unexpected-command-keys", "level": "pass", "passed": True},
+                {"id": "reviewCheckJson-base-command", "level": "pass", "passed": True},
+                {"id": "reviewCheckJson-review-file-context", "level": "pass", "passed": True},
+                {"id": "reviewCheckJson-expected-suffix", "level": "pass", "passed": True},
+                {"id": "reviewCheckJson-read-only-flags", "level": "pass", "passed": True},
+                {"id": "reviewCheckReport-base-command", "level": "pass", "passed": True},
+                {"id": "reviewCheckReport-review-file-context", "level": "pass", "passed": True},
+                {"id": "reviewCheckReport-expected-suffix", "level": "pass", "passed": True},
+                {"id": "reviewCheckReport-read-only-flags", "level": "pass", "passed": True},
+                {"id": "proposalPatchPreview-base-command", "level": "pass", "passed": True},
+                {"id": "proposalPatchPreview-review-file-context", "level": "pass", "passed": True},
+                {"id": "proposalPatchPreview-expected-suffix", "level": "pass", "passed": True},
+                {"id": "proposalPatchPreview-read-only-flags", "level": "pass", "passed": True},
+                {"id": "strictGate-base-command", "level": "pass", "passed": True},
+                {"id": "strictGate-review-file-context", "level": "pass", "passed": True},
+                {"id": "strictGate-expected-suffix", "level": "pass", "passed": True},
+                {"id": "strictGate-read-only-flags", "level": "pass", "passed": True},
+            ],
+            "summary": {
+                "failures": 0,
+                "warnings": 0,
+                "passes": 18,
+                "total": 18,
+            },
+        },
+        "recommendations": [{"level": "warning", "text": "Apply accepted proposal deltas manually."}],
+        "privacy": {
+            "mutatesProfile": False,
+            "mutatesReviewFile": False,
+            "mutatesSkillFiles": False,
+            "callsExternalAiApis": False,
+            "storesRawBriefText": False,
+            "exposesEntryTextPreview": True,
+        },
+    }
+    assert_skill_proposal_apply_plan_json(
+        json.dumps(learning_skill_proposal_apply_plan_payload),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        review_path=learning_skill_proposal_apply_plan_review_path,
+        signal_source=Path(tmp),
+        context=context,
+        cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+    )
+    return learning_skill_proposal_apply_plan_payload
+
+
+def _self_test_learn_apply_plan_evidence(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_apply_plan_payload, learning_skill_proposal_apply_plan_review_path, learning_skill_proposal_payload, learning_skill_proposal_review_check_markdown, learning_skill_proposal_review_check_payload, learning_skill_proposal_review_path, learning_usage_path, tmp):
+    """Package smoke self-test: learn apply-plan evidence-threshold contracts."""
+    learning_skill_proposal_apply_plan_human = "\n".join([
+        "  design-ai learn",
+        "  Skill proposal apply plan",
+        "",
+        "Manual apply tasks:",
+        "- skill-proposal-component-spec-writer-abcdef1234: skills/component-spec-writer/SKILL.md",
+        "",
+        "Follow-up commands:",
+        f"- reviewCheckJson: design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+        "",
+        "Command contract:",
+        "- valid: yes",
+        "- status: pass",
+        "- required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+        "- forbidden flags: --yes",
+        "- check count: 18",
+        "- pass count: 18",
+        "- warning count: 0",
+        "- failure count: 0",
+        "- failed checks: none",
+        "- next command key: reviewCheckJson",
+        "- next command policy: preview-only",
+        "- next command safety: read-only",
+        f"- next command: design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
+        "- command sequence count: 4",
+        "- command sequence keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+        "- command sequence policy: mixed-preview-local-output",
+        "- command sequence executable: yes",
+        "- command sequence local outputs: 2",
+        "- command sequence mutates profile: no",
+        "- command sequence mutates review file: no",
+        "- command sequence mutates skill files: no",
+        "- command sequence calls external AI APIs: no",
+        "- operator runbook stages: 4",
+        "- operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
+        "- operator runbook required stages: 3",
+        "- operator runbook next stage: previewArtifacts",
+        "- operator runbook next required stage: manualSkillEdit",
+        "- operator runbook next required command stage: reviewReadiness",
+        "- operator runbook stage selection: optional-preview-before-required-manual-edit",
+        "- operator runbook decision: offer-optional-preview",
+        "- operator runbook decision safety: local-output",
+        "- operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
+        "- operator runbook decision next command: reviewCheckReport",
+        "- operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
+        "Command sequence:",
+        "- 1. reviewCheckJson: preview-only / read-only",
+        "- 2. reviewCheckReport: output-artifact / local-output",
+        "- 3. proposalPatchPreview: output-artifact / local-output",
+        "- 4. strictGate: strict-readiness-gate / read-only",
+        "Operator runbook:",
+        "- 1. previewArtifacts: optional / local-output-preview / reviewCheckReport, proposalPatchPreview",
+        "- 2. manualSkillEdit: required / manual-review / manual",
+        "- 3. reviewReadiness: required / read-only-check / reviewCheckJson",
+        "- 4. strictGate: required / read-only-gate / strictGate",
+        "- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
+        "",
+        "Privacy: apply plan is read-only and does not mutate learning.json, review files, or skill files.",
+    ])
+    assert_skill_proposal_apply_plan_human(
+        learning_skill_proposal_apply_plan_human,
+        context=context,
+        cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
+    )
+    learning_skill_proposal_apply_plan_markdown = "\n".join([
+        "# Skill Proposal Apply Plan",
+        "",
+        "- Generated: 2026-06-11T00:10:00.000Z",
+        "- Status: warn",
+        "- Proposal status: warn",
+        "- Signal status: pass",
+        f"- File: {learning_profile_path}",
+        f"- Usage sidecar: {learning_usage_path}",
+        f"- Signal source: {Path(tmp)}",
+        f"- Review file: {learning_skill_proposal_apply_plan_review_path}",
+        "- Accepted proposals: 1",
+        "- Pending review: 1",
+        "- Reviewed: 1",
+        "",
+        "## Manual Apply Tasks",
+        "",
+        "### Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+        "",
+        "- Candidate skill: skills/component-spec-writer/SKILL.md",
+        "",
+        "Manual steps:",
+        "- After the skill edit and verification pass, update the review decision from `accepted` to `applied`.",
+        "",
+        "## Follow-up Commands",
+        "",
+        f"- reviewCheckJson: `design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
+        "",
+        "## Command Contract",
+        "",
+        "- Valid: yes",
+        "- Required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+        "- Check count: 18",
+        "- Pass count: 18",
+        "- Warning count: 0",
+        "- Failure count: 0",
+        "- Failed checks: none",
+        "- Next command key: reviewCheckJson",
+        "- Next command policy: preview-only",
+        "- Next command safety: read-only",
+        f"- Next command: `design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
+        "- Command sequence count: 4",
+        "- Command sequence keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
+        "- Command sequence policy: mixed-preview-local-output",
+        "- Command sequence executable: yes",
+        "- Command sequence local outputs: 2",
+        "- Command sequence mutates profile: no",
+        "- Command sequence mutates review file: no",
+        "- Command sequence mutates skill files: no",
+        "- Command sequence calls external AI APIs: no",
+        "- Operator runbook stages: 4",
+        "- Operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
+        "- Operator runbook required stages: 3",
+        "- Operator runbook next stage: previewArtifacts",
+        "- Operator runbook next required stage: manualSkillEdit",
+        "- Operator runbook next required command stage: reviewReadiness",
+        "- Operator runbook stage selection: optional-preview-before-required-manual-edit",
+        "- Operator runbook decision: offer-optional-preview",
+        "- Operator runbook decision safety: local-output",
+        "- Operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
+        "- Operator runbook decision next command: reviewCheckReport",
+        "- Operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
+        "",
+        "Command sequence:",
+        "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
+        "- 2. reviewCheckReport (output-artifact / local-output): `design-ai learn --propose-skills",
+        "- 3. proposalPatchPreview (output-artifact / local-output): `design-ai learn --propose-skills",
+        "- 4. strictGate (strict-readiness-gate / read-only): `design-ai learn --propose-skills",
+        "",
+        "Operator runbook:",
+        "- 1. previewArtifacts (optional / local-output-preview): reviewCheckReport, proposalPatchPreview",
+        "- 2. manualSkillEdit (required / manual-review): manual",
+        "- 3. reviewReadiness (required / read-only-check): reviewCheckJson",
+        "- 4. strictGate (required / read-only-gate): strictGate",
+        "- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
+        "",
+        "## Privacy And Boundaries",
+        "",
+        "- Mutates learning profile: no",
+        "- Mutates review file: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+    ])
+    assert_skill_proposal_apply_plan_markdown(
+        learning_skill_proposal_apply_plan_markdown,
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        review_path=learning_skill_proposal_apply_plan_review_path,
+        context=context,
+        cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
+    )
+    assert_skill_proposal_review_template_json(
+        json.dumps({
+            "version": 1,
+            "generatedAt": "2026-06-11T00:00:00.000Z",
+            "source": "design-ai learn --propose-skills --review-template",
+            "proposalFile": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "signalSource": str(Path(tmp)),
+            "reviewFile": "",
+            "reviewPolicy": {
+                "clearsStrict": ["applied", "rejected"],
+                "remainsPending": ["accepted", "deferred"],
+            },
+            "summary": {
+                "proposalCount": 1,
+                "pendingReviewCount": 1,
+                "reviewedCount": 0,
+                "templateDecisionCount": 1,
+            },
+            "decisions": [
+                {
+                    "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
+                    "status": "deferred",
+                    "reviewedAt": "",
+                    "reviewer": "",
+                    "note": "Review skills/component-spec-writer/SKILL.md: Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+                },
+            ],
+        }),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=[*learn_skill_proposals_cmd[:-1], "--review-template"],
+    )
+    assert_skill_proposal_min_evidence_json(
+        json.dumps({
+            **learning_skill_proposal_payload,
+            "minEvidenceCount": 3,
+            "count": 0,
+            "proposalCount": 0,
+            "skippedCount": 1,
+            "proposals": [],
+            "skipped": [
+                {
+                    "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
+                    "category": "accessibility",
+                    "sourceIssueCount": 2,
+                    "reason": "Needs at least 3 related check-capture entries before proposing a skill edit.",
+                },
+            ],
+        }),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=[*learn_skill_proposals_cmd[:-1], "--min-evidence", "3", "--json"],
+    )
+    assert_skill_proposal_report_human(
+        "\n".join([
+            "design-ai learn",
+            "Skill evolution proposals",
+            f"Signal source: {Path(tmp)}",
+            "Status: warn",
+            "Proposed skill deltas:",
+            "skills/component-spec-writer/SKILL.md",
+            "No changes made. This command is preview-only",
+        ]),
+        context=context,
+        cmd=learn_skill_proposals_cmd,
+    )
+    learning_skill_proposal_markdown = "\n".join([
+        "# Skill Evolution Proposal Report",
+        "",
+        "- Generated: 2026-06-02T00:00:03.000Z",
+        f"- File: {learning_profile_path}",
+        f"- Usage sidecar: {learning_usage_path}",
+        f"- Signal source: {Path(tmp)}",
+        "- Status: warn",
+        "- Signal status: pass",
+        "- Check capture entries: 2",
+        "- Candidate groups: 1",
+        "- Proposal count: 1",
+        "- Skipped groups: 0",
+        "- Dry run: yes",
+        "- Applied: no",
+        "",
+        "## Proposed Skill Deltas",
+        "",
+        "### Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
+        "",
+        "- Proposal id: skill-proposal-component-spec-writer-abc123",
+        "- Candidate skill: skills/component-spec-writer/SKILL.md",
+        "- Category: accessibility",
+        "- Routes: component-spec",
+        "- Risk: low",
+        "- Source issues: 2",
+        "- Rationale: Repeated accessibility check captures were recorded for component-spec.",
+        "",
+        "Proposed instruction delta:",
+        "",
+        "> Add a pre-handoff accessibility checkpoint.",
+        "",
+        "Verification:",
+        "",
+        "```bash",
+        "node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json",
+        "```",
+        "",
+        "Evidence:",
+        "- `learn-skill-proposal-a` [accessibility] check:component-spec",
+        "",
+        "## Skipped Groups",
+        "",
+        "No candidate groups were skipped.",
+        "",
+        "## Privacy And Boundaries",
+        "",
+        "- Mutates learning profile: no",
+        "- Mutates skill files: no",
+        "- Calls external AI APIs: no",
+        "- Stores raw brief text: no",
+        "- Includes entry text preview: yes",
+        "",
+        "## Next Steps",
+        "",
+        "- This report is preview-only evidence; it does not apply changes.",
+    ])
+    assert_skill_proposal_report_markdown(
+        learning_skill_proposal_markdown,
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=learn_skill_proposals_cmd,
+    )
+    learning_skill_proposal_patch = "\n".join([
+        "# design-ai skill proposal patch preview",
+        "# Preview-only output from `design-ai learn --propose-skills --patch`.",
+        "# Review manually before applying. This command does not edit skill files.",
+        "",
+        "diff --git a/skills/component-spec-writer/SKILL.md b/skills/component-spec-writer/SKILL.md",
+        "--- a/skills/component-spec-writer/SKILL.md",
+        "+++ b/skills/component-spec-writer/SKILL.md",
+        "@@ -7,1 +7,10 @@",
+        " See [PLAYBOOK.md](PLAYBOOK.md).",
+        "+",
+        "+## Local Learning Proposal: skill-proposal-component-spec-writer-abc123",
+        "+",
+        "+<!-- Generated by design-ai learn --propose-skills --patch. Review manually before applying. -->",
+        "+",
+        "+- Category: accessibility",
+        "+- Routes: component-spec",
+        "+- Risk: low",
+        "+- Evidence count: 2",
+        "+- Proposed instruction: Add a pre-handoff accessibility checkpoint.",
+        "+- Verification: `node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json`",
+    ])
+    assert_skill_proposal_patch(
+        learning_skill_proposal_patch,
+        context=context,
+        cmd=[*learn_skill_proposals_cmd[:-1], "--patch"],
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_report_json(
+            json.dumps({
+                **learning_skill_proposal_payload,
+                "proposals": [],
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+        ),
+        expected="learn skill proposals JSON should include the repeated component-spec skill delta",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_review_json(
+            json.dumps({
+                **learning_skill_proposal_payload,
+                "reviewFile": str(learning_skill_proposal_review_path),
+                "pendingReviewCount": 1,
+                "reviewedCount": 1,
+                "review": {
+                    **learning_skill_proposal_payload["review"],
+                    "file": str(learning_skill_proposal_review_path),
+                    "exists": True,
+                    "matchedCount": 1,
+                    "pendingCount": 1,
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_review_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--json"],
+        ),
+        expected="learn skill proposals review JSON should join applied review decisions",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_review_check_json(
+            json.dumps({
+                **learning_skill_proposal_review_check_payload,
+                "status": "warn",
+                "summary": {
+                    **learning_skill_proposal_review_check_payload["summary"],
+                    "status": "warn",
+                    "warnings": 1,
+                },
+                "checks": [
+                    *learning_skill_proposal_review_check_payload["checks"][:-1],
+                    {
+                        "id": "no-stale-review-decisions",
+                        "level": "warn",
+                        "passed": False,
+                        "message": "Review file contains decisions for proposals that are no longer current.",
+                        "evidence": {"staleCount": 1},
+                    },
+                ],
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_review_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--json"],
+        ),
+        expected="learn skill proposal review-check JSON should report pass review-file readiness",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_review_check_markdown(
+            learning_skill_proposal_review_check_markdown.replace(
+                "- Mutates skill files: no",
+                "- Mutates skill files: yes",
+            ),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_review_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--report"],
+        ),
+        expected="learn skill proposal review-check Markdown report missing '- Mutates skill files: no'",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "acceptedCount": 0,
+                "count": 0,
+                "tasks": [],
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactRequiresManualReviewByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactRequiresManualReviewByKey"],
+                                    "proposalPatchPreview": False,
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactManualApplyStatusToneByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyStatusToneByKey"],
+                                    "proposalPatchPreview": "success",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    return learning_skill_proposal_apply_plan_human, learning_skill_proposal_apply_plan_markdown, learning_skill_proposal_markdown, learning_skill_proposal_patch
+
+
+def _self_test_learn_apply_plan_identity(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_apply_plan_payload, learning_skill_proposal_apply_plan_review_path, learning_usage_path, tmp) -> None:
+    """Package smoke self-test: learn apply-plan identity contracts."""
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactManualApplyStatusLabelByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyStatusLabelByKey"],
+                                    "proposalPatchPreview": "Ready to apply",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactManualApplyStatusByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyStatusByKey"],
+                                    "proposalPatchPreview": "ready",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactManualApplyBlockedReasonCodeByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyBlockedReasonCodeByKey"],
+                                    "proposalPatchPreview": "",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactManualApplyReadyByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyReadyByKey"],
+                                    "proposalPatchPreview": True,
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactPendingApplyPreconditionCountByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactPendingApplyPreconditionCountByKey"],
+                                    "proposalPatchPreview": 1,
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactApplyPreconditionCountByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionCountByKey"],
+                                    "proposalPatchPreview": 1,
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactApplyPreconditionsByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionsByKey"],
+                                    "proposalPatchPreview": [
+                                        {"id": "manual-review", "label": "Manual review completed", "required": True},
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactApplyPreconditionLabelsByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionLabelsByKey"],
+                                    "proposalPatchPreview": ["Manual review completed"],
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactApplyPreconditionIdsByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionIdsByKey"],
+                                    "proposalPatchPreview": ["manual-review"],
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey"],
+                                    "proposalPatchPreview": False,
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactReviewInstructionByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactReviewInstructionByKey"],
+                                    "proposalPatchPreview": "",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactManualApplyCandidateByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyCandidateByKey"],
+                                    "proposalPatchPreview": False,
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactDispositionByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactDispositionByKey"],
+                                    "proposalPatchPreview": "review-only",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactMediaTypeByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactMediaTypeByKey"],
+                                    "proposalPatchPreview": "text/plain",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactActionByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactActionByKey"],
+                                    "proposalPatchPreview": "download-file",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+
+
+def _self_test_learn_apply_plan_artifacts(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_apply_plan_payload, learning_skill_proposal_apply_plan_review_path, learning_usage_path, tmp) -> None:
+    """Package smoke self-test: learn apply-plan artifact contracts."""
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandDescriptionByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandDescriptionByKey"],
+                                    "reviewCheckReport": "Generate review report.",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactTypeByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactTypeByKey"],
+                                    "reviewCheckReport": "markdown",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandOutputArtifactByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactByKey"],
+                                    "proposalPatchPreview": "proposal.patch",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandDisplayLabelByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandDisplayLabelByKey"],
+                                    "proposalPatchPreview": "Patch preview",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageCount": 3,
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandStringByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandStringByKey"],
+                                    "reviewCheckReport": "design-ai learn --propose-skills --review-check --report",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandArgsByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandArgsByKey"],
+                                    "proposalPatchPreview": [
+                                        "design-ai", "learn", "--propose-skills",
+                                        "--patch",
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandSafetyLevelByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandSafetyLevelByKey"],
+                                    "reviewCheckReport": "read-only",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandRunPolicyByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandRunPolicyByKey"],
+                                    "proposalPatchPreview": "preview-only",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandStepByKey": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandStepByKey"],
+                                    "reviewCheckReport": 3,
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "nextCommandStep": 3,
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "nextCommandSafety": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["nextCommandSafety"],
+                                    "level": "read-only",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commands": [
+                                    {
+                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][0],
+                                        "safety": {
+                                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][0]["safety"],
+                                            "reason": "drift",
+                                        },
+                                    },
+                                    *learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][1:],
+                                ],
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "nextCommandEntry": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["nextCommandEntry"],
+                                    "key": "proposalPatchPreview",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commandByKey": {},
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+
+
+def _self_test_learn_eval_template(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_apply_plan_human, learning_skill_proposal_apply_plan_markdown, learning_skill_proposal_apply_plan_payload, learning_skill_proposal_apply_plan_review_path, learning_skill_proposal_markdown, learning_skill_proposal_patch, learning_skill_proposal_payload, learning_usage_path, tmp):
+    """Package smoke self-test: learn evaluation-template contracts."""
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "nextCommandKey": "proposalPatchPreview",
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "commands": [],
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "safety": {
+                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["safety"],
+                                    "level": "read-only",
+                                },
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "decision": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
+                                "action": "run-required-command",
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageKeys": [],
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "nextRequiredCommandStageKey": "",
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "strategy": "",
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_json(
+            json.dumps({
+                **learning_skill_proposal_apply_plan_payload,
+                "commandContract": {
+                    **learning_skill_proposal_apply_plan_payload["commandContract"],
+                    "operatorRunbook": {
+                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
+                        "stageSelection": {
+                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
+                            "nextStage": {
+                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["nextStage"],
+                                "kind": "manual-review",
+                            },
+                        },
+                    },
+                },
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            signal_source=Path(tmp),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
+        ),
+        expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_human(
+            learning_skill_proposal_apply_plan_human.replace(
+                "Command contract:",
+                "Command summary:",
+            ),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
+        ),
+        expected="learn skill proposal apply-plan human output missing 'Command contract:'",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_human(
+            learning_skill_proposal_apply_plan_human.replace(
+                "Operator runbook:",
+                "Operator stages:",
+            ),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
+        ),
+        expected="learn skill proposal apply-plan human output missing 'Operator runbook:'",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_markdown(
+            learning_skill_proposal_apply_plan_markdown.replace(
+                "- Mutates skill files: no",
+                "- Mutates skill files: yes",
+            ),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
+        ),
+        expected="learn skill proposal apply-plan Markdown report missing '- Mutates skill files: no'",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_apply_plan_markdown(
+            learning_skill_proposal_apply_plan_markdown.replace(
+                "Operator runbook:",
+                "Operator stages:",
+            ),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            review_path=learning_skill_proposal_apply_plan_review_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
+        ),
+        expected="learn skill proposal apply-plan Markdown report missing 'Operator runbook:'",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_min_evidence_json(
+            json.dumps({
+                **learning_skill_proposal_payload,
+                "minEvidenceCount": 2,
+                "count": 1,
+                "proposalCount": 1,
+                "skippedCount": 0,
+                "skipped": [],
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--min-evidence", "3", "--json"],
+        ),
+        expected="learn skill proposals min-evidence JSON should report minEvidenceCount 3",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_patch(
+            learning_skill_proposal_patch.replace("This command does not edit skill files.", "This command edits skill files."),
+            context=context,
+            cmd=[*learn_skill_proposals_cmd[:-1], "--patch"],
+        ),
+        expected="learn skill proposals patch output missing",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_report_markdown(
+            learning_skill_proposal_markdown.replace("- Mutates skill files: no", "- Mutates skill files: yes"),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+        ),
+        expected="learn skill proposals Markdown report missing '- Mutates skill files: no'",
+        scope="package smoke",
+    )
+    assert_skill_proposal_report_json(
+        json.dumps(learning_skill_proposal_payload),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        context=context,
+        cmd=learn_skill_proposals_cmd,
+        returncode=1,
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_report_json(
+            json.dumps({
+                **learning_skill_proposal_payload,
+                "status": "pass",
+            }),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+        ),
+        expected="learn skill proposals JSON should report 'warn' status when proposals need review",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_skill_proposal_report_json(
+            json.dumps(learning_skill_proposal_payload),
+            profile_path=learning_profile_path,
+            usage_path=learning_usage_path,
+            context=context,
+            cmd=learn_skill_proposals_cmd,
+            returncode=0,
+        ),
+        expected="learn skill proposals strict JSON should exit with code 1 when proposal review is pending",
+        scope="package smoke",
+    )
+
+    learning_eval_template_path = Path(tmp) / "learning-eval-template.json"
+    learning_eval_template_payload = {
+        "version": 1,
+        "generatedAt": "2026-06-01T00:00:02.000Z",
+        "sourceProfile": {
+            "file": str(learning_profile_path),
+            "exists": True,
+            "entryCount": 3,
+            "auditStatus": "pass",
+            "category": "accessibility",
+            "query": EXPECTED_ROUTE_BRIEF,
+            "limit": 6,
+        },
+        "selection": {
+            "mode": "brief-relevance",
+            "candidateCount": 1,
+            "matchedCount": 1,
+            "selectedCount": 1,
+            "queryTokenCount": 7,
+            "fallbackCount": 0,
+        },
+        "caseCount": 1,
+        "cases": [
+            {
+                "id": "eval-1-0123456789",
+                "brief": EXPECTED_ROUTE_BRIEF,
+                "category": "accessibility",
+                "limit": 1,
+                "expectedSelectedIds": ["learn-relevant"],
+                "minMatchedCount": 1,
+                "requireNoFallback": True,
+            },
+        ],
+        "recommendations": [],
+        "privacy": {
+            "storesRawBriefText": True,
+            "storesBriefHash": False,
+            "exposesMatchedTokens": False,
+        },
+    }
+    learn_eval_template_cmd = ["design-ai", "learn", "--eval-template", "--query", EXPECTED_ROUTE_BRIEF, "--file", str(learning_profile_path), "--json"]
+    assert_learning_eval_template_json(
+        json.dumps(learning_eval_template_payload),
+        profile_path=learning_profile_path,
+        context=context,
+        cmd=learn_eval_template_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_eval_template_json(
+            json.dumps({
+                **learning_eval_template_payload,
+                "privacy": {
+                    **learning_eval_template_payload["privacy"],
+                    "storesRawBriefText": False,
+                },
+            }),
+            profile_path=learning_profile_path,
+            context=context,
+            cmd=learn_eval_template_cmd,
+        ),
+        expected="learn eval-template JSON should disclose that checkpoint templates store raw brief text",
+        scope="package smoke",
+    )
+    learning_eval_path = Path(tmp) / "learning-eval.json"
+    learning_eval_payload = {
+        "file": str(learning_profile_path),
+        "source": str(learning_eval_path),
+        "profileExists": True,
+        "profileEntryCount": 3,
+        "checkpointVersion": 1,
+        "defaultLimit": 1,
+        "defaultCategory": "",
+        "status": "pass",
+        "caseCount": 1,
+        "passed": 1,
+        "warned": 0,
+        "failed": 0,
+        "auditSummary": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+        "cases": [
+            {
+                "id": "button-accessibility",
+                "routeId": EXPECTED_ROUTE_ID,
+                "briefHash": "0123456789abcdef",
+                "category": "",
+                "limit": 1,
+                "status": "pass",
+                "failures": 0,
+                "warnings": 0,
+                "candidateCount": 3,
+                "matchedCount": 1,
+                "selectedCount": 1,
+                "fallbackCount": 0,
+                "expectedSelectedIds": ["learn-relevant"],
+                "missingExpectedIds": [],
+                "avoidedSelectedIds": ["learn-brand"],
+                "unexpectedAvoidedIds": [],
+                "minMatchedCount": 1,
+                "requireNoFallback": True,
+                "selectedEntryIds": ["learn-relevant"],
+                "selected": [
+                    {
+                        "id": "learn-relevant",
+                        "category": "accessibility",
+                        "score": 10,
+                        "reason": "brief-match",
+                    },
+                ],
+                "issues": [],
+            },
+        ],
+        "recommendations": [],
+        "privacy": {
+            "storesRawBriefText": False,
+            "storesBriefHash": True,
+            "exposesMatchedTokens": False,
+        },
+    }
+    learn_eval_cmd = ["design-ai", "learn", "--eval", "--from-file", str(learning_eval_path), "--file", str(learning_profile_path), "--json"]
+    assert_learning_eval_report_json(
+        json.dumps(learning_eval_payload),
+        profile_path=learning_profile_path,
+        eval_path=learning_eval_path,
+        context=context,
+        cmd=learn_eval_cmd,
+    )
+    assert_learning_eval_template_report_json(
+        json.dumps({
+            **learning_eval_payload,
+            "source": str(learning_eval_template_path),
+        }),
+        profile_path=learning_profile_path,
+        eval_path=learning_eval_template_path,
+        context=context,
+        cmd=["design-ai", "learn", "--eval", "--from-file", str(learning_eval_template_path), "--file", str(learning_profile_path), "--strict", "--json"],
+    )
+    return learn_eval_cmd, learning_eval_path, learning_eval_payload
+
+
+def _self_test_learn_audit_and_curation(context, learn_eval_cmd, learning_eval_path, learning_eval_payload, learning_profile_path, learning_usage_path, tmp):
+    """Package smoke self-test: learn audit, curation, and forget contracts."""
+    assert_learning_eval_report_human(
+        "\n".join([
+            "design-ai learn",
+            "Local learning eval report",
+            f"Checkpoint: {learning_eval_path}",
+            "Status: pass",
+            "button-accessibility / component-spec: pass",
+            "Privacy: eval reports expose brief hashes and selected ids, not raw brief text.",
+        ]),
+        context=context,
+        cmd=learn_eval_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_eval_report_json(
+            json.dumps({
+                **learning_eval_payload,
+                "cases": [
+                    {
+                        **learning_eval_payload["cases"][0],
+                        "brief": EXPECTED_ROUTE_BRIEF,
+                    },
+                ],
+            }),
+            profile_path=learning_profile_path,
+            eval_path=learning_eval_path,
+            context=context,
+            cmd=learn_eval_cmd,
+        ),
+        expected="learn eval JSON should not expose raw brief or query text",
+        scope="package smoke",
+    )
+    learning_eval_strict_path = Path(tmp) / "learning-eval-strict-fail.json"
+    learning_eval_strict_payload = {
+        **learning_eval_payload,
+        "source": str(learning_eval_strict_path),
+        "status": "fail",
+        "passed": 0,
+        "failed": 1,
+        "cases": [
+            {
+                **learning_eval_payload["cases"][0],
+                "id": "missing-accessibility",
+                "status": "fail",
+                "failures": 2,
+                "expectedSelectedIds": ["missing-entry"],
+                "missingExpectedIds": ["missing-entry"],
+                "issues": [
+                    {
+                        "level": "failure",
+                        "code": "expected-entry-not-in-profile",
+                        "message": "Expected entry missing-entry is not present in the active learning profile.",
+                    },
+                    {
+                        "level": "failure",
+                        "code": "expected-entry-not-selected",
+                        "message": "Expected selected entries were missing: missing-entry.",
+                    },
+                ],
+            },
+        ],
+        "recommendations": [
+            {
+                "level": "warning",
+                "text": "Review failed eval cases before trusting prompt/pack --with-learning selection.",
+            },
+        ],
+    }
+    learn_eval_strict_cmd = [
+        "design-ai",
+        "learn",
+        "--eval",
+        "--from-file",
+        str(learning_eval_strict_path),
+        "--file",
+        str(learning_profile_path),
+        "--strict",
+        "--json",
+    ]
+    assert_learning_eval_strict_failure_json(
+        json.dumps(learning_eval_strict_payload),
+        returncode=1,
+        profile_path=learning_profile_path,
+        eval_path=learning_eval_strict_path,
+        context=context,
+        cmd=learn_eval_strict_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_eval_strict_failure_json(
+            json.dumps(learning_eval_strict_payload),
+            returncode=0,
+            profile_path=learning_profile_path,
+            eval_path=learning_eval_strict_path,
+            context=context,
+            cmd=learn_eval_strict_cmd,
+        ),
+        expected="learn eval --strict should exit with code 1 when checkpoints fail",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_eval_strict_failure_json(
+            json.dumps({
+                **learning_eval_strict_payload,
+                "cases": [
+                    {
+                        **learning_eval_strict_payload["cases"][0],
+                        "brief": EXPECTED_ROUTE_BRIEF,
+                    },
+                ],
+            }),
+            returncode=1,
+            profile_path=learning_profile_path,
+            eval_path=learning_eval_strict_path,
+            context=context,
+            cmd=learn_eval_strict_cmd,
+        ),
+        expected="learn eval strict JSON should not expose raw brief or query text",
+        scope="package smoke",
+    )
+
+    duplicate_command_args = [
+        "design-ai",
+        "learn",
+        "--file",
+        str(learning_profile_path),
+        "--forget",
+        "learn-b",
+        "--yes",
+    ]
+    sensitive_command_args = [
+        "design-ai",
+        "learn",
+        "--file",
+        str(learning_profile_path),
+        "--forget",
+        "learn-c",
+        "--yes",
+    ]
+    learning_audit_payload = {
+        "file": str(learning_profile_path),
+        "exists": True,
+        "count": 3,
+        "categoryCounts": {
+            "workflow": 2,
+            "constraint": 1,
+        },
+        "summary": {
+            "status": "warn",
+            "failures": 0,
+            "warnings": 2,
+        },
+        "issues": [
+            {
+                "level": "warning",
+                "code": "duplicate-entry-text",
+                "entryId": "learn-b",
+                "message": "Entry duplicates learn-a in the same category.",
+            },
+            {
+                "level": "warning",
+                "code": "sensitive-secret-assignment",
+                "entryId": "learn-c",
+                "message": "Entry may contain a secret-like assignment.",
+            },
+        ],
+        "suggestions": [
+            {
+                "issueCode": "duplicate-entry-text",
+                "entryId": "learn-b",
+                "action": "remove-duplicate",
+                "message": "Remove the duplicate entry.",
+                "commandArgs": duplicate_command_args,
+                "command": " ".join(duplicate_command_args),
+            },
+            {
+                "issueCode": "sensitive-secret-assignment",
+                "entryId": "learn-c",
+                "action": "remove-or-redact-sensitive-content",
+                "message": "Remove this entry or re-add a redacted preference.",
+                "commandArgs": sensitive_command_args,
+                "command": " ".join(sensitive_command_args),
+            },
+        ],
+    }
+    learn_audit_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_profile_path), "--json"]
+    assert_learning_audit_cleanup_json(
+        json.dumps(learning_audit_payload),
+        profile_path=learning_profile_path,
+        context=context,
+        cmd=learn_audit_cmd,
+    )
+    learning_audit_fix_payload = {
+        "file": str(learning_profile_path),
+        "dryRun": True,
+        "applied": False,
+        "before": {
+            "status": "warn",
+            "failures": 0,
+            "warnings": 2,
+        },
+        "cleanupCount": 2,
+        "cleanup": [
+            {
+                "entryId": "learn-b",
+                "issueCodes": ["duplicate-entry-text"],
+                "actions": ["remove-duplicate"],
+                "commandArgs": duplicate_command_args,
+                "command": " ".join(duplicate_command_args),
+            },
+            {
+                "entryId": "learn-c",
+                "issueCodes": ["sensitive-secret-assignment"],
+                "actions": ["remove-or-redact-sensitive-content"],
+                "commandArgs": sensitive_command_args,
+                "command": " ".join(sensitive_command_args),
+            },
+        ],
+        "skipped": [],
+        "removed": [],
+        "after": None,
+    }
+    learn_audit_fix_cmd = [
+        "design-ai",
+        "learn",
+        "--audit",
+        "--fix",
+        "--dry-run",
+        "--file",
+        str(learning_profile_path),
+        "--json",
+    ]
+    assert_learning_audit_fix_json(
+        json.dumps(learning_audit_fix_payload),
+        profile_path=learning_profile_path,
+        dry_run=True,
+        context=context,
+        cmd=learn_audit_fix_cmd,
+    )
+    applied_learning_audit_fix_payload = {
+        **learning_audit_fix_payload,
+        "dryRun": False,
+        "applied": True,
+        "removed": [
+            {
+                "id": "learn-b",
+                "category": "workflow",
+                "source": "package-smoke",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+                "textPreview": "Prefer release notes that state evidence before claims",
+            },
+            {
+                "id": "learn-c",
+                "category": "constraint",
+                "source": "package-smoke",
+                "createdAt": "2026-05-22T00:00:02.000Z",
+                "textPreview": "Never include api_key=redacted placeholders in prompt context",
+            },
+        ],
+        "after": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+    }
+    assert_learning_audit_fix_json(
+        json.dumps(applied_learning_audit_fix_payload),
+        profile_path=learning_profile_path,
+        dry_run=False,
+        context=context,
+        cmd=["design-ai", "learn", "--audit", "--fix", "--yes", "--file", str(learning_profile_path), "--json"],
+    )
+    learning_curation_payload = {
+        "file": str(learning_profile_path),
+        "archiveFile": str(learning_profile_path.with_name(f"{learning_profile_path.stem}.archive{learning_profile_path.suffix}")),
+        "usage": {
+            "autoArchive": False,
+        },
+        "before": {
+            "status": "warn",
+            "failures": 0,
+            "warnings": 2,
+        },
+        "proposalCount": 2,
+        "archiveCount": 2,
+        "manualReviewCount": 0,
+        "proposals": [
+            {
+                "entryId": "learn-b",
+                "action": "archive",
+                "reason": "duplicate-entry",
+                "issueCodes": ["duplicate-entry-text"],
+                "messages": ["Entry duplicates learn-a in the same category."],
+                "category": "workflow",
+                "source": "package-smoke",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+                "textPreview": "Prefer release notes that state evidence before claims",
+            },
+            {
+                "entryId": "learn-c",
+                "action": "archive",
+                "reason": "sensitive-content",
+                "issueCodes": ["sensitive-secret-assignment"],
+                "messages": ["Entry may contain a secret-like assignment."],
+                "category": "constraint",
+                "source": "package-smoke",
+                "createdAt": "2026-05-22T00:00:02.000Z",
+                "textPreview": "Never include api_key=redacted placeholders in prompt context",
+            },
+        ],
+        "skipped": [],
+        "count": 3,
+        "dryRun": True,
+        "applied": False,
+        "archived": [],
+        "after": None,
+    }
+    learn_curate_cmd = ["design-ai", "learn", "--curate", "--file", str(learning_profile_path), "--json"]
+    assert_learning_curation_json(
+        json.dumps(learning_curation_payload),
+        profile_path=learning_profile_path,
+        dry_run=True,
+        context=context,
+        cmd=learn_curate_cmd,
+    )
+    learning_usage_path = learning_profile_path.with_name(
+        f"{learning_profile_path.stem}.usage{learning_profile_path.suffix}"
+    )
+    learning_curation_usage_payload = {
+        **learning_curation_payload,
+        "usage": {
+            "file": str(learning_profile_path),
+            "usageFile": str(learning_usage_path),
+            "profileFile": str(learning_profile_path),
+            "profileFileMatches": True,
+            "exists": True,
+            "eventCount": 1,
+            "usedEntryCount": 1,
+            "unusedEntryCount": 2,
+            "staleSelectedEntryCount": 1,
+            "reviewCount": 3,
+            "unusedReviewCount": 2,
+            "staleReviewCount": 1,
+            "reviews": [
+                {
+                    "level": "warning",
+                    "action": "review-usage-sidecar",
+                    "reason": "stale-selected-entry-id",
+                    "entryId": "learn-stale",
+                    "usageCount": 1,
+                    "message": "Usage sidecar selected an entry id that is no longer present in the active learning profile.",
+                },
+                {
+                    "level": "info",
+                    "action": "manual-review",
+                    "reason": "unused-with-limited-history",
+                    "entryId": "learn-b",
+                    "usageCount": 0,
+                    "message": "Active entry has not been selected in recorded prompt/pack usage; review manually before archiving.",
+                },
+                {
+                    "level": "info",
+                    "action": "manual-review",
+                    "reason": "unused-with-limited-history",
+                    "entryId": "learn-c",
+                    "usageCount": 0,
+                    "message": "Active entry has not been selected in recorded prompt/pack usage; review manually before archiving.",
+                },
+            ],
+            "recommendations": [],
+            "error": "",
+            "privacy": {
+                "storesRawBriefText": False,
+                "storesBriefHash": True,
+                "storesSelectedEntryIds": True,
+            },
+            "autoArchive": False,
+        },
+    }
+    assert_learning_curation_json(
+        json.dumps(learning_curation_usage_payload),
+        profile_path=learning_profile_path,
+        usage_path=learning_usage_path,
+        dry_run=True,
+        context=f"{context} usage curation",
+        cmd=[
+            "design-ai",
+            "learn",
+            "--curate",
+            "--file",
+            str(learning_profile_path),
+            "--usage-file",
+            str(learning_usage_path),
+            "--json",
+        ],
+    )
+    applied_learning_curation_payload = {
+        **learning_curation_payload,
+        "dryRun": False,
+        "applied": True,
+        "archived": [
+            {
+                "id": "learn-b",
+                "category": "workflow",
+                "text": "Prefer release notes that state evidence before claims",
+                "source": "package-smoke",
+                "createdAt": "2026-05-22T00:00:01.000Z",
+            },
+            {
+                "id": "learn-c",
+                "category": "constraint",
+                "text": "Never include api_key=redacted placeholders in prompt context",
+                "source": "package-smoke",
+                "createdAt": "2026-05-22T00:00:02.000Z",
+            },
+        ],
+        "after": {
+            "status": "pass",
+            "failures": 0,
+            "warnings": 0,
+        },
+    }
+    assert_learning_curation_json(
+        json.dumps(applied_learning_curation_payload),
+        profile_path=learning_profile_path,
+        dry_run=False,
+        context=context,
+        cmd=["design-ai", "learn", "--curate", "--yes", "--file", str(learning_profile_path), "--json"],
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_audit_cleanup_json(
+            json.dumps({**learning_audit_payload, "suggestions": []}),
+            profile_path=learning_profile_path,
+            context=context,
+            cmd=learn_audit_cmd,
+        ),
+        expected="remove-duplicate suggestion missing",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_audit_fix_json(
+            json.dumps({**learning_audit_fix_payload, "cleanup": []}),
+            profile_path=learning_profile_path,
+            dry_run=True,
+            context=context,
+            cmd=learn_audit_fix_cmd,
+        ),
+        expected="learn audit fix cleanup entry missing: learn-b",
+        scope="package smoke",
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_curation_json(
+            json.dumps({**learning_curation_payload, "archiveCount": 1}),
+            profile_path=learning_profile_path,
+            dry_run=True,
+            context=context,
+            cmd=learn_curate_cmd,
+        ),
+        expected="learn curate archive count changed",
+        scope="package smoke",
+    )
+    learn_curate_report_cmd = [
+        "design-ai",
+        "learn",
+        "--curate",
+        "--file",
+        str(learning_profile_path),
+        "--report",
+        "--out",
+        "learning-curation-report.md",
+    ]
+    return learn_curate_report_cmd
+
+
+def _self_test_learn_audit_cleanup(context, learn_curate_report_cmd, learning_profile_path) -> None:
+    """Package smoke self-test: learn audit cleanup contracts."""
+    assert_learning_curation_report(
+        "\n".join([
+            "# Learning Curation Report",
+            "- Mode: preview",
+            "- Archive candidates: 2",
+            "## Archive Candidates",
+            "- `learn-b`: duplicate-entry",
+            "- `learn-c`: sensitive-content",
+            "## Usage Review",
+            "Usage sidecars store selected entry ids and short brief hashes",
+            "- Review archive candidates, then rerun `design-ai learn --curate --yes` only if the proposed archive actions are correct.",
+        ]),
+        context=context,
+        cmd=learn_curate_report_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_curation_report(
+            "# Learning Curation Report\n- Mode: preview\n",
+            context=context,
+            cmd=learn_curate_report_cmd,
+        ),
+        expected="learn curate report missing 'Archive candidates: 2'",
+        scope="package smoke",
+    )
+    learn_audit_human_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_profile_path)]
+    assert_learning_audit_cleanup_human(
+        "\n".join([
+            "design-ai learn",
+            "Local learning profile audit",
+            "Status: warn",
+            "Suggested cleanup:",
+            "- remove-duplicate (learn-b): Remove the duplicate entry.",
+            "  design-ai learn --file /tmp/learning.json --forget learn-b --yes",
+            "- remove-or-redact-sensitive-content (learn-c): Remove sensitive content.",
+            "  design-ai learn --file /tmp/learning.json --forget learn-c --yes",
+        ]),
+        context=context,
+        cmd=learn_audit_human_cmd,
+    )
+    expect_self_test_failure(
+        lambda: assert_learning_audit_cleanup_human(
+            "Local learning profile audit\nStatus: warn\n",
+            context=context,
+            cmd=learn_audit_human_cmd,
+        ),
+        expected="learn audit human output missing 'Suggested cleanup:'",
+        scope="package smoke",
+    )
+
+
 def run_self_test() -> None:
     context = "package smoke self-test"
     run_image_console_self_test()
@@ -8402,7111 +15587,24 @@ def run_self_test() -> None:
     )
 
     with tempfile.TemporaryDirectory(prefix="design-ai-package-smoke-self-test-") as tmp:
-        tarball_root = Path(tmp) / "tarball-root" / "package" / "cli" / "lib"
-        tarball_root.mkdir(parents=True)
-        packed_manifest_path = tarball_root / "capability-manifest.json"
-        packed_manifest_path.write_text(
-            json.dumps(EXPECTED_CAPABILITIES),
-            encoding="utf-8",
-        )
-        packed_manifest_tarball = Path(tmp) / "capability-manifest.tgz"
-        with tarfile.open(packed_manifest_tarball, "w:gz") as archive:
-            archive.add(
-                packed_manifest_path,
-                arcname="package/cli/lib/capability-manifest.json",
-            )
-        assert_tarball_capability_manifest(packed_manifest_tarball)
+        learn_feedback_cmd, learn_feedback_out_cmd, learning_feedback_out_path, learning_feedback_payload, learning_profile_path = _self_test_check_site_and_mcp(context, tmp)
+        learning_diff_path = _self_test_learn_init_import_backup(context, learn_feedback_cmd, learn_feedback_out_cmd, learning_feedback_out_path, learning_feedback_payload, learning_profile_path, tmp)
+        learn_stats_cmd, learning_stats_payload = _self_test_learn_restore_and_prune(context, learning_diff_path, learning_profile_path, tmp)
+        learning_relevance_cmd, learning_relevance_payload, learning_usage_path = _self_test_learn_query_and_export(context, learn_stats_cmd, learning_profile_path, learning_stats_payload, tmp)
+        _self_test_learn_usage_and_signals(context, learning_profile_path, learning_relevance_cmd, learning_relevance_payload, learning_usage_path, tmp)
 
-        drifted_capabilities = json.loads(json.dumps(EXPECTED_CAPABILITIES))
-        drifted_capabilities["routes"][0] = "design-review-drifted"
-        packed_manifest_path.write_text(
-            json.dumps(drifted_capabilities),
-            encoding="utf-8",
-        )
-        drifted_manifest_tarball = Path(tmp) / "capability-manifest-drifted.tgz"
-        with tarfile.open(drifted_manifest_tarball, "w:gz") as archive:
-            archive.add(
-                packed_manifest_path,
-                arcname="package/cli/lib/capability-manifest.json",
-            )
-        expect_self_test_failure(
-            lambda: assert_tarball_capability_manifest(drifted_manifest_tarball),
-            expected="differs from the verified source contract",
-            scope="package smoke packed capability manifest",
-        )
-
-        report_path = Path(tmp) / "doctor.json"
-        report_path.write_text(passing_doctor_report_json(), encoding="utf-8")
-        assert_doctor_report_file(report_path, context=context)
-        expect_self_test_failure(
-            lambda: assert_doctor_report_file(Path(tmp) / "missing.json", context=context),
-            expected="failed to read doctor JSON",
-            scope="package smoke",
-        )
-
-        site_next_actions_out_path = Path(tmp) / "site-next-actions.json"
-        site_next_actions_out_path.write_text(passing_site_next_actions_json(), encoding="utf-8")
-        site_next_actions_out_cmd = [
-            "design-ai",
-            "site",
-            "--stdin",
-            "--next-actions",
-            "--json",
-            "--out",
-            str(site_next_actions_out_path),
-            "--force",
-        ]
-        assert_site_next_actions_json_file_output(
-            f"Wrote {site_next_actions_out_path}\n",
-            site_next_actions_out_path.read_text(encoding="utf-8"),
-            output_path=str(site_next_actions_out_path),
-            context=f"{context} site next-actions JSON out",
-            cmd=site_next_actions_out_cmd,
-        )
-        site_next_actions_human_out_path = Path(tmp) / "site-next-actions.md"
-        site_next_actions_human_out_path.write_text(passing_site_next_actions_human(), encoding="utf-8")
-        site_next_actions_human_out_cmd = [
-            "design-ai",
-            "site",
-            "--stdin",
-            "--next-actions",
-            "--out",
-            str(site_next_actions_human_out_path),
-            "--force",
-        ]
-        assert_site_next_actions_human_file_output(
-            f"Wrote {site_next_actions_human_out_path}\n",
-            site_next_actions_human_out_path.read_text(encoding="utf-8"),
-            output_path=str(site_next_actions_human_out_path),
-            context=f"{context} site next-actions human out",
-            cmd=site_next_actions_human_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_site_next_actions_human_file_output(
-                f"Wrote {site_next_actions_human_out_path}\n",
-                passing_site_next_actions_human().replace("does not call external MCPs", "may call external MCPs"),
-                output_path=str(site_next_actions_human_out_path),
-                context=f"{context} site next-actions human out",
-                cmd=site_next_actions_human_out_cmd,
-            ),
-            expected="missing fragment",
-            scope="package smoke",
-        )
-
-        site_mcp_check_probes_out_path = Path(tmp) / "site-mcp-check-probes.json"
-        site_mcp_check_probes_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
-        site_mcp_check_probes_out_cmd = [
-            "design-ai",
-            "site",
-            "--stdin",
-            "--mcp-check",
-            "--probes",
-            "--json",
-            "--out",
-            str(site_mcp_check_probes_out_path),
-            "--force",
-        ]
-        assert_site_mcp_check_probes_json_file_output(
-            f"Wrote {site_mcp_check_probes_out_path}\n",
-            site_mcp_check_probes_out_path.read_text(encoding="utf-8"),
-            output_path=str(site_mcp_check_probes_out_path),
-            context=f"{context} site mcp-check probes JSON out",
-            cmd=site_mcp_check_probes_out_cmd,
-        )
-        assert_site_mcp_check_probes_human(
-            passing_site_mcp_check_probes_human(),
-            context=f"{context} site mcp-check probes human",
-            cmd=["design-ai", "site", "--stdin", "--mcp-check", "--probes"],
-        )
-        site_mcp_check_probes_human_out_path = Path(tmp) / "site-mcp-check-probes.txt"
-        site_mcp_check_probes_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
-        site_mcp_check_probes_human_out_cmd = [
-            "design-ai",
-            "site",
-            "--stdin",
-            "--mcp-check",
-            "--probes",
-            "--out",
-            str(site_mcp_check_probes_human_out_path),
-            "--force",
-        ]
-        assert_site_mcp_check_probes_human_file_output(
-            f"Wrote {site_mcp_check_probes_human_out_path}\n",
-            site_mcp_check_probes_human_out_path.read_text(encoding="utf-8"),
-            output_path=str(site_mcp_check_probes_human_out_path),
-            context=f"{context} site mcp-check probes human out",
-            cmd=site_mcp_check_probes_human_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_site_mcp_check_probes_json_file_output(
-                f"Wrote {site_mcp_check_probes_out_path}\n",
-                site_mcp_check_probes_out_path.read_text(encoding="utf-8").replace(
-                    '"externalCalls": false',
-                    '"externalCalls": true',
-                ),
-                output_path=str(site_mcp_check_probes_out_path),
-                context=f"{context} site mcp-check probes JSON out",
-                cmd=site_mcp_check_probes_out_cmd,
-            ),
-            expected="without external calls",
-            scope="package smoke",
-        )
-
-        site_mcp_plan_json_out_path = Path(tmp) / "site-mcp-plan-probes.json"
-        site_mcp_plan_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
-        site_mcp_plan_json_out_cmd = [
-            "design-ai",
-            "site",
-            "--stdin",
-            "--mcp-plan",
-            "--probes",
-            "--json",
-            "--out",
-            str(site_mcp_plan_json_out_path),
-            "--force",
-        ]
-        assert_site_mcp_plan_probes_json_file_output(
-            f"Wrote {site_mcp_plan_json_out_path}\n",
-            site_mcp_plan_json_out_path.read_text(encoding="utf-8"),
-            output_path=str(site_mcp_plan_json_out_path),
-            context=f"{context} site mcp-plan probes JSON out",
-            cmd=site_mcp_plan_json_out_cmd,
-        )
-        site_mcp_plan_human_out_path = Path(tmp) / "site-mcp-plan-probes-human.txt"
-        site_mcp_plan_human_out_path.write_text(passing_site_mcp_check_probes_human(), encoding="utf-8")
-        site_mcp_plan_human_out_cmd = site_mcp_probe_embedded_command(
-            json.loads(passing_site_mcp_plan_json(probes=True)),
-            "mcpCheckProbesHumanOut",
-            ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"],
-            output_path=str(site_mcp_plan_human_out_path),
-            context=f"{context} site mcp-plan probes emitted human out command",
-        )
-        assert_site_mcp_check_probes_human_file_output(
-            f"Wrote {site_mcp_plan_human_out_path}\n",
-            site_mcp_plan_human_out_path.read_text(encoding="utf-8"),
-            output_path=str(site_mcp_plan_human_out_path),
-            context=f"{context} site mcp-plan probes emitted human out",
-            cmd=site_mcp_plan_human_out_cmd,
-        )
-        site_mcp_plan_check_json_out_path = Path(tmp) / "site-mcp-plan-probes-check.json"
-        site_mcp_plan_check_json_out_path.write_text(passing_site_mcp_check_probes_json(), encoding="utf-8")
-        site_mcp_plan_check_json_out_cmd = site_mcp_probe_embedded_command(
-            json.loads(passing_site_mcp_plan_json(probes=True)),
-            "mcpCheckProbesJsonOut",
-            ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"],
-            output_path=str(site_mcp_plan_check_json_out_path),
-            context=f"{context} site mcp-plan probes emitted check JSON out command",
-        )
-        assert_site_mcp_check_probes_json_file_output(
-            f"Wrote {site_mcp_plan_check_json_out_path}\n",
-            site_mcp_plan_check_json_out_path.read_text(encoding="utf-8"),
-            output_path=str(site_mcp_plan_check_json_out_path),
-            context=f"{context} site mcp-plan probes emitted check JSON out",
-            cmd=site_mcp_plan_check_json_out_cmd,
-        )
-        site_mcp_plan_emitted_json_out_path = Path(tmp) / "site-mcp-plan-probes-emitted.json"
-        site_mcp_plan_emitted_json_out_path.write_text(passing_site_mcp_plan_json(probes=True), encoding="utf-8")
-        site_mcp_plan_emitted_json_out_cmd = site_mcp_probe_embedded_command(
-            json.loads(passing_site_mcp_plan_json(probes=True)),
-            "mcpPlanProbesJsonOut",
-            ["design-ai", "site", "--stdin", "--mcp-plan", "--probes", "--json"],
-            output_path=str(site_mcp_plan_emitted_json_out_path),
-            context=f"{context} site mcp-plan probes emitted plan JSON out command",
-        )
-        assert_site_mcp_plan_probes_json_file_output(
-            f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
-            site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8"),
-            output_path=str(site_mcp_plan_emitted_json_out_path),
-            context=f"{context} site mcp-plan probes emitted plan JSON out",
-            cmd=site_mcp_plan_emitted_json_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_site_mcp_check_probes_human_file_output(
-                f"Wrote {site_mcp_plan_human_out_path}\n",
-                site_mcp_plan_human_out_path.read_text(encoding="utf-8").replace(
-                    "Probe commands:",
-                    "Probe notes:",
-                ),
-                output_path=str(site_mcp_plan_human_out_path),
-                context=f"{context} site mcp-plan probes emitted human out",
-                cmd=site_mcp_plan_human_out_cmd,
-            ),
-            expected="Probe commands",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_site_mcp_check_probes_json_file_output(
-                f"Wrote {site_mcp_plan_check_json_out_path}\n",
-                site_mcp_plan_check_json_out_path.read_text(encoding="utf-8").replace(
-                    '"externalCalls": false',
-                    '"externalCalls": true',
-                ),
-                output_path=str(site_mcp_plan_check_json_out_path),
-                context=f"{context} site mcp-plan probes emitted check JSON out",
-                cmd=site_mcp_plan_check_json_out_cmd,
-            ),
-            expected="external calls",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_site_mcp_plan_probes_json_file_output(
-                f"Wrote {site_mcp_plan_emitted_json_out_path}\n",
-                site_mcp_plan_emitted_json_out_path.read_text(encoding="utf-8").replace(
-                    '"targetRepoMutation": false',
-                    '"targetRepoMutation": true',
-                ),
-                output_path=str(site_mcp_plan_emitted_json_out_path),
-                context=f"{context} site mcp-plan probes emitted plan JSON out",
-                cmd=site_mcp_plan_emitted_json_out_cmd,
-            ),
-            expected="local/read-only",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_site_mcp_plan_probes_json_file_output(
-                f"Wrote {site_mcp_plan_json_out_path}\n",
-                site_mcp_plan_json_out_path.read_text(encoding="utf-8").replace(
-                    '"externalCalls": false',
-                    '"externalCalls": true',
-                ),
-                output_path=str(site_mcp_plan_json_out_path),
-                context=f"{context} site mcp-plan probes JSON out",
-                cmd=site_mcp_plan_json_out_cmd,
-            ),
-            expected="local/read-only",
-            scope="package smoke",
-        )
-
-        check_learning_profile_path = Path(tmp) / "check-learning.json"
-        check_learning_entries = [
-            {
-                "id": "learn-check-keyboard",
-                "category": "accessibility",
-                "text": "Improve future outputs by addressing Keyboard and focus behavior: No keyboard or focus behavior note detected.",
-                "source": "check:artifact",
-                "createdAt": "2026-05-22T00:00:00.000Z",
-            },
-            {
-                "id": "learn-check-responsive",
-                "category": "workflow",
-                "text": "Improve future outputs by addressing Responsive behavior: No mobile/desktop/responsive behavior note detected.",
-                "source": "check:artifact",
-                "createdAt": "2026-05-22T00:00:01.000Z",
-            },
-            {
-                "id": "learn-check-screen-reader",
-                "category": "accessibility",
-                "text": "Improve future outputs by addressing Screen-reader semantics: No screen-reader or ARIA behavior note detected.",
-                "source": "check:artifact",
-                "createdAt": "2026-05-22T00:00:02.000Z",
-            },
-            {
-                "id": "learn-check-misuse",
-                "category": "workflow",
-                "text": "Improve future outputs by addressing Misuse guidance: No Don't/avoid/anti-pattern guidance detected.",
-                "source": "check:artifact",
-                "createdAt": "2026-05-22T00:00:03.000Z",
-            },
-        ]
-        check_learning_profile_path.write_text(
-            json.dumps(
-                {
-                    "version": 1,
-                    "updatedAt": "2026-05-22T00:00:03.000Z",
-                    "entries": check_learning_entries,
-                },
-                indent=2,
-            )
-            + "\n",
-            encoding="utf-8",
-        )
-        check_learning_cmd = [
-            "design-ai",
-            "check",
-            "check-learning.md",
-            "--learn",
-            "--yes",
-            "--learning-file",
-            str(check_learning_profile_path),
-            "--json",
-        ]
-        check_learning_payload = {
-            "filePath": "/tmp/check-learning.md",
-            "status": "warn",
-            "passes": 5,
-            "warnings": 4,
-            "failures": 0,
-            "total": 9,
-            "score": "5/9",
-            "results": [],
-            "learningCapture": {
-                "file": str(check_learning_profile_path),
-                "dryRun": False,
-                "applied": True,
-                "source": "check:artifact",
-                "candidateCount": 4,
-                "addedCount": 4,
-                "skippedCount": 0,
-                "count": 4,
-                "entries": check_learning_entries,
-                "skipped": [],
-            },
-        }
-        assert_check_learning_capture_json(
-            json.dumps(check_learning_payload),
-            profile_path=check_learning_profile_path,
-            expected_file_suffix="check-learning.md",
-            context=context,
-            cmd=check_learning_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_check_learning_capture_json(
-                json.dumps({
-                    **check_learning_payload,
-                    "learningCapture": {
-                        **check_learning_payload["learningCapture"],
-                        "addedCount": 3,
-                    },
-                }),
-                profile_path=check_learning_profile_path,
-                expected_file_suffix="check-learning.md",
-                context=context,
-                cmd=check_learning_cmd,
-            ),
-            expected="check learning capture counts changed",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_check_learning_capture_json(
-                json.dumps({
-                    **check_learning_payload,
-                    "learningCapture": {
-                        **check_learning_payload["learningCapture"],
-                        "source": "check:component-spec",
-                    },
-                }),
-                profile_path=check_learning_profile_path,
-                expected_file_suffix="check-learning.md",
-                context=context,
-                cmd=check_learning_cmd,
-            ),
-            expected="check learning capture metadata changed",
-            scope="package smoke",
-        )
-
-        learning_profile_path = Path(tmp) / "learning.json"
-        learn_feedback_cmd = [
-            "design-ai",
-            "learn",
-            "--feedback",
-            "Keep audit findings short and evidence-led",
-            "--outcome",
-            "keep",
-            "--file",
-            str(learning_profile_path),
-            "--json",
-        ]
-        learning_feedback_payload = {
-            "file": str(learning_profile_path),
-            "feedback": {
-                "outcome": "keep",
-                "category": "workflow",
-                "instruction": "Repeat in future outputs: Keep audit findings short and evidence-led",
-            },
-            "entry": {
-                "id": "learn-feedback",
-                "category": "workflow",
-                "text": "Repeat in future outputs: Keep audit findings short and evidence-led",
-                "source": "feedback:keep",
-                "createdAt": "2026-05-22T00:00:00.000Z",
-            },
-            "count": 1,
-        }
-        assert_learning_feedback_json(
-            json.dumps(learning_feedback_payload),
-            profile_path=learning_profile_path,
-            outcome="keep",
-            category="workflow",
-            expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
-            expected_count=1,
-            context=context,
-            cmd=learn_feedback_cmd,
-        )
-        learning_feedback_out_path = Path(tmp) / "learning-feedback-out.json"
-        learning_feedback_out_path.write_text(json.dumps(learning_feedback_payload), encoding="utf-8")
-        learn_feedback_out_cmd = [
-            "design-ai",
-            "learn",
-            "--feedback",
-            "Keep audit findings short and evidence-led",
-            "--outcome",
-            "keep",
-            "--file",
-            str(learning_profile_path),
-            "--json",
-            "--out",
-            str(learning_feedback_out_path),
-            "--force",
-        ]
-        assert_output_write_success(
-            f"Wrote {learning_feedback_out_path}\n",
-            context=f"{context} feedback out",
-            cmd=learn_feedback_out_cmd,
-            expected_path=str(learning_feedback_out_path),
-        )
-        assert_learning_feedback_json(
-            learning_feedback_out_path.read_text(encoding="utf-8"),
-            profile_path=learning_profile_path,
-            outcome="keep",
-            category="workflow",
-            expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
-            expected_count=1,
-            context=f"{context} feedback out file",
-            cmd=learn_feedback_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_feedback_json(
-                json.dumps({
-                    **learning_feedback_payload,
-                    "entry": {
-                        **learning_feedback_payload["entry"],
-                        "source": "cli",
-                    },
-                }),
-                profile_path=learning_profile_path,
-                outcome="keep",
-                category="workflow",
-                expected_instruction="Repeat in future outputs: Keep audit findings short and evidence-led",
-                expected_count=1,
-                context=context,
-                cmd=learn_feedback_cmd,
-            ),
-            expected="learn feedback source should preserve the outcome",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_output_write_success(
-                "Wrote different-feedback.json\n",
-                context=f"{context} feedback out",
-                cmd=learn_feedback_out_cmd,
-                expected_path=str(learning_feedback_out_path),
-            ),
-            expected="output write success",
-            scope="package smoke",
-        )
-
-        learn_init_cmd = [
-            "design-ai",
-            "learn",
-            "--init",
-            "--yes",
-            "--file",
-            str(learning_profile_path),
-            "--json",
-        ]
-        learning_init_entries = [
-            {
-                "id": "learn-init-preference",
-                "category": "preference",
-                "text": "Prefer concise, evidence-led design recommendations with one best path and explicit tradeoffs.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:00.000Z",
-            },
-            {
-                "id": "learn-init-workflow",
-                "category": "workflow",
-                "text": "For implementation work, inspect repository context first, keep edits scoped, and run meaningful verification before handoff.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:01.000Z",
-            },
-            {
-                "id": "learn-init-a11y",
-                "category": "accessibility",
-                "text": "For non-trivial UI, include keyboard navigation, visible focus, screen-reader behavior, and WCAG 2.1 AA contrast notes.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:02.000Z",
-            },
-            {
-                "id": "learn-init-korean",
-                "category": "korean",
-                "text": "When Korean users or Korean copy are involved, use Pretendard, Korean typography line-height, dense mobile conventions, and a consistent honorific level.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:03.000Z",
-            },
-            {
-                "id": "learn-init-brand",
-                "category": "brand",
-                "text": "Use restrained product UI language for internal tools and avoid decorative marketing phrasing unless explicitly requested.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:04.000Z",
-            },
-            {
-                "id": "learn-init-constraint",
-                "category": "constraint",
-                "text": "Do not add external AI APIs, embeddings, telemetry, or fine-tuning behavior without explicit approval.",
-                "source": "init:local-dogfood",
-                "createdAt": "2026-05-22T00:00:05.000Z",
-            },
-        ]
-        learning_init_payload = {
-            "file": str(learning_profile_path),
-            "dryRun": False,
-            "applied": True,
-            "source": "init:local-dogfood",
-            "candidateCount": 6,
-            "addedCount": 6,
-            "skippedCount": 0,
-            "count": 6,
-            "entries": learning_init_entries,
-            "skipped": [],
-        }
-        assert_learning_init_json(
-            json.dumps(learning_init_payload),
-            profile_path=learning_profile_path,
-            dry_run=False,
-            added_count=6,
-            skipped_count=0,
-            count=6,
-            context=context,
-            cmd=learn_init_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_init_json(
-                json.dumps({
-                    **learning_init_payload,
-                    "source": "cli",
-                }),
-                profile_path=learning_profile_path,
-                dry_run=False,
-                added_count=6,
-                skipped_count=0,
-                count=6,
-                context=context,
-                cmd=learn_init_cmd,
-            ),
-            expected="learn init source changed",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_init_json(
-                json.dumps({
-                    **learning_init_payload,
-                    "entries": [
-                        {
-                            **learning_init_entries[0],
-                            "category": "workflow",
-                        },
-                        *learning_init_entries[1:],
-                    ],
-                }),
-                profile_path=learning_profile_path,
-                dry_run=False,
-                added_count=6,
-                skipped_count=0,
-                count=6,
-                context=context,
-                cmd=learn_init_cmd,
-            ),
-            expected="learn init entry categories changed",
-            scope="package smoke",
-        )
-
-        learn_import_cmd = [
-            "design-ai",
-            "learn",
-            "--import",
-            "--from-file",
-            str(Path(tmp) / "import.json"),
-            "--dry-run",
-            "--file",
-            str(learning_profile_path),
-            "--json",
-        ]
-        learning_import_payload = {
-            "file": str(learning_profile_path),
-            "dryRun": True,
-            "applied": False,
-            "importedCount": 2,
-            "addedCount": 1,
-            "skippedCount": 1,
-            "added": [
-                {
-                    "id": "learn-new",
-                    "category": "korean",
-                    "source": "import:cli",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                    "textPreview": "Prefer dense Korean mobile layouts",
-                },
-            ],
-            "skipped": [
-                {
-                    "id": "learn-existing",
-                    "category": "brand",
-                    "source": "import:package-smoke",
-                    "createdAt": "2026-05-22T00:00:00.000Z",
-                    "textPreview": "Use quiet enterprise language",
-                    "reason": "duplicate-entry-text",
-                },
-            ],
-            "count": 2,
-        }
-        assert_learning_import_json(
-            json.dumps(learning_import_payload),
-            profile_path=learning_profile_path,
-            dry_run=True,
-            context=context,
-            cmd=learn_import_cmd,
-        )
-        learning_import_out_path = Path(tmp) / "learning-import-out.json"
-        learning_import_out_path.write_text(json.dumps(learning_import_payload), encoding="utf-8")
-        learn_import_out_cmd = [
-            "design-ai",
-            "learn",
-            "--import",
-            "--from-file",
-            str(Path(tmp) / "import.json"),
-            "--dry-run",
-            "--file",
-            str(learning_profile_path),
-            "--json",
-            "--out",
-            str(learning_import_out_path),
-            "--force",
-        ]
-        assert_output_write_success(
-            f"Wrote {learning_import_out_path}\n",
-            context=f"{context} import out",
-            cmd=learn_import_out_cmd,
-            expected_path=str(learning_import_out_path),
-        )
-        assert_learning_import_json(
-            learning_import_out_path.read_text(encoding="utf-8"),
-            profile_path=learning_profile_path,
-            dry_run=True,
-            context=f"{context} import out file",
-            cmd=learn_import_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_import_json(
-                json.dumps({**learning_import_payload, "addedCount": 2}),
-                profile_path=learning_profile_path,
-                dry_run=True,
-                context=context,
-                cmd=learn_import_cmd,
-            ),
-            expected="learn import added count changed",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_output_write_success(
-                "Wrote different-import.json\n",
-                context=f"{context} import out",
-                cmd=learn_import_out_cmd,
-                expected_path=str(learning_import_out_path),
-            ),
-            expected="output write success",
-            scope="package smoke",
-        )
-
-        learning_backup_payload = {
-            "file": str(learning_profile_path),
-            "version": 1,
-            "updatedAt": "2026-05-22T00:00:00.000Z",
-            "exportedAt": "2026-05-22T00:01:00.000Z",
-            "count": 1,
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-            "entries": [
-                {
-                    "id": "learn-existing",
-                    "category": "brand",
-                    "text": "Use quiet enterprise language",
-                    "source": "package-smoke",
-                    "createdAt": "2026-05-22T00:00:00.000Z",
-                },
-            ],
-        }
-        learn_backup_cmd = ["design-ai", "learn", "--backup", "--file", str(learning_profile_path), "--json"]
-        assert_learning_backup_json(
-            json.dumps(learning_backup_payload),
-            profile_path=learning_profile_path,
-            expected_count=1,
-            expected_status="pass",
-            context=context,
-            cmd=learn_backup_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_backup_json(
-                json.dumps({**learning_backup_payload, "entries": []}),
-                profile_path=learning_profile_path,
-                expected_count=1,
-                expected_status="pass",
-                context=context,
-                cmd=learn_backup_cmd,
-            ),
-            expected="learn backup entries list changed",
-            scope="package smoke",
-        )
-
-        learning_redact_payload = {
-            "file": str(learning_profile_path),
-            "version": 1,
-            "updatedAt": "2026-05-22T00:00:01.000Z",
-            "exportedAt": "2026-05-24T00:00:00.000Z",
-            "redacted": True,
-            "count": 2,
-            "redactedCount": 1,
-            "sourceAuditSummary": {
-                "status": "warn",
-                "failures": 0,
-                "warnings": 2,
-            },
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-            "redactions": [
-                {
-                    "entryId": "learn-sensitive",
-                    "category": "constraint",
-                    "codes": ["sensitive-secret-assignment", "sensitive-openai-secret-key"],
-                    "textPreview": "Never include [REDACTED:secret-assignment] [REDACTED:openai-secret-key] in shared...",
-                },
-            ],
-            "entries": [
-                {
-                    "id": "learn-sensitive",
-                    "category": "constraint",
-                    "text": "Never include [REDACTED:secret-assignment] [REDACTED:openai-secret-key] in shared learning profiles",
-                    "source": "package-smoke",
-                    "createdAt": "2026-05-22T00:00:00.000Z",
-                },
-                {
-                    "id": "learn-clean",
-                    "category": "korean",
-                    "text": "Prefer dense Korean mobile layouts",
-                    "source": "package-smoke",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                },
-            ],
-        }
-        learn_redact_cmd = ["design-ai", "learn", "--redact", "--file", str(learning_profile_path), "--json"]
-        assert_learning_redact_json(
-            json.dumps(learning_redact_payload),
-            profile_path=learning_profile_path,
-            expected_count=2,
-            expected_redacted_count=1,
-            context=context,
-            cmd=learn_redact_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_redact_json(
-                json.dumps({**learning_redact_payload, "redactedCount": 0}),
-                profile_path=learning_profile_path,
-                expected_count=2,
-                expected_redacted_count=1,
-                context=context,
-                cmd=learn_redact_cmd,
-            ),
-            expected="learn redact redactedCount changed",
-            scope="package smoke",
-        )
-
-        learning_verify_payload = {
-            "source": str(Path(tmp) / "learning-backup.json"),
-            "importable": True,
-            "count": 1,
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-            "issues": [],
-            "entries": [
-                {
-                    "id": "learn-existing",
-                    "category": "brand",
-                    "source": "import:package-smoke",
-                    "createdAt": "2026-05-22T00:00:00.000Z",
-                    "textPreview": "Use quiet enterprise language",
-                },
-            ],
-        }
-        learn_verify_cmd = ["design-ai", "learn", "--verify", "--from-file", str(Path(tmp) / "learning-backup.json"), "--json"]
-        assert_learning_verify_json(
-            json.dumps(learning_verify_payload),
-            source=str(Path(tmp) / "learning-backup.json"),
-            expected_count=1,
-            expected_status="pass",
-            context=context,
-            cmd=learn_verify_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_verify_json(
-                json.dumps({**learning_verify_payload, "importable": False}),
-                source=str(Path(tmp) / "learning-backup.json"),
-                expected_count=1,
-                expected_status="pass",
-                context=context,
-                cmd=learn_verify_cmd,
-            ),
-            expected="learn verify importable flag changed",
-            scope="package smoke",
-        )
-        learning_verify_out_path = Path(tmp) / "learning-verify-out.json"
-        learn_verify_out_cmd = [
-            "design-ai",
-            "learn",
-            "--verify",
-            "--from-file",
-            str(Path(tmp) / "learning-backup.json"),
-            "--json",
-            "--out",
-            str(learning_verify_out_path),
-            "--force",
-        ]
-        learning_verify_out_path.write_text(json.dumps(learning_verify_payload), encoding="utf-8")
-        assert_output_write_success(
-            f"Wrote {learning_verify_out_path}\n",
-            context=f"{context} verify out",
-            cmd=learn_verify_out_cmd,
-            expected_path=str(learning_verify_out_path),
-        )
-        assert_learning_verify_json(
-            learning_verify_out_path.read_text(encoding="utf-8"),
-            source=str(Path(tmp) / "learning-backup.json"),
-            expected_count=1,
-            expected_status="pass",
-            context=f"{context} verify out file",
-            cmd=learn_verify_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_output_write_success(
-                "Wrote different-verify.json\n",
-                context=f"{context} verify out",
-                cmd=learn_verify_out_cmd,
-                expected_path=str(learning_verify_out_path),
-            ),
-            expected="output write success",
-            scope="package smoke",
-        )
-
-        learning_diff_path = Path(tmp) / "learning-diff.json"
-        learning_diff_payload = {
-            "file": str(learning_profile_path),
-            "source": str(learning_diff_path),
-            "generatedAt": "2026-05-22T00:01:00.000Z",
-            "profileExists": True,
-            "profileUpdatedAt": "2026-05-22T00:00:00.000Z",
-            "comparisonUpdatedAt": "2026-05-22T00:00:03.000Z",
-            "profileCount": 1,
-            "comparisonCount": 3,
-            "profileAuditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-            "comparisonAuditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-            "sameTextCount": 1,
-            "profileOnlyCount": 0,
-            "comparisonOnlyCount": 2,
-            "metadataChangedCount": 1,
-            "idConflictCount": 1,
-            "profileOnly": [],
-            "comparisonOnly": [
-                {
-                    "id": "learn-new",
-                    "category": "korean",
-                    "source": "backup",
-                    "createdAt": "2026-05-22T00:00:02.000Z",
-                    "textPreview": "Prefer dense Korean mobile layouts",
-                },
-                {
-                    "id": "learn-existing",
-                    "category": "workflow",
-                    "source": "backup",
-                    "createdAt": "2026-05-22T00:00:03.000Z",
-                    "textPreview": "Use a release checklist before handoff",
-                },
-            ],
-            "metadataChanged": [
-                {
-                    "key": "brand\nuse quiet enterprise language",
-                    "changedFields": ["id", "source", "createdAt"],
-                    "profile": {
-                        "id": "learn-existing",
-                        "category": "brand",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                        "textPreview": "Use quiet enterprise language",
-                    },
-                    "comparison": {
-                        "id": "learn-existing-restored",
-                        "category": "brand",
-                        "source": "backup",
-                        "createdAt": "2026-05-22T00:00:01.000Z",
-                        "textPreview": "Use quiet enterprise language",
-                    },
-                },
-            ],
-            "idConflicts": [
-                {
-                    "id": "learn-existing",
-                    "profile": {
-                        "id": "learn-existing",
-                        "category": "brand",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                        "textPreview": "Use quiet enterprise language",
-                    },
-                    "comparison": {
-                        "id": "learn-existing",
-                        "category": "workflow",
-                        "source": "backup",
-                        "createdAt": "2026-05-22T00:00:03.000Z",
-                        "textPreview": "Use a release checklist before handoff",
-                    },
-                },
-            ],
-            "recommendations": [],
-            "privacy": {
-                "storesRawBriefText": False,
-                "exposesEntryTextPreview": True,
-                "mutatesProfile": False,
-            },
-        }
-        learn_diff_cmd = [
-            "design-ai",
-            "learn",
-            "--diff",
-            "--from-file",
-            str(learning_diff_path),
-            "--file",
-            str(learning_profile_path),
-            "--json",
-        ]
-        assert_learning_diff_json(
-            json.dumps(learning_diff_payload),
-            profile_path=learning_profile_path,
-            source=str(learning_diff_path),
-            context=context,
-            cmd=learn_diff_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_diff_json(
-                json.dumps({**learning_diff_payload, "comparisonOnlyCount": 1}),
-                profile_path=learning_profile_path,
-                source=str(learning_diff_path),
-                context=context,
-                cmd=learn_diff_cmd,
-            ),
-            expected="learn diff comparison-only count changed",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_diff_json(
-                json.dumps({
-                    **learning_diff_payload,
-                    "privacy": {
-                        **learning_diff_payload["privacy"],
-                        "mutatesProfile": True,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                source=str(learning_diff_path),
-                context=context,
-                cmd=learn_diff_cmd,
-            ),
-            expected="learn diff should report read-only privacy behavior",
-            scope="package smoke",
-        )
-
-        learning_restore_path = Path(tmp) / "learning-restore.json"
-        learning_restore_backup_path = Path(tmp) / "learning.restore-backup-20260522T000100000Z.json"
-        learning_restore_backup_prune_path = Path(tmp) / "learning.restore-backup-20260522T000000000Z.json"
-        learning_restore_payload = {
-            "file": str(learning_profile_path),
-            "source": str(learning_restore_path),
-            "generatedAt": "2026-05-22T00:01:00.000Z",
-            "dryRun": True,
-            "applied": False,
-            "restorable": True,
-            "profileExists": True,
-            "backupFile": str(learning_restore_backup_path),
-            "backupCreated": False,
-            "backupEntryCount": 1,
-            "backupUpdatedAt": "2026-05-22T00:00:00.000Z",
-            "rollbackCommand": f"design-ai learn --restore --from-file {learning_restore_backup_path} --file {learning_profile_path} --dry-run",
-            "previousUpdatedAt": "2026-05-22T00:00:00.000Z",
-            "restoredUpdatedAt": "2026-05-22T00:00:03.000Z",
-            "previousCount": 1,
-            "restoredCount": 3,
-            "removedCount": 0,
-            "addedCount": 2,
-            "sameTextCount": 1,
-            "metadataChangedCount": 1,
-            "idConflictCount": 1,
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-            "issues": [],
-            "diff": {
-                "profileOnlyCount": 0,
-                "comparisonOnlyCount": 2,
-                "metadataChangedCount": 1,
-                "idConflictCount": 1,
-                "profileOnly": [],
-                "comparisonOnly": learning_diff_payload["comparisonOnly"],
-                "metadataChanged": learning_diff_payload["metadataChanged"],
-                "idConflicts": learning_diff_payload["idConflicts"],
-            },
-            "privacy": {
-                "storesRawBriefText": False,
-                "exposesEntryTextPreview": True,
-                "mutatesProfile": False,
-            },
-        }
-        learn_restore_cmd = [
-            "design-ai",
-            "learn",
-            "--restore",
-            "--from-file",
-            str(learning_restore_path),
-            "--dry-run",
-            "--file",
-            str(learning_profile_path),
-            "--json",
-        ]
-        assert_learning_restore_json(
-            json.dumps(learning_restore_payload),
-            profile_path=learning_profile_path,
-            source=str(learning_restore_path),
-            dry_run=True,
-            context=context,
-            cmd=learn_restore_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_restore_json(
-                json.dumps({**learning_restore_payload, "restoredCount": 2}),
-                profile_path=learning_profile_path,
-                source=str(learning_restore_path),
-                dry_run=True,
-                context=context,
-                cmd=learn_restore_cmd,
-            ),
-            expected="learn restore restored count changed",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_restore_json(
-                json.dumps({**learning_restore_payload, "backupCreated": True}),
-                profile_path=learning_profile_path,
-                source=str(learning_restore_path),
-                dry_run=True,
-                context=context,
-                cmd=learn_restore_cmd,
-            ),
-            expected="learn restore backup created flag changed",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_restore_json(
-                json.dumps({
-                    **learning_restore_payload,
-                    "privacy": {
-                        **learning_restore_payload["privacy"],
-                        "mutatesProfile": True,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                source=str(learning_restore_path),
-                dry_run=True,
-                context=context,
-                cmd=learn_restore_cmd,
-            ),
-            expected="learn restore privacy mutation flag changed",
-            scope="package smoke",
-        )
-
-        learning_restore_backups_payload = {
-            "file": str(learning_profile_path),
-            "directory": str(learning_profile_path.parent),
-            "pattern": "learning.restore-backup-*.json",
-            "generatedAt": "2026-05-22T00:02:00.000Z",
-            "limit": 1,
-            "totalCount": 1,
-            "count": 1,
-            "backups": [
-                {
-                    "file": str(learning_restore_backup_path),
-                    "name": learning_restore_backup_path.name,
-                    "createdAt": "2026-05-22T00:01:00.000Z",
-                    "modifiedAt": "2026-05-22T00:01:00.000Z",
-                    "sizeBytes": 512,
-                    "updatedAt": "2026-05-22T00:00:00.000Z",
-                    "entryCount": 1,
-                    "auditSummary": {
-                        "status": "pass",
-                        "failures": 0,
-                        "warnings": 0,
-                    },
-                    "issueCount": 0,
-                    "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_backup_path} --file {learning_profile_path} --dry-run",
-                },
-            ],
-            "privacy": {
-                "storesRawBriefText": False,
-                "exposesEntryTextPreview": False,
-                "mutatesProfile": False,
-            },
-        }
-        learn_restore_backups_cmd = [
-            "design-ai",
-            "learn",
-            "--restore-backups",
-            "--file",
-            str(learning_profile_path),
-            "--limit",
-            "1",
-            "--json",
-        ]
-        assert_learning_restore_backups_json(
-            json.dumps(learning_restore_backups_payload),
-            profile_path=learning_profile_path,
-            backup_path=learning_restore_backup_path,
-            context=context,
-            cmd=learn_restore_backups_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_restore_backups_json(
-                json.dumps({**learning_restore_backups_payload, "totalCount": 0}),
-                profile_path=learning_profile_path,
-                backup_path=learning_restore_backup_path,
-                context=context,
-                cmd=learn_restore_backups_cmd,
-            ),
-            expected="learn restore-backups should find rollback backups",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_restore_backups_json(
-                json.dumps({
-                    **learning_restore_backups_payload,
-                    "privacy": {
-                        **learning_restore_backups_payload["privacy"],
-                        "mutatesProfile": True,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                backup_path=learning_restore_backup_path,
-                context=context,
-                cmd=learn_restore_backups_cmd,
-            ),
-            expected="learn restore-backups privacy mutation flag changed",
-            scope="package smoke",
-        )
-
-        learning_restore_backups_prune_payload = {
-            **learning_restore_backups_payload,
-            "totalCount": 2,
-            "prune": {
-                "dryRun": True,
-                "applied": False,
-                "keep": 1,
-                "retainedCount": 1,
-                "candidateCount": 1,
-                "deletedCount": 0,
-                "failureCount": 0,
-                "retained": learning_restore_backups_payload["backups"],
-                "candidates": [
-                    {
-                        **learning_restore_backups_payload["backups"][0],
-                        "file": str(learning_restore_backup_prune_path),
-                        "name": learning_restore_backup_prune_path.name,
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                        "restorePreviewCommand": f"design-ai learn --restore --from-file {learning_restore_backup_prune_path} --file {learning_profile_path} --dry-run",
-                    },
-                ],
-                "deleted": [],
-                "failures": [],
-            },
-            "privacy": {
-                "storesRawBriefText": False,
-                "exposesEntryTextPreview": False,
-                "mutatesProfile": False,
-                "deletesBackupFiles": False,
-            },
-        }
-        learn_restore_backups_prune_cmd = [
-            "design-ai",
-            "learn",
-            "--restore-backups",
-            "--prune",
-            "--keep",
-            "1",
-            "--file",
-            str(learning_profile_path),
-            "--json",
-        ]
-        assert_learning_restore_backups_prune_json(
-            json.dumps(learning_restore_backups_prune_payload),
-            profile_path=learning_profile_path,
-            deleted_path=learning_restore_backup_prune_path,
-            dry_run=True,
-            context=context,
-            cmd=learn_restore_backups_prune_cmd,
-        )
-        assert_learning_restore_backups_prune_json(
-            json.dumps({
-                **learning_restore_backups_prune_payload,
-                "prune": {
-                    **learning_restore_backups_prune_payload["prune"],
-                    "dryRun": False,
-                    "applied": True,
-                    "deletedCount": 1,
-                    "deleted": learning_restore_backups_prune_payload["prune"]["candidates"],
-                },
-                "privacy": {
-                    **learning_restore_backups_prune_payload["privacy"],
-                    "deletesBackupFiles": True,
-                },
-            }),
-            profile_path=learning_profile_path,
-            deleted_path=learning_restore_backup_prune_path,
-            dry_run=False,
-            context=context,
-            cmd=[*learn_restore_backups_prune_cmd[:-1], "--yes", "--json"],
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_restore_backups_prune_json(
-                json.dumps({
-                    **learning_restore_backups_prune_payload,
-                    "prune": {
-                        **learning_restore_backups_prune_payload["prune"],
-                        "candidateCount": 0,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                deleted_path=learning_restore_backup_prune_path,
-                dry_run=True,
-                context=context,
-                cmd=learn_restore_backups_prune_cmd,
-            ),
-            expected="learn restore-backups prune candidate count changed",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_restore_backups_prune_json(
-                json.dumps({
-                    **learning_restore_backups_prune_payload,
-                    "privacy": {
-                        **learning_restore_backups_prune_payload["privacy"],
-                        "deletesBackupFiles": True,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                deleted_path=learning_restore_backup_prune_path,
-                dry_run=True,
-                context=context,
-                cmd=learn_restore_backups_prune_cmd,
-            ),
-            expected="learn restore-backups prune privacy flags changed",
-            scope="package smoke",
-        )
-
-        learning_stats_payload = {
-            "file": str(learning_profile_path),
-            "exists": True,
-            "version": 1,
-            "updatedAt": "2026-05-22T00:00:03.000Z",
-            "count": 3,
-            "categoryCounts": {
-                "brand": 1,
-                "accessibility": 1,
-                "korean": 1,
-            },
-            "sourceCounts": {
-                "package-smoke": 1,
-                "feedback:keep": 1,
-                "import:cli": 1,
-            },
-            "oldestEntry": {
-                "id": "learn-brand",
-                "category": "brand",
-                "source": "package-smoke",
-                "createdAt": "2026-05-22T00:00:00.000Z",
-                "textPreview": "Use quiet enterprise brand language",
-            },
-            "latestEntry": {
-                "id": "learn-korean",
-                "category": "korean",
-                "source": "import:cli",
-                "createdAt": "2026-05-22T00:00:03.000Z",
-                "textPreview": "Prefer dense Korean mobile layouts with compact controls",
-            },
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-        }
-        learn_stats_cmd = ["design-ai", "learn", "--stats", "--file", str(learning_profile_path), "--json"]
-        assert_learning_stats_json(
-            json.dumps(learning_stats_payload),
-            profile_path=learning_profile_path,
-            context=context,
-            cmd=learn_stats_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_stats_json(
-                json.dumps({
-                    **learning_stats_payload,
-                    "sourceCounts": {
-                        "package-smoke": 3,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                context=context,
-                cmd=learn_stats_cmd,
-            ),
-            expected="learn stats source distribution changed",
-            scope="package smoke",
-        )
-        learning_stats_out_path = Path(tmp) / "learning-stats-out.json"
-        learning_stats_out_path.write_text(json.dumps(learning_stats_payload), encoding="utf-8")
-        learn_stats_out_cmd = [
-            "design-ai",
-            "learn",
-            "--stats",
-            "--file",
-            str(learning_profile_path),
-            "--json",
-            "--out",
-            str(learning_stats_out_path),
-            "--force",
-        ]
-        assert_output_write_success(
-            f"Wrote {learning_stats_out_path}\n",
-            context=f"{context} stats out",
-            cmd=learn_stats_out_cmd,
-            expected_path=str(learning_stats_out_path),
-        )
-        assert_learning_stats_json(
-            learning_stats_out_path.read_text(encoding="utf-8"),
-            profile_path=learning_profile_path,
-            context=f"{context} stats out file",
-            cmd=learn_stats_out_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_output_write_success(
-                "Wrote different-stats.json\n",
-                context=f"{context} stats out",
-                cmd=learn_stats_out_cmd,
-                expected_path=str(learning_stats_out_path),
-            ),
-            expected="output write success",
-            scope="package smoke",
-        )
-        learn_stats_human_cmd = ["design-ai", "learn", "--stats", "--file", str(learning_profile_path)]
-        assert_learning_stats_human(
-            "\n".join([
-                "design-ai learn",
-                "Local learning profile stats",
-                f"File: {learning_profile_path}",
-                "Exists: yes",
-                "Entries: 3",
-                "Updated: 2026-05-22T00:00:03.000Z",
-                "Audit: pass (0 failure(s), 0 warning(s))",
-                "Categories: brand 1, accessibility 1, korean 1",
-                "Sources: package-smoke 1, feedback:keep 1, import:cli 1",
-                "",
-                "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
-                "        learn-korean · 2026-05-22T00:00:03.000Z",
-                "Oldest: [brand] Use quiet enterprise brand language",
-                "        learn-brand · 2026-05-22T00:00:00.000Z",
-            ]),
-            context=context,
-            cmd=learn_stats_human_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_stats_human(
-                "\n".join([
-                    "design-ai learn",
-                    "Local learning profile stats",
-                    f"File: {learning_profile_path}",
-                    "Exists: yes",
-                    "Entries: 3",
-                    "Updated: 2026-05-22T00:00:03.000Z",
-                    "Audit: pass (0 failure(s), 0 warning(s))",
-                    "Categories: brand 1, accessibility 1, korean 1",
-                    "",
-                    "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
-                    "        learn-korean · 2026-05-22T00:00:03.000Z",
-                    "Oldest: [brand] Use quiet enterprise brand language",
-                    "        learn-brand · 2026-05-22T00:00:00.000Z",
-                ]),
-                context=context,
-                cmd=learn_stats_human_cmd,
-            ),
-            expected="learn stats human output missing 'Sources: package-smoke 1, feedback:keep 1, import:cli 1'",
-            scope="package smoke",
-        )
-
-        learning_query_payload = {
-            "file": str(learning_profile_path),
-            "version": 1,
-            "updatedAt": "2026-05-22T00:00:02.000Z",
-            "category": "",
-            "query": "keyboard accessibility",
-            "limit": 2,
-            "entries": [
-                {
-                    "id": "learn-relevant",
-                    "category": "accessibility",
-                    "text": "Prioritize keyboard accessibility details for Button component API specs",
-                    "source": "package-smoke",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                },
-            ],
-            "count": 1,
-            "totalCount": 3,
-            "selection": {
-                "mode": "brief-relevance",
-                "query": "keyboard accessibility",
-                "candidateCount": 3,
-                "matchedCount": 1,
-                "queryTokenCount": 2,
-                "fallbackEnabled": False,
-                "selectedCount": 1,
-                "fallbackCount": 0,
-                "selected": [
-                    {
-                        "id": "learn-relevant",
-                        "category": "accessibility",
-                        "score": 2.114533,
-                        "matchedTokens": ["accessibility", "keyboard"],
-                        "reason": "brief-match",
-                    },
-                ],
-            },
-        }
-        learn_query_cmd = [
-            "design-ai",
-            "learn",
-            "--list",
-            "--query",
-            "keyboard accessibility",
-            "--explain",
-            "--limit",
-            "2",
-            "--json",
-        ]
-        assert_learning_query_json(
-            json.dumps(learning_query_payload),
-            profile_path=learning_profile_path,
-            context=context,
-            cmd=learn_query_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_query_json(
-                json.dumps({
-                    **learning_query_payload,
-                    "selection": {
-                        **learning_query_payload["selection"],
-                        "selected": [
-                            {
-                                **learning_query_payload["selection"]["selected"][0],
-                                "matchedTokens": ["keyboard"],
-                            },
-                        ],
-                    },
-                }),
-                profile_path=learning_profile_path,
-                context=context,
-                cmd=learn_query_cmd,
-            ),
-            expected="learn query explain should include matched query tokens",
-            scope="package smoke",
-        )
-        learn_query_human_cmd = [
-            "design-ai",
-            "learn",
-            "--list",
-            "--query",
-            "keyboard accessibility",
-            "--explain",
-            "--limit",
-            "2",
-        ]
-        assert_learning_query_human(
-            "\n".join([
-                "design-ai learn",
-                "Local learning profile",
-                f"File: {learning_profile_path}",
-                "Entries: 1/3",
-                "Query: keyboard accessibility",
-                "Limit: 2",
-                "Explain: selection score, matched tokens, and reason",
-                "",
-                "1. [accessibility] Prioritize keyboard accessibility details for Button component API specs",
-                "   learn-relevant · 2026-05-22T00:00:01.000Z",
-                "   score 2.114533 · matched accessibility, keyboard · reason brief-match",
-            ]),
-            context=context,
-            cmd=learn_query_human_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_query_human(
-                "\n".join([
-                    "Local learning profile",
-                    "Entries: 1/3",
-                    "Query: keyboard accessibility",
-                    "Limit: 2",
-                    "Explain: selection score, matched tokens, and reason",
-                    "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
-                    "matched accessibility, keyboard",
-                ]),
-                context=context,
-                cmd=learn_query_human_cmd,
-            ),
-            expected="learn query human output missing 'reason brief-match'",
-            scope="package smoke",
-        )
-
-        learning_query_export_payload = {
-            "file": str(learning_profile_path),
-            "category": "",
-            "limit": 2,
-            "query": "keyboard accessibility",
-            "selection": {
-                "mode": "brief-relevance",
-                "query": "keyboard accessibility",
-                "candidateCount": 3,
-                "matchedCount": 1,
-                "queryTokenCount": 2,
-                "fallbackEnabled": False,
-                "selectedCount": 1,
-                "fallbackCount": 0,
-                "selected": [
-                    {
-                        "id": "learn-relevant",
-                        "category": "accessibility",
-                        "score": 2.114533,
-                        "matchedTokens": ["accessibility", "keyboard"],
-                        "reason": "brief-match",
-                    },
-                ],
-            },
-            "entries": learning_query_payload["entries"],
-            "empty": False,
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-            "markdown": "Learning selection: brief relevance (1/3 matched; no recency fallback).\nPrioritize keyboard accessibility details",
-        }
-        learn_query_export_cmd = [
-            "design-ai",
-            "learn",
-            "--export",
-            "--query",
-            "keyboard accessibility",
-            "--limit",
-            "2",
-            "--json",
-        ]
-        assert_learning_query_export_json(
-            json.dumps(learning_query_export_payload),
-            profile_path=learning_profile_path,
-            context=context,
-            cmd=learn_query_export_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_query_export_json(
-                json.dumps({
-                    **learning_query_export_payload,
-                    "selection": {
-                        **learning_query_export_payload["selection"],
-                        "fallbackEnabled": True,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                context=context,
-                cmd=learn_query_export_cmd,
-            ),
-            expected="learn query export should not use recency fallback",
-            scope="package smoke",
-        )
-
-        learning_relevance_payload = {
-            "learningContext": {
-                "selection": {
-                    "mode": "brief-relevance",
-                    "query": EXPECTED_ROUTE_BRIEF,
-                    "candidateCount": 3,
-                    "matchedCount": 1,
-                    "selectedCount": 1,
-                    "fallbackCount": 0,
-                    "selected": [
-                        {
-                            "id": "learn-relevant",
-                            "category": "accessibility",
-                            "score": 10,
-                            "matchedTokens": ["button", "accessibility"],
-                            "reason": "brief-match",
-                        },
-                    ],
-                },
-                "entries": [
-                    {
-                        "id": "learn-relevant",
-                        "category": "accessibility",
-                        "text": "Prioritize keyboard accessibility details for Button component API specs",
-                    },
-                ],
-            },
-            "prompt": (
-                "Learning selection: brief relevance\n"
-                "Prioritize keyboard accessibility details for Button component API specs"
-            ),
-            "learningUsage": {
-                "recorded": True,
-                "event": {
-                    "id": "learn-use-prompt",
-                    "command": "prompt",
-                    "routeId": EXPECTED_ROUTE_ID,
-                    "profileFile": str(learning_profile_path),
-                    "briefHash": "0123456789abcdef",
-                    "selectedEntryIds": ["learn-relevant"],
-                    "selectedCount": 1,
-                    "candidateCount": 3,
-                    "matchedCount": 1,
-                    "fallbackCount": 0,
-                    "queryTokenCount": 6,
-                    "auditStatus": "pass",
-                    "createdAt": "2026-06-01T00:00:00.000Z",
-                },
-            },
-        }
-        learning_relevance_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-learning", "--json"]
-        assert_learning_relevance_context(
-            learning_relevance_payload,
-            context=context,
-            cmd=learning_relevance_cmd,
-        )
-        assert_learning_usage_payload(
-            learning_relevance_payload,
-            expected_command="prompt",
-            context=context,
-            cmd=learning_relevance_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_relevance_context(
-                {
-                    **learning_relevance_payload,
-                    "learningContext": {
-                        **learning_relevance_payload["learningContext"],
-                        "entries": [
-                            {
-                                "id": "learn-unrelated-newer",
-                                "category": "korean",
-                                "text": "Prefer dense Korean mobile checkout layout",
-                            },
-                        ],
-                    },
-                },
-                context=context,
-                cmd=learning_relevance_cmd,
-            ),
-            expected="brief relevance should pick the Button accessibility entry",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_usage_payload(
-                {
-                    **learning_relevance_payload,
-                    "learningUsage": {
-                        **learning_relevance_payload["learningUsage"],
-                        "event": {
-                            **learning_relevance_payload["learningUsage"]["event"],
-                            "brief": EXPECTED_ROUTE_BRIEF,
-                            "briefHash": "",
-                        },
-                    },
-                },
-                expected_command="prompt",
-                context=context,
-                cmd=learning_relevance_cmd,
-            ),
-            expected="learningUsage event should store a short brief hash",
-            scope="package smoke",
-        )
-
-        recall_payload = {
-            "recall": {
-                "query": EXPECTED_ROUTE_BRIEF,
-                "mode": "lexical",
-                "candidateCount": 42,
-                "selectedCount": 2,
-                "selected": [
-                    {
-                        "id": "knowledge/components/INDEX.md",
-                        "score": 9.5,
-                        "matchedTokens": ["button", "component"],
-                    },
-                    {
-                        "id": "knowledge/a11y/keyboard-and-focus.md",
-                        "score": 4.2,
-                        "matchedTokens": ["accessibility"],
-                    },
-                ],
-                "markdown": (
-                    "## Recalled design knowledge\n\n"
-                    "- knowledge/components/INDEX.md\n"
-                    "  - Component index\n"
-                    "- knowledge/a11y/keyboard-and-focus.md\n"
-                    "  - Keyboard and focus"
-                ),
-            },
-            "prompt": (
-                "Recalled corpus knowledge:\n\n"
-                "## Recalled design knowledge\n\n"
-                "- knowledge/components/INDEX.md"
-            ),
-        }
-        recall_cmd = ["design-ai", "prompt", EXPECTED_ROUTE_BRIEF, "--with-recall", "--json"]
-        assert_recall_context(recall_payload, context=context, cmd=recall_cmd)
-        expect_self_test_failure(
-            lambda: assert_recall_context(
-                {**recall_payload, "recall": {**recall_payload["recall"], "mode": "embeddings"}},
-                context=context,
-                cmd=recall_cmd,
-            ),
-            expected="recall should use the deterministic lexical scorer",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_recall_context(
-                {**recall_payload, "recall": {**recall_payload["recall"], "selectedCount": 0, "selected": []}},
-                context=context,
-                cmd=recall_cmd,
-            ),
-            expected="recall should select at least one corpus file",
-            scope="package smoke",
-        )
-
-        learning_usage_path = Path(tmp) / "learning.usage.json"
-        learning_usage_path.write_text(
-            json.dumps({
-                "version": 1,
-                "updatedAt": "2026-06-01T00:00:01.000Z",
-                "profileFile": str(learning_profile_path),
-                "events": [
-                    {
-                        **learning_relevance_payload["learningUsage"]["event"],
-                        "id": "learn-use-prompt",
-                        "command": "prompt",
-                    },
-                    {
-                        **learning_relevance_payload["learningUsage"]["event"],
-                        "id": "learn-use-pack",
-                        "command": "pack",
-                        "createdAt": "2026-06-01T00:00:01.000Z",
-                    },
-                ],
-            }),
-            encoding="utf-8",
-        )
-        assert_learning_usage_sidecar(
-            learning_usage_path,
-            expected_commands=["prompt", "pack"],
-            context=context,
-            cmd=learning_relevance_cmd,
-        )
-        learning_usage_report_payload = {
-            "file": str(learning_profile_path),
-            "usageFile": str(learning_usage_path),
-            "exists": True,
-            "profileExists": True,
-            "profileFile": str(learning_profile_path),
-            "version": 1,
-            "updatedAt": "2026-06-01T00:00:01.000Z",
-            "eventCount": 2,
-            "profileEntryCount": 3,
-            "usedEntryCount": 1,
-            "unusedEntryCount": 2,
-            "staleSelectedEntryCount": 0,
-            "commandCounts": {
-                "prompt": 1,
-                "pack": 1,
-            },
-            "routeCounts": {
-                EXPECTED_ROUTE_ID: 2,
-            },
-            "categoryCounts": {
-                "all": 2,
-            },
-            "auditStatusCounts": {
-                "pass": 2,
-            },
-            "selectedEntryCounts": {
-                "learn-relevant": 2,
-            },
-            "topSelectedEntries": [
-                {
-                    "id": "learn-relevant",
-                    "category": "accessibility",
-                    "source": "package-smoke",
-                    "textPreview": "Prioritize keyboard accessibility details for Button component API specs",
-                    "usageCount": 2,
-                    "latestUsedAt": "2026-06-01T00:00:01.000Z",
-                    "commands": {
-                        "prompt": 1,
-                        "pack": 1,
-                    },
-                    "routes": {
-                        EXPECTED_ROUTE_ID: 2,
-                    },
-                },
-            ],
-            "unusedEntryIds": ["learn-unrelated-newer", "learn-brand"],
-            "staleSelectedEntryIds": [],
-            "oldestEvent": {
-                **learning_relevance_payload["learningUsage"]["event"],
-                "id": "learn-use-prompt",
-                "command": "prompt",
-            },
-            "latestEvent": {
-                **learning_relevance_payload["learningUsage"]["event"],
-                "id": "learn-use-pack",
-                "command": "pack",
-                "createdAt": "2026-06-01T00:00:01.000Z",
-            },
-            "recentEvents": [
-                {
-                    **learning_relevance_payload["learningUsage"]["event"],
-                    "id": "learn-use-pack",
-                    "command": "pack",
-                    "createdAt": "2026-06-01T00:00:01.000Z",
-                },
-            ],
-            "recommendations": [],
-            "privacy": {
-                "storesRawBriefText": False,
-                "storesBriefHash": True,
-                "storesSelectedEntryIds": True,
-            },
-        }
-        learn_usage_cmd = ["design-ai", "learn", "--usage", "--file", str(learning_profile_path), "--usage-file", str(learning_usage_path), "--json"]
-        assert_learning_usage_report_json(
-            json.dumps(learning_usage_report_payload),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=learn_usage_cmd,
-        )
-        assert_learning_usage_report_human(
-            "\n".join([
-                "design-ai learn",
-                "Local learning usage report",
-                f"Usage sidecar: {learning_usage_path}",
-                "Events: 2",
-                "Top selected entries:",
-                "Recent events:",
-                "Privacy: usage events store selected entry ids and a short brief hash",
-            ]),
-            context=context,
-            cmd=learn_usage_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_usage_report_json(
-                json.dumps({
-                    **learning_usage_report_payload,
-                    "latestEvent": {
-                        **learning_usage_report_payload["latestEvent"],
-                        "brief": EXPECTED_ROUTE_BRIEF,
-                        "briefHash": "",
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_usage_cmd,
-            ),
-            expected="learn usage report should keep event details privacy-preserving",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_usage_sidecar(
-                learning_usage_path.with_name("missing-usage.json"),
-                expected_commands=["prompt", "pack"],
-                context=context,
-                cmd=learning_relevance_cmd,
-            ),
-            expected="learning usage sidecar file should be written",
-            scope="package smoke",
-        )
-
-        learn_signals_cmd = [
-            "design-ai",
-            "learn",
-            "--signals",
-            "--file",
-            str(learning_profile_path),
-            "--usage-file",
-            str(learning_usage_path),
-            "--from-file",
-            str(Path(tmp)),
-            "--json",
-        ]
-        learning_signal_payload = {
-            "version": 1,
-            "generatedAt": "2026-06-02T00:00:00.000Z",
-            "status": "pass",
-            "file": str(learning_profile_path),
-            "signalSource": str(Path(tmp)),
-            "learning": {
-                "exists": True,
-                "version": 1,
-                "updatedAt": "2026-06-01T00:00:00.000Z",
-                "count": 3,
-                "categoryCounts": {"workflow": 2, "brand": 1},
-                "sourceCounts": {"feedback:keep": 2, "check:artifact": 1},
-                "auditSummary": {"status": "pass", "failures": 0, "warnings": 0},
-            },
-            "usage": {
-                "usageFile": str(learning_usage_path),
-                "exists": True,
-                "eventCount": 2,
-                "usedEntryCount": 2,
-                "unusedEntryCount": 1,
-                "staleSelectedEntryCount": 0,
-                "commandCounts": {"prompt": 1, "pack": 1},
-                "routeCounts": {EXPECTED_ROUTE_ID: 2},
-                "latestEvent": learning_usage_report_payload["latestEvent"],
-                "privacy": learning_usage_report_payload["privacy"],
-            },
-            "evals": {
-                "source": str(Path(tmp)),
-                "count": 1,
-                "reports": 1,
-                "templates": 0,
-                "failed": 0,
-                "warned": 0,
-                "passed": 1,
-                "files": [
-                    {
-                        "file": str(Path(tmp) / "route-eval-report.json"),
-                        "exists": True,
-                        "kind": "route-eval",
-                        "shape": "report",
-                        "status": "pass",
-                        "caseCount": 1,
-                        "passed": 1,
-                        "warned": 0,
-                        "failed": 0,
-                        "generatedAt": "2026-06-02T00:00:00.000Z",
-                        "error": "",
-                    },
-                ],
-            },
-            "checkCapture": {
-                "count": 1,
-                "categoryCounts": {"workflow": 1},
-                "sourceCounts": {"check:artifact": 1},
-                "latestEntries": [
-                    {
-                        "id": "learn-check",
-                        "category": "workflow",
-                        "source": "check:artifact",
-                        "createdAt": "2026-06-01T00:00:00.000Z",
-                        "textPreview": "Improve future outputs by addressing responsive QA.",
-                    },
-                ],
-            },
-            "workspace": {
-                "root": str(Path(tmp)),
-                "version": "4.55.0",
-                "git": {"isRepo": True, "branch": "main", "clean": True, "ahead": 0, "behind": 0},
-                "repository": {"status": "pass", "canonical": True},
-                "learning": {"status": "pass", "reason": ""},
-                "learningUsage": {"status": "pass", "reason": ""},
-                "learningEval": {"status": "pass", "reason": ""},
-                "nextActionCounts": {},
-                "nextActionCount": 0,
-            },
-            "readiness": {
-                "version": 1,
-                "status": "pass",
-                "summary": "Required and optional local learning signal surfaces are complete.",
-                "requiredPassCount": 4,
-                "requiredCount": 4,
-                "requiredReady": True,
-                "blockingCount": 0,
-                "optionalGapCount": 0,
-                "blockingChecks": [],
-                "optionalGaps": [],
-                "optionalGapDetails": [],
-                "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
-                "optionalCheckIds": ["usage-sidecar", "check-capture"],
-                "checkStatusById": {
-                    "learning-profile": "pass",
-                    "usage-sidecar": "pass",
-                    "eval-signals": "pass",
-                    "check-capture": "pass",
-                    "workspace-readiness": "pass",
-                    "agent-development": "pass",
-                },
-                "checkRequiredById": {
-                    "learning-profile": True,
-                    "usage-sidecar": False,
-                    "eval-signals": True,
-                    "check-capture": False,
-                    "workspace-readiness": True,
-                    "agent-development": True,
-                },
-                "checkCountByStatus": {
-                    "pass": 6,
-                    "info": 0,
-                    "warn": 0,
-                    "fail": 0,
-                    "missing": 0,
-                    "template": 0,
-                    "unknown": 0,
-                },
-                "requiredCheckCountByStatus": {
-                    "pass": 4,
-                    "info": 0,
-                    "warn": 0,
-                    "fail": 0,
-                    "missing": 0,
-                    "template": 0,
-                    "unknown": 0,
-                },
-                "optionalCheckCountByStatus": {
-                    "pass": 2,
-                    "info": 0,
-                    "warn": 0,
-                    "fail": 0,
-                    "missing": 0,
-                    "template": 0,
-                    "unknown": 0,
-                },
-                "checks": [
-                    {"id": "learning-profile", "label": "Learning profile", "status": "pass", "required": True, "summary": "Profile is ready."},
-                    {"id": "usage-sidecar", "label": "Usage sidecar", "status": "pass", "required": False, "summary": "Usage is ready."},
-                    {"id": "eval-signals", "label": "Eval signals", "status": "pass", "required": True, "summary": "Eval is ready."},
-                    {"id": "check-capture", "label": "Check learning capture", "status": "pass", "required": False, "summary": "Check capture is ready."},
-                    {"id": "workspace-readiness", "label": "Workspace readiness", "status": "pass", "required": True, "summary": "Workspace is ready."},
-                    {"id": "agent-development", "label": "Agent development backlog", "status": "pass", "required": True, "summary": "Agent backlog is ready."},
-                ],
-            },
-            "agentDevelopment": {
-                "status": "pass",
-                "actionCount": 1,
-                "p0Count": 0,
-                "p1Count": 0,
-                "p2Count": 1,
-                "p3Count": 0,
-                "actions": [
-                    {
-                        "rank": 1,
-                        "id": "agent-skill-proposal-preview",
-                        "priority": "p2",
-                        "category": "skill-evolution",
-                        "title": "Preview skill instruction deltas from repeated check-capture signals.",
-                        "rationale": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
-                        "command": "design-ai learn --propose-skills --json",
-                        "evidence": {"checkCaptureCount": 1},
-                    },
-                ],
-                "privacy": {
-                    "mutatesProfile": False,
-                    "mutatesSkillFiles": False,
-                    "callsExternalAiApis": False,
-                    "storesRawBriefText": False,
-                },
-            },
-            "recommendations": [],
-            "privacy": {
-                "mutatesProfile": False,
-                "storesRawBriefText": False,
-                "exposesEntryTextPreview": True,
-                "readsSignalFilesOnly": True,
-            },
-        }
-        assert_learning_signal_report_json(
-            json.dumps(learning_signal_payload),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=learn_signals_cmd,
-        )
-        assert_learning_signal_report_human(
-            "\n".join([
-                "design-ai learn",
-                "Learning signal registry",
-                f"Signal source: {Path(tmp)}",
-                "Learning audit: pass",
-                "Eval signals:",
-                "Workspace readiness:",
-                "Agent development backlog:",
-                "Privacy: signal registry is read-only",
-            ]),
-            context=context,
-            cmd=learn_signals_cmd,
-        )
-        assert_learning_signal_report_markdown(
-            "\n".join([
-                "# Learning Signal Registry Report",
-                "",
-                f"- Learning file: {learning_profile_path}",
-                f"- Usage file: {learning_usage_path}",
-                "## Readiness Summary",
-                "- Required ready: yes",
-                "- Required checks: 4/4",
-                "- Blocking checks: 0",
-                "- Optional gaps: 0",
-                "Readiness check index:",
-                "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
-                "- Optional ids: usage-sidecar, check-capture",
-                "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
-                "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
-                "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
-                "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
-                "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
-                "## Learning Profile",
-                "## Usage Signals",
-                "## Eval Signals",
-                "## Check Capture",
-                "## Workspace Readiness",
-                "## Agent Development Backlog",
-                "```bash",
-                "design-ai learn --propose-skills --json",
-                "```",
-                "## Privacy And Boundaries",
-                "- Mutates learning profile: no",
-                "- Stores raw brief text: no",
-                "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.",
-            ]),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=[*learn_signals_cmd[:-1], "--report"],
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_signal_report_markdown(
-                "\n".join([
-                    "# Learning Signal Registry Report",
-                    "",
-                    f"- Learning file: {learning_profile_path}",
-                    f"- Usage file: {learning_usage_path}",
-                    "## Readiness Summary",
-                    "- Required ready: yes",
-                    "- Required checks: 4/4",
-                    "- Blocking checks: 0",
-                    "- Optional gaps: 0",
-                    "Readiness checks:",
-                    "## Learning Profile",
-                    "## Usage Signals",
-                    "## Eval Signals",
-                    "## Check Capture",
-                    "## Workspace Readiness",
-                    "## Agent Development Backlog",
-                    "```bash",
-                    "design-ai learn --propose-skills --json",
-                    "```",
-                    "## Privacy And Boundaries",
-                    "- Mutates learning profile: no",
-                    "- Stores raw brief text: no",
-                    "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.",
-                ]),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=[*learn_signals_cmd[:-1], "--report"],
-            ),
-            expected="learn signals Markdown report missing 'Readiness check index:'",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_signal_report_json(
-                json.dumps({
-                    **learning_signal_payload,
-                    "evals": {
-                        **learning_signal_payload["evals"],
-                        "files": [],
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_signals_cmd,
-            ),
-            expected="learn signals JSON should include route eval signal files",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_signal_report_json(
-                json.dumps({
-                    **learning_signal_payload,
-                    "agentDevelopment": {
-                        **learning_signal_payload["agentDevelopment"],
-                        "status": "warn",
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_signals_cmd,
-                require_agent_status_pass=True,
-            ),
-            expected="learn signals JSON should include passing agent development backlog actions",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_signal_report_json(
-                json.dumps({
-                    **learning_signal_payload,
-                    "agentDevelopment": {
-                        **learning_signal_payload["agentDevelopment"],
-                        "privacy": {
-                            **learning_signal_payload["agentDevelopment"]["privacy"],
-                            "callsExternalAiApis": True,
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_signals_cmd,
-            ),
-            expected="learn signals JSON should keep agent development backlog local and preview-only",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_signal_report_human(
-                "\n".join([
-                    "design-ai learn",
-                    "Learning signal registry",
-                    "Signal source:",
-                    "Learning audit:",
-                    "Eval signals:",
-                    "Privacy: signal registry is read-only",
-                ]),
-                context=context,
-                cmd=learn_signals_cmd,
-            ),
-            expected="learn signals human output missing 'Workspace readiness:'",
-            scope="package smoke",
-        )
-
-        learn_agent_backlog_cmd = [
-            "design-ai",
-            "learn",
-            "--agent-backlog",
-            "--file",
-            str(learning_profile_path),
-            "--usage-file",
-            str(learning_usage_path),
-            "--from-file",
-            str(Path(tmp)),
-            "--json",
-        ]
-        agent_backlog_refresh_args = [
-            "design-ai",
-            "learn",
-            "--agent-backlog",
-            "--from-file",
-            str(Path(tmp)),
-            "--file",
-            str(learning_profile_path),
-            "--usage-file",
-            str(learning_usage_path),
-            "--strict",
-            "--json",
-        ]
-        agent_backlog_refresh_command = " ".join(agent_backlog_refresh_args)
-        learning_agent_backlog_payload = {
-            "version": 1,
-            "generatedAt": "2026-06-02T00:00:05.000Z",
-            "status": "pass",
-            "signalStatus": "pass",
-            "file": str(learning_profile_path),
-            "usageFile": str(learning_usage_path),
-            "signalSource": str(Path(tmp)),
-            "counts": {
-                "actions": 1,
-                "p0": 0,
-                "p1": 0,
-                "p2": 1,
-                "p3": 0,
-                "learningEntries": 3,
-                "usageEvents": 2,
-                "evalSignals": 1,
-                "checkCaptures": 1,
-                "workspaceNextActions": 0,
-            },
-            "actions": [
-                {
-                    "rank": 1,
-                    "id": "agent-skill-proposal-preview",
-                    "priority": "p2",
-                    "category": "skill-evolution",
-                    "title": "Preview skill instruction deltas from repeated check-capture signals.",
-                    "rationale": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
-                    "command": "design-ai learn --propose-skills --json",
-                    "evidence": {"checkCaptureCount": 1},
-                },
-            ],
-            "actionPlan": {
-                "version": 1,
-                "stepCount": 1,
-                "nextStep": {
-                    "rank": 1,
-                    "actionId": "agent-skill-proposal-preview",
-                    "priority": "p2",
-                    "category": "skill-evolution",
-                    "title": "Preview skill instruction deltas from repeated check-capture signals.",
-                    "command": "design-ai learn --propose-skills --json",
-                    "expectedOutcome": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
-                    "verification": [
-                        "Run the command and inspect the preview/report output before applying any follow-up changes.",
-                        "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
-                    ],
-                    "requiresReviewBeforeMutation": False,
-                    "commandSafety": {
-                        "level": "read-only",
-                        "writesLocalFiles": False,
-                        "mutatesLocalState": False,
-                        "requiresCleanWorkspace": False,
-                        "detectedFlags": [],
-                        "reason": "Command is preview/report oriented and has no detected mutation flags.",
-                    },
-                },
-                "steps": [
-                    {
-                        "rank": 1,
-                        "actionId": "agent-skill-proposal-preview",
-                        "priority": "p2",
-                        "category": "skill-evolution",
-                        "title": "Preview skill instruction deltas from repeated check-capture signals.",
-                        "command": "design-ai learn --propose-skills --json",
-                        "expectedOutcome": "Captured warn/fail check results can become deterministic skill improvements without mutating skill files automatically.",
-                        "verification": [
-                            "Run the command and inspect the preview/report output before applying any follow-up changes.",
-                            "Re-run `design-ai learn --agent-backlog --strict --json` after the step to confirm the backlog status improved.",
-                        ],
-                        "requiresReviewBeforeMutation": False,
-                        "commandSafety": {
-                            "level": "read-only",
-                            "writesLocalFiles": False,
-                            "mutatesLocalState": False,
-                            "requiresCleanWorkspace": False,
-                            "detectedFlags": [],
-                            "outputTargets": [],
-                            "profileTargets": [],
-                            "usageTargets": [],
-                            "mutationFlags": [],
-                            "reason": "Command is preview/report oriented and has no detected mutation flags.",
-                        },
-                    },
-                ],
-                "safetySummary": {
-                    "total": 1,
-                    "readOnly": 1,
-                    "writesLocalFile": 0,
-                    "mutatesLocalState": 0,
-                    "requiresCleanWorkspace": 0,
-                    "requiresReviewBeforeMutation": 0,
-                },
-                "executionQueue": {
-                    "orderedCount": 1,
-                    "commandManifestCount": 1,
-                    "previewCount": 1,
-                    "fileWriteReviewCount": 0,
-                    "mutationReviewCount": 0,
-                    "nextActionId": "agent-skill-proposal-preview",
-                    "nextCommand": "design-ai learn --propose-skills --json",
-                    "nextCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
-                    "nextCommandRunPolicy": "preview-only",
-                    "nextCommandSelection": {
-                        "strategy": "first-command-in-safety-ordered-queue",
-                        "safetyOrder": ["read-only", "writes-local-file", "mutates-local-state"],
-                        "actionId": "agent-skill-proposal-preview",
-                        "rank": 1,
-                        "safetyLevel": "read-only",
-                        "runPolicy": "preview-only",
-                        "planNextActionId": "agent-skill-proposal-preview",
-                        "planNextActionRank": 1,
-                        "matchesPlanNextAction": True,
-                        "reason": "Selected the ranked next action because it is first in the safety-ordered queue.",
-                    },
-                    "nextCommandAlignment": {
-                        "strategy": "compare-operator-runbook-next-command-to-execution-queue-next-command",
-                        "operatorStage": "execute",
-                        "operatorActionId": "agent-skill-proposal-preview",
-                        "operatorCommand": "design-ai learn --propose-skills --json",
-                        "operatorCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
-                        "queueActionId": "agent-skill-proposal-preview",
-                        "queueCommand": "design-ai learn --propose-skills --json",
-                        "queueCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
-                        "rankedNextActionId": "agent-skill-proposal-preview",
-                        "matchesQueueNextCommand": True,
-                        "matchesQueueNextAction": True,
-                        "operatorRunsBeforeQueueCommand": False,
-                        "queueMatchesRankedNextAction": True,
-                        "reason": "Operator runbook starts with the same command as the safety-ordered execution queue.",
-                    },
-                    "operatorHandoff": {
-                        "version": 1,
-                        "decision": "run-shared-command",
-                        "state": {
-                            "version": 1,
-                            "status": "ready",
-                            "ready": True,
-                            "hasCommand": True,
-                            "complete": False,
-                            "canRunWithoutReview": True,
-                            "requiresGate": False,
-                            "requiresRefresh": True,
-                            "summary": "The handoff command can be presented or run, then refreshed with the focused backlog check.",
-                        },
-                        "source": "operator-runbook",
-                        "phase": "execute",
-                        "label": "Run agent-skill-proposal-preview",
-                        "command": "design-ai learn --propose-skills --json",
-                        "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
-                        "actionId": "agent-skill-proposal-preview",
-                        "rank": 1,
-                        "runPolicy": "preview-only",
-                        "required": True,
-                        "isGate": False,
-                        "nextQueueActionId": "agent-skill-proposal-preview",
-                        "nextQueueCommand": "design-ai learn --propose-skills --json",
-                        "nextQueueCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
-                        "nextQueueCommandRequiresGate": False,
-                        "operatorGateAppliesToNextQueueAction": False,
-                        "nextQueueActionBlockedByGate": False,
-                        "refreshCommand": agent_backlog_refresh_command,
-                        "refreshCommandArgs": agent_backlog_refresh_args,
-                        "refreshCommandLabel": "Refresh focused agent backlog after review",
-                        "refreshCommandRequired": True,
-                        "reviewLevel": "clear",
-                        "requiresOperatorReview": False,
-                        "reason": "Run the shared operator and queue command next.",
-                    },
-                    "commandEffectSummary": {
-                        "totalCommands": 1,
-                        "writesLocalFileCount": 0,
-                        "mutatesLocalStateCount": 0,
-                        "requiresCleanWorkspaceCount": 0,
-                        "outputTargetCount": 0,
-                        "profileTargetCount": 0,
-                        "usageTargetCount": 0,
-                        "mutationFlagCount": 0,
-                        "outputTargets": [],
-                        "profileTargets": [],
-                        "usageTargets": [],
-                        "mutationFlags": [],
-                    },
-                    "commandEffectReview": {
-                        "level": "clear",
-                        "requiresOperatorReview": False,
-                        "headline": "No command target or mutation flag exposure detected.",
-                        "checklist": [
-                            "No command target or mutation flag exposure detected.",
-                        ],
-                        "gatePhaseSummary": {
-                            "count": 1,
-                            "requiredCount": 1,
-                            "optionalCount": 0,
-                            "phases": ["refresh"],
-                            "hasBefore": False,
-                            "hasAfter": False,
-                            "hasRefresh": True,
-                        },
-                        "gateRunbook": {
-                            "before": [],
-                            "after": [],
-                            "refresh": [
-                                {
-                                    "phase": "refresh",
-                                    "label": "Refresh focused agent backlog after review",
-                                    "command": agent_backlog_refresh_command,
-                                    "commandArgs": agent_backlog_refresh_args,
-                                    "required": True,
-                                },
-                            ],
-                            "other": [],
-                        },
-                        "gateCommands": [
-                            {
-                                "phase": "refresh",
-                                "label": "Refresh focused agent backlog after review",
-                                "command": agent_backlog_refresh_command,
-                                "commandArgs": agent_backlog_refresh_args,
-                                "required": True,
-                            },
-                        ],
-                    },
-                    "operatorRunbook": {
-                        "version": 1,
-                        "stageCount": 4,
-                        "commandCount": 2,
-                        "requiredCommandCount": 2,
-                        "reviewLevel": "clear",
-                        "requiresOperatorReview": False,
-                        "phases": ["before", "execute", "after", "refresh"],
-                        "nextStage": "execute",
-                        "nextCommandLabel": "Run agent-skill-proposal-preview",
-                        "nextCommand": "design-ai learn --propose-skills --json",
-                        "nextCommandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
-                        "nextCommandRequired": True,
-                        "nextCommandRunPolicy": "preview-only",
-                        "nextCommandSelection": {
-                            "strategy": "first-command-in-operator-runbook-stage-order",
-                            "stageOrder": ["before", "execute", "after", "refresh"],
-                            "stage": "execute",
-                            "label": "Run agent-skill-proposal-preview",
-                            "command": "design-ai learn --propose-skills --json",
-                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
-                            "actionId": "agent-skill-proposal-preview",
-                            "rank": 1,
-                            "required": True,
-                            "runPolicy": "preview-only",
-                            "reason": "Selected the first command in the execute stage using operator runbook stage order.",
-                        },
-                        "stages": [
-                            {
-                                "phase": "before",
-                                "label": "Run before executing backlog commands",
-                                "commandCount": 0,
-                                "requiredCount": 0,
-                                "commands": [],
-                            },
-                            {
-                                "phase": "execute",
-                                "label": "Execute reviewed backlog commands",
-                                "commandCount": 1,
-                                "requiredCount": 1,
-                                "commands": [
-                                    {
-                                        "phase": "execute",
-                                        "rank": 1,
-                                        "actionId": "agent-skill-proposal-preview",
-                                        "label": "Run agent-skill-proposal-preview",
-                                        "command": "design-ai learn --propose-skills --json",
-                                        "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
-                                        "required": True,
-                                        "safetyLevel": "read-only",
-                                        "runPolicy": "preview-only",
-                                        "requiresReviewBeforeMutation": False,
-                                    },
-                                ],
-                            },
-                            {
-                                "phase": "after",
-                                "label": "Run after executing backlog commands",
-                                "commandCount": 0,
-                                "requiredCount": 0,
-                                "commands": [],
-                            },
-                            {
-                                "phase": "refresh",
-                                "label": "Refresh backlog status after execution",
-                                "commandCount": 1,
-                                "requiredCount": 1,
-                                "commands": [
-                                    {
-                                        "phase": "refresh",
-                                        "label": "Refresh focused agent backlog after review",
-                                        "command": agent_backlog_refresh_command,
-                                        "commandArgs": agent_backlog_refresh_args,
-                                        "required": True,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                    "ordered": [
-                        {
-                            "rank": 1,
-                            "actionId": "agent-skill-proposal-preview",
-                            "priority": "p2",
-                            "category": "skill-evolution",
-                            "title": "Preview skill instruction deltas from repeated check-capture signals.",
-                            "command": "design-ai learn --propose-skills --json",
-                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
-                            "safetyLevel": "read-only",
-                            "runPolicy": "preview-only",
-                            "commandEffects": {
-                                "writesLocalFiles": False,
-                                "mutatesLocalState": False,
-                                "requiresCleanWorkspace": False,
-                                "detectedFlags": [],
-                                "mutationFlags": [],
-                                "outputTargets": [],
-                                "profileTargets": [],
-                                "usageTargets": [],
-                                "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
-                            },
-                            "requiresReviewBeforeMutation": False,
-                        },
-                    ],
-                    "commandManifest": [
-                        {
-                            "rank": 1,
-                            "actionId": "agent-skill-proposal-preview",
-                            "command": "design-ai learn --propose-skills --json",
-                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
-                            "safetyLevel": "read-only",
-                            "runPolicy": "preview-only",
-                            "commandEffects": {
-                                "writesLocalFiles": False,
-                                "mutatesLocalState": False,
-                                "requiresCleanWorkspace": False,
-                                "detectedFlags": [],
-                                "mutationFlags": [],
-                                "outputTargets": [],
-                                "profileTargets": [],
-                                "usageTargets": [],
-                                "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
-                            },
-                            "requiresReviewBeforeMutation": False,
-                        },
-                    ],
-                    "preview": [
-                        {
-                            "rank": 1,
-                            "actionId": "agent-skill-proposal-preview",
-                            "priority": "p2",
-                            "category": "skill-evolution",
-                            "title": "Preview skill instruction deltas from repeated check-capture signals.",
-                            "command": "design-ai learn --propose-skills --json",
-                            "commandArgs": ["design-ai", "learn", "--propose-skills", "--json"],
-                            "safetyLevel": "read-only",
-                            "runPolicy": "preview-only",
-                            "commandEffects": {
-                                "writesLocalFiles": False,
-                                "mutatesLocalState": False,
-                                "requiresCleanWorkspace": False,
-                                "detectedFlags": [],
-                                "mutationFlags": [],
-                                "outputTargets": [],
-                                "profileTargets": [],
-                                "usageTargets": [],
-                                "reviewReason": "Command is preview/report oriented and has no detected mutation flags.",
-                            },
-                            "requiresReviewBeforeMutation": False,
-                        },
-                    ],
-                    "fileWriteReview": [],
-                    "mutationReview": [],
-                },
-                "verification": [
-                    {
-                        "label": "Refresh signal registry JSON",
-                        "command": "design-ai learn --signals --from-file . --json",
-                    },
-                    {
-                        "label": "Save signal registry Markdown handoff",
-                        "command": "design-ai learn --signals --from-file . --report --out learning-signals.md",
-                    },
-                    {
-                        "label": "Gate focused agent backlog",
-                        "command": agent_backlog_refresh_command,
-                        "commandArgs": agent_backlog_refresh_args,
-                    },
-                ],
-                "boundaries": {
-                    "reportMutatesProfile": False,
-                    "reportMutatesSkillFiles": False,
-                    "reportCallsExternalAiApis": False,
-                    "generatedFromLocalSignals": True,
-                },
-            },
-            "readiness": {
-                "version": 1,
-                "status": "pass",
-                "summary": "Required and optional local learning signal surfaces are complete.",
-                "requiredPassCount": 4,
-                "requiredCount": 4,
-                "requiredReady": True,
-                "blockingCount": 0,
-                "optionalGapCount": 0,
-                "blockingChecks": [],
-                "optionalGaps": [],
-                "optionalGapDetails": [],
-                "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
-                "optionalCheckIds": ["usage-sidecar", "check-capture"],
-                "checkStatusById": {
-                    "learning-profile": "pass",
-                    "usage-sidecar": "pass",
-                    "eval-signals": "pass",
-                    "check-capture": "pass",
-                    "workspace-readiness": "pass",
-                    "agent-development": "pass",
-                },
-                "checkRequiredById": {
-                    "learning-profile": True,
-                    "usage-sidecar": False,
-                    "eval-signals": True,
-                    "check-capture": False,
-                    "workspace-readiness": True,
-                    "agent-development": True,
-                },
-                "checkCountByStatus": {
-                    "pass": 6,
-                    "info": 0,
-                    "warn": 0,
-                    "fail": 0,
-                    "missing": 0,
-                    "template": 0,
-                    "unknown": 0,
-                },
-                "requiredCheckCountByStatus": {
-                    "pass": 4,
-                    "info": 0,
-                    "warn": 0,
-                    "fail": 0,
-                    "missing": 0,
-                    "template": 0,
-                    "unknown": 0,
-                },
-                "optionalCheckCountByStatus": {
-                    "pass": 2,
-                    "info": 0,
-                    "warn": 0,
-                    "fail": 0,
-                    "missing": 0,
-                    "template": 0,
-                    "unknown": 0,
-                },
-                "checks": [
-                    {
-                        "id": "learning-profile",
-                        "label": "Learning profile",
-                        "status": "pass",
-                        "required": True,
-                        "summary": "Profile has 3 entries with 0 audit failure(s) and 0 warning(s).",
-                        "evidence": {"entries": 3},
-                    },
-                    {
-                        "id": "usage-sidecar",
-                        "label": "Usage sidecar",
-                        "status": "pass",
-                        "required": False,
-                        "summary": "Usage sidecar has 2 event(s) and 0 stale selected id(s).",
-                        "evidence": {"events": 2},
-                    },
-                    {
-                        "id": "eval-signals",
-                        "label": "Eval signals",
-                        "status": "pass",
-                        "required": True,
-                        "summary": "Eval signals include 1 report(s), 0 unresolved template(s), 0 failed report(s), and 0 warned report(s).",
-                        "evidence": {"files": 1},
-                    },
-                    {
-                        "id": "check-capture",
-                        "label": "Check learning capture",
-                        "status": "pass",
-                        "required": False,
-                        "summary": "Profile includes 1 check-capture learning entry.",
-                        "evidence": {"entries": 1},
-                    },
-                    {
-                        "id": "workspace-readiness",
-                        "label": "Workspace readiness",
-                        "status": "pass",
-                        "required": True,
-                        "summary": "Workspace has 0 fail action(s), 0 warn action(s), and 0 total next action(s).",
-                        "evidence": {"nextActionCount": 0},
-                    },
-                    {
-                        "id": "agent-development",
-                        "label": "Agent development backlog",
-                        "status": "pass",
-                        "required": True,
-                        "summary": "Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
-                        "evidence": {"actions": 1},
-                    },
-                ],
-            },
-            "commands": {
-                "signalsJson": "design-ai learn --signals --from-file . --json",
-                "signalsReport": "design-ai learn --signals --from-file . --report --out learning-signals.md",
-            },
-            "recommendations": [],
-            "privacy": {
-                "mutatesProfile": False,
-                "mutatesSkillFiles": False,
-                "callsExternalAiApis": False,
-                "storesRawBriefText": False,
-                "readsSignalFilesOnly": True,
-            },
-        }
-        assert_agent_backlog_report_json(
-            json.dumps(learning_agent_backlog_payload),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=learn_agent_backlog_cmd,
-            require_status_pass=True,
-        )
-        missing_readiness_payload = json.loads(json.dumps(learning_agent_backlog_payload))
-        missing_readiness_payload.pop("readiness", None)
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_report_json(
-                json.dumps(missing_readiness_payload),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_agent_backlog_cmd,
-            ),
-            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
-            scope="package smoke",
-        )
-        no_command_agent_backlog_payload = {
-            "version": 1,
-            "generatedAt": "2026-06-02T00:00:06.000Z",
-            "status": "pass",
-            "signalStatus": "pass",
-            "file": str(learning_profile_path),
-            "usageFile": str(learning_usage_path),
-            "signalSource": str(Path(tmp)),
-            "counts": {
-                "actions": 0,
-                "p0": 0,
-                "p1": 0,
-                "p2": 0,
-                "p3": 0,
-                "learningEntries": 3,
-                "usageEvents": 2,
-                "evalSignals": 1,
-                "checkCaptures": 0,
-                "workspaceNextActions": 0,
-            },
-            "actions": [],
-            "actionPlan": {
-                "version": 1,
-                "stepCount": 0,
-                "nextStep": None,
-                "steps": [],
-                "safetySummary": {
-                    "total": 0,
-                    "readOnly": 0,
-                    "writesLocalFile": 0,
-                    "mutatesLocalState": 0,
-                    "requiresCleanWorkspace": 0,
-                    "requiresReviewBeforeMutation": 0,
-                },
-                "executionQueue": {
-                    "orderedCount": 0,
-                    "commandManifestCount": 0,
-                    "previewCount": 0,
-                    "fileWriteReviewCount": 0,
-                    "mutationReviewCount": 0,
-                    "nextActionId": "",
-                    "nextCommand": "",
-                    "nextCommandArgs": [],
-                    "nextCommandRunPolicy": "",
-                    "nextCommandSelection": {
-                        "strategy": "first-command-in-safety-ordered-queue",
-                        "safetyOrder": ["read-only", "writes-local-file", "mutates-local-state"],
-                        "actionId": "",
-                        "rank": None,
-                        "safetyLevel": "",
-                        "runPolicy": "",
-                        "planNextActionId": "",
-                        "planNextActionRank": None,
-                        "matchesPlanNextAction": False,
-                        "reason": "No command-bearing backlog action is available.",
-                    },
-                    "nextCommandAlignment": {
-                        "strategy": "compare-operator-runbook-next-command-to-execution-queue-next-command",
-                        "operatorStage": "refresh",
-                        "operatorActionId": "",
-                        "operatorCommand": agent_backlog_refresh_command,
-                        "operatorCommandArgs": agent_backlog_refresh_args,
-                        "queueActionId": "",
-                        "queueCommand": "",
-                        "queueCommandArgs": [],
-                        "rankedNextActionId": "",
-                        "matchesQueueNextCommand": False,
-                        "matchesQueueNextAction": False,
-                        "operatorRunsBeforeQueueCommand": False,
-                        "queueMatchesRankedNextAction": False,
-                        "reason": EXPECTED_AGENT_BACKLOG_EMPTY_QUEUE_ALIGNMENT_REASON,
-                    },
-                    "operatorHandoff": {
-                        "version": 1,
-                        "decision": "none",
-                        "state": {
-                            "version": 1,
-                            "status": "no-command",
-                            "ready": True,
-                            "hasCommand": False,
-                            "complete": True,
-                            "canRunWithoutReview": False,
-                            "requiresGate": False,
-                            "requiresRefresh": False,
-                            "summary": "Focused agent backlog is clear; no handoff command is required.",
-                        },
-                        "source": "",
-                        "phase": "",
-                        "label": "",
-                        "command": "",
-                        "commandArgs": [],
-                        "actionId": "",
-                        "rank": None,
-                        "runPolicy": "",
-                        "required": False,
-                        "isGate": False,
-                        "nextQueueActionId": "",
-                        "nextQueueCommand": "",
-                        "nextQueueCommandArgs": [],
-                        "nextQueueCommandRequiresGate": False,
-                        "operatorGateAppliesToNextQueueAction": False,
-                        "nextQueueActionBlockedByGate": False,
-                        "refreshCommand": agent_backlog_refresh_command,
-                        "refreshCommandArgs": agent_backlog_refresh_args,
-                        "refreshCommandLabel": "Refresh focused agent backlog after review",
-                        "refreshCommandRequired": False,
-                        "reviewLevel": "clear",
-                        "requiresOperatorReview": False,
-                        "reason": EXPECTED_AGENT_BACKLOG_NO_COMMAND_HANDOFF_REASON,
-                    },
-                    "commandEffectReview": {
-                        "level": "clear",
-                        "requiresOperatorReview": False,
-                        "headline": "No command target or mutation flag exposure detected.",
-                        "checklist": ["No command target or mutation flag exposure detected."],
-                        "gatePhaseSummary": {
-                            "count": 1,
-                            "requiredCount": 0,
-                            "optionalCount": 1,
-                            "phases": ["refresh"],
-                            "hasBefore": False,
-                            "hasAfter": False,
-                            "hasRefresh": True,
-                        },
-                        "gateRunbook": {
-                            "before": [],
-                            "after": [],
-                            "refresh": [
-                                {
-                                    "phase": "refresh",
-                                    "label": "Refresh focused agent backlog after review",
-                                    "command": agent_backlog_refresh_command,
-                                    "commandArgs": agent_backlog_refresh_args,
-                                    "required": False,
-                                },
-                            ],
-                            "other": [],
-                        },
-                        "gateCommands": [
-                            {
-                                "phase": "refresh",
-                                "label": "Refresh focused agent backlog after review",
-                                "command": agent_backlog_refresh_command,
-                                "commandArgs": agent_backlog_refresh_args,
-                                "required": False,
-                            },
-                        ],
-                    },
-                    "operatorRunbook": {
-                        "version": 1,
-                        "stageCount": 4,
-                        "commandCount": 1,
-                        "requiredCommandCount": 0,
-                        "reviewLevel": "clear",
-                        "requiresOperatorReview": False,
-                        "phases": ["before", "execute", "after", "refresh"],
-                        "nextStage": "refresh",
-                        "nextCommandLabel": "Refresh focused agent backlog after review",
-                        "nextCommand": agent_backlog_refresh_command,
-                        "nextCommandArgs": agent_backlog_refresh_args,
-                        "nextCommandRequired": False,
-                        "nextCommandRunPolicy": "",
-                        "nextCommandSelection": {
-                            "strategy": "first-command-in-operator-runbook-stage-order",
-                            "stageOrder": ["before", "execute", "after", "refresh"],
-                            "stage": "refresh",
-                            "label": "Refresh focused agent backlog after review",
-                            "command": agent_backlog_refresh_command,
-                            "commandArgs": agent_backlog_refresh_args,
-                            "actionId": "",
-                            "rank": None,
-                            "required": False,
-                            "runPolicy": "",
-                            "reason": EXPECTED_AGENT_BACKLOG_REFRESH_ONLY_RUNBOOK_REASON,
-                        },
-                    },
-                    "ordered": [],
-                    "commandManifest": [],
-                    "preview": [],
-                    "fileWriteReview": [],
-                    "mutationReview": [],
-                },
-                "verification": [
-                    {
-                        "label": "Gate focused agent backlog",
-                        "command": agent_backlog_refresh_command,
-                        "commandArgs": agent_backlog_refresh_args,
-                    },
-                ],
-                "boundaries": {
-                    "reportMutatesProfile": False,
-                    "reportMutatesSkillFiles": False,
-                    "reportCallsExternalAiApis": False,
-                    "generatedFromLocalSignals": True,
-                },
-            },
-            "readiness": {
-                "version": 1,
-                "status": "pass",
-                "summary": "Required local learning signal surfaces are ready; optional evidence gaps remain.",
-                "requiredPassCount": 4,
-                "requiredCount": 4,
-                "requiredReady": True,
-                "blockingCount": 0,
-                "optionalGapCount": 1,
-                "blockingChecks": [],
-                "optionalGaps": ["check-capture"],
-                "optionalGapDetails": [
-                    {
-                        "id": "check-capture",
-                        "label": "Check learning capture",
-                        "status": "info",
-                        "summary": "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
-                        "reason": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON,
-                        "nextCondition": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION,
-                        "automationPolicy": EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY,
-                    },
-                ],
-                "requiredCheckIds": ["learning-profile", "eval-signals", "workspace-readiness", "agent-development"],
-                "optionalCheckIds": ["usage-sidecar", "check-capture"],
-                "checkStatusById": {
-                    "learning-profile": "pass",
-                    "usage-sidecar": "pass",
-                    "eval-signals": "pass",
-                    "check-capture": "info",
-                    "workspace-readiness": "pass",
-                    "agent-development": "pass",
-                },
-                "checkRequiredById": {
-                    "learning-profile": True,
-                    "usage-sidecar": False,
-                    "eval-signals": True,
-                    "check-capture": False,
-                    "workspace-readiness": True,
-                    "agent-development": True,
-                },
-                "checkCountByStatus": {
-                    "pass": 5,
-                    "info": 1,
-                    "warn": 0,
-                    "fail": 0,
-                    "missing": 0,
-                    "template": 0,
-                    "unknown": 0,
-                },
-                "requiredCheckCountByStatus": {
-                    "pass": 4,
-                    "info": 0,
-                    "warn": 0,
-                    "fail": 0,
-                    "missing": 0,
-                    "template": 0,
-                    "unknown": 0,
-                },
-                "optionalCheckCountByStatus": {
-                    "pass": 1,
-                    "info": 1,
-                    "warn": 0,
-                    "fail": 0,
-                    "missing": 0,
-                    "template": 0,
-                    "unknown": 0,
-                },
-                "checks": [
-                    {
-                        "id": "learning-profile",
-                        "label": "Learning profile",
-                        "status": "pass",
-                        "required": True,
-                        "summary": "Profile has 3 entries with 0 audit failure(s) and 0 warning(s).",
-                        "evidence": {"entries": 3},
-                    },
-                    {
-                        "id": "usage-sidecar",
-                        "label": "Usage sidecar",
-                        "status": "pass",
-                        "required": False,
-                        "summary": "Usage sidecar has 2 event(s) and 0 stale selected id(s).",
-                        "evidence": {"events": 2},
-                    },
-                    {
-                        "id": "eval-signals",
-                        "label": "Eval signals",
-                        "status": "pass",
-                        "required": True,
-                        "summary": "Eval signals include 1 report(s), 0 unresolved template(s), 0 failed report(s), and 0 warned report(s).",
-                        "evidence": {"files": 1},
-                    },
-                    {
-                        "id": "check-capture",
-                        "label": "Check learning capture",
-                        "status": "info",
-                        "required": False,
-                        "summary": "No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
-                        "evidence": {"entries": 0},
-                    },
-                    {
-                        "id": "workspace-readiness",
-                        "label": "Workspace readiness",
-                        "status": "pass",
-                        "required": True,
-                        "summary": "Workspace has 0 fail action(s), 0 warn action(s), and 0 total next action(s).",
-                        "evidence": {"nextActionCount": 0},
-                    },
-                    {
-                        "id": "agent-development",
-                        "label": "Agent development backlog",
-                        "status": "pass",
-                        "required": True,
-                        "summary": "Agent backlog has 0 action(s): 0 P0, 0 P1, 0 P2, 0 P3.",
-                        "evidence": {"actions": 0},
-                    },
-                ],
-            },
-            "commands": {
-                "signalsJson": "design-ai learn --signals --from-file . --json",
-                "signalsReport": "design-ai learn --signals --from-file . --report --out learning-signals.md",
-                "agentBacklogJson": agent_backlog_refresh_command,
-                "agentBacklogJsonArgs": agent_backlog_refresh_args,
-            },
-            "recommendations": [],
-            "privacy": {
-                "mutatesProfile": False,
-                "mutatesSkillFiles": False,
-                "callsExternalAiApis": False,
-                "storesRawBriefText": False,
-                "readsSignalFilesOnly": True,
-            },
-        }
-        assert_agent_backlog_no_command_json(
-            json.dumps(no_command_agent_backlog_payload),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=learn_agent_backlog_cmd,
-        )
-        no_command_agent_backlog_markdown = "\n".join([
-            "# Agent Development Backlog Report",
-            "",
-            f"- Learning file: {learning_profile_path}",
-            f"- Usage file: {learning_usage_path}",
-            "## Summary",
-            "- Actions: 0",
-            "- Check captures: 0",
-            "## Signal Readiness",
-            "- Required ready: yes",
-            "- Required checks: 4/4",
-            "- Blocking checks: 0",
-            "- Optional gaps: 1",
-            "Readiness check index:",
-            "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
-            "- Optional ids: usage-sidecar, check-capture",
-            "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=info, workspace-readiness=pass, agent-development=pass",
-            "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
-            "- Status counts: pass=5, info=1, warn=0, fail=0, missing=0, template=0, unknown=0",
-            "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
-            "- Optional status counts: pass=1, info=1, warn=0, fail=0, missing=0, template=0, unknown=0",
-            "Readiness checks:",
-            "- check-capture [optional] info: No check-capture entries are present; this is advisory until real warn/fail checks are captured.",
-            "- agent-development [required] pass: Agent backlog has 0 action(s): 0 P0, 0 P1, 0 P2, 0 P3.",
-            "Optional gap details:",
-            f"- check-capture: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON}",
-            f"  Next condition: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION}",
-            f"  Automation policy: {EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY}",
-            "## Backlog Actions",
-            "No agent development backlog actions emitted.",
-            "## Action Plan",
-            "Safety summary:",
-            "- Read-only: 0",
-            "- Writes local file: 0",
-            "- Mutates local state: 0",
-            "Execution queue:",
-            "- Preview/read-only commands: 0",
-            "- Local file-write review commands: 0",
-            "- Local mutation review commands: 0",
-            "- Ordered commands: 0",
-            "- Command manifest entries: 0",
-            "- Command effect review: No command target or mutation flag exposure detected.",
-            "- Operator runbook: 4 stage(s), 1 command(s), 0 required",
-            f"- Operator next command: refresh: `{agent_backlog_refresh_command}`",
-            "- Operator next command selection: first-command-in-operator-runbook-stage-order",
-            "- Recommended next command selection: first-command-in-safety-ordered-queue",
-            "- Operator/queue next command alignment: different",
-            "- Operator handoff state: no-command; ready yes; can run without review no; refresh optional",
-            "- Operator handoff summary: Focused agent backlog is clear; no handoff command is required.",
-            f"- Operator handoff refresh: {agent_backlog_refresh_command}",
-            "No execution steps emitted.",
-            "## Follow-Up Commands",
-            "design-ai learn --signals --from-file . --json",
-            "## Privacy And Boundaries",
-            "- Mutates learning profile: no",
-            "- Mutates skill files: no",
-            "- Calls external AI APIs: no",
-            "This report is read-only evidence",
-        ])
-        assert_agent_backlog_no_command_report_markdown(
-            no_command_agent_backlog_markdown,
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
-        )
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_no_command_report_markdown(
-                no_command_agent_backlog_markdown.replace("Optional gap details:", "Optional evidence details:"),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
-            ),
-            expected="no-command learn agent backlog Markdown report missing 'Optional gap details:'",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_no_command_report_markdown(
-                no_command_agent_backlog_markdown.replace("Readiness check index:", "Readiness check summary:"),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
-            ),
-            expected="no-command learn agent backlog Markdown report missing 'Readiness check index:'",
-            scope="package smoke",
-        )
-        optional_gap_detail_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
-        optional_gap_detail_drift_payload["readiness"].pop("optionalGapDetails", None)
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_no_command_json(
-                json.dumps(optional_gap_detail_drift_payload),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_agent_backlog_cmd,
-            ),
-            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
-            scope="package smoke",
-        )
-        check_index_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
-        check_index_drift_payload["readiness"].pop("checkStatusById", None)
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_no_command_json(
-                json.dumps(check_index_drift_payload),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_agent_backlog_cmd,
-            ),
-            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
-            scope="package smoke",
-        )
-        check_count_index_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
-        check_count_index_drift_payload["readiness"].pop("checkCountByStatus", None)
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_no_command_json(
-                json.dumps(check_count_index_drift_payload),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_agent_backlog_cmd,
-            ),
-            expected="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
-            scope="package smoke",
-        )
-        refresh_reason_drift_payload = json.loads(json.dumps(no_command_agent_backlog_payload))
-        refresh_reason_drift_payload["actionPlan"]["executionQueue"]["operatorRunbook"]["nextCommandSelection"]["reason"] = (
-            "Selected the first command in the refresh stage using operator runbook stage order."
-        )
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_no_command_json(
-                json.dumps(refresh_reason_drift_payload),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_agent_backlog_cmd,
-            ),
-            expected="no-command learn agent backlog JSON should preserve optional refresh-only runbook reason",
-            scope="package smoke",
-        )
-        assert_agent_backlog_report_human(
-            "\n".join([
-                "design-ai learn",
-                "Agent development backlog",
-                f"Signal source: {Path(tmp)}",
-                "Backlog actions:",
-                "Action plan:",
-                "safety summary:",
-                "execution queue:",
-                "next action:",
-                "next command:",
-                "next command policy:",
-                "queue order:",
-                "command manifest:",
-                "command effects:",
-                "command effect review:",
-                "command effect gate phases:",
-                "command effect gate runbook:",
-                "command effect gates:",
-                "operator runbook:",
-                "operator next command:",
-                "refresh:",
-                "safety: read-only",
-                "requires mutation review: no",
-                "design-ai learn --propose-skills --json",
-                "Privacy: agent backlog is read-only",
-            ]),
-            context=context,
-            cmd=learn_agent_backlog_cmd,
-        )
-        assert_agent_backlog_report_markdown(
-            "\n".join([
-                "# Agent Development Backlog Report",
-                "",
-                f"- Learning file: {learning_profile_path}",
-                f"- Usage file: {learning_usage_path}",
-                "## Summary",
-                "## Signal Readiness",
-                "- Required ready: yes",
-                "- Required checks: 4/4",
-                "- Blocking checks: 0",
-                "- Optional gaps: 0",
-                "Readiness check index:",
-                "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
-                "- Optional ids: usage-sidecar, check-capture",
-                "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
-                "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
-                "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
-                "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
-                "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
-                "Readiness checks:",
-                "- check-capture [optional] pass: Profile includes 1 check-capture learning entry.",
-                "- agent-development [required] pass: Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
-                "## Backlog Actions",
-                "design-ai learn --propose-skills --json",
-                "## Action Plan",
-                "Safety summary:",
-                "- Read-only: 1",
-                "- Writes local file: 0",
-                "- Mutates local state: 0",
-                "Execution queue:",
-                "- Preview/read-only commands: 1",
-                "- Local file-write review commands: 0",
-                "- Local mutation review commands: 0",
-                "- Ordered commands: 1",
-                "- Command manifest entries: 1",
-                "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
-                "- Command effect review: No command target or mutation flag exposure detected.",
-                "- Command effect gate phases: refresh (1/1 required)",
-                "- Command effect gate runbook: before 0, after 0, refresh 1",
-                "- Command effect gates:",
-                "refresh: Refresh focused agent backlog after review",
-                agent_backlog_refresh_command,
-                "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
-                "- Operator next command: execute: `design-ai learn --propose-skills --json`",
-                "- Operator handoff state: ready; ready yes; can run without review yes; refresh required",
-                "- Recommended next action: agent-skill-proposal-preview",
-                "- Recommended next command policy: preview-only",
-                "Recommended next command:",
-                "Queue order:",
-                "1. agent-skill-proposal-preview (read-only, preview-only)",
-                "Command manifest:",
-                "1. agent-skill-proposal-preview - preview-only (read-only)",
-                "- Command safety: read-only",
-                "- Writes local files: no",
-                "- Mutates local state: no",
-                "- Requires mutation review: no",
-                agent_backlog_refresh_command,
-                "## Follow-Up Commands",
-                "design-ai learn --signals --from-file . --json",
-                "## Privacy And Boundaries",
-                "- Mutates learning profile: no",
-                "- Mutates skill files: no",
-                "- Calls external AI APIs: no",
-                "This report is read-only evidence; it does not mutate learning profiles, usage sidecars, eval files, skill files, or target repositories.",
-            ]),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
-        )
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_report_json(
-                json.dumps({
-                    **learning_agent_backlog_payload,
-                    "counts": {
-                        **learning_agent_backlog_payload["counts"],
-                        "evalSignals": 0,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_agent_backlog_cmd,
-            ),
-            expected="learn agent backlog JSON should include focused backlog counts",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_report_json(
-                json.dumps({
-                    **learning_agent_backlog_payload,
-                    "actionPlan": {
-                        **learning_agent_backlog_payload["actionPlan"],
-                        "steps": [],
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_agent_backlog_cmd,
-            ),
-            expected="learn agent backlog JSON should include executable action plan steps and verification",
-            scope="package smoke",
-        )
-        missing_safety_summary_payload = json.loads(json.dumps(learning_agent_backlog_payload))
-        missing_safety_summary_payload["actionPlan"].pop("safetySummary", None)
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_report_json(
-                json.dumps(missing_safety_summary_payload),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_agent_backlog_cmd,
-            ),
-            expected="learn agent backlog JSON should include executable action plan steps and verification",
-            scope="package smoke",
-        )
-        missing_execution_queue_payload = json.loads(json.dumps(learning_agent_backlog_payload))
-        missing_execution_queue_payload["actionPlan"].pop("executionQueue", None)
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_report_json(
-                json.dumps(missing_execution_queue_payload),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_agent_backlog_cmd,
-            ),
-            expected="learn agent backlog JSON should include executable action plan steps and verification",
-            scope="package smoke",
-        )
-        unsafe_action_plan_payload = json.loads(json.dumps(learning_agent_backlog_payload))
-        unsafe_action_plan_payload["actionPlan"]["steps"][0].pop("commandSafety", None)
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_report_json(
-                json.dumps(unsafe_action_plan_payload),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_agent_backlog_cmd,
-            ),
-            expected="learn agent backlog JSON should include executable action plan steps and verification",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_report_json(
-                json.dumps({
-                    **learning_agent_backlog_payload,
-                    "privacy": {
-                        **learning_agent_backlog_payload["privacy"],
-                        "mutatesSkillFiles": True,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_agent_backlog_cmd,
-            ),
-            expected="learn agent backlog JSON should keep read-only local privacy boundaries",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_agent_backlog_report_markdown(
-                "\n".join([
-                    "# Agent Development Backlog Report",
-                    f"- Learning file: {learning_profile_path}",
-                    f"- Usage file: {learning_usage_path}",
-                    "## Summary",
-                    "## Signal Readiness",
-                    "- Required ready: yes",
-                    "- Required checks: 4/4",
-                    "- Blocking checks: 0",
-                    "- Optional gaps: 0",
-                    "Readiness check index:",
-                    "- Required ids: learning-profile, eval-signals, workspace-readiness, agent-development",
-                    "- Optional ids: usage-sidecar, check-capture",
-                    "- Status index: learning-profile=pass, usage-sidecar=pass, eval-signals=pass, check-capture=pass, workspace-readiness=pass, agent-development=pass",
-                    "- Required index: learning-profile=yes, usage-sidecar=no, eval-signals=yes, check-capture=no, workspace-readiness=yes, agent-development=yes",
-                    "- Status counts: pass=6, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
-                    "- Required status counts: pass=4, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
-                    "- Optional status counts: pass=2, info=0, warn=0, fail=0, missing=0, template=0, unknown=0",
-                    "Readiness checks:",
-                    "- check-capture [optional] pass: Profile includes 1 check-capture learning entry.",
-                    "- agent-development [required] pass: Agent backlog has 1 action(s): 0 P0, 0 P1, 1 P2, 0 P3.",
-                    "## Backlog Actions",
-                    "design-ai learn --propose-skills --json",
-                    "## Action Plan",
-                    "Safety summary:",
-                    "- Read-only: 1",
-                    "- Writes local file: 0",
-                    "- Mutates local state: 0",
-                    "Execution queue:",
-                    "- Preview/read-only commands: 1",
-                    "- Local file-write review commands: 0",
-                    "- Local mutation review commands: 0",
-                    "- Ordered commands: 1",
-                    "- Command manifest entries: 1",
-                    "- Command effect targets: output 0, profile 0, usage 0, mutation flags 0",
-                    "- Command effect review: No command target or mutation flag exposure detected.",
-                    "- Command effect gate phases: refresh (1/1 required)",
-                    "- Command effect gate runbook: before 0, after 0, refresh 1",
-                    "- Command effect gates:",
-                    "refresh: Refresh focused agent backlog after review",
-                    agent_backlog_refresh_command,
-                    "- Operator runbook: 4 stage(s), 2 command(s), 2 required",
-                    "- Operator next command: execute: `design-ai learn --propose-skills --json`",
-                    "- Operator handoff state: ready; ready yes; can run without review yes; refresh required",
-                    "- Recommended next action: agent-skill-proposal-preview",
-                    "- Recommended next command policy: preview-only",
-                    "Recommended next command:",
-                    "Queue order:",
-                    "1. agent-skill-proposal-preview (read-only, preview-only)",
-                    "Command manifest:",
-                    "1. agent-skill-proposal-preview - preview-only (read-only)",
-                    "- Command safety: read-only",
-                    "- Writes local files: no",
-                    "- Mutates local state: no",
-                    "- Requires mutation review: no",
-                    agent_backlog_refresh_command,
-                    "## Follow-Up Commands",
-                    "design-ai learn --signals --from-file . --json",
-                    "## Privacy And Boundaries",
-                    "- Mutates learning profile: no",
-                    "- Mutates skill files: yes",
-                    "- Calls external AI APIs: no",
-                    "This report is read-only evidence",
-                ]),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=[*learn_agent_backlog_cmd[:-1], "--report"],
-            ),
-            expected="learn agent backlog Markdown report missing '- Mutates skill files: no'",
-            scope="package smoke",
-        )
-
-        learn_skill_proposals_cmd = [
-            "design-ai",
-            "learn",
-            "--propose-skills",
-            "--file",
-            str(learning_profile_path),
-            "--usage-file",
-            str(learning_usage_path),
-            "--from-file",
-            str(Path(tmp)),
-            "--json",
-        ]
-        learning_skill_proposal_payload = {
-            "version": 1,
-            "generatedAt": "2026-06-02T00:00:00.000Z",
-            "file": str(learning_profile_path),
-            "usageFile": str(learning_usage_path),
-            "signalSource": str(Path(tmp)),
-            "dryRun": True,
-            "applied": False,
-            "minEvidenceCount": 2,
-            "checkCaptureCount": 2,
-            "candidateCount": 1,
-            "count": 1,
-            "proposalCount": 1,
-            "skippedCount": 0,
-            "pendingReviewCount": 1,
-            "reviewedCount": 0,
-            "reviewFile": "",
-            "review": {
-                "file": "",
-                "exists": False,
-                "status": "not-configured",
-                "decisionCount": 0,
-                "matchedCount": 0,
-                "staleCount": 0,
-                "pendingCount": 1,
-                "acceptedCount": 0,
-                "rejectedCount": 0,
-                "appliedCount": 0,
-                "deferredCount": 0,
-                "clearedCount": 0,
-                "warnings": [],
-            },
-            "status": "warn",
-            "signalStatus": "pass",
-            "proposals": [
-                {
-                    "id": "skill-proposal-component-spec-writer-abcdef1234",
-                    "candidateSkill": "component-spec-writer",
-                    "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
-                    "title": "Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
-                    "riskLevel": "low",
-                    "reviewStatus": "pending",
-                    "reviewClearsStrict": False,
-                    "category": "accessibility",
-                    "routeIds": [EXPECTED_ROUTE_ID],
-                    "sourceIssueCount": 2,
-                    "proposedInstructionDelta": "Add a pre-handoff accessibility checkpoint.",
-                    "verificationCommand": f"node cli/bin/design-ai.mjs check --examples --route {EXPECTED_ROUTE_ID} --limit 1 --strict --json",
-                    "evidenceSources": [
-                        {
-                            "kind": "check-capture",
-                            "entryId": "learn-skill-proposal-a",
-                            "category": "accessibility",
-                            "source": f"check:{EXPECTED_ROUTE_ID}",
-                            "routeId": EXPECTED_ROUTE_ID,
-                            "textPreview": "Improve future outputs by addressing Keyboard and focus behavior.",
-                        },
-                        {
-                            "kind": "check-capture",
-                            "entryId": "learn-skill-proposal-b",
-                            "category": "accessibility",
-                            "source": f"check:{EXPECTED_ROUTE_ID}",
-                            "routeId": EXPECTED_ROUTE_ID,
-                            "textPreview": "Improve future outputs by addressing Screen reader behavior.",
-                        },
-                    ],
-                },
-            ],
-            "skipped": [],
-            "recommendations": [],
-            "privacy": {
-                "mutatesProfile": False,
-                "mutatesSkillFiles": False,
-                "callsExternalAiApis": False,
-                "storesRawBriefText": False,
-                "exposesEntryTextPreview": True,
-            },
-        }
-        assert_skill_proposal_report_json(
-            json.dumps(learning_skill_proposal_payload),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=learn_skill_proposals_cmd,
-        )
-        learning_skill_proposal_review_path = learning_profile_path.with_name("skill-proposals.review.json")
-        assert_skill_proposal_review_json(
-            json.dumps({
-                **learning_skill_proposal_payload,
-                "status": "pass",
-                "pendingReviewCount": 0,
-                "reviewedCount": 1,
-                "reviewFile": str(learning_skill_proposal_review_path),
-                "review": {
-                    **learning_skill_proposal_payload["review"],
-                    "file": str(learning_skill_proposal_review_path),
-                    "exists": True,
-                    "status": "pass",
-                    "decisionCount": 1,
-                    "matchedCount": 1,
-                    "pendingCount": 0,
-                    "appliedCount": 1,
-                    "clearedCount": 1,
-                },
-                "proposals": [
-                    {
-                        **learning_skill_proposal_payload["proposals"][0],
-                        "reviewStatus": "applied",
-                        "reviewClearsStrict": True,
-                        "reviewDecision": {
-                            "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
-                            "status": "applied",
-                            "reviewedAt": "2026-06-11T00:00:00.000Z",
-                            "reviewer": "package-smoke",
-                            "note": "Instruction delta manually applied.",
-                        },
-                    },
-                ],
-            }),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            review_path=learning_skill_proposal_review_path,
-            context=context,
-            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--json"],
-        )
-        learning_skill_proposal_review_check_payload = {
-            "version": 1,
-            "kind": "skill-proposal-review-check",
-            "generatedAt": "2026-06-11T00:05:00.000Z",
-            "file": str(learning_profile_path),
-            "usageFile": str(learning_usage_path),
-            "signalSource": str(Path(tmp)),
-            "reviewFile": str(learning_skill_proposal_review_path),
-            "status": "pass",
-            "proposalStatus": "pass",
-            "signalStatus": "pass",
-            "proposalCount": 1,
-            "pendingReviewCount": 0,
-            "reviewedCount": 1,
-            "review": {
-                **learning_skill_proposal_payload["review"],
-                "file": str(learning_skill_proposal_review_path),
-                "exists": True,
-                "status": "pass",
-                "decisionCount": 1,
-                "matchedCount": 1,
-                "pendingCount": 0,
-                "appliedCount": 1,
-                "clearedCount": 1,
-            },
-            "summary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-                "passes": 5,
-                "total": 5,
-            },
-            "checks": [
-                {"id": "review-file-configured", "level": "pass", "passed": True, "message": "A skill proposal review file is configured.", "evidence": {}},
-                {"id": "review-file-exists", "level": "pass", "passed": True, "message": "The review file exists.", "evidence": {}},
-                {"id": "review-file-valid", "level": "pass", "passed": True, "message": "The review file is valid and has a decisions array.", "evidence": {}},
-                {"id": "current-proposals-cleared", "level": "pass", "passed": True, "message": "All current proposals are applied or rejected.", "evidence": {}},
-                {"id": "no-stale-review-decisions", "level": "pass", "passed": True, "message": "No stale review decisions were found.", "evidence": {}},
-            ],
-            "recommendations": [{"level": "info", "text": "Review decisions clear the current skill proposal gate."}],
-            "privacy": {
-                "mutatesProfile": False,
-                "mutatesSkillFiles": False,
-                "callsExternalAiApis": False,
-                "storesRawBriefText": False,
-                "exposesEntryTextPreview": False,
-            },
-        }
-        assert_skill_proposal_review_check_json(
-            json.dumps(learning_skill_proposal_review_check_payload),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            review_path=learning_skill_proposal_review_path,
-            context=context,
-            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--json"],
-        )
-        learning_skill_proposal_review_check_markdown = "\n".join([
-            "# Skill Proposal Review Check",
-            "",
-            "- Generated: 2026-06-11T00:05:00.000Z",
-            "- Status: pass",
-            "- Proposal status: pass",
-            "- Signal status: pass",
-            f"- File: {learning_profile_path}",
-            f"- Usage sidecar: {learning_usage_path}",
-            f"- Signal source: {Path(tmp)}",
-            f"- Review file: {learning_skill_proposal_review_path}",
-            "- Proposals: 1",
-            "- Pending review: 0",
-            "- Reviewed: 1",
-            "",
-            "## Checks",
-            "",
-            "- pass: review-file-configured - A skill proposal review file is configured.",
-            "- pass: review-file-exists - The review file exists.",
-            "- pass: review-file-valid - The review file is valid and has a decisions array.",
-            "- pass: current-proposals-cleared - All current proposals are applied or rejected.",
-            "- pass: no-stale-review-decisions - No stale review decisions were found.",
-            "",
-            "## Review Summary",
-            "",
-            "- Exists: yes",
-            "- Status: pass",
-            "- Decisions: 1",
-            "- Matched: 1",
-            "- Stale: 0",
-            "- Applied: 1",
-            "- Rejected: 0",
-            "- Accepted: 0",
-            "- Deferred: 0",
-            "",
-            "## Recommendations",
-            "",
-            "- info: Review decisions clear the current skill proposal gate.",
-            "",
-            "## Privacy And Boundaries",
-            "",
-            "- Mutates learning profile: no",
-            "- Mutates skill files: no",
-            "- Calls external AI APIs: no",
-            "- Stores raw brief text: no",
-        ])
-        assert_skill_proposal_review_check_markdown(
-            learning_skill_proposal_review_check_markdown,
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            review_path=learning_skill_proposal_review_path,
-            context=context,
-            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--report"],
-        )
-        learning_skill_proposal_apply_plan_review_path = learning_profile_path.with_name("skill-proposals.accepted.review.json")
-        learning_skill_proposal_apply_plan_decision_command_safety = {
-            "level": "local-output",
-            "writesLocalFiles": True,
-            "writesOutputArtifact": True,
-            "mutatesLocalState": True,
-            "mutatesProfile": False,
-            "mutatesReviewFile": False,
-            "mutatesSkillFiles": False,
-            "callsExternalAiApis": False,
-            "requiresCleanWorkspace": False,
-            "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
-        }
-        learning_skill_proposal_apply_plan_payload = {
-            "version": 1,
-            "kind": "skill-proposal-apply-plan",
-            "generatedAt": "2026-06-11T00:10:00.000Z",
-            "file": str(learning_profile_path),
-            "usageFile": str(learning_usage_path),
-            "signalSource": str(Path(tmp)),
-            "reviewFile": str(learning_skill_proposal_apply_plan_review_path),
-            "status": "warn",
-            "proposalStatus": "warn",
-            "signalStatus": "pass",
-            "candidateCount": 1,
-            "proposalCount": 1,
-            "acceptedCount": 1,
-            "count": 1,
-            "pendingReviewCount": 1,
-            "reviewedCount": 1,
-            "review": {
-                **learning_skill_proposal_payload["review"],
-                "file": str(learning_skill_proposal_apply_plan_review_path),
-                "exists": True,
-                "status": "pass",
-                "decisionCount": 1,
-                "matchedCount": 1,
-                "pendingCount": 1,
-                "acceptedCount": 1,
-            },
-            "tasks": [
-                {
-                    "id": "apply-1-skill-proposal-component-spec-writer-abcdef1234",
-                    "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
-                    "title": "Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
-                    "candidateSkill": "component-spec-writer",
-                    "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
-                    "category": "accessibility",
-                    "riskLevel": "low",
-                    "routeIds": [EXPECTED_ROUTE_ID],
-                    "sourceIssueCount": 2,
-                    "proposedInstructionDelta": "Add a pre-handoff accessibility checkpoint.",
-                    "verificationCommand": f"node cli/bin/design-ai.mjs check --examples --route {EXPECTED_ROUTE_ID} --limit 1 --strict --json",
-                    "manualSteps": [
-                        "Open skills/component-spec-writer/SKILL.md and inspect the relevant checklist or playbook section.",
-                        "Merge the proposed instruction delta manually instead of pasting duplicate generated text.",
-                        "Run the verification command and inspect any route-specific failures before marking the work complete.",
-                        "After the skill edit and verification pass, update the review decision from `accepted` to `applied`.",
-                    ],
-                    "safetyChecklist": [
-                        "Do not edit learning.json as part of this apply plan.",
-                        "Do not call external AI APIs, embeddings, or fine-tuning jobs.",
-                    ],
-                    "evidenceSources": learning_skill_proposal_payload["proposals"][0]["evidenceSources"],
-                    "reviewDecision": {
-                        "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
-                        "status": "accepted",
-                        "reviewedAt": "2026-06-11T00:10:00.000Z",
-                        "reviewer": "package-smoke",
-                        "note": "Instruction delta accepted for manual apply.",
-                    },
-                },
-            ],
-            "commands": {
-                "reviewCheckJson": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
-                "reviewCheckReport": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
-                "proposalPatchPreview": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
-                "strictGate": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --strict --json",
-            },
-            "commandArgs": {
-                "reviewCheckJson": [
-                    "design-ai", "learn", "--propose-skills",
-                    "--file", str(learning_profile_path),
-                    "--usage-file", str(learning_usage_path),
-                    "--from-file", str(Path(tmp)),
-                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                    "--review-check", "--json",
-                ],
-                "reviewCheckReport": [
-                    "design-ai", "learn", "--propose-skills",
-                    "--file", str(learning_profile_path),
-                    "--usage-file", str(learning_usage_path),
-                    "--from-file", str(Path(tmp)),
-                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                    "--review-check", "--report", "--out", "skill-proposal-review-check.md",
-                ],
-                "proposalPatchPreview": [
-                    "design-ai", "learn", "--propose-skills",
-                    "--file", str(learning_profile_path),
-                    "--usage-file", str(learning_usage_path),
-                    "--from-file", str(Path(tmp)),
-                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                    "--patch", "--out", "skill-proposals.patch",
-                ],
-                "strictGate": [
-                    "design-ai", "learn", "--propose-skills",
-                    "--file", str(learning_profile_path),
-                    "--usage-file", str(learning_usage_path),
-                    "--from-file", str(Path(tmp)),
-                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                    "--strict", "--json",
-                ],
-            },
-            "commandContract": {
-                "version": 1,
-                "valid": True,
-                "status": "pass",
-                "commandCount": 4,
-                "checkCount": 18,
-                "passCount": 18,
-                "warningCount": 0,
-                "requiredKeys": [
-                    "reviewCheckJson",
-                    "reviewCheckReport",
-                    "proposalPatchPreview",
-                    "strictGate",
-                ],
-                "missingCommandKeys": [],
-                "unexpectedCommandKeys": [],
-                "baseCommand": ["design-ai", "learn", "--propose-skills"],
-                "reviewFileRequired": True,
-                "reviewFile": str(learning_skill_proposal_apply_plan_review_path),
-                "forbiddenFlags": ["--yes"],
-                "failureCount": 0,
-                "failedCheckIds": [],
-                "failedChecks": [],
-                "nextCommandKey": "reviewCheckJson",
-                "nextCommand": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
-                "nextCommandArgs": [
-                    "design-ai", "learn", "--propose-skills",
-                    "--file", str(learning_profile_path),
-                    "--usage-file", str(learning_usage_path),
-                    "--from-file", str(Path(tmp)),
-                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                    "--review-check", "--json",
-                ],
-                "nextCommandRunPolicy": "preview-only",
-                "nextCommandSafety": {
-                    "level": "read-only",
-                    "writesLocalFiles": False,
-                    "mutatesLocalState": False,
-                    "mutatesProfile": False,
-                    "mutatesReviewFile": False,
-                    "mutatesSkillFiles": False,
-                    "callsExternalAiApis": False,
-                    "requiresCleanWorkspace": False,
-                    "reason": "The next apply-plan follow-up command only checks proposal review readiness and does not mutate local state.",
-                },
-                "commandSequenceCount": 4,
-                "commandSequenceSummary": {
-                    "executable": True,
-                    "blocked": False,
-                    "stepCount": 4,
-                    "readOnlyStepCount": 2,
-                    "localOutputStepCount": 2,
-                    "writesLocalFiles": True,
-                    "writesOutputArtifacts": True,
-                    "mutatesProfile": False,
-                    "mutatesReviewFile": False,
-                    "mutatesSkillFiles": False,
-                    "callsExternalAiApis": False,
-                    "requiresCleanWorkspace": False,
-                    "runPolicy": "mixed-preview-local-output",
-                    "reason": "The sequence combines read-only readiness checks with local output artifact previews; it does not mutate learning, review, or skill files.",
-                },
-                "commandSequenceKeys": [
-                    "reviewCheckJson",
-                    "reviewCheckReport",
-                    "proposalPatchPreview",
-                    "strictGate",
-                ],
-                "commandSequenceByKey": {
-                    "reviewCheckJson": {
-                        "key": "reviewCheckJson",
-                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
-                        "runPolicy": "preview-only",
-                        "safety": {"level": "read-only"},
-                    },
-                    "reviewCheckReport": {
-                        "key": "reviewCheckReport",
-                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
-                        "runPolicy": "output-artifact",
-                        "safety": {"level": "local-output"},
-                    },
-                    "proposalPatchPreview": {
-                        "key": "proposalPatchPreview",
-                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
-                        "runPolicy": "output-artifact",
-                        "safety": {"level": "local-output"},
-                    },
-                    "strictGate": {
-                        "key": "strictGate",
-                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --strict --json",
-                        "runPolicy": "strict-readiness-gate",
-                        "safety": {"level": "read-only"},
-                    },
-                },
-                "commandSequence": [
-                    {
-                        "step": 1,
-                        "key": "reviewCheckJson",
-                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
-                        "commandArgs": [
-                            "design-ai", "learn", "--propose-skills",
-                            "--file", str(learning_profile_path),
-                            "--usage-file", str(learning_usage_path),
-                            "--from-file", str(Path(tmp)),
-                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                            "--review-check", "--json",
-                        ],
-                        "runPolicy": "preview-only",
-                        "safety": {
-                            "level": "read-only",
-                            "writesLocalFiles": False,
-                            "writesOutputArtifact": False,
-                            "mutatesLocalState": False,
-                            "mutatesProfile": False,
-                            "mutatesReviewFile": False,
-                            "mutatesSkillFiles": False,
-                            "callsExternalAiApis": False,
-                            "requiresCleanWorkspace": False,
-                            "reason": "This follow-up command validates readiness without writing local files or mutating local state.",
-                        },
-                    },
-                    {
-                        "step": 2,
-                        "key": "reviewCheckReport",
-                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
-                        "commandArgs": [
-                            "design-ai", "learn", "--propose-skills",
-                            "--file", str(learning_profile_path),
-                            "--usage-file", str(learning_usage_path),
-                            "--from-file", str(Path(tmp)),
-                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                            "--review-check", "--report", "--out", "skill-proposal-review-check.md",
-                        ],
-                        "runPolicy": "output-artifact",
-                        "safety": {
-                            "level": "local-output",
-                            "writesLocalFiles": True,
-                            "writesOutputArtifact": True,
-                            "mutatesLocalState": True,
-                            "mutatesProfile": False,
-                            "mutatesReviewFile": False,
-                            "mutatesSkillFiles": False,
-                            "callsExternalAiApis": False,
-                            "requiresCleanWorkspace": False,
-                            "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
-                        },
-                    },
-                    {
-                        "step": 3,
-                        "key": "proposalPatchPreview",
-                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
-                        "commandArgs": [
-                            "design-ai", "learn", "--propose-skills",
-                            "--file", str(learning_profile_path),
-                            "--usage-file", str(learning_usage_path),
-                            "--from-file", str(Path(tmp)),
-                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                            "--patch", "--out", "skill-proposals.patch",
-                        ],
-                        "runPolicy": "output-artifact",
-                        "safety": {
-                            "level": "local-output",
-                            "writesLocalFiles": True,
-                            "writesOutputArtifact": True,
-                            "mutatesLocalState": True,
-                            "mutatesProfile": False,
-                            "mutatesReviewFile": False,
-                            "mutatesSkillFiles": False,
-                            "callsExternalAiApis": False,
-                            "requiresCleanWorkspace": False,
-                            "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
-                        },
-                    },
-                    {
-                        "step": 4,
-                        "key": "strictGate",
-                        "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --strict --json",
-                        "commandArgs": [
-                            "design-ai", "learn", "--propose-skills",
-                            "--file", str(learning_profile_path),
-                            "--usage-file", str(learning_usage_path),
-                            "--from-file", str(Path(tmp)),
-                            "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                            "--strict", "--json",
-                        ],
-                        "runPolicy": "strict-readiness-gate",
-                        "safety": {
-                            "level": "read-only",
-                            "writesLocalFiles": False,
-                            "writesOutputArtifact": False,
-                            "mutatesLocalState": False,
-                            "mutatesProfile": False,
-                            "mutatesReviewFile": False,
-                            "mutatesSkillFiles": False,
-                            "callsExternalAiApis": False,
-                            "requiresCleanWorkspace": False,
-                            "reason": "This follow-up command validates readiness without writing local files or mutating local state.",
-                        },
-                    },
-                ],
-                "operatorRunbook": {
-                    "version": 1,
-                    "executable": True,
-                    "blocked": False,
-                    "stageCount": 4,
-                    "requiredStageCount": 3,
-                    "commandStageCount": 3,
-                    "nextStageKey": "previewArtifacts",
-                    "nextStageCommandKeys": ["reviewCheckReport", "proposalPatchPreview"],
-                    "nextRequiredStageKey": "manualSkillEdit",
-                    "nextRequiredStageCommandKeys": [],
-                    "nextRequiredCommandStageKey": "reviewReadiness",
-                    "nextRequiredCommandStageCommandKeys": ["reviewCheckJson"],
-                    "stageSelection": {
-                        "strategy": "optional-preview-before-required-manual-edit",
-                        "decision": {
-                            "action": "offer-optional-preview",
-                            "stageKey": "previewArtifacts",
-                            "stageKind": "local-output-preview",
-                            "required": False,
-                            "hasCommands": True,
-                            "commandCount": 2,
-                            "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
-                            "commands": [
-                                {
-                                    "step": 2,
-                                    "key": "reviewCheckReport",
-                                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
-                                    "commandArgs": [
-                                        "design-ai", "learn", "--propose-skills",
-                                        "--file", str(learning_profile_path),
-                                        "--usage-file", str(learning_usage_path),
-                                        "--from-file", str(Path(tmp)),
-                                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                                        "--review-check", "--report", "--out", "skill-proposal-review-check.md",
-                                    ],
-                                    "runPolicy": "output-artifact",
-                                    "safetyLevel": "local-output",
-                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
-                                    "writesLocalFiles": True,
-                                    "writesOutputArtifact": True,
-                                    "mutatesLocalState": True,
-                                    "mutatesProfile": False,
-                                    "mutatesReviewFile": False,
-                                    "mutatesSkillFiles": False,
-                                    "callsExternalAiApis": False,
-                                    "requiresCleanWorkspace": False,
-                                },
-                                {
-                                    "step": 3,
-                                    "key": "proposalPatchPreview",
-                                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
-                                    "commandArgs": [
-                                        "design-ai", "learn", "--propose-skills",
-                                        "--file", str(learning_profile_path),
-                                        "--usage-file", str(learning_usage_path),
-                                        "--from-file", str(Path(tmp)),
-                                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                                        "--patch", "--out", "skill-proposals.patch",
-                                    ],
-                                    "runPolicy": "output-artifact",
-                                    "safetyLevel": "local-output",
-                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
-                                    "writesLocalFiles": True,
-                                    "writesOutputArtifact": True,
-                                    "mutatesLocalState": True,
-                                    "mutatesProfile": False,
-                                    "mutatesReviewFile": False,
-                                    "mutatesSkillFiles": False,
-                                    "callsExternalAiApis": False,
-                                    "requiresCleanWorkspace": False,
-                                },
-                            ],
-                            "commandByKey": {
-                                "reviewCheckReport": {
-                                    "step": 2,
-                                    "key": "reviewCheckReport",
-                                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
-                                    "commandArgs": [
-                                        "design-ai", "learn", "--propose-skills",
-                                        "--file", str(learning_profile_path),
-                                        "--usage-file", str(learning_usage_path),
-                                        "--from-file", str(Path(tmp)),
-                                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                                        "--review-check", "--report", "--out", "skill-proposal-review-check.md",
-                                    ],
-                                    "runPolicy": "output-artifact",
-                                    "safetyLevel": "local-output",
-                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
-                                    "writesLocalFiles": True,
-                                    "writesOutputArtifact": True,
-                                    "mutatesLocalState": True,
-                                    "mutatesProfile": False,
-                                    "mutatesReviewFile": False,
-                                    "mutatesSkillFiles": False,
-                                    "callsExternalAiApis": False,
-                                    "requiresCleanWorkspace": False,
-                                },
-                                "proposalPatchPreview": {
-                                    "step": 3,
-                                    "key": "proposalPatchPreview",
-                                    "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
-                                    "commandArgs": [
-                                        "design-ai", "learn", "--propose-skills",
-                                        "--file", str(learning_profile_path),
-                                        "--usage-file", str(learning_usage_path),
-                                        "--from-file", str(Path(tmp)),
-                                        "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                                        "--patch", "--out", "skill-proposals.patch",
-                                    ],
-                                    "runPolicy": "output-artifact",
-                                    "safetyLevel": "local-output",
-                                    "safety": learning_skill_proposal_apply_plan_decision_command_safety,
-                                    "writesLocalFiles": True,
-                                    "writesOutputArtifact": True,
-                                    "mutatesLocalState": True,
-                                    "mutatesProfile": False,
-                                    "mutatesReviewFile": False,
-                                    "mutatesSkillFiles": False,
-                                    "callsExternalAiApis": False,
-                                    "requiresCleanWorkspace": False,
-                                },
-                            },
-                            "commandStepByKey": {
-                                "reviewCheckReport": 2,
-                                "proposalPatchPreview": 3,
-                            },
-                            "commandRunPolicyByKey": {
-                                "reviewCheckReport": "output-artifact",
-                                "proposalPatchPreview": "output-artifact",
-                            },
-                            "commandSafetyLevelByKey": {
-                                "reviewCheckReport": "local-output",
-                                "proposalPatchPreview": "local-output",
-                            },
-                            "commandArgsByKey": {
-                                "reviewCheckReport": [
-                                    "design-ai", "learn", "--propose-skills",
-                                    "--file", str(learning_profile_path),
-                                    "--usage-file", str(learning_usage_path),
-                                    "--from-file", str(Path(tmp)),
-                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                                    "--review-check", "--report", "--out", "skill-proposal-review-check.md",
-                                ],
-                                "proposalPatchPreview": [
-                                    "design-ai", "learn", "--propose-skills",
-                                    "--file", str(learning_profile_path),
-                                    "--usage-file", str(learning_usage_path),
-                                    "--from-file", str(Path(tmp)),
-                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                                    "--patch", "--out", "skill-proposals.patch",
-                                ],
-                            },
-                            "commandStringByKey": {
-                                "reviewCheckReport": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
-                                "proposalPatchPreview": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --patch --out skill-proposals.patch",
-                            },
-                            "commandDisplayLabelByKey": {
-                                "reviewCheckReport": "Review check Markdown report",
-                                "proposalPatchPreview": "Skill proposal patch preview",
-                            },
-                            "commandDescriptionByKey": {
-                                "reviewCheckReport": "Generate a Markdown review-check artifact for accepted proposal readiness.",
-                                "proposalPatchPreview": "Generate a unified diff preview for accepted skill proposal edits.",
-                            },
-                            "commandOutputArtifactByKey": {
-                                "reviewCheckReport": "skill-proposal-review-check.md",
-                                "proposalPatchPreview": "skill-proposals.patch",
-                            },
-                            "commandOutputArtifactTypeByKey": {
-                                "reviewCheckReport": "markdown-report",
-                                "proposalPatchPreview": "unified-diff",
-                            },
-                            "commandOutputArtifactActionByKey": {
-                                "reviewCheckReport": "render-markdown-report",
-                                "proposalPatchPreview": "render-unified-diff-preview",
-                            },
-                            "commandOutputArtifactMediaTypeByKey": {
-                                "reviewCheckReport": "text/markdown",
-                                "proposalPatchPreview": "text/x-diff",
-                            },
-                            "commandOutputArtifactDispositionByKey": {
-                                "reviewCheckReport": "review-only",
-                                "proposalPatchPreview": "manual-apply-preview",
-                            },
-                            "commandOutputArtifactManualApplyCandidateByKey": {
-                                "reviewCheckReport": False,
-                                "proposalPatchPreview": True,
-                            },
-                            "commandOutputArtifactRequiresManualReviewByKey": {
-                                "reviewCheckReport": False,
-                                "proposalPatchPreview": True,
-                            },
-                            "commandOutputArtifactReviewInstructionByKey": {
-                                "reviewCheckReport": "Review the Markdown readiness report before changing proposal review status.",
-                                "proposalPatchPreview": "Review the unified diff manually before applying any skill-file edits.",
-                            },
-                            "commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey": {
-                                "reviewCheckReport": False,
-                                "proposalPatchPreview": True,
-                            },
-                            "commandOutputArtifactApplyPreconditionIdsByKey": {
-                                "reviewCheckReport": [],
-                                "proposalPatchPreview": ["manual-review", "clean-workspace"],
-                            },
-                            "commandOutputArtifactApplyPreconditionLabelsByKey": {
-                                "reviewCheckReport": [],
-                                "proposalPatchPreview": ["Manual review completed", "Clean workspace confirmed"],
-                            },
-                            "commandOutputArtifactApplyPreconditionsByKey": {
-                                "reviewCheckReport": [],
-                                "proposalPatchPreview": [
-                                    {"id": "manual-review", "label": "Manual review completed", "required": True},
-                                    {"id": "clean-workspace", "label": "Clean workspace confirmed", "required": True},
-                                ],
-                            },
-                            "commandOutputArtifactApplyPreconditionCountByKey": {
-                                "reviewCheckReport": 0,
-                                "proposalPatchPreview": 2,
-                            },
-                            "commandOutputArtifactRequiredApplyPreconditionCountByKey": {
-                                "reviewCheckReport": 0,
-                                "proposalPatchPreview": 2,
-                            },
-                            "commandOutputArtifactSatisfiedApplyPreconditionCountByKey": {
-                                "reviewCheckReport": 0,
-                                "proposalPatchPreview": 0,
-                            },
-                            "commandOutputArtifactPendingApplyPreconditionCountByKey": {
-                                "reviewCheckReport": 0,
-                                "proposalPatchPreview": 2,
-                            },
-                            "commandOutputArtifactRequiredPendingApplyPreconditionCountByKey": {
-                                "reviewCheckReport": 0,
-                                "proposalPatchPreview": 2,
-                            },
-                            "commandOutputArtifactManualApplyReadyByKey": {
-                                "reviewCheckReport": False,
-                                "proposalPatchPreview": False,
-                            },
-                            "commandOutputArtifactManualApplyStatusByKey": {
-                                "reviewCheckReport": "not-applicable",
-                                "proposalPatchPreview": "blocked",
-                            },
-                            "commandOutputArtifactManualApplyStatusLabelByKey": {
-                                "reviewCheckReport": "Review only",
-                                "proposalPatchPreview": "Blocked",
-                            },
-                            "commandOutputArtifactManualApplyStatusToneByKey": {
-                                "reviewCheckReport": "neutral",
-                                "proposalPatchPreview": "warning",
-                            },
-                            "commandOutputArtifactManualApplyBlockedReasonByKey": {
-                                "reviewCheckReport": "This output artifact is review-only and cannot be applied.",
-                                "proposalPatchPreview": "Complete required apply preconditions before applying this patch preview.",
-                            },
-                            "commandOutputArtifactManualApplyBlockedReasonCodeByKey": {
-                                "reviewCheckReport": "not-manual-apply-candidate",
-                                "proposalPatchPreview": "required-preconditions-pending",
-                            },
-                            "nextCommandEntry": {
-                                "step": 2,
-                                "key": "reviewCheckReport",
-                                "command": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
-                                "commandArgs": [
-                                    "design-ai", "learn", "--propose-skills",
-                                    "--file", str(learning_profile_path),
-                                    "--usage-file", str(learning_usage_path),
-                                    "--from-file", str(Path(tmp)),
-                                    "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                                    "--review-check", "--report", "--out", "skill-proposal-review-check.md",
-                                ],
-                                "runPolicy": "output-artifact",
-                                "safetyLevel": "local-output",
-                                "safety": learning_skill_proposal_apply_plan_decision_command_safety,
-                                "writesLocalFiles": True,
-                                "writesOutputArtifact": True,
-                                "mutatesLocalState": True,
-                                "mutatesProfile": False,
-                                "mutatesReviewFile": False,
-                                "mutatesSkillFiles": False,
-                                "callsExternalAiApis": False,
-                                "requiresCleanWorkspace": False,
-                            },
-                            "nextCommandKey": "reviewCheckReport",
-                            "nextCommandDisplayLabel": "Review check Markdown report",
-                            "nextCommandDescription": "Generate a Markdown review-check artifact for accepted proposal readiness.",
-                            "nextCommandOutputArtifact": "skill-proposal-review-check.md",
-                            "nextCommandOutputArtifactType": "markdown-report",
-                            "nextCommandOutputArtifactAction": "render-markdown-report",
-                            "nextCommandOutputArtifactMediaType": "text/markdown",
-                            "nextCommandOutputArtifactDisposition": "review-only",
-                            "nextCommandOutputArtifactManualApplyCandidate": False,
-                            "nextCommandOutputArtifactRequiresManualReview": False,
-                            "nextCommandOutputArtifactReviewInstruction": "Review the Markdown readiness report before changing proposal review status.",
-                            "nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply": False,
-                            "nextCommandOutputArtifactApplyPreconditionIds": [],
-                            "nextCommandOutputArtifactApplyPreconditionLabels": [],
-                            "nextCommandOutputArtifactApplyPreconditions": [],
-                            "nextCommandOutputArtifactApplyPreconditionCount": 0,
-                            "nextCommandOutputArtifactRequiredApplyPreconditionCount": 0,
-                            "nextCommandOutputArtifactSatisfiedApplyPreconditionCount": 0,
-                            "nextCommandOutputArtifactPendingApplyPreconditionCount": 0,
-                            "nextCommandOutputArtifactRequiredPendingApplyPreconditionCount": 0,
-                            "nextCommandOutputArtifactManualApplyReady": False,
-                            "nextCommandOutputArtifactManualApplyStatus": "not-applicable",
-                            "nextCommandOutputArtifactManualApplyStatusLabel": "Review only",
-                            "nextCommandOutputArtifactManualApplyStatusTone": "neutral",
-                            "nextCommandOutputArtifactManualApplyBlockedReason": "This output artifact is review-only and cannot be applied.",
-                            "nextCommandOutputArtifactManualApplyBlockedReasonCode": "not-manual-apply-candidate",
-                            "nextCommandStep": 2,
-                            "nextCommand": f"design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --report --out skill-proposal-review-check.md",
-                            "nextCommandArgs": [
-                                "design-ai", "learn", "--propose-skills",
-                                "--file", str(learning_profile_path),
-                                "--usage-file", str(learning_usage_path),
-                                "--from-file", str(Path(tmp)),
-                                "--review-file", str(learning_skill_proposal_apply_plan_review_path),
-                                "--review-check", "--report", "--out", "skill-proposal-review-check.md",
-                            ],
-                            "nextCommandRunPolicy": "output-artifact",
-                            "nextCommandSafetyLevel": "local-output",
-                            "nextCommandSafety": learning_skill_proposal_apply_plan_decision_command_safety,
-                            "runPolicy": "optional-local-output-preview",
-                            "safety": {
-                                "level": "local-output",
-                                "writesLocalFiles": True,
-                                "writesOutputArtifacts": True,
-                                "mutatesLocalState": True,
-                                "mutatesProfile": False,
-                                "mutatesReviewFile": False,
-                                "mutatesSkillFiles": False,
-                                "callsExternalAiApis": False,
-                                "requiresCleanWorkspace": False,
-                                "reason": "The selected decision only writes optional local preview artifacts and does not mutate learning, review, or skill files.",
-                            },
-                            "nextRequiredStageKey": "manualSkillEdit",
-                            "nextRequiredCommandStageKey": "reviewReadiness",
-                            "requiresOperatorActionBeforeRequiredCommands": True,
-                            "reason": "Offer optional local preview artifacts first; the required path still starts with manual skill edits before read-only command gates.",
-                        },
-                        "stageOrder": ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
-                        "nextStageKey": "previewArtifacts",
-                        "nextStageCommandKeys": ["reviewCheckReport", "proposalPatchPreview"],
-                        "nextStage": {
-                            "key": "previewArtifacts",
-                            "step": 1,
-                            "label": "Generate optional review artifacts",
-                            "kind": "local-output-preview",
-                            "required": False,
-                            "hasCommands": True,
-                            "commandCount": 2,
-                            "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
-                            "writesLocalFiles": True,
-                            "writesOutputArtifacts": True,
-                            "mutatesLocalState": True,
-                            "mutatesProfile": False,
-                            "mutatesReviewFile": False,
-                            "mutatesSkillFiles": False,
-                            "callsExternalAiApis": False,
-                            "requiresCleanWorkspace": False,
-                            "reason": "Optional Markdown review and patch preview artifacts can be generated before manual skill edits.",
-                        },
-                        "nextRequiredStageKey": "manualSkillEdit",
-                        "nextRequiredStageCommandKeys": [],
-                        "nextRequiredStage": {
-                            "key": "manualSkillEdit",
-                            "step": 2,
-                            "label": "Apply accepted skill deltas manually",
-                            "kind": "manual-review",
-                            "required": True,
-                            "hasCommands": False,
-                            "commandCount": 0,
-                            "commandKeys": [],
-                            "writesLocalFiles": False,
-                            "writesOutputArtifacts": False,
-                            "mutatesLocalState": False,
-                            "mutatesProfile": False,
-                            "mutatesReviewFile": False,
-                            "mutatesSkillFiles": False,
-                            "callsExternalAiApis": False,
-                            "requiresCleanWorkspace": False,
-                            "reason": "No apply-plan command mutates skill files; the operator must manually edit accepted skill deltas after review.",
-                        },
-                        "nextRequiredCommandStageKey": "reviewReadiness",
-                        "nextRequiredCommandStageCommandKeys": ["reviewCheckJson"],
-                        "nextRequiredCommandStage": {
-                            "key": "reviewReadiness",
-                            "step": 3,
-                            "label": "Run review readiness check",
-                            "kind": "read-only-check",
-                            "required": True,
-                            "hasCommands": True,
-                            "commandCount": 1,
-                            "commandKeys": ["reviewCheckJson"],
-                            "writesLocalFiles": False,
-                            "writesOutputArtifacts": False,
-                            "mutatesLocalState": False,
-                            "mutatesProfile": False,
-                            "mutatesReviewFile": False,
-                            "mutatesSkillFiles": False,
-                            "callsExternalAiApis": False,
-                            "requiresCleanWorkspace": False,
-                            "reason": "Run the read-only review check after manual skill edits to verify proposal review state.",
-                        },
-                        "reason": "Offer optional local preview artifacts first, then require the manual skill edit before read-only review and strict gates.",
-                    },
-                    "stageKeys": ["previewArtifacts", "manualSkillEdit", "reviewReadiness", "strictGate"],
-                    "stageByKey": {
-                        "previewArtifacts": {
-                            "step": 1,
-                            "key": "previewArtifacts",
-                            "kind": "local-output-preview",
-                            "required": False,
-                            "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
-                            "commands": [{"key": "reviewCheckReport"}, {"key": "proposalPatchPreview"}],
-                        },
-                        "manualSkillEdit": {
-                            "step": 2,
-                            "key": "manualSkillEdit",
-                            "kind": "manual-review",
-                            "required": True,
-                            "commandKeys": [],
-                            "commands": [],
-                        },
-                        "reviewReadiness": {
-                            "step": 3,
-                            "key": "reviewReadiness",
-                            "kind": "read-only-check",
-                            "required": True,
-                            "commandKeys": ["reviewCheckJson"],
-                            "commands": [{"key": "reviewCheckJson"}],
-                        },
-                        "strictGate": {
-                            "step": 4,
-                            "key": "strictGate",
-                            "kind": "read-only-gate",
-                            "required": True,
-                            "commandKeys": ["strictGate"],
-                            "commands": [{"key": "strictGate"}],
-                        },
-                    },
-                    "stages": [
-                        {
-                            "step": 1,
-                            "key": "previewArtifacts",
-                            "kind": "local-output-preview",
-                            "required": False,
-                            "commandKeys": ["reviewCheckReport", "proposalPatchPreview"],
-                            "commands": [{"key": "reviewCheckReport"}, {"key": "proposalPatchPreview"}],
-                        },
-                        {
-                            "step": 2,
-                            "key": "manualSkillEdit",
-                            "kind": "manual-review",
-                            "required": True,
-                            "commandKeys": [],
-                            "commands": [],
-                        },
-                        {
-                            "step": 3,
-                            "key": "reviewReadiness",
-                            "kind": "read-only-check",
-                            "required": True,
-                            "commandKeys": ["reviewCheckJson"],
-                            "commands": [{"key": "reviewCheckJson"}],
-                        },
-                        {
-                            "step": 4,
-                            "key": "strictGate",
-                            "kind": "read-only-gate",
-                            "required": True,
-                            "commandKeys": ["strictGate"],
-                            "commands": [{"key": "strictGate"}],
-                        },
-                    ],
-                    "reason": "Generate optional local review artifacts, apply accepted skill deltas manually, then run read-only review and strict readiness gates.",
-                },
-                "nextAction": "Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
-                "checks": [
-                    {"id": "required-command-keys-present", "level": "pass", "passed": True},
-                    {"id": "no-unexpected-command-keys", "level": "pass", "passed": True},
-                    {"id": "reviewCheckJson-base-command", "level": "pass", "passed": True},
-                    {"id": "reviewCheckJson-review-file-context", "level": "pass", "passed": True},
-                    {"id": "reviewCheckJson-expected-suffix", "level": "pass", "passed": True},
-                    {"id": "reviewCheckJson-read-only-flags", "level": "pass", "passed": True},
-                    {"id": "reviewCheckReport-base-command", "level": "pass", "passed": True},
-                    {"id": "reviewCheckReport-review-file-context", "level": "pass", "passed": True},
-                    {"id": "reviewCheckReport-expected-suffix", "level": "pass", "passed": True},
-                    {"id": "reviewCheckReport-read-only-flags", "level": "pass", "passed": True},
-                    {"id": "proposalPatchPreview-base-command", "level": "pass", "passed": True},
-                    {"id": "proposalPatchPreview-review-file-context", "level": "pass", "passed": True},
-                    {"id": "proposalPatchPreview-expected-suffix", "level": "pass", "passed": True},
-                    {"id": "proposalPatchPreview-read-only-flags", "level": "pass", "passed": True},
-                    {"id": "strictGate-base-command", "level": "pass", "passed": True},
-                    {"id": "strictGate-review-file-context", "level": "pass", "passed": True},
-                    {"id": "strictGate-expected-suffix", "level": "pass", "passed": True},
-                    {"id": "strictGate-read-only-flags", "level": "pass", "passed": True},
-                ],
-                "summary": {
-                    "failures": 0,
-                    "warnings": 0,
-                    "passes": 18,
-                    "total": 18,
-                },
-            },
-            "recommendations": [{"level": "warning", "text": "Apply accepted proposal deltas manually."}],
-            "privacy": {
-                "mutatesProfile": False,
-                "mutatesReviewFile": False,
-                "mutatesSkillFiles": False,
-                "callsExternalAiApis": False,
-                "storesRawBriefText": False,
-                "exposesEntryTextPreview": True,
-            },
-        }
-        assert_skill_proposal_apply_plan_json(
-            json.dumps(learning_skill_proposal_apply_plan_payload),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            review_path=learning_skill_proposal_apply_plan_review_path,
-            signal_source=Path(tmp),
-            context=context,
-            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-        )
-        learning_skill_proposal_apply_plan_human = "\n".join([
-            "  design-ai learn",
-            "  Skill proposal apply plan",
-            "",
-            "Manual apply tasks:",
-            "- skill-proposal-component-spec-writer-abcdef1234: skills/component-spec-writer/SKILL.md",
-            "",
-            "Follow-up commands:",
-            f"- reviewCheckJson: design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
-            "",
-            "Command contract:",
-            "- valid: yes",
-            "- status: pass",
-            "- required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
-            "- forbidden flags: --yes",
-            "- check count: 18",
-            "- pass count: 18",
-            "- warning count: 0",
-            "- failure count: 0",
-            "- failed checks: none",
-            "- next command key: reviewCheckJson",
-            "- next command policy: preview-only",
-            "- next command safety: read-only",
-            f"- next command: design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json",
-            "- command sequence count: 4",
-            "- command sequence keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
-            "- command sequence policy: mixed-preview-local-output",
-            "- command sequence executable: yes",
-            "- command sequence local outputs: 2",
-            "- command sequence mutates profile: no",
-            "- command sequence mutates review file: no",
-            "- command sequence mutates skill files: no",
-            "- command sequence calls external AI APIs: no",
-            "- operator runbook stages: 4",
-            "- operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
-            "- operator runbook required stages: 3",
-            "- operator runbook next stage: previewArtifacts",
-            "- operator runbook next required stage: manualSkillEdit",
-            "- operator runbook next required command stage: reviewReadiness",
-            "- operator runbook stage selection: optional-preview-before-required-manual-edit",
-            "- operator runbook decision: offer-optional-preview",
-            "- operator runbook decision safety: local-output",
-            "- operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
-            "- operator runbook decision next command: reviewCheckReport",
-            "- operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
-            "Command sequence:",
-            "- 1. reviewCheckJson: preview-only / read-only",
-            "- 2. reviewCheckReport: output-artifact / local-output",
-            "- 3. proposalPatchPreview: output-artifact / local-output",
-            "- 4. strictGate: strict-readiness-gate / read-only",
-            "Operator runbook:",
-            "- 1. previewArtifacts: optional / local-output-preview / reviewCheckReport, proposalPatchPreview",
-            "- 2. manualSkillEdit: required / manual-review / manual",
-            "- 3. reviewReadiness: required / read-only-check / reviewCheckJson",
-            "- 4. strictGate: required / read-only-gate / strictGate",
-            "- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
-            "",
-            "Privacy: apply plan is read-only and does not mutate learning.json, review files, or skill files.",
-        ])
-        assert_skill_proposal_apply_plan_human(
-            learning_skill_proposal_apply_plan_human,
-            context=context,
-            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
-        )
-        learning_skill_proposal_apply_plan_markdown = "\n".join([
-            "# Skill Proposal Apply Plan",
-            "",
-            "- Generated: 2026-06-11T00:10:00.000Z",
-            "- Status: warn",
-            "- Proposal status: warn",
-            "- Signal status: pass",
-            f"- File: {learning_profile_path}",
-            f"- Usage sidecar: {learning_usage_path}",
-            f"- Signal source: {Path(tmp)}",
-            f"- Review file: {learning_skill_proposal_apply_plan_review_path}",
-            "- Accepted proposals: 1",
-            "- Pending review: 1",
-            "- Reviewed: 1",
-            "",
-            "## Manual Apply Tasks",
-            "",
-            "### Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
-            "",
-            "- Candidate skill: skills/component-spec-writer/SKILL.md",
-            "",
-            "Manual steps:",
-            "- After the skill edit and verification pass, update the review decision from `accepted` to `applied`.",
-            "",
-            "## Follow-up Commands",
-            "",
-            f"- reviewCheckJson: `design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
-            "",
-            "## Command Contract",
-            "",
-            "- Valid: yes",
-            "- Required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
-            "- Check count: 18",
-            "- Pass count: 18",
-            "- Warning count: 0",
-            "- Failure count: 0",
-            "- Failed checks: none",
-            "- Next command key: reviewCheckJson",
-            "- Next command policy: preview-only",
-            "- Next command safety: read-only",
-            f"- Next command: `design-ai learn --propose-skills --file {learning_profile_path} --usage-file {learning_usage_path} --from-file {Path(tmp)} --review-file {learning_skill_proposal_apply_plan_review_path} --review-check --json`",
-            "- Command sequence count: 4",
-            "- Command sequence keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
-            "- Command sequence policy: mixed-preview-local-output",
-            "- Command sequence executable: yes",
-            "- Command sequence local outputs: 2",
-            "- Command sequence mutates profile: no",
-            "- Command sequence mutates review file: no",
-            "- Command sequence mutates skill files: no",
-            "- Command sequence calls external AI APIs: no",
-            "- Operator runbook stages: 4",
-            "- Operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
-            "- Operator runbook required stages: 3",
-            "- Operator runbook next stage: previewArtifacts",
-            "- Operator runbook next required stage: manualSkillEdit",
-            "- Operator runbook next required command stage: reviewReadiness",
-            "- Operator runbook stage selection: optional-preview-before-required-manual-edit",
-            "- Operator runbook decision: offer-optional-preview",
-            "- Operator runbook decision safety: local-output",
-            "- Operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
-            "- Operator runbook decision next command: reviewCheckReport",
-            "- Operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
-            "",
-            "Command sequence:",
-            "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
-            "- 2. reviewCheckReport (output-artifact / local-output): `design-ai learn --propose-skills",
-            "- 3. proposalPatchPreview (output-artifact / local-output): `design-ai learn --propose-skills",
-            "- 4. strictGate (strict-readiness-gate / read-only): `design-ai learn --propose-skills",
-            "",
-            "Operator runbook:",
-            "- 1. previewArtifacts (optional / local-output-preview): reviewCheckReport, proposalPatchPreview",
-            "- 2. manualSkillEdit (required / manual-review): manual",
-            "- 3. reviewReadiness (required / read-only-check): reviewCheckJson",
-            "- 4. strictGate (required / read-only-gate): strictGate",
-            "- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
-            "",
-            "## Privacy And Boundaries",
-            "",
-            "- Mutates learning profile: no",
-            "- Mutates review file: no",
-            "- Mutates skill files: no",
-            "- Calls external AI APIs: no",
-        ])
-        assert_skill_proposal_apply_plan_markdown(
-            learning_skill_proposal_apply_plan_markdown,
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            review_path=learning_skill_proposal_apply_plan_review_path,
-            context=context,
-            cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
-        )
-        assert_skill_proposal_review_template_json(
-            json.dumps({
-                "version": 1,
-                "generatedAt": "2026-06-11T00:00:00.000Z",
-                "source": "design-ai learn --propose-skills --review-template",
-                "proposalFile": str(learning_profile_path),
-                "usageFile": str(learning_usage_path),
-                "signalSource": str(Path(tmp)),
-                "reviewFile": "",
-                "reviewPolicy": {
-                    "clearsStrict": ["applied", "rejected"],
-                    "remainsPending": ["accepted", "deferred"],
-                },
-                "summary": {
-                    "proposalCount": 1,
-                    "pendingReviewCount": 1,
-                    "reviewedCount": 0,
-                    "templateDecisionCount": 1,
-                },
-                "decisions": [
-                    {
-                        "proposalId": "skill-proposal-component-spec-writer-abcdef1234",
-                        "status": "deferred",
-                        "reviewedAt": "",
-                        "reviewer": "",
-                        "note": "Review skills/component-spec-writer/SKILL.md: Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
-                    },
-                ],
-            }),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=[*learn_skill_proposals_cmd[:-1], "--review-template"],
-        )
-        assert_skill_proposal_min_evidence_json(
-            json.dumps({
-                **learning_skill_proposal_payload,
-                "minEvidenceCount": 3,
-                "count": 0,
-                "proposalCount": 0,
-                "skippedCount": 1,
-                "proposals": [],
-                "skipped": [
-                    {
-                        "candidateSkillPath": "skills/component-spec-writer/SKILL.md",
-                        "category": "accessibility",
-                        "sourceIssueCount": 2,
-                        "reason": "Needs at least 3 related check-capture entries before proposing a skill edit.",
-                    },
-                ],
-            }),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=[*learn_skill_proposals_cmd[:-1], "--min-evidence", "3", "--json"],
-        )
-        assert_skill_proposal_report_human(
-            "\n".join([
-                "design-ai learn",
-                "Skill evolution proposals",
-                f"Signal source: {Path(tmp)}",
-                "Status: warn",
-                "Proposed skill deltas:",
-                "skills/component-spec-writer/SKILL.md",
-                "No changes made. This command is preview-only",
-            ]),
-            context=context,
-            cmd=learn_skill_proposals_cmd,
-        )
-        learning_skill_proposal_markdown = "\n".join([
-            "# Skill Evolution Proposal Report",
-            "",
-            "- Generated: 2026-06-02T00:00:03.000Z",
-            f"- File: {learning_profile_path}",
-            f"- Usage sidecar: {learning_usage_path}",
-            f"- Signal source: {Path(tmp)}",
-            "- Status: warn",
-            "- Signal status: pass",
-            "- Check capture entries: 2",
-            "- Candidate groups: 1",
-            "- Proposal count: 1",
-            "- Skipped groups: 0",
-            "- Dry run: yes",
-            "- Applied: no",
-            "",
-            "## Proposed Skill Deltas",
-            "",
-            "### Update skills/component-spec-writer/SKILL.md for repeated accessibility check captures",
-            "",
-            "- Proposal id: skill-proposal-component-spec-writer-abc123",
-            "- Candidate skill: skills/component-spec-writer/SKILL.md",
-            "- Category: accessibility",
-            "- Routes: component-spec",
-            "- Risk: low",
-            "- Source issues: 2",
-            "- Rationale: Repeated accessibility check captures were recorded for component-spec.",
-            "",
-            "Proposed instruction delta:",
-            "",
-            "> Add a pre-handoff accessibility checkpoint.",
-            "",
-            "Verification:",
-            "",
-            "```bash",
-            "node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json",
-            "```",
-            "",
-            "Evidence:",
-            "- `learn-skill-proposal-a` [accessibility] check:component-spec",
-            "",
-            "## Skipped Groups",
-            "",
-            "No candidate groups were skipped.",
-            "",
-            "## Privacy And Boundaries",
-            "",
-            "- Mutates learning profile: no",
-            "- Mutates skill files: no",
-            "- Calls external AI APIs: no",
-            "- Stores raw brief text: no",
-            "- Includes entry text preview: yes",
-            "",
-            "## Next Steps",
-            "",
-            "- This report is preview-only evidence; it does not apply changes.",
-        ])
-        assert_skill_proposal_report_markdown(
-            learning_skill_proposal_markdown,
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=learn_skill_proposals_cmd,
-        )
-        learning_skill_proposal_patch = "\n".join([
-            "# design-ai skill proposal patch preview",
-            "# Preview-only output from `design-ai learn --propose-skills --patch`.",
-            "# Review manually before applying. This command does not edit skill files.",
-            "",
-            "diff --git a/skills/component-spec-writer/SKILL.md b/skills/component-spec-writer/SKILL.md",
-            "--- a/skills/component-spec-writer/SKILL.md",
-            "+++ b/skills/component-spec-writer/SKILL.md",
-            "@@ -7,1 +7,10 @@",
-            " See [PLAYBOOK.md](PLAYBOOK.md).",
-            "+",
-            "+## Local Learning Proposal: skill-proposal-component-spec-writer-abc123",
-            "+",
-            "+<!-- Generated by design-ai learn --propose-skills --patch. Review manually before applying. -->",
-            "+",
-            "+- Category: accessibility",
-            "+- Routes: component-spec",
-            "+- Risk: low",
-            "+- Evidence count: 2",
-            "+- Proposed instruction: Add a pre-handoff accessibility checkpoint.",
-            "+- Verification: `node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json`",
-        ])
-        assert_skill_proposal_patch(
-            learning_skill_proposal_patch,
-            context=context,
-            cmd=[*learn_skill_proposals_cmd[:-1], "--patch"],
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_report_json(
-                json.dumps({
-                    **learning_skill_proposal_payload,
-                    "proposals": [],
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_skill_proposals_cmd,
-            ),
-            expected="learn skill proposals JSON should include the repeated component-spec skill delta",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_review_json(
-                json.dumps({
-                    **learning_skill_proposal_payload,
-                    "reviewFile": str(learning_skill_proposal_review_path),
-                    "pendingReviewCount": 1,
-                    "reviewedCount": 1,
-                    "review": {
-                        **learning_skill_proposal_payload["review"],
-                        "file": str(learning_skill_proposal_review_path),
-                        "exists": True,
-                        "matchedCount": 1,
-                        "pendingCount": 1,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_review_path,
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--json"],
-            ),
-            expected="learn skill proposals review JSON should join applied review decisions",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_review_check_json(
-                json.dumps({
-                    **learning_skill_proposal_review_check_payload,
-                    "status": "warn",
-                    "summary": {
-                        **learning_skill_proposal_review_check_payload["summary"],
-                        "status": "warn",
-                        "warnings": 1,
-                    },
-                    "checks": [
-                        *learning_skill_proposal_review_check_payload["checks"][:-1],
-                        {
-                            "id": "no-stale-review-decisions",
-                            "level": "warn",
-                            "passed": False,
-                            "message": "Review file contains decisions for proposals that are no longer current.",
-                            "evidence": {"staleCount": 1},
-                        },
-                    ],
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_review_path,
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--json"],
-            ),
-            expected="learn skill proposal review-check JSON should report pass review-file readiness",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_review_check_markdown(
-                learning_skill_proposal_review_check_markdown.replace(
-                    "- Mutates skill files: no",
-                    "- Mutates skill files: yes",
-                ),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_review_path,
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_review_path), "--review-check", "--report"],
-            ),
-            expected="learn skill proposal review-check Markdown report missing '- Mutates skill files: no'",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "acceptedCount": 0,
-                    "count": 0,
-                    "tasks": [],
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactRequiresManualReviewByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactRequiresManualReviewByKey"],
-                                        "proposalPatchPreview": False,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactManualApplyStatusToneByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyStatusToneByKey"],
-                                        "proposalPatchPreview": "success",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactManualApplyStatusLabelByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyStatusLabelByKey"],
-                                        "proposalPatchPreview": "Ready to apply",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactManualApplyStatusByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyStatusByKey"],
-                                        "proposalPatchPreview": "ready",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactManualApplyBlockedReasonCodeByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyBlockedReasonCodeByKey"],
-                                        "proposalPatchPreview": "",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactManualApplyReadyByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyReadyByKey"],
-                                        "proposalPatchPreview": True,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactPendingApplyPreconditionCountByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactPendingApplyPreconditionCountByKey"],
-                                        "proposalPatchPreview": 1,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactApplyPreconditionCountByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionCountByKey"],
-                                        "proposalPatchPreview": 1,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactApplyPreconditionsByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionsByKey"],
-                                        "proposalPatchPreview": [
-                                            {"id": "manual-review", "label": "Manual review completed", "required": True},
-                                        ],
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactApplyPreconditionLabelsByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionLabelsByKey"],
-                                        "proposalPatchPreview": ["Manual review completed"],
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactApplyPreconditionIdsByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactApplyPreconditionIdsByKey"],
-                                        "proposalPatchPreview": ["manual-review"],
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey"],
-                                        "proposalPatchPreview": False,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactReviewInstructionByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactReviewInstructionByKey"],
-                                        "proposalPatchPreview": "",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactManualApplyCandidateByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactManualApplyCandidateByKey"],
-                                        "proposalPatchPreview": False,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactDispositionByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactDispositionByKey"],
-                                        "proposalPatchPreview": "review-only",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactMediaTypeByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactMediaTypeByKey"],
-                                        "proposalPatchPreview": "text/plain",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactActionByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactActionByKey"],
-                                        "proposalPatchPreview": "download-file",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandDescriptionByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandDescriptionByKey"],
-                                        "reviewCheckReport": "Generate review report.",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactTypeByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactTypeByKey"],
-                                        "reviewCheckReport": "markdown",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandOutputArtifactByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandOutputArtifactByKey"],
-                                        "proposalPatchPreview": "proposal.patch",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandDisplayLabelByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandDisplayLabelByKey"],
-                                        "proposalPatchPreview": "Patch preview",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageCount": 3,
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandStringByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandStringByKey"],
-                                        "reviewCheckReport": "design-ai learn --propose-skills --review-check --report",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandArgsByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandArgsByKey"],
-                                        "proposalPatchPreview": [
-                                            "design-ai", "learn", "--propose-skills",
-                                            "--patch",
-                                        ],
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandSafetyLevelByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandSafetyLevelByKey"],
-                                        "reviewCheckReport": "read-only",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandRunPolicyByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandRunPolicyByKey"],
-                                        "proposalPatchPreview": "preview-only",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandStepByKey": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commandStepByKey"],
-                                        "reviewCheckReport": 3,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "nextCommandStep": 3,
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "nextCommandSafety": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["nextCommandSafety"],
-                                        "level": "read-only",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commands": [
-                                        {
-                                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][0],
-                                            "safety": {
-                                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][0]["safety"],
-                                                "reason": "drift",
-                                            },
-                                        },
-                                        *learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["commands"][1:],
-                                    ],
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "nextCommandEntry": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["nextCommandEntry"],
-                                        "key": "proposalPatchPreview",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commandByKey": {},
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "nextCommandKey": "proposalPatchPreview",
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "commands": [],
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "safety": {
-                                        **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"]["safety"],
-                                        "level": "read-only",
-                                    },
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "decision": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["decision"],
-                                    "action": "run-required-command",
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageKeys": [],
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "nextRequiredCommandStageKey": "",
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "strategy": "",
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_json(
-                json.dumps({
-                    **learning_skill_proposal_apply_plan_payload,
-                    "commandContract": {
-                        **learning_skill_proposal_apply_plan_payload["commandContract"],
-                        "operatorRunbook": {
-                            **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"],
-                            "stageSelection": {
-                                **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"],
-                                "nextStage": {
-                                    **learning_skill_proposal_apply_plan_payload["commandContract"]["operatorRunbook"]["stageSelection"]["nextStage"],
-                                    "kind": "manual-review",
-                                },
-                            },
-                        },
-                    },
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                signal_source=Path(tmp),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--json"],
-            ),
-            expected="learn skill proposal apply-plan JSON should include accepted manual apply tasks",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_human(
-                learning_skill_proposal_apply_plan_human.replace(
-                    "Command contract:",
-                    "Command summary:",
-                ),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
-            ),
-            expected="learn skill proposal apply-plan human output missing 'Command contract:'",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_human(
-                learning_skill_proposal_apply_plan_human.replace(
-                    "Operator runbook:",
-                    "Operator stages:",
-                ),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan"],
-            ),
-            expected="learn skill proposal apply-plan human output missing 'Operator runbook:'",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_markdown(
-                learning_skill_proposal_apply_plan_markdown.replace(
-                    "- Mutates skill files: no",
-                    "- Mutates skill files: yes",
-                ),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
-            ),
-            expected="learn skill proposal apply-plan Markdown report missing '- Mutates skill files: no'",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_apply_plan_markdown(
-                learning_skill_proposal_apply_plan_markdown.replace(
-                    "Operator runbook:",
-                    "Operator stages:",
-                ),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                review_path=learning_skill_proposal_apply_plan_review_path,
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--review-file", str(learning_skill_proposal_apply_plan_review_path), "--apply-plan", "--report"],
-            ),
-            expected="learn skill proposal apply-plan Markdown report missing 'Operator runbook:'",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_min_evidence_json(
-                json.dumps({
-                    **learning_skill_proposal_payload,
-                    "minEvidenceCount": 2,
-                    "count": 1,
-                    "proposalCount": 1,
-                    "skippedCount": 0,
-                    "skipped": [],
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--min-evidence", "3", "--json"],
-            ),
-            expected="learn skill proposals min-evidence JSON should report minEvidenceCount 3",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_patch(
-                learning_skill_proposal_patch.replace("This command does not edit skill files.", "This command edits skill files."),
-                context=context,
-                cmd=[*learn_skill_proposals_cmd[:-1], "--patch"],
-            ),
-            expected="learn skill proposals patch output missing",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_report_markdown(
-                learning_skill_proposal_markdown.replace("- Mutates skill files: no", "- Mutates skill files: yes"),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_skill_proposals_cmd,
-            ),
-            expected="learn skill proposals Markdown report missing '- Mutates skill files: no'",
-            scope="package smoke",
-        )
-        assert_skill_proposal_report_json(
-            json.dumps(learning_skill_proposal_payload),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            context=context,
-            cmd=learn_skill_proposals_cmd,
-            returncode=1,
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_report_json(
-                json.dumps({
-                    **learning_skill_proposal_payload,
-                    "status": "pass",
-                }),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_skill_proposals_cmd,
-            ),
-            expected="learn skill proposals JSON should report 'warn' status when proposals need review",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_skill_proposal_report_json(
-                json.dumps(learning_skill_proposal_payload),
-                profile_path=learning_profile_path,
-                usage_path=learning_usage_path,
-                context=context,
-                cmd=learn_skill_proposals_cmd,
-                returncode=0,
-            ),
-            expected="learn skill proposals strict JSON should exit with code 1 when proposal review is pending",
-            scope="package smoke",
-        )
-
-        learning_eval_template_path = Path(tmp) / "learning-eval-template.json"
-        learning_eval_template_payload = {
-            "version": 1,
-            "generatedAt": "2026-06-01T00:00:02.000Z",
-            "sourceProfile": {
-                "file": str(learning_profile_path),
-                "exists": True,
-                "entryCount": 3,
-                "auditStatus": "pass",
-                "category": "accessibility",
-                "query": EXPECTED_ROUTE_BRIEF,
-                "limit": 6,
-            },
-            "selection": {
-                "mode": "brief-relevance",
-                "candidateCount": 1,
-                "matchedCount": 1,
-                "selectedCount": 1,
-                "queryTokenCount": 7,
-                "fallbackCount": 0,
-            },
-            "caseCount": 1,
-            "cases": [
-                {
-                    "id": "eval-1-0123456789",
-                    "brief": EXPECTED_ROUTE_BRIEF,
-                    "category": "accessibility",
-                    "limit": 1,
-                    "expectedSelectedIds": ["learn-relevant"],
-                    "minMatchedCount": 1,
-                    "requireNoFallback": True,
-                },
-            ],
-            "recommendations": [],
-            "privacy": {
-                "storesRawBriefText": True,
-                "storesBriefHash": False,
-                "exposesMatchedTokens": False,
-            },
-        }
-        learn_eval_template_cmd = ["design-ai", "learn", "--eval-template", "--query", EXPECTED_ROUTE_BRIEF, "--file", str(learning_profile_path), "--json"]
-        assert_learning_eval_template_json(
-            json.dumps(learning_eval_template_payload),
-            profile_path=learning_profile_path,
-            context=context,
-            cmd=learn_eval_template_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_eval_template_json(
-                json.dumps({
-                    **learning_eval_template_payload,
-                    "privacy": {
-                        **learning_eval_template_payload["privacy"],
-                        "storesRawBriefText": False,
-                    },
-                }),
-                profile_path=learning_profile_path,
-                context=context,
-                cmd=learn_eval_template_cmd,
-            ),
-            expected="learn eval-template JSON should disclose that checkpoint templates store raw brief text",
-            scope="package smoke",
-        )
-        learning_eval_path = Path(tmp) / "learning-eval.json"
-        learning_eval_payload = {
-            "file": str(learning_profile_path),
-            "source": str(learning_eval_path),
-            "profileExists": True,
-            "profileEntryCount": 3,
-            "checkpointVersion": 1,
-            "defaultLimit": 1,
-            "defaultCategory": "",
-            "status": "pass",
-            "caseCount": 1,
-            "passed": 1,
-            "warned": 0,
-            "failed": 0,
-            "auditSummary": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-            "cases": [
-                {
-                    "id": "button-accessibility",
-                    "routeId": EXPECTED_ROUTE_ID,
-                    "briefHash": "0123456789abcdef",
-                    "category": "",
-                    "limit": 1,
-                    "status": "pass",
-                    "failures": 0,
-                    "warnings": 0,
-                    "candidateCount": 3,
-                    "matchedCount": 1,
-                    "selectedCount": 1,
-                    "fallbackCount": 0,
-                    "expectedSelectedIds": ["learn-relevant"],
-                    "missingExpectedIds": [],
-                    "avoidedSelectedIds": ["learn-brand"],
-                    "unexpectedAvoidedIds": [],
-                    "minMatchedCount": 1,
-                    "requireNoFallback": True,
-                    "selectedEntryIds": ["learn-relevant"],
-                    "selected": [
-                        {
-                            "id": "learn-relevant",
-                            "category": "accessibility",
-                            "score": 10,
-                            "reason": "brief-match",
-                        },
-                    ],
-                    "issues": [],
-                },
-            ],
-            "recommendations": [],
-            "privacy": {
-                "storesRawBriefText": False,
-                "storesBriefHash": True,
-                "exposesMatchedTokens": False,
-            },
-        }
-        learn_eval_cmd = ["design-ai", "learn", "--eval", "--from-file", str(learning_eval_path), "--file", str(learning_profile_path), "--json"]
-        assert_learning_eval_report_json(
-            json.dumps(learning_eval_payload),
-            profile_path=learning_profile_path,
-            eval_path=learning_eval_path,
-            context=context,
-            cmd=learn_eval_cmd,
-        )
-        assert_learning_eval_template_report_json(
-            json.dumps({
-                **learning_eval_payload,
-                "source": str(learning_eval_template_path),
-            }),
-            profile_path=learning_profile_path,
-            eval_path=learning_eval_template_path,
-            context=context,
-            cmd=["design-ai", "learn", "--eval", "--from-file", str(learning_eval_template_path), "--file", str(learning_profile_path), "--strict", "--json"],
-        )
-        assert_learning_eval_report_human(
-            "\n".join([
-                "design-ai learn",
-                "Local learning eval report",
-                f"Checkpoint: {learning_eval_path}",
-                "Status: pass",
-                "button-accessibility / component-spec: pass",
-                "Privacy: eval reports expose brief hashes and selected ids, not raw brief text.",
-            ]),
-            context=context,
-            cmd=learn_eval_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_eval_report_json(
-                json.dumps({
-                    **learning_eval_payload,
-                    "cases": [
-                        {
-                            **learning_eval_payload["cases"][0],
-                            "brief": EXPECTED_ROUTE_BRIEF,
-                        },
-                    ],
-                }),
-                profile_path=learning_profile_path,
-                eval_path=learning_eval_path,
-                context=context,
-                cmd=learn_eval_cmd,
-            ),
-            expected="learn eval JSON should not expose raw brief or query text",
-            scope="package smoke",
-        )
-        learning_eval_strict_path = Path(tmp) / "learning-eval-strict-fail.json"
-        learning_eval_strict_payload = {
-            **learning_eval_payload,
-            "source": str(learning_eval_strict_path),
-            "status": "fail",
-            "passed": 0,
-            "failed": 1,
-            "cases": [
-                {
-                    **learning_eval_payload["cases"][0],
-                    "id": "missing-accessibility",
-                    "status": "fail",
-                    "failures": 2,
-                    "expectedSelectedIds": ["missing-entry"],
-                    "missingExpectedIds": ["missing-entry"],
-                    "issues": [
-                        {
-                            "level": "failure",
-                            "code": "expected-entry-not-in-profile",
-                            "message": "Expected entry missing-entry is not present in the active learning profile.",
-                        },
-                        {
-                            "level": "failure",
-                            "code": "expected-entry-not-selected",
-                            "message": "Expected selected entries were missing: missing-entry.",
-                        },
-                    ],
-                },
-            ],
-            "recommendations": [
-                {
-                    "level": "warning",
-                    "text": "Review failed eval cases before trusting prompt/pack --with-learning selection.",
-                },
-            ],
-        }
-        learn_eval_strict_cmd = [
-            "design-ai",
-            "learn",
-            "--eval",
-            "--from-file",
-            str(learning_eval_strict_path),
-            "--file",
-            str(learning_profile_path),
-            "--strict",
-            "--json",
-        ]
-        assert_learning_eval_strict_failure_json(
-            json.dumps(learning_eval_strict_payload),
-            returncode=1,
-            profile_path=learning_profile_path,
-            eval_path=learning_eval_strict_path,
-            context=context,
-            cmd=learn_eval_strict_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_eval_strict_failure_json(
-                json.dumps(learning_eval_strict_payload),
-                returncode=0,
-                profile_path=learning_profile_path,
-                eval_path=learning_eval_strict_path,
-                context=context,
-                cmd=learn_eval_strict_cmd,
-            ),
-            expected="learn eval --strict should exit with code 1 when checkpoints fail",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_eval_strict_failure_json(
-                json.dumps({
-                    **learning_eval_strict_payload,
-                    "cases": [
-                        {
-                            **learning_eval_strict_payload["cases"][0],
-                            "brief": EXPECTED_ROUTE_BRIEF,
-                        },
-                    ],
-                }),
-                returncode=1,
-                profile_path=learning_profile_path,
-                eval_path=learning_eval_strict_path,
-                context=context,
-                cmd=learn_eval_strict_cmd,
-            ),
-            expected="learn eval strict JSON should not expose raw brief or query text",
-            scope="package smoke",
-        )
-
-        duplicate_command_args = [
-            "design-ai",
-            "learn",
-            "--file",
-            str(learning_profile_path),
-            "--forget",
-            "learn-b",
-            "--yes",
-        ]
-        sensitive_command_args = [
-            "design-ai",
-            "learn",
-            "--file",
-            str(learning_profile_path),
-            "--forget",
-            "learn-c",
-            "--yes",
-        ]
-        learning_audit_payload = {
-            "file": str(learning_profile_path),
-            "exists": True,
-            "count": 3,
-            "categoryCounts": {
-                "workflow": 2,
-                "constraint": 1,
-            },
-            "summary": {
-                "status": "warn",
-                "failures": 0,
-                "warnings": 2,
-            },
-            "issues": [
-                {
-                    "level": "warning",
-                    "code": "duplicate-entry-text",
-                    "entryId": "learn-b",
-                    "message": "Entry duplicates learn-a in the same category.",
-                },
-                {
-                    "level": "warning",
-                    "code": "sensitive-secret-assignment",
-                    "entryId": "learn-c",
-                    "message": "Entry may contain a secret-like assignment.",
-                },
-            ],
-            "suggestions": [
-                {
-                    "issueCode": "duplicate-entry-text",
-                    "entryId": "learn-b",
-                    "action": "remove-duplicate",
-                    "message": "Remove the duplicate entry.",
-                    "commandArgs": duplicate_command_args,
-                    "command": " ".join(duplicate_command_args),
-                },
-                {
-                    "issueCode": "sensitive-secret-assignment",
-                    "entryId": "learn-c",
-                    "action": "remove-or-redact-sensitive-content",
-                    "message": "Remove this entry or re-add a redacted preference.",
-                    "commandArgs": sensitive_command_args,
-                    "command": " ".join(sensitive_command_args),
-                },
-            ],
-        }
-        learn_audit_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_profile_path), "--json"]
-        assert_learning_audit_cleanup_json(
-            json.dumps(learning_audit_payload),
-            profile_path=learning_profile_path,
-            context=context,
-            cmd=learn_audit_cmd,
-        )
-        learning_audit_fix_payload = {
-            "file": str(learning_profile_path),
-            "dryRun": True,
-            "applied": False,
-            "before": {
-                "status": "warn",
-                "failures": 0,
-                "warnings": 2,
-            },
-            "cleanupCount": 2,
-            "cleanup": [
-                {
-                    "entryId": "learn-b",
-                    "issueCodes": ["duplicate-entry-text"],
-                    "actions": ["remove-duplicate"],
-                    "commandArgs": duplicate_command_args,
-                    "command": " ".join(duplicate_command_args),
-                },
-                {
-                    "entryId": "learn-c",
-                    "issueCodes": ["sensitive-secret-assignment"],
-                    "actions": ["remove-or-redact-sensitive-content"],
-                    "commandArgs": sensitive_command_args,
-                    "command": " ".join(sensitive_command_args),
-                },
-            ],
-            "skipped": [],
-            "removed": [],
-            "after": None,
-        }
-        learn_audit_fix_cmd = [
-            "design-ai",
-            "learn",
-            "--audit",
-            "--fix",
-            "--dry-run",
-            "--file",
-            str(learning_profile_path),
-            "--json",
-        ]
-        assert_learning_audit_fix_json(
-            json.dumps(learning_audit_fix_payload),
-            profile_path=learning_profile_path,
-            dry_run=True,
-            context=context,
-            cmd=learn_audit_fix_cmd,
-        )
-        applied_learning_audit_fix_payload = {
-            **learning_audit_fix_payload,
-            "dryRun": False,
-            "applied": True,
-            "removed": [
-                {
-                    "id": "learn-b",
-                    "category": "workflow",
-                    "source": "package-smoke",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                    "textPreview": "Prefer release notes that state evidence before claims",
-                },
-                {
-                    "id": "learn-c",
-                    "category": "constraint",
-                    "source": "package-smoke",
-                    "createdAt": "2026-05-22T00:00:02.000Z",
-                    "textPreview": "Never include api_key=redacted placeholders in prompt context",
-                },
-            ],
-            "after": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-        }
-        assert_learning_audit_fix_json(
-            json.dumps(applied_learning_audit_fix_payload),
-            profile_path=learning_profile_path,
-            dry_run=False,
-            context=context,
-            cmd=["design-ai", "learn", "--audit", "--fix", "--yes", "--file", str(learning_profile_path), "--json"],
-        )
-        learning_curation_payload = {
-            "file": str(learning_profile_path),
-            "archiveFile": str(learning_profile_path.with_name(f"{learning_profile_path.stem}.archive{learning_profile_path.suffix}")),
-            "usage": {
-                "autoArchive": False,
-            },
-            "before": {
-                "status": "warn",
-                "failures": 0,
-                "warnings": 2,
-            },
-            "proposalCount": 2,
-            "archiveCount": 2,
-            "manualReviewCount": 0,
-            "proposals": [
-                {
-                    "entryId": "learn-b",
-                    "action": "archive",
-                    "reason": "duplicate-entry",
-                    "issueCodes": ["duplicate-entry-text"],
-                    "messages": ["Entry duplicates learn-a in the same category."],
-                    "category": "workflow",
-                    "source": "package-smoke",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                    "textPreview": "Prefer release notes that state evidence before claims",
-                },
-                {
-                    "entryId": "learn-c",
-                    "action": "archive",
-                    "reason": "sensitive-content",
-                    "issueCodes": ["sensitive-secret-assignment"],
-                    "messages": ["Entry may contain a secret-like assignment."],
-                    "category": "constraint",
-                    "source": "package-smoke",
-                    "createdAt": "2026-05-22T00:00:02.000Z",
-                    "textPreview": "Never include api_key=redacted placeholders in prompt context",
-                },
-            ],
-            "skipped": [],
-            "count": 3,
-            "dryRun": True,
-            "applied": False,
-            "archived": [],
-            "after": None,
-        }
-        learn_curate_cmd = ["design-ai", "learn", "--curate", "--file", str(learning_profile_path), "--json"]
-        assert_learning_curation_json(
-            json.dumps(learning_curation_payload),
-            profile_path=learning_profile_path,
-            dry_run=True,
-            context=context,
-            cmd=learn_curate_cmd,
-        )
-        learning_usage_path = learning_profile_path.with_name(
-            f"{learning_profile_path.stem}.usage{learning_profile_path.suffix}"
-        )
-        learning_curation_usage_payload = {
-            **learning_curation_payload,
-            "usage": {
-                "file": str(learning_profile_path),
-                "usageFile": str(learning_usage_path),
-                "profileFile": str(learning_profile_path),
-                "profileFileMatches": True,
-                "exists": True,
-                "eventCount": 1,
-                "usedEntryCount": 1,
-                "unusedEntryCount": 2,
-                "staleSelectedEntryCount": 1,
-                "reviewCount": 3,
-                "unusedReviewCount": 2,
-                "staleReviewCount": 1,
-                "reviews": [
-                    {
-                        "level": "warning",
-                        "action": "review-usage-sidecar",
-                        "reason": "stale-selected-entry-id",
-                        "entryId": "learn-stale",
-                        "usageCount": 1,
-                        "message": "Usage sidecar selected an entry id that is no longer present in the active learning profile.",
-                    },
-                    {
-                        "level": "info",
-                        "action": "manual-review",
-                        "reason": "unused-with-limited-history",
-                        "entryId": "learn-b",
-                        "usageCount": 0,
-                        "message": "Active entry has not been selected in recorded prompt/pack usage; review manually before archiving.",
-                    },
-                    {
-                        "level": "info",
-                        "action": "manual-review",
-                        "reason": "unused-with-limited-history",
-                        "entryId": "learn-c",
-                        "usageCount": 0,
-                        "message": "Active entry has not been selected in recorded prompt/pack usage; review manually before archiving.",
-                    },
-                ],
-                "recommendations": [],
-                "error": "",
-                "privacy": {
-                    "storesRawBriefText": False,
-                    "storesBriefHash": True,
-                    "storesSelectedEntryIds": True,
-                },
-                "autoArchive": False,
-            },
-        }
-        assert_learning_curation_json(
-            json.dumps(learning_curation_usage_payload),
-            profile_path=learning_profile_path,
-            usage_path=learning_usage_path,
-            dry_run=True,
-            context=f"{context} usage curation",
-            cmd=[
-                "design-ai",
-                "learn",
-                "--curate",
-                "--file",
-                str(learning_profile_path),
-                "--usage-file",
-                str(learning_usage_path),
-                "--json",
-            ],
-        )
-        applied_learning_curation_payload = {
-            **learning_curation_payload,
-            "dryRun": False,
-            "applied": True,
-            "archived": [
-                {
-                    "id": "learn-b",
-                    "category": "workflow",
-                    "text": "Prefer release notes that state evidence before claims",
-                    "source": "package-smoke",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                },
-                {
-                    "id": "learn-c",
-                    "category": "constraint",
-                    "text": "Never include api_key=redacted placeholders in prompt context",
-                    "source": "package-smoke",
-                    "createdAt": "2026-05-22T00:00:02.000Z",
-                },
-            ],
-            "after": {
-                "status": "pass",
-                "failures": 0,
-                "warnings": 0,
-            },
-        }
-        assert_learning_curation_json(
-            json.dumps(applied_learning_curation_payload),
-            profile_path=learning_profile_path,
-            dry_run=False,
-            context=context,
-            cmd=["design-ai", "learn", "--curate", "--yes", "--file", str(learning_profile_path), "--json"],
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_audit_cleanup_json(
-                json.dumps({**learning_audit_payload, "suggestions": []}),
-                profile_path=learning_profile_path,
-                context=context,
-                cmd=learn_audit_cmd,
-            ),
-            expected="remove-duplicate suggestion missing",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_audit_fix_json(
-                json.dumps({**learning_audit_fix_payload, "cleanup": []}),
-                profile_path=learning_profile_path,
-                dry_run=True,
-                context=context,
-                cmd=learn_audit_fix_cmd,
-            ),
-            expected="learn audit fix cleanup entry missing: learn-b",
-            scope="package smoke",
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_curation_json(
-                json.dumps({**learning_curation_payload, "archiveCount": 1}),
-                profile_path=learning_profile_path,
-                dry_run=True,
-                context=context,
-                cmd=learn_curate_cmd,
-            ),
-            expected="learn curate archive count changed",
-            scope="package smoke",
-        )
-        learn_curate_report_cmd = [
-            "design-ai",
-            "learn",
-            "--curate",
-            "--file",
-            str(learning_profile_path),
-            "--report",
-            "--out",
-            "learning-curation-report.md",
-        ]
-        assert_learning_curation_report(
-            "\n".join([
-                "# Learning Curation Report",
-                "- Mode: preview",
-                "- Archive candidates: 2",
-                "## Archive Candidates",
-                "- `learn-b`: duplicate-entry",
-                "- `learn-c`: sensitive-content",
-                "## Usage Review",
-                "Usage sidecars store selected entry ids and short brief hashes",
-                "- Review archive candidates, then rerun `design-ai learn --curate --yes` only if the proposed archive actions are correct.",
-            ]),
-            context=context,
-            cmd=learn_curate_report_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_curation_report(
-                "# Learning Curation Report\n- Mode: preview\n",
-                context=context,
-                cmd=learn_curate_report_cmd,
-            ),
-            expected="learn curate report missing 'Archive candidates: 2'",
-            scope="package smoke",
-        )
-        learn_audit_human_cmd = ["design-ai", "learn", "--audit", "--file", str(learning_profile_path)]
-        assert_learning_audit_cleanup_human(
-            "\n".join([
-                "design-ai learn",
-                "Local learning profile audit",
-                "Status: warn",
-                "Suggested cleanup:",
-                "- remove-duplicate (learn-b): Remove the duplicate entry.",
-                "  design-ai learn --file /tmp/learning.json --forget learn-b --yes",
-                "- remove-or-redact-sensitive-content (learn-c): Remove sensitive content.",
-                "  design-ai learn --file /tmp/learning.json --forget learn-c --yes",
-            ]),
-            context=context,
-            cmd=learn_audit_human_cmd,
-        )
-        expect_self_test_failure(
-            lambda: assert_learning_audit_cleanup_human(
-                "Local learning profile audit\nStatus: warn\n",
-                context=context,
-                cmd=learn_audit_human_cmd,
-            ),
-            expected="learn audit human output missing 'Suggested cleanup:'",
-            scope="package smoke",
-        )
+        agent_backlog_refresh_args, agent_backlog_refresh_command, learn_agent_backlog_cmd = _self_test_learn_agent_backlog(learning_profile_path, learning_usage_path, tmp)
+        learning_agent_backlog_payload = _self_test_learn_skill_proposals(agent_backlog_refresh_args, agent_backlog_refresh_command, context, learn_agent_backlog_cmd, learning_profile_path, learning_usage_path, tmp)
+        refresh_reason_drift_payload = _self_test_learn_proposal_reports(agent_backlog_refresh_args, agent_backlog_refresh_command, context, learn_agent_backlog_cmd, learning_agent_backlog_payload, learning_profile_path, learning_usage_path, tmp)
+        learn_skill_proposals_cmd, learning_skill_proposal_payload, learning_skill_proposal_review_check_payload, learning_skill_proposal_review_path = _self_test_learn_proposal_review(agent_backlog_refresh_command, context, learn_agent_backlog_cmd, learning_agent_backlog_payload, learning_profile_path, learning_usage_path, refresh_reason_drift_payload, tmp)
+        learning_skill_proposal_apply_plan_decision_command_safety, learning_skill_proposal_apply_plan_review_path, learning_skill_proposal_review_check_markdown = _self_test_learn_proposal_review_files(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_review_path, learning_usage_path, tmp)
+        learning_skill_proposal_apply_plan_payload = _self_test_learn_apply_plan(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_apply_plan_decision_command_safety, learning_skill_proposal_apply_plan_review_path, learning_skill_proposal_payload, learning_usage_path, tmp)
+        learning_skill_proposal_apply_plan_human, learning_skill_proposal_apply_plan_markdown, learning_skill_proposal_markdown, learning_skill_proposal_patch = _self_test_learn_apply_plan_evidence(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_apply_plan_payload, learning_skill_proposal_apply_plan_review_path, learning_skill_proposal_payload, learning_skill_proposal_review_check_markdown, learning_skill_proposal_review_check_payload, learning_skill_proposal_review_path, learning_usage_path, tmp)
+        _self_test_learn_apply_plan_identity(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_apply_plan_payload, learning_skill_proposal_apply_plan_review_path, learning_usage_path, tmp)
+        _self_test_learn_apply_plan_artifacts(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_apply_plan_payload, learning_skill_proposal_apply_plan_review_path, learning_usage_path, tmp)
+        learn_eval_cmd, learning_eval_path, learning_eval_payload = _self_test_learn_eval_template(context, learn_skill_proposals_cmd, learning_profile_path, learning_skill_proposal_apply_plan_human, learning_skill_proposal_apply_plan_markdown, learning_skill_proposal_apply_plan_payload, learning_skill_proposal_apply_plan_review_path, learning_skill_proposal_markdown, learning_skill_proposal_patch, learning_skill_proposal_payload, learning_usage_path, tmp)
+        learn_curate_report_cmd = _self_test_learn_audit_and_curation(context, learn_eval_cmd, learning_eval_path, learning_eval_payload, learning_profile_path, learning_usage_path, tmp)
+        _self_test_learn_audit_cleanup(context, learn_curate_report_cmd, learning_profile_path)
 
     print("Package smoke self-test passed")
 
