@@ -12,6 +12,26 @@ See `README.md` for the short version, [`docs/ROADMAP.md`](ROADMAP.md)
 for the full phase log, and [`docs/PRODUCT-READINESS.md`](PRODUCT-READINESS.md)
 for the current completion boundary.
 
+## Current-source Image Console evidence (unreleased)
+
+Image Console release hardening is part of the current-source v5.2.0 release
+candidate and remains unreleased; this is not published behavior. The
+deterministic local mock loopback flow
+covers packaged static assets, health, catalog, generation draft validation,
+rejection before approval, and one approved deterministic local provider
+execution in installed-bin and one-shot packed-tarball paths. It makes no
+Prompt Guide/provider-network call, isolates temporary HOME/npm cache/provider/
+asset roots, reaps child processes, and asserts unchanged repository status;
+registry live coverage remains pending future publish. Package contents require
+the complete Image Console runtime, static, configuration, and
+`cli/lib/image-prompt-contract.d.ts` artifacts.
+
+The exact current-source gate receipt is maintained once in the
+[Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
+integration guide. It separates deterministic local verification, manual
+browser QA, unavailable live Prompt Guide/provider verification, and future
+registry coverage instead of duplicating drift-prone counts here.
+
 ## Status detail (published v5.1.0)
 
 Published **v5.1.0** is the public baseline. The exact release tree passed the

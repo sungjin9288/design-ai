@@ -27,10 +27,148 @@ from capability_manifest import (
     SOURCE_CAPABILITIES as EXPECTED_CAPABILITIES,
     validate_capability_manifest,
 )
+from smoke_domains.site_package_fixtures import (
+    SITE_EVIDENCE_COUNTS,
+    SITE_EVIDENCE_VALUES,
+    SITE_FROM_INTAKE_SMOKE_MARKDOWN,
+    SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN,
+    SITE_INIT_SMOKE_ARGS,
+    site_linked_preview_fixture_json,
+    site_workspace_evidence_fixture_json,
+    site_workspace_fixture_json,
+    site_workspace_warning_fixture_json,
+)
+from smoke_domains.site_assertions_evidence import (
+    assert_site_evidence_markdown,
+    assert_site_evidence_payload,
+)
 from smoke_domains.site_contracts import EXPECTED_SITE_MCP_PROBE_COUNTS
+from smoke_domains.site_runner import SiteSmokePhaseAuthority
+from smoke_domains.image_console import assert_image_console_smoke, run_image_console_self_test
 from smoke_domains.site_validators import (
     assert_site_bundle_mcp_probes_payload,
     assert_site_mcp_probe_counts,
+)
+from smoke_domains.package_review_browser import assert_browser_verification_smoke_output
+from smoke_domains.package_review_handoff import (
+    assert_review_handoff_receipt_smoke_output,
+    assert_review_handoff_smoke_output,
+)
+from smoke_domains.package_review_quality import (
+    assert_inspect_smoke_output,
+    assert_review_comparison_smoke_output,
+    assert_review_smoke_output,
+)
+from smoke_domains.package_review_scope import (
+    assert_implementation_scope_approval_smoke_output,
+    assert_implementation_scope_proposal_smoke_output,
+    assert_target_repo_intake_smoke_output,
+)
+from smoke_domains.package_implementation_evidence import (
+    assert_implementation_evidence_smoke_output,
+)
+from smoke_domains.implementation_evidence_fixtures import (
+    implementation_evidence_request_fixture,
+)
+from smoke_domains.implementation_evidence_runner import (
+    ImplementationEvidenceSmokePhaseAuthority,
+)
+from smoke_domains.review_fixtures import (
+    write_browser_adapter,
+    write_implementation_scope_request,
+    write_inspect_fixture,
+)
+from smoke_domains.review_runner import ReviewSmokePhaseAuthority
+from smoke_domains.package_learning_agent_backlog_reports import (
+    assert_agent_backlog_no_command_json,
+    assert_agent_backlog_no_command_report_markdown,
+    assert_agent_backlog_report_human,
+    assert_agent_backlog_report_markdown,
+)
+from smoke_domains.package_learning_agent_backlog import (
+    assert_agent_backlog_report_json,
+)
+from smoke_domains.package_learning_eval import (
+    assert_learning_eval_report_human,
+    assert_learning_eval_report_json,
+    assert_learning_eval_strict_failure_json,
+    assert_learning_eval_template_json,
+    assert_learning_eval_template_report_json,
+)
+from smoke_domains.package_learning_profile import (
+    assert_learning_feedback_json,
+    assert_learning_init_json,
+    assert_learning_stats_human,
+    assert_learning_stats_json,
+    write_learning_audit_fixture,
+    write_learning_curation_usage_fixture,
+    write_learning_stats_fixture,
+)
+from smoke_domains.package_learning_profile_audit import (
+    assert_learning_audit_cleanup_human,
+    assert_learning_audit_cleanup_json,
+    assert_learning_audit_fix_json,
+)
+from smoke_domains.package_learning_profile_curation import (
+    assert_learning_curation_human,
+    assert_learning_curation_json,
+    assert_learning_curation_report,
+)
+from smoke_domains.package_learning_query import (
+    assert_learning_query_export_json,
+    assert_learning_query_human,
+    assert_learning_query_json,
+)
+from smoke_domains.package_learning_relevance import (
+    assert_learning_recall_json,
+    assert_learning_relevance_context,
+    assert_learning_usage_payload,
+    assert_learning_usage_sidecar,
+    assert_recall_context,
+    write_learning_relevance_fixture,
+)
+from smoke_domains.package_learning_relevance_reports import (
+    assert_learning_signal_report_human,
+    assert_learning_signal_report_json,
+    assert_learning_signal_report_markdown,
+    assert_learning_usage_report_human,
+    assert_learning_usage_report_json,
+)
+from smoke_domains.package_learning_skill_proposal import (
+    assert_skill_proposal_min_evidence_json,
+    assert_skill_proposal_patch,
+    assert_skill_proposal_report_human,
+    assert_skill_proposal_report_json,
+    assert_skill_proposal_report_markdown,
+)
+from smoke_domains.package_learning_skill_proposal_apply_reports import (
+    assert_skill_proposal_apply_plan_human,
+    assert_skill_proposal_apply_plan_markdown,
+)
+from smoke_domains.package_learning_skill_proposal_apply import (
+    assert_skill_proposal_apply_plan_json,
+)
+from smoke_domains.package_learning_skill_proposal_review import (
+    assert_skill_proposal_review_check_json,
+    assert_skill_proposal_review_check_markdown,
+    assert_skill_proposal_review_json,
+    assert_skill_proposal_review_template_json,
+)
+from smoke_domains.package_learning_transfer import (
+    assert_learning_backup_json,
+    assert_learning_import_json,
+    assert_learning_verify_json,
+    learning_diff_payload_text,
+    learning_import_payload_text,
+    write_learning_import_target_fixture,
+    write_learning_redaction_fixture,
+)
+from smoke_domains.package_learning_transfer_restore import (
+    assert_learning_diff_json,
+    assert_learning_redact_json,
+    assert_learning_restore_backups_json,
+    assert_learning_restore_backups_prune_json,
+    assert_learning_restore_json,
 )
 from smoke_assertions import (
     EXPECTED_CHECK_ARTIFACT_NAME,
@@ -74,12 +212,7 @@ from smoke_assertions import (
     assert_index_build_json,
     assert_index_status_json,
     assert_index_verify_json,
-    assert_inspect_json,
-    assert_implementation_scope_approval_json,
-    assert_implementation_scope_proposal_json,
-    assert_implementation_evidence_json,
     assert_pilot_evidence_json,
-    assert_review_comparison_json,
     assert_specialization_benchmark_json,
     assert_install_doctor_lifecycle_output,
     assert_install_output,
@@ -101,10 +234,6 @@ from smoke_assertions import (
     assert_prompt_markdown_component_spec,
     assert_ranked_search_determinism,
     assert_ranked_search_json,
-    assert_review_handoff_json,
-    assert_review_handoff_receipt_json,
-    assert_review_workflow_json,
-    assert_target_repo_intake_json,
     assert_route_catalog_json,
     assert_route_explain_human_output,
     assert_route_json_component_spec,
@@ -182,139 +311,7 @@ from smoke_assertions import (
     unknown_option_args,
 )
 
-SITE_EVIDENCE_VALUES = {
-    "executedWork": "Implemented pricing CTA cleanup in the target repo",
-    "verificationResults": "npm run lint passed in the target repo",
-    "remainingRisks": "Preview deploy still needs analytics review",
-    "nextActions": "Attach before/after screenshots",
-}
-SITE_EVIDENCE_COUNTS = {key: 1 for key in SITE_EVIDENCE_VALUES}
-SITE_INIT_SMOKE_ARGS = [
-    "site",
-    "--init",
-    "--name",
-    "Company marketing site",
-    "--live-url",
-    "https://example.com",
-    "--repo-url",
-    "https://github.com/acme/site",
-    "--deploy",
-    "vercel",
-    "--cms",
-    "none",
-    "--database",
-    "none",
-    "--page",
-    "/",
-    "--page",
-    "/pricing",
-    "--flow",
-    "Visitor compares plans and starts signup",
-    "--viewport",
-    "desktop",
-    "--viewport",
-    "mobile",
-]
-SITE_FROM_INTAKE_SMOKE_MARKDOWN = """# Company Website Intake Template
 
-## Site Profile
-
-| Field | Value |
-|---|---|
-| Site name | Company marketing site |
-| Live URL | https://example.com |
-| Target repo URL | https://github.com/acme/site |
-| Target repo local path | |
-| Figma URL | |
-| Deploy provider | vercel |
-| Sentry project | |
-| CMS | none |
-| Database | none |
-
-## Priority Pages
-
-| Priority | Path or URL | Why it matters |
-|---:|---|---|
-| 1 | / | Primary conversion |
-| 2 | /pricing | Pricing comparison |
-
-## Primary User Flows
-
-| Priority | Flow | Success signal |
-|---:|---|---|
-| 1 | Visitor compares plans and starts signup | Signup intent |
-
-## Brand And Content Notes
-
-| Area | Notes |
-|---|---|
-| Brand tone | |
-
-## MCP Readiness Notes
-
-| System | Status | Evidence or fallback |
-|---|---|---|
-| GitHub | required | repo reference |
-| Figma | unused | no file |
-| Browser / Playwright | required | live URL |
-| Chrome DevTools | optional | manual debugging if needed |
-| Deploy provider | required | vercel |
-| Sentry | unused | none |
-| Database | unused | none |
-| CMS | unused | none |
-| Collaboration tool | optional | internal review |
-| Research tool | optional | competitor review |
-
-## Initial Audit Findings
-
-| Category | Finding | Evidence | Page |
-|---|---|---|---|
-| Visual design | | | |
-"""
-
-SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN = """# Company Website Intake Template
-
-## Site Profile
-
-| Field | Value |
-|---|---|
-| Site name | Company marketing site |
-| Live URL | https://example.com |
-| Target repo URL | https://github.com/acme/site |
-| Target repo local path | |
-| Figma URL | |
-| Deploy provider | vercel |
-| Sentry project | |
-| CMS | none |
-| Database | none |
-
-## Priority Pages
-
-| Priority | Path or URL | Why it matters |
-|---:|---|---|
-| 1 | / | Primary conversion |
-| 2 | /pricing | Pricing comparison |
-
-## Primary User Flows
-
-| Priority | Flow | Success signal |
-|---:|---|---|
-| 1 | Visitor compares plans and starts signup | Signup intent |
-
-## MCP Readiness Notes
-
-| System | Status | Evidence or fallback |
-|---|---|---|
-| GitHub | required | repo reference |
-| Browser / Playwright | required | live URL |
-| Deploy provider | required | vercel |
-
-## Initial Audit Findings
-
-| Category | Finding | Evidence | Page |
-|---|---|---|---|
-| Accessibility | Mobile nav focus is unclear | Keyboard focus ring is missing from the menu trigger | / |
-"""
 
 
 def npm_exec_cmd(tarball: Path, *args: str) -> list[str]:
@@ -1023,167 +1020,16 @@ def assert_workspace_restore_backups_smoke(
         raise SystemExit(f"workspace restore-backups after {context} missing prune next action")
 
 
-def site_workspace_fixture_json() -> str:
-    return json.dumps(
-        {
-            "version": 1,
-            "updatedAt": "2026-05-30T00:00:00.000Z",
-            "siteProfile": {
-                "id": "sample-korean-saas",
-                "name": "Korean SaaS marketing site",
-                "liveUrl": "https://example.com",
-                "repoUrl": "https://github.com/acme/korean-saas-site",
-                "localPath": "/Users/you/dev/korean-saas-site",
-                "figmaUrl": "https://figma.com/file/example",
-                "brandNotes": "Quiet B2B SaaS tone, Pretendard typography, dense but readable Korean product copy, indigo accent only for action and focus.",
-                "deployProvider": "vercel",
-                "sentryProject": "acme/korean-saas-web",
-                "cms": "sanity",
-                "database": "none",
-                "pages": ["/", "/pricing", "/signup", "/docs"],
-                "userFlows": [
-                    "Visitor compares pricing and starts signup",
-                    "Existing customer finds feature proof before contacting sales",
-                ],
-                "viewports": ["desktop", "tablet", "mobile"],
-            },
-            "auditChecklist": {
-                "visual-design": {
-                    "status": "in-progress",
-                    "notes": "Hero hierarchy and CTA contrast need review before company pilot.",
-                    "findings": ["Primary CTA competes with secondary link on the homepage"],
-                },
-                "ux-flow": {
-                    "status": "todo",
-                    "notes": "Map visitor path from landing page to pricing and signup.",
-                    "findings": [],
-                },
-                "responsive": {
-                    "status": "todo",
-                    "notes": "Check 1440, 1024, 390, and 360 width layouts.",
-                    "findings": [],
-                },
-                "accessibility": {
-                    "status": "todo",
-                    "notes": "Keyboard and focus audit required for nav, pricing toggle, and forms.",
-                    "findings": ["Focus state is not yet documented for the mobile menu"],
-                },
-                "performance": {
-                    "status": "todo",
-                    "notes": "Run Lighthouse after visual pass.",
-                    "findings": [],
-                },
-                "seo": {
-                    "status": "todo",
-                    "notes": "Inspect title, description, heading order, canonical, OG.",
-                    "findings": [],
-                },
-                "technical-quality": {
-                    "status": "todo",
-                    "notes": "Confirm component reuse before editing target repo.",
-                    "findings": [],
-                },
-                "runtime-issues": {
-                    "status": "todo",
-                    "notes": "Open console/network once preview deploy is available.",
-                    "findings": [],
-                },
-                "content-quality": {
-                    "status": "in-progress",
-                    "notes": "Copy should lead with proof and reduce generic SaaS phrasing.",
-                    "findings": ["Pricing page does not explain plan fit in the first viewport"],
-                },
-            },
-            "mcpReadiness": {
-                "github": "required",
-                "figma": "optional",
-                "browser": "required",
-                "chromeDevtools": "optional",
-                "deploy": "required",
-                "sentry": "optional",
-                "database": "unused",
-                "cms": "optional",
-                "collaboration": "optional",
-                "research": "optional",
-            },
-            "refactorTasks": [
-                {
-                    "id": "task-homepage-cta",
-                    "title": "Clarify homepage CTA hierarchy",
-                    "category": "visual-design",
-                    "problem": "Primary and secondary actions compete in the hero, which weakens the visitor's first decision.",
-                    "evidence": "Sample finding: Primary CTA competes with secondary link on the homepage.",
-                    "impact": "high",
-                    "effort": "medium",
-                    "priority": "p1",
-                    "pages": ["/"],
-                    "recommendedMcp": ["browser", "figma"],
-                    "codexPrompt": "Inspect the target homepage implementation, preserve existing design system patterns, and revise the hero CTA hierarchy so the primary signup action is visually dominant while the secondary action remains available.",
-                    "verification": [
-                        "Run target repo lint/build",
-                        "Verify desktop/tablet/mobile hero layout",
-                        "Confirm focus indicators and text contrast",
-                    ],
-                    "risks": ["Could change conversion copy without stakeholder approval"],
-                },
-            ],
-            "implementationEvidence": {
-                "executedWork": [],
-                "verificationResults": [],
-                "remainingRisks": [
-                    "MCP readiness gaps may limit verification depth.",
-                    "Copy or brand changes may require stakeholder review.",
-                    "Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
-                ],
-                "nextActions": [],
-            },
-            "reportNotes": "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
-        },
-        ensure_ascii=False,
-    )
 
 
-def site_linked_preview_fixture_json(local_path: Path) -> str:
-    payload = json.loads(site_workspace_fixture_json())
-    payload["siteProfile"]["localPath"] = str(local_path)
-    payload["siteProfile"]["liveUrl"] = "http://localhost:4173"
-    return json.dumps(payload)
 
 
-def site_workspace_evidence_fixture_json() -> str:
-    payload = json.loads(site_workspace_fixture_json())
-    payload["implementationEvidence"] = {
-        key: [value]
-        for key, value in SITE_EVIDENCE_VALUES.items()
-    }
-    return json.dumps(payload, ensure_ascii=False)
 
 
-def site_workspace_warning_fixture_json() -> str:
-    payload = json.loads(site_workspace_fixture_json())
-    payload["siteProfile"]["sentryProject"] = ""
-    return json.dumps(payload, ensure_ascii=False)
 
 
-def assert_site_evidence_payload(payload: object, *, context: str, label: str) -> None:
-    if not isinstance(payload, dict):
-        raise SystemExit(f"{label} after {context} did not emit an object payload")
-    evidence = payload.get("implementationEvidence")
-    if not isinstance(evidence, dict):
-        raise SystemExit(f"{label} after {context} did not preserve implementationEvidence")
-    for key, expected in SITE_EVIDENCE_VALUES.items():
-        if evidence.get(key) != [expected]:
-            raise SystemExit(f"{label} after {context} evidence field {key} changed: {evidence.get(key)!r}")
 
 
-def assert_site_evidence_markdown(raw: str, *, context: str, cmd: list[str], label: str) -> None:
-    assert_no_ansi(raw, cmd)
-    stripped = raw.lstrip()
-    if stripped.startswith("{") or stripped.startswith("["):
-        raise SystemExit(f"{label} after {context} looks like JSON output")
-    for fragment in SITE_EVIDENCE_VALUES.values():
-        if fragment not in raw:
-            raise SystemExit(f"{label} after {context} missing evidence fragment: {fragment!r}")
 
 
 def assert_site_json_smoke(
@@ -5243,267 +5089,16 @@ def write_workspace_restore_backup_fixture(profile_path: Path, count: int = 6) -
         )
 
 
-def write_learning_audit_fixture(profile_path: Path) -> None:
-    profile_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:00:03.000Z",
-                "entries": [
-                    {
-                        "id": "learn-a",
-                        "category": "workflow",
-                        "text": "Prefer release notes that state evidence before claims",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                    },
-                    {
-                        "id": "learn-b",
-                        "category": "workflow",
-                        "text": "Prefer release notes that state evidence before claims",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:01.000Z",
-                    },
-                    {
-                        "id": "learn-c",
-                        "category": "constraint",
-                        "text": "Never include api_key=redacted placeholders in prompt context",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:02.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def write_learning_curation_usage_fixture(profile_path: Path, usage_path: Path) -> None:
-    usage_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:10:00.000Z",
-                "profileFile": str(profile_path),
-                "events": [
-                    {
-                        "id": "learn-use-package-smoke",
-                        "command": "prompt",
-                        "routeId": "design-review",
-                        "profileFile": str(profile_path),
-                        "briefHash": "package-smoke-hash",
-                        "category": "",
-                        "limit": 12,
-                        "selectedEntryIds": ["learn-a", "learn-stale"],
-                        "selectedCount": 2,
-                        "candidateCount": 3,
-                        "matchedCount": 1,
-                        "fallbackCount": 1,
-                        "queryTokenCount": 2,
-                        "auditStatus": "pass",
-                        "createdAt": "2026-05-22T00:10:00.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def write_learning_stats_fixture(profile_path: Path) -> None:
-    profile_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:00:03.000Z",
-                "entries": [
-                    {
-                        "id": "learn-brand",
-                        "category": "brand",
-                        "text": "Use quiet enterprise brand language",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                    },
-                    {
-                        "id": "learn-a11y",
-                        "category": "accessibility",
-                        "text": "Prefer keyboard-first critique notes",
-                        "source": "feedback:keep",
-                        "createdAt": "2026-05-22T00:00:01.000Z",
-                    },
-                    {
-                        "id": "learn-korean",
-                        "category": "korean",
-                        "text": "Prefer dense Korean mobile layouts with compact controls",
-                        "source": "import:cli",
-                        "createdAt": "2026-05-22T00:00:03.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def assert_learning_stats_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn stats JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn stats JSON must be an object")
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn stats JSON file path differs from the smoke profile",
-    )
-    require_package_smoke(payload.get("exists") is True, context=context, cmd=cmd, message="learn stats profile should exist")
-    require_package_smoke(payload.get("version") == 1, context=context, cmd=cmd, message="learn stats version changed")
-    require_package_smoke(payload.get("updatedAt") == "2026-05-22T00:00:03.000Z", context=context, cmd=cmd, message="learn stats updatedAt changed")
-    require_package_smoke(payload.get("count") == 3, context=context, cmd=cmd, message="learn stats entry count changed")
-
-    category_counts = payload.get("categoryCounts")
-    require_package_smoke(
-        isinstance(category_counts, dict)
-        and category_counts.get("brand") == 1
-        and category_counts.get("accessibility") == 1
-        and category_counts.get("korean") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn stats category distribution changed",
-    )
-    source_counts = payload.get("sourceCounts")
-    require_package_smoke(
-        isinstance(source_counts, dict)
-        and source_counts.get("package-smoke") == 1
-        and source_counts.get("feedback:keep") == 1
-        and source_counts.get("import:cli") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn stats source distribution changed",
-    )
-
-    audit_summary = payload.get("auditSummary")
-    require_package_smoke(
-        isinstance(audit_summary, dict)
-        and audit_summary.get("status") == "pass"
-        and audit_summary.get("failures") == 0
-        and audit_summary.get("warnings") == 0,
-        context=context,
-        cmd=cmd,
-        message="learn stats audit summary changed",
-    )
-
-    latest = payload.get("latestEntry")
-    oldest = payload.get("oldestEntry")
-    require_package_smoke(
-        isinstance(latest, dict)
-        and latest.get("id") == "learn-korean"
-        and latest.get("category") == "korean"
-        and latest.get("source") == "import:cli"
-        and latest.get("textPreview") == "Prefer dense Korean mobile layouts with compact controls",
-        context=context,
-        cmd=cmd,
-        message="learn stats latest entry summary changed",
-    )
-    require_package_smoke(
-        isinstance(oldest, dict)
-        and oldest.get("id") == "learn-brand"
-        and oldest.get("category") == "brand"
-        and oldest.get("source") == "package-smoke",
-        context=context,
-        cmd=cmd,
-        message="learn stats oldest entry summary changed",
-    )
 
 
-def assert_learning_stats_human(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "Local learning profile stats",
-        "Exists: yes",
-        "Entries: 3",
-        "Updated: 2026-05-22T00:00:03.000Z",
-        "Audit: pass (0 failure(s), 0 warning(s))",
-        "Categories: brand 1, accessibility 1, korean 1",
-        "Sources: package-smoke 1, feedback:keep 1, import:cli 1",
-        "Latest: [korean] Prefer dense Korean mobile layouts with compact controls",
-        "learn-korean · 2026-05-22T00:00:03.000Z",
-        "Oldest: [brand] Use quiet enterprise brand language",
-        "learn-brand · 2026-05-22T00:00:00.000Z",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn stats human output missing {expected!r}",
-        )
 
 
-def assert_learning_recall_json(
-    raw: str,
-    *,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn recall JSON") from error
-
-    require_package_smoke(
-        isinstance(payload, dict) and payload.get("query") == "korean mobile",
-        context=context,
-        cmd=cmd,
-        message="learn recall JSON must echo the query",
-    )
-    corpus = payload.get("corpus")
-    require_package_smoke(
-        isinstance(corpus, dict)
-        and isinstance(corpus.get("candidateCount"), int)
-        and corpus.get("candidateCount") > 0
-        and isinstance(corpus.get("selectedCount"), int)
-        and isinstance(corpus.get("selected"), list),
-        context=context,
-        cmd=cmd,
-        message="learn recall corpus block shape changed",
-    )
-    learning = payload.get("learning")
-    require_package_smoke(
-        isinstance(learning, dict)
-        and learning.get("mode") == "brief-relevance"
-        and learning.get("candidateCount") == 3
-        and isinstance(learning.get("selected"), list),
-        context=context,
-        cmd=cmd,
-        message="learn recall learning block shape changed",
-    )
-    selected = learning.get("selected")
-    require_package_smoke(
-        len(selected) >= 1
-        and isinstance(selected[0], dict)
-        and selected[0].get("id") == "learn-korean"
-        and selected[0].get("category") == "korean"
-        and isinstance(selected[0].get("matchedTokens"), list),
-        context=context,
-        cmd=cmd,
-        message="learn recall should rank the Korean learning entry for a Korean query",
-    )
 
 
 def assert_learning_recall_smoke(
@@ -5595,492 +5190,18 @@ def assert_learning_stats_smoke(
     )
 
 
-def assert_learning_audit_cleanup_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn audit JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn audit JSON must be an object")
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn audit JSON file path differs from the smoke profile",
-    )
-    require_package_smoke(payload.get("exists") is True, context=context, cmd=cmd, message="learn audit profile should exist")
-    require_package_smoke(payload.get("count") == 3, context=context, cmd=cmd, message="learn audit entry count changed")
-
-    summary = payload.get("summary")
-    require_package_smoke(isinstance(summary, dict), context=context, cmd=cmd, message="learn audit summary missing")
-    warnings = summary.get("warnings")
-    require_package_smoke(summary.get("status") == "warn", context=context, cmd=cmd, message="learn audit should warn")
-    require_package_smoke(summary.get("failures") == 0, context=context, cmd=cmd, message="learn audit should not fail")
-    require_package_smoke(
-        isinstance(warnings, int) and not isinstance(warnings, bool) and warnings >= 2,
-        context=context,
-        cmd=cmd,
-        message="learn audit warning count should cover duplicate and sensitive entries",
-    )
-
-    issues = payload.get("issues")
-    require_package_smoke(isinstance(issues, list), context=context, cmd=cmd, message="learn audit issues missing")
-    require_package_smoke(
-        any(issue.get("code") == "duplicate-entry-text" and issue.get("entryId") == "learn-b" for issue in issues),
-        context=context,
-        cmd=cmd,
-        message="learn audit duplicate entry issue missing",
-    )
-    require_package_smoke(
-        any(issue.get("code") == "sensitive-secret-assignment" and issue.get("entryId") == "learn-c" for issue in issues),
-        context=context,
-        cmd=cmd,
-        message="learn audit sensitive entry issue missing",
-    )
-
-    suggestions = payload.get("suggestions")
-    require_package_smoke(
-        isinstance(suggestions, list),
-        context=context,
-        cmd=cmd,
-        message="learn audit suggestions missing",
-    )
-    duplicate_suggestion = next(
-        (
-            suggestion for suggestion in suggestions
-            if suggestion.get("action") == "remove-duplicate" and suggestion.get("entryId") == "learn-b"
-        ),
-        None,
-    )
-    sensitive_suggestion = next(
-        (
-            suggestion for suggestion in suggestions
-            if (
-                suggestion.get("action") == "remove-or-redact-sensitive-content"
-                and suggestion.get("entryId") == "learn-c"
-            )
-        ),
-        None,
-    )
-    duplicate_command_args = ["design-ai", "learn", "--file", str(profile_path), "--forget", "learn-b", "--yes"]
-    sensitive_command_args = ["design-ai", "learn", "--file", str(profile_path), "--forget", "learn-c", "--yes"]
-    require_package_smoke(
-        duplicate_suggestion is not None,
-        context=context,
-        cmd=cmd,
-        message="learn audit remove-duplicate suggestion missing",
-    )
-    require_package_smoke(
-        duplicate_suggestion.get("commandArgs") == duplicate_command_args,
-        context=context,
-        cmd=cmd,
-        message="learn audit duplicate cleanup command args changed",
-    )
-    require_package_smoke(
-        "--forget learn-b --yes" in duplicate_suggestion.get("command", ""),
-        context=context,
-        cmd=cmd,
-        message="learn audit duplicate cleanup command missing forget target",
-    )
-    require_package_smoke(
-        sensitive_suggestion is not None,
-        context=context,
-        cmd=cmd,
-        message="learn audit sensitive cleanup suggestion missing",
-    )
-    require_package_smoke(
-        sensitive_suggestion.get("commandArgs") == sensitive_command_args,
-        context=context,
-        cmd=cmd,
-        message="learn audit sensitive cleanup command args changed",
-    )
 
 
-def assert_learning_audit_cleanup_human(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "Local learning profile audit",
-        "Status: warn",
-        "Suggested cleanup:",
-        "remove-duplicate (learn-b)",
-        "remove-or-redact-sensitive-content (learn-c)",
-        "--forget learn-b --yes",
-        "--forget learn-c --yes",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn audit human output missing {expected!r}",
-        )
 
 
-def assert_learning_audit_fix_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    dry_run: bool,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn audit fix JSON") from error
-
-    require_package_smoke(
-        isinstance(payload, dict),
-        context=context,
-        cmd=cmd,
-        message="learn audit fix JSON must be an object",
-    )
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn audit fix JSON file path differs from the smoke profile",
-    )
-    require_package_smoke(
-        payload.get("dryRun") is dry_run,
-        context=context,
-        cmd=cmd,
-        message="learn audit fix dryRun flag changed",
-    )
-    require_package_smoke(
-        payload.get("applied") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn audit fix applied flag changed",
-    )
-    require_package_smoke(
-        payload.get("cleanupCount") == 2,
-        context=context,
-        cmd=cmd,
-        message="learn audit fix cleanup count should cover duplicate and sensitive entries",
-    )
-
-    before = payload.get("before")
-    require_package_smoke(
-        isinstance(before, dict) and before.get("status") == "warn",
-        context=context,
-        cmd=cmd,
-        message="learn audit fix should start from a warning profile",
-    )
-
-    cleanup = payload.get("cleanup")
-    require_package_smoke(isinstance(cleanup, list), context=context, cmd=cmd, message="learn audit fix cleanup list missing")
-    cleanup_by_entry = {
-        item.get("entryId"): item
-        for item in cleanup
-        if isinstance(item, dict)
-    }
-    for entry_id, action in (
-        ("learn-b", "remove-duplicate"),
-        ("learn-c", "remove-or-redact-sensitive-content"),
-    ):
-        item = cleanup_by_entry.get(entry_id)
-        require_package_smoke(
-            item is not None,
-            context=context,
-            cmd=cmd,
-            message=f"learn audit fix cleanup entry missing: {entry_id}",
-        )
-        require_package_smoke(
-            action in item.get("actions", []),
-            context=context,
-            cmd=cmd,
-            message=f"learn audit fix cleanup action missing for {entry_id}",
-        )
-        require_package_smoke(
-            item.get("commandArgs") == ["design-ai", "learn", "--file", str(profile_path), "--forget", entry_id, "--yes"],
-            context=context,
-            cmd=cmd,
-            message=f"learn audit fix cleanup command args changed for {entry_id}",
-        )
-
-    removed = payload.get("removed")
-    if dry_run:
-        require_package_smoke(removed == [], context=context, cmd=cmd, message="learn audit fix dry run should not remove entries")
-        require_package_smoke(payload.get("after") is None, context=context, cmd=cmd, message="learn audit fix dry run should not include after summary")
-    else:
-        require_package_smoke(isinstance(removed, list), context=context, cmd=cmd, message="learn audit fix removed list missing")
-        require_package_smoke(
-            [item.get("id") for item in removed] == ["learn-b", "learn-c"],
-            context=context,
-            cmd=cmd,
-            message="learn audit fix removed entries changed",
-        )
-        after = payload.get("after")
-        require_package_smoke(
-            isinstance(after, dict) and after.get("status") == "pass",
-            context=context,
-            cmd=cmd,
-            message="learn audit fix should leave a passing profile",
-        )
 
 
-def assert_learning_curation_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path | None = None,
-    dry_run: bool,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn curate JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn curate JSON must be an object")
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn curate JSON file path differs from the smoke profile",
-    )
-    require_package_smoke(
-        payload.get("archiveFile") == str(profile_path.with_name(f"{profile_path.stem}.archive{profile_path.suffix}")),
-        context=context,
-        cmd=cmd,
-        message="learn curate archive file path changed",
-    )
-    require_package_smoke(payload.get("dryRun") is dry_run, context=context, cmd=cmd, message="learn curate dryRun flag changed")
-    require_package_smoke(payload.get("applied") is (not dry_run), context=context, cmd=cmd, message="learn curate applied flag changed")
-
-    before = payload.get("before")
-    require_package_smoke(
-        isinstance(before, dict) and before.get("status") == "warn",
-        context=context,
-        cmd=cmd,
-        message="learn curate should start from a warning profile",
-    )
-    require_package_smoke(payload.get("proposalCount") == 2, context=context, cmd=cmd, message="learn curate proposal count changed")
-    require_package_smoke(payload.get("archiveCount") == 2, context=context, cmd=cmd, message="learn curate archive count changed")
-    require_package_smoke(payload.get("manualReviewCount") == 0, context=context, cmd=cmd, message="learn curate manual-review count changed")
-
-    usage = payload.get("usage")
-    require_package_smoke(isinstance(usage, dict), context=context, cmd=cmd, message="learn curate usage review missing")
-    if usage_path is not None:
-        require_package_smoke(
-            usage.get("usageFile") == str(usage_path),
-            context=context,
-            cmd=cmd,
-            message="learn curate usage file path changed",
-        )
-        require_package_smoke(
-            usage.get("profileFile") == str(profile_path),
-            context=context,
-            cmd=cmd,
-            message="learn curate usage profile path changed",
-        )
-        require_package_smoke(
-            usage.get("profileFileMatches") is True,
-            context=context,
-            cmd=cmd,
-            message="learn curate usage profile match flag changed",
-        )
-        require_package_smoke(usage.get("exists") is True, context=context, cmd=cmd, message="learn curate usage fixture missing")
-        require_package_smoke(usage.get("eventCount") == 1, context=context, cmd=cmd, message="learn curate usage event count changed")
-        require_package_smoke(usage.get("usedEntryCount") == 1, context=context, cmd=cmd, message="learn curate usage used count changed")
-        require_package_smoke(usage.get("unusedEntryCount") == 2, context=context, cmd=cmd, message="learn curate usage unused count changed")
-        require_package_smoke(
-            usage.get("staleSelectedEntryCount") == 1,
-            context=context,
-            cmd=cmd,
-            message="learn curate usage stale count changed",
-        )
-        require_package_smoke(usage.get("reviewCount") == 3, context=context, cmd=cmd, message="learn curate usage review count changed")
-        require_package_smoke(usage.get("unusedReviewCount") == 2, context=context, cmd=cmd, message="learn curate usage unused review count changed")
-        require_package_smoke(usage.get("staleReviewCount") == 1, context=context, cmd=cmd, message="learn curate usage stale review count changed")
-        require_package_smoke(usage.get("autoArchive") is False, context=context, cmd=cmd, message="learn curate usage autoArchive changed")
-        reviews = usage.get("reviews")
-        require_package_smoke(isinstance(reviews, list), context=context, cmd=cmd, message="learn curate usage reviews missing")
-        review_reasons = {
-            item.get("entryId"): item.get("reason")
-            for item in reviews
-            if isinstance(item, dict)
-        }
-        require_package_smoke(
-            review_reasons.get("learn-stale") == "stale-selected-entry-id",
-            context=context,
-            cmd=cmd,
-            message="learn curate stale usage review changed",
-        )
-        require_package_smoke(
-            review_reasons.get("learn-b") == "unused-with-limited-history"
-            and review_reasons.get("learn-c") == "unused-with-limited-history",
-            context=context,
-            cmd=cmd,
-            message="learn curate unused usage review changed",
-        )
-    else:
-        require_package_smoke(
-            usage.get("autoArchive") is False,
-            context=context,
-            cmd=cmd,
-            message="learn curate usage autoArchive changed",
-        )
-
-    proposals = payload.get("proposals")
-    require_package_smoke(isinstance(proposals, list), context=context, cmd=cmd, message="learn curate proposals missing")
-    proposals_by_entry = {
-        proposal.get("entryId"): proposal
-        for proposal in proposals
-        if isinstance(proposal, dict)
-    }
-    expected_reasons = {
-        "learn-b": "duplicate-entry",
-        "learn-c": "sensitive-content",
-    }
-    for entry_id, reason in expected_reasons.items():
-        proposal = proposals_by_entry.get(entry_id)
-        require_package_smoke(
-            isinstance(proposal, dict)
-            and proposal.get("action") == "archive"
-            and proposal.get("reason") == reason,
-            context=context,
-            cmd=cmd,
-            message=f"learn curate proposal changed for {entry_id}",
-        )
-
-    archived = payload.get("archived")
-    if dry_run:
-        require_package_smoke(archived == [], context=context, cmd=cmd, message="learn curate dry run should not archive entries")
-        require_package_smoke(payload.get("after") is None, context=context, cmd=cmd, message="learn curate dry run should not include after summary")
-    else:
-        require_package_smoke(
-            isinstance(archived, list) and [item.get("id") for item in archived] == ["learn-b", "learn-c"],
-            context=context,
-            cmd=cmd,
-            message="learn curate archived entries changed",
-        )
-        after = payload.get("after")
-        require_package_smoke(
-            isinstance(after, dict) and after.get("status") == "pass",
-            context=context,
-            cmd=cmd,
-            message="learn curate should leave a passing profile after archived entries move out",
-        )
 
 
-def assert_learning_curation_human(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "Learning curation preview",
-        "Archive candidates: 2",
-        "Would archive:",
-        "learn-b: duplicate-entry",
-        "learn-c: sensitive-content",
-        "No changes made.",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn curate human output missing {expected!r}",
-        )
 
 
-def assert_learning_curation_report(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "# Learning Curation Report",
-        "Mode: preview",
-        "Archive candidates: 2",
-        "`learn-b`: duplicate-entry",
-        "`learn-c`: sensitive-content",
-        "## Usage Review",
-        "Usage sidecars store selected entry ids and short brief hashes",
-        "rerun `design-ai learn --curate --yes`",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn curate report missing {expected!r}",
-        )
 
 
-def assert_learning_feedback_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    outcome: str,
-    category: str,
-    expected_instruction: str,
-    expected_count: int,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn feedback JSON") from error
-
-    require_package_smoke(
-        isinstance(payload, dict),
-        context=context,
-        cmd=cmd,
-        message="learn feedback JSON must be an object",
-    )
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn feedback JSON file path differs from the smoke profile",
-    )
-    require_package_smoke(
-        payload.get("count") == expected_count,
-        context=context,
-        cmd=cmd,
-        message="learn feedback JSON count changed",
-    )
-    feedback = payload.get("feedback")
-    entry = payload.get("entry")
-    require_package_smoke(
-        isinstance(feedback, dict) and isinstance(entry, dict),
-        context=context,
-        cmd=cmd,
-        message="learn feedback JSON should include feedback and entry objects",
-    )
-    require_package_smoke(
-        feedback.get("outcome") == outcome,
-        context=context,
-        cmd=cmd,
-        message="learn feedback outcome changed",
-    )
-    require_package_smoke(
-        feedback.get("category") == category and entry.get("category") == category,
-        context=context,
-        cmd=cmd,
-        message="learn feedback category changed",
-    )
-    require_package_smoke(
-        entry.get("source") == f"feedback:{outcome}",
-        context=context,
-        cmd=cmd,
-        message="learn feedback source should preserve the outcome",
-    )
-    require_package_smoke(
-        isinstance(feedback.get("instruction"), str)
-        and feedback.get("instruction") == entry.get("text")
-        and feedback.get("instruction") == expected_instruction,
-        context=context,
-        cmd=cmd,
-        message="learn feedback instruction text changed",
-    )
 
 
 def assert_learning_feedback_smoke(
@@ -6215,96 +5336,6 @@ def assert_learning_feedback_smoke(
     )
 
 
-def assert_learning_init_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    dry_run: bool,
-    added_count: int,
-    skipped_count: int,
-    count: int,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn init JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn init JSON must be an object")
-    require_package_smoke(
-        list(payload) == [
-            "file",
-            "dryRun",
-            "applied",
-            "source",
-            "candidateCount",
-            "addedCount",
-            "skippedCount",
-            "count",
-            "entries",
-            "skipped",
-        ],
-        context=context,
-        cmd=cmd,
-        message="learn init JSON keys changed",
-    )
-    require_package_smoke(payload.get("file") == str(profile_path), context=context, cmd=cmd, message="learn init file path changed")
-    require_package_smoke(payload.get("dryRun") is dry_run, context=context, cmd=cmd, message="learn init dryRun flag changed")
-    require_package_smoke(payload.get("applied") is (not dry_run), context=context, cmd=cmd, message="learn init applied flag changed")
-    require_package_smoke(payload.get("source") == "init:local-dogfood", context=context, cmd=cmd, message="learn init source changed")
-    require_package_smoke(payload.get("candidateCount") == 6, context=context, cmd=cmd, message="learn init candidate count changed")
-    require_package_smoke(payload.get("addedCount") == added_count, context=context, cmd=cmd, message="learn init added count changed")
-    require_package_smoke(payload.get("skippedCount") == skipped_count, context=context, cmd=cmd, message="learn init skipped count changed")
-    require_package_smoke(payload.get("count") == count, context=context, cmd=cmd, message="learn init profile count changed")
-
-    entries = payload.get("entries")
-    skipped = payload.get("skipped")
-    require_package_smoke(isinstance(entries, list) and len(entries) == added_count, context=context, cmd=cmd, message="learn init entries list changed")
-    require_package_smoke(isinstance(skipped, list) and len(skipped) == skipped_count, context=context, cmd=cmd, message="learn init skipped list changed")
-
-    if entries:
-        categories = [entry.get("category") for entry in entries if isinstance(entry, dict)]
-        require_package_smoke(
-            categories == ["preference", "workflow", "accessibility", "korean", "brand", "constraint"],
-            context=context,
-            cmd=cmd,
-            message="learn init entry categories changed",
-        )
-        require_package_smoke(
-            all(
-                isinstance(entry, dict)
-                and isinstance(entry.get("id"), str)
-                and entry["id"].startswith("learn-")
-                and entry.get("source") == "init:local-dogfood"
-                and isinstance(entry.get("createdAt"), str)
-                and isinstance(entry.get("text"), str)
-                for entry in entries
-            ),
-            context=context,
-            cmd=cmd,
-            message="learn init entry schema changed",
-        )
-        require_package_smoke(
-            "one best path" in entries[0].get("text", "")
-            and "repository context" in entries[1].get("text", "")
-            and "WCAG 2.1 AA" in entries[2].get("text", "")
-            and "Pretendard" in entries[3].get("text", "")
-            and "restrained product UI language" in entries[4].get("text", "")
-            and "external AI APIs" in entries[5].get("text", ""),
-            context=context,
-            cmd=cmd,
-            message="learn init entry text changed",
-        )
-
-    if skipped:
-        require_package_smoke(
-            all(item.get("reason") == "duplicate-entry-text" for item in skipped if isinstance(item, dict)),
-            context=context,
-            cmd=cmd,
-            message="learn init skipped reason changed",
-        )
 
 
 def assert_learning_init_smoke(
@@ -6373,172 +5404,14 @@ def assert_learning_init_smoke(
     )
 
 
-def write_learning_import_target_fixture(profile_path: Path) -> None:
-    profile_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:00:00.000Z",
-                "entries": [
-                    {
-                        "id": "learn-existing",
-                        "category": "brand",
-                        "text": "Use quiet enterprise language",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def write_learning_redaction_fixture(profile_path: Path) -> None:
-    profile_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:00:01.000Z",
-                "entries": [
-                    {
-                        "id": "learn-sensitive",
-                        "category": "constraint",
-                        "text": "Never include api_key: sk-test12345678901234567890 in shared learning profiles",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                    },
-                    {
-                        "id": "learn-clean",
-                        "category": "korean",
-                        "text": "Prefer dense Korean mobile layouts",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:01.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def learning_import_payload_text() -> str:
-    return json.dumps(
-        {
-            "file": "/portable/learning.json",
-            "entries": [
-                {
-                    "id": "learn-existing",
-                    "category": "brand",
-                    "text": "Use quiet enterprise language",
-                    "source": "package-smoke",
-                    "createdAt": "2026-05-22T00:00:00.000Z",
-                },
-                {
-                    "id": "learn-existing",
-                    "category": "korean",
-                    "text": "Prefer dense Korean mobile layouts",
-                    "source": "cli",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                },
-            ],
-        },
-        indent=2,
-    )
 
 
-def learning_diff_payload_text() -> str:
-    return json.dumps(
-        {
-            "file": "/portable/learning-diff.json",
-            "version": 1,
-            "updatedAt": "2026-05-22T00:00:03.000Z",
-            "entries": [
-                {
-                    "id": "learn-existing-restored",
-                    "category": "brand",
-                    "text": "Use quiet enterprise language",
-                    "source": "backup",
-                    "createdAt": "2026-05-22T00:00:01.000Z",
-                },
-                {
-                    "id": "learn-new",
-                    "category": "korean",
-                    "text": "Prefer dense Korean mobile layouts",
-                    "source": "backup",
-                    "createdAt": "2026-05-22T00:00:02.000Z",
-                },
-                {
-                    "id": "learn-existing",
-                    "category": "workflow",
-                    "text": "Use a release checklist before handoff",
-                    "source": "backup",
-                    "createdAt": "2026-05-22T00:00:03.000Z",
-                },
-            ],
-        },
-        indent=2,
-    )
 
 
-def assert_learning_import_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    dry_run: bool,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn import JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn import JSON must be an object")
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn import JSON file path differs from the smoke profile",
-    )
-    require_package_smoke(
-        payload.get("dryRun") is dry_run and payload.get("applied") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn import dry-run/apply flags changed",
-    )
-    require_package_smoke(payload.get("importedCount") == 2, context=context, cmd=cmd, message="learn import source count changed")
-    require_package_smoke(payload.get("addedCount") == 1, context=context, cmd=cmd, message="learn import added count changed")
-    require_package_smoke(payload.get("skippedCount") == 1, context=context, cmd=cmd, message="learn import skipped count changed")
-    require_package_smoke(payload.get("count") == 2, context=context, cmd=cmd, message="learn import final count changed")
-
-    added = payload.get("added")
-    skipped = payload.get("skipped")
-    require_package_smoke(isinstance(added, list) and len(added) == 1, context=context, cmd=cmd, message="learn import added list missing")
-    require_package_smoke(isinstance(skipped, list) and len(skipped) == 1, context=context, cmd=cmd, message="learn import skipped list missing")
-
-    added_entry = added[0]
-    skipped_entry = skipped[0]
-    require_package_smoke(
-        added_entry.get("category") == "korean"
-        and added_entry.get("source") == "import:cli"
-        and added_entry.get("id") != "learn-existing",
-        context=context,
-        cmd=cmd,
-        message="learn import added entry metadata changed",
-    )
-    require_package_smoke(
-        skipped_entry.get("reason") == "duplicate-entry-text"
-        and skipped_entry.get("category") == "brand",
-        context=context,
-        cmd=cmd,
-        message="learn import duplicate skip metadata changed",
-    )
 
 
 def assert_learning_import_smoke(
@@ -6647,58 +5520,6 @@ def assert_learning_import_smoke(
     )
 
 
-def assert_learning_backup_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    expected_count: int,
-    expected_status: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn backup JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn backup JSON must be an object")
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn backup JSON file path differs from the smoke profile",
-    )
-    require_package_smoke(payload.get("version") == 1, context=context, cmd=cmd, message="learn backup version changed")
-    require_package_smoke(payload.get("count") == expected_count, context=context, cmd=cmd, message="learn backup count changed")
-    require_package_smoke(
-        isinstance(payload.get("exportedAt"), str) and payload.get("exportedAt"),
-        context=context,
-        cmd=cmd,
-        message="learn backup exportedAt missing",
-    )
-
-    audit_summary = payload.get("auditSummary")
-    require_package_smoke(
-        isinstance(audit_summary, dict) and audit_summary.get("status") == expected_status,
-        context=context,
-        cmd=cmd,
-        message="learn backup audit summary changed",
-    )
-
-    entries = payload.get("entries")
-    require_package_smoke(
-        isinstance(entries, list) and len(entries) == expected_count,
-        context=context,
-        cmd=cmd,
-        message="learn backup entries list changed",
-    )
-    require_package_smoke(
-        all(isinstance(entry, dict) and isinstance(entry.get("text"), str) and entry.get("text") for entry in entries),
-        context=context,
-        cmd=cmd,
-        message="learn backup entries should preserve full text",
-    )
 
 
 def assert_learning_backup_smoke(
@@ -6756,94 +5577,6 @@ def assert_learning_backup_smoke(
     )
 
 
-def assert_learning_redact_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    expected_count: int,
-    expected_redacted_count: int,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn redact JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn redact JSON must be an object")
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn redact JSON file path differs from the smoke profile",
-    )
-    require_package_smoke(payload.get("redacted") is True, context=context, cmd=cmd, message="learn redact marker missing")
-    require_package_smoke(payload.get("count") == expected_count, context=context, cmd=cmd, message="learn redact count changed")
-    require_package_smoke(
-        payload.get("redactedCount") == expected_redacted_count,
-        context=context,
-        cmd=cmd,
-        message="learn redact redactedCount changed",
-    )
-
-    source_audit = payload.get("sourceAuditSummary")
-    require_package_smoke(
-        isinstance(source_audit, dict) and source_audit.get("status") == "warn",
-        context=context,
-        cmd=cmd,
-        message="learn redact source audit should warn for the fixture",
-    )
-    audit_summary = payload.get("auditSummary")
-    require_package_smoke(
-        isinstance(audit_summary, dict) and audit_summary.get("status") == "pass",
-        context=context,
-        cmd=cmd,
-        message="learn redact redacted audit should pass for the fixture",
-    )
-
-    redactions = payload.get("redactions")
-    require_package_smoke(
-        isinstance(redactions, list) and len(redactions) == expected_redacted_count,
-        context=context,
-        cmd=cmd,
-        message="learn redact redactions list changed",
-    )
-    require_package_smoke(
-        redactions and redactions[0].get("entryId") == "learn-sensitive",
-        context=context,
-        cmd=cmd,
-        message="learn redact should report the sensitive entry id",
-    )
-    require_package_smoke(
-        set(redactions[0].get("codes", [])) >= {"sensitive-secret-assignment", "sensitive-openai-secret-key"},
-        context=context,
-        cmd=cmd,
-        message="learn redact should report sensitive pattern codes",
-    )
-
-    entries = payload.get("entries")
-    require_package_smoke(
-        isinstance(entries, list) and len(entries) == expected_count,
-        context=context,
-        cmd=cmd,
-        message="learn redact entries list changed",
-    )
-    sensitive_entry = next((entry for entry in entries if entry.get("id") == "learn-sensitive"), None)
-    require_package_smoke(isinstance(sensitive_entry, dict), context=context, cmd=cmd, message="learn redact sensitive entry missing")
-    redacted_text = sensitive_entry.get("text", "")
-    require_package_smoke(
-        "[REDACTED:secret-assignment]" in redacted_text and "[REDACTED:openai-secret-key]" in redacted_text,
-        context=context,
-        cmd=cmd,
-        message="learn redact did not include redaction markers",
-    )
-    require_package_smoke(
-        "sk-test" not in redacted_text and "api_key" not in redacted_text,
-        context=context,
-        cmd=cmd,
-        message="learn redact leaked sensitive-looking text",
-    )
 
 
 def assert_learning_redact_smoke(
@@ -6955,52 +5688,6 @@ def assert_learning_redact_smoke(
     )
 
 
-def assert_learning_verify_json(
-    raw: str,
-    *,
-    source: str,
-    expected_count: int,
-    expected_status: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn verify JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn verify JSON must be an object")
-    require_package_smoke(
-        payload.get("source") == source,
-        context=context,
-        cmd=cmd,
-        message="learn verify JSON source changed",
-    )
-    require_package_smoke(payload.get("importable") is True, context=context, cmd=cmd, message="learn verify importable flag changed")
-    require_package_smoke(payload.get("count") == expected_count, context=context, cmd=cmd, message="learn verify count changed")
-
-    audit_summary = payload.get("auditSummary")
-    require_package_smoke(
-        isinstance(audit_summary, dict) and audit_summary.get("status") == expected_status,
-        context=context,
-        cmd=cmd,
-        message="learn verify audit summary changed",
-    )
-
-    entries = payload.get("entries")
-    require_package_smoke(
-        isinstance(entries, list) and len(entries) == expected_count,
-        context=context,
-        cmd=cmd,
-        message="learn verify entries list changed",
-    )
-    require_package_smoke(
-        all(isinstance(entry, dict) and entry.get("source", "").startswith("import:") for entry in entries),
-        context=context,
-        cmd=cmd,
-        message="learn verify entries should be normalized as import entries",
-    )
 
 
 def assert_learning_verify_smoke(
@@ -7080,71 +5767,6 @@ def assert_learning_verify_smoke(
     )
 
 
-def assert_learning_diff_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    source: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn diff JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn diff JSON must be an object")
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn diff JSON file path differs from the smoke profile",
-    )
-    require_package_smoke(payload.get("source") == source, context=context, cmd=cmd, message="learn diff source changed")
-    require_package_smoke(payload.get("profileCount") == 1, context=context, cmd=cmd, message="learn diff profile count changed")
-    require_package_smoke(payload.get("comparisonCount") == 3, context=context, cmd=cmd, message="learn diff comparison count changed")
-    require_package_smoke(payload.get("sameTextCount") == 1, context=context, cmd=cmd, message="learn diff same text count changed")
-    require_package_smoke(payload.get("profileOnlyCount") == 0, context=context, cmd=cmd, message="learn diff profile-only count changed")
-    require_package_smoke(payload.get("comparisonOnlyCount") == 2, context=context, cmd=cmd, message="learn diff comparison-only count changed")
-    require_package_smoke(payload.get("metadataChangedCount") == 1, context=context, cmd=cmd, message="learn diff metadata change count changed")
-    require_package_smoke(payload.get("idConflictCount") == 1, context=context, cmd=cmd, message="learn diff id conflict count changed")
-
-    metadata_changed = payload.get("metadataChanged")
-    comparison_only = payload.get("comparisonOnly")
-    id_conflicts = payload.get("idConflicts")
-    require_package_smoke(
-        isinstance(metadata_changed, list)
-        and len(metadata_changed) == 1
-        and metadata_changed[0].get("changedFields") == ["id", "source", "createdAt"],
-        context=context,
-        cmd=cmd,
-        message="learn diff metadata change details changed",
-    )
-    require_package_smoke(
-        isinstance(comparison_only, list)
-        and len(comparison_only) == 2
-        and {entry.get("id") for entry in comparison_only} == {"learn-new", "learn-existing"},
-        context=context,
-        cmd=cmd,
-        message="learn diff comparison-only entries changed",
-    )
-    require_package_smoke(
-        isinstance(id_conflicts, list)
-        and len(id_conflicts) == 1
-        and id_conflicts[0].get("id") == "learn-existing",
-        context=context,
-        cmd=cmd,
-        message="learn diff id conflict details changed",
-    )
-
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict) and privacy.get("mutatesProfile") is False,
-        context=context,
-        cmd=cmd,
-        message="learn diff should report read-only privacy behavior",
-    )
 
 
 def assert_learning_diff_smoke(
@@ -7215,202 +5837,13 @@ def assert_learning_diff_smoke(
     )
 
 
-def assert_learning_restore_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    source: str,
-    dry_run: bool,
-    backup_path: Path | None = None,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn restore JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore JSON must be an object")
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn restore JSON file path differs from the smoke profile",
-    )
-    require_package_smoke(payload.get("source") == source, context=context, cmd=cmd, message="learn restore source changed")
-    require_package_smoke(
-        payload.get("dryRun") is dry_run and payload.get("applied") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn restore dry-run/apply flags changed",
-    )
-    require_package_smoke(payload.get("restorable") is True, context=context, cmd=cmd, message="learn restore should be restorable")
-    backup_file = payload.get("backupFile")
-    require_package_smoke(isinstance(backup_file, str) and backup_file, context=context, cmd=cmd, message="learn restore backup file is missing")
-    if backup_path is not None:
-        require_package_smoke(backup_file == str(backup_path), context=context, cmd=cmd, message="learn restore backup file path changed")
-    else:
-        require_package_smoke(
-            f"{profile_path.stem}.restore-backup-" in backup_file,
-            context=context,
-            cmd=cmd,
-            message="learn restore default backup file naming changed",
-        )
-    require_package_smoke(
-        payload.get("backupCreated") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn restore backup created flag changed",
-    )
-    require_package_smoke(payload.get("backupEntryCount") == 1, context=context, cmd=cmd, message="learn restore backup entry count changed")
-    rollback_command = payload.get("rollbackCommand")
-    require_package_smoke(
-        isinstance(rollback_command, str)
-        and "design-ai learn --restore --from-file" in rollback_command
-        and str(profile_path) in rollback_command,
-        context=context,
-        cmd=cmd,
-        message="learn restore rollback command changed",
-    )
-    require_package_smoke(payload.get("previousCount") == 1, context=context, cmd=cmd, message="learn restore previous count changed")
-    require_package_smoke(payload.get("restoredCount") == 3, context=context, cmd=cmd, message="learn restore restored count changed")
-    require_package_smoke(payload.get("removedCount") == 0, context=context, cmd=cmd, message="learn restore removed count changed")
-    require_package_smoke(payload.get("addedCount") == 2, context=context, cmd=cmd, message="learn restore added count changed")
-    require_package_smoke(payload.get("metadataChangedCount") == 1, context=context, cmd=cmd, message="learn restore metadata change count changed")
-    require_package_smoke(payload.get("idConflictCount") == 1, context=context, cmd=cmd, message="learn restore id conflict count changed")
-    require_package_smoke(
-        payload.get("auditSummary") == {"status": "pass", "failures": 0, "warnings": 0},
-        context=context,
-        cmd=cmd,
-        message="learn restore audit summary changed",
-    )
-
-    diff = payload.get("diff")
-    require_package_smoke(
-        isinstance(diff, dict)
-        and diff.get("comparisonOnlyCount") == 2
-        and diff.get("metadataChangedCount") == 1
-        and diff.get("idConflictCount") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn restore diff summary changed",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict) and privacy.get("mutatesProfile") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn restore privacy mutation flag changed",
-    )
 
 
-def assert_learning_restore_backups_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    backup_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn restore-backups JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore-backups JSON must be an object")
-    require_package_smoke(payload.get("file") == str(profile_path), context=context, cmd=cmd, message="learn restore-backups file path changed")
-    require_package_smoke(
-        payload.get("directory") == str(profile_path.parent)
-        and payload.get("pattern") == f"{profile_path.stem}.restore-backup-*.json",
-        context=context,
-        cmd=cmd,
-        message="learn restore-backups search pattern changed",
-    )
-    require_package_smoke(payload.get("totalCount", 0) >= 1, context=context, cmd=cmd, message="learn restore-backups should find rollback backups")
-    require_package_smoke(payload.get("count", 0) >= 1, context=context, cmd=cmd, message="learn restore-backups limited count changed")
-    backups = payload.get("backups")
-    require_package_smoke(isinstance(backups, list) and backups, context=context, cmd=cmd, message="learn restore-backups backups array missing")
-    first = backups[0]
-    require_package_smoke(first.get("file") == str(backup_path), context=context, cmd=cmd, message="learn restore-backups latest file changed")
-    require_package_smoke(first.get("entryCount") == 1, context=context, cmd=cmd, message="learn restore-backups entry count changed")
-    require_package_smoke(
-        first.get("auditSummary") == {"status": "pass", "failures": 0, "warnings": 0},
-        context=context,
-        cmd=cmd,
-        message="learn restore-backups audit summary changed",
-    )
-    restore_preview_command = first.get("restorePreviewCommand")
-    require_package_smoke(
-        isinstance(restore_preview_command, str)
-        and "design-ai learn --restore --from-file" in restore_preview_command
-        and str(backup_path) in restore_preview_command
-        and str(profile_path) in restore_preview_command,
-        context=context,
-        cmd=cmd,
-        message="learn restore-backups preview command changed",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict) and privacy.get("mutatesProfile") is False,
-        context=context,
-        cmd=cmd,
-        message="learn restore-backups privacy mutation flag changed",
-    )
 
 
-def assert_learning_restore_backups_prune_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    deleted_path: Path,
-    dry_run: bool,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn restore-backups prune JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn restore-backups prune JSON must be an object")
-    require_package_smoke(payload.get("file") == str(profile_path), context=context, cmd=cmd, message="learn restore-backups prune file path changed")
-    prune = payload.get("prune")
-    require_package_smoke(isinstance(prune, dict), context=context, cmd=cmd, message="learn restore-backups prune payload missing")
-    require_package_smoke(prune.get("dryRun") is dry_run, context=context, cmd=cmd, message="learn restore-backups prune dryRun changed")
-    require_package_smoke(prune.get("applied") is (not dry_run), context=context, cmd=cmd, message="learn restore-backups prune applied flag changed")
-    require_package_smoke(prune.get("keep") == 1, context=context, cmd=cmd, message="learn restore-backups prune keep count changed")
-    require_package_smoke(prune.get("candidateCount") == 1, context=context, cmd=cmd, message="learn restore-backups prune candidate count changed")
-    expected_deleted_count = 0 if dry_run else 1
-    require_package_smoke(prune.get("deletedCount") == expected_deleted_count, context=context, cmd=cmd, message="learn restore-backups prune deleted count changed")
-    candidates = prune.get("candidates")
-    require_package_smoke(isinstance(candidates, list) and candidates, context=context, cmd=cmd, message="learn restore-backups prune candidates missing")
-    require_package_smoke(candidates[0].get("file") == str(deleted_path), context=context, cmd=cmd, message="learn restore-backups prune candidate file changed")
-    if not dry_run:
-        deleted = prune.get("deleted")
-        require_package_smoke(isinstance(deleted, list) and deleted, context=context, cmd=cmd, message="learn restore-backups prune deleted list missing")
-        require_package_smoke(deleted[0].get("file") == str(deleted_path), context=context, cmd=cmd, message="learn restore-backups prune deleted file changed")
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("mutatesProfile") is False
-        and privacy.get("deletesBackupFiles") is (not dry_run),
-        context=context,
-        cmd=cmd,
-        message="learn restore-backups prune privacy flags changed",
-    )
 
 
-def assert_learning_restore_smoke(
-    command_factory,
-    profile_path: Path,
-    *,
-    env: dict[str, str],
-    cwd: Path | None = None,
-    context: str,
-) -> None:
+def _assert_learning_restore_apply_and_inventory(command_factory, profile_path, env, cwd, context):
     write_learning_import_target_fixture(profile_path)
     restore_file = profile_path.with_name(f"{profile_path.stem}-restore.json")
     restore_file.write_text(f"{learning_diff_payload_text()}\n", encoding="utf-8")
@@ -7578,6 +6011,10 @@ def assert_learning_restore_smoke(
         cmd=backups_out_cmd,
         expected_path=str(backups_out_path),
     )
+    return restore_inventory_path, older_restore_inventory_path, backups_out_path, backups_out_cmd
+
+
+def _assert_learning_restore_prune(command_factory, profile_path, env, cwd, context, restore_inventory_path, older_restore_inventory_path, backups_out_path, backups_out_cmd):
     assert_learning_restore_backups_json(
         backups_out_path.read_text(encoding="utf-8"),
         profile_path=profile_path,
@@ -7638,6 +6075,26 @@ def assert_learning_restore_smoke(
         cmd=prune_apply_cmd,
         message="learn restore-backups prune apply should delete only older backup files",
     )
+
+
+def assert_learning_restore_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    restore_inventory_path, older_restore_inventory_path, backups_out_path, backups_out_cmd = (
+        _assert_learning_restore_apply_and_inventory(
+            command_factory,
+            profile_path,
+            env,
+            cwd,
+            context,
+        )
+    )
+    _assert_learning_restore_prune(command_factory, profile_path, env, cwd, context, restore_inventory_path, older_restore_inventory_path, backups_out_path, backups_out_cmd)
 
 
 def assert_learning_audit_cleanup_smoke(
@@ -8260,15 +6717,10 @@ def assert_review_smoke(
 ) -> str:
     before = source_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_review_workflow_json(
-        result.stdout,
-        source_path,
-        context=context,
-        cmd=cmd,
-    )
+    raw = assert_review_smoke_output(result.stdout, source_path, context=context, cmd=cmd)
     if source_path.read_bytes() != before:
         raise SystemExit(f"{context}: review changed the selected source file")
-    return result.stdout
+    return raw
 
 
 def assert_review_comparison_smoke(
@@ -8284,7 +6736,7 @@ def assert_review_comparison_smoke(
     baseline_before = baseline_path.read_bytes()
     candidate_before = candidate_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_review_comparison_json(
+    assert_review_comparison_smoke_output(
         result.stdout,
         baseline_path,
         candidate_path,
@@ -8307,7 +6759,7 @@ def assert_review_handoff_smoke(
 ) -> str:
     before = workflow_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_review_handoff_json(
+    raw = assert_review_handoff_smoke_output(
         result.stdout,
         workflow_path,
         recipient=recipient,
@@ -8316,7 +6768,7 @@ def assert_review_handoff_smoke(
     )
     if workflow_path.read_bytes() != before:
         raise SystemExit(f"{context}: review-handoff changed its source workflow")
-    return result.stdout
+    return raw
 
 
 def assert_review_handoff_receipt_smoke(
@@ -8330,7 +6782,7 @@ def assert_review_handoff_receipt_smoke(
 ) -> str:
     before = handoff_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_review_handoff_receipt_json(
+    raw = assert_review_handoff_receipt_smoke_output(
         result.stdout,
         handoff_path,
         consumer=consumer,
@@ -8339,7 +6791,7 @@ def assert_review_handoff_receipt_smoke(
     )
     if handoff_path.read_bytes() != before:
         raise SystemExit(f"{context}: review-handoff-verify changed its source handoff")
-    return result.stdout
+    return raw
 
 
 def assert_target_repo_intake_smoke(
@@ -8363,7 +6815,7 @@ def assert_target_repo_intake_smoke(
         check=True,
     ).stdout
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_target_repo_intake_json(
+    raw = assert_target_repo_intake_smoke_output(
         result.stdout,
         receipt_path,
         target_root,
@@ -8384,7 +6836,7 @@ def assert_target_repo_intake_smoke(
     ).stdout
     if status_after != status_before:
         raise SystemExit(f"{context}: review-intake changed the target repository")
-    return result.stdout
+    return raw
 
 
 def assert_implementation_scope_proposal_smoke(
@@ -8408,10 +6860,11 @@ def assert_implementation_scope_proposal_smoke(
         check=True,
     ).stdout
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_implementation_scope_proposal_json(
+    raw = assert_implementation_scope_proposal_smoke_output(
         result.stdout,
         intake_path,
         request_path,
+        target_root,
         consumer=consumer,
         context=context,
         cmd=cmd,
@@ -8427,7 +6880,7 @@ def assert_implementation_scope_proposal_smoke(
     ).stdout
     if status_after != status_before:
         raise SystemExit(f"{context}: review-scope changed the target repository")
-    return result.stdout
+    return raw
 
 
 def assert_implementation_scope_approval_smoke(
@@ -8451,9 +6904,10 @@ def assert_implementation_scope_approval_smoke(
         check=True,
     ).stdout
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_implementation_scope_approval_json(
+    raw = assert_implementation_scope_approval_smoke_output(
         result.stdout,
         proposal_path,
+        target_root,
         approver=approver,
         approval_ref=approval_ref,
         approved_at=approved_at,
@@ -8471,7 +6925,7 @@ def assert_implementation_scope_approval_smoke(
     ).stdout
     if status_after != status_before:
         raise SystemExit(f"{context}: review-scope-approve changed the target repository")
-    return result.stdout
+    return raw
 
 
 def assert_implementation_evidence_smoke(
@@ -8495,7 +6949,7 @@ def assert_implementation_evidence_smoke(
         check=True,
     ).stdout
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_implementation_evidence_json(
+    assert_implementation_evidence_smoke_output(
         result.stdout,
         approval_path,
         request_path,
@@ -8563,35 +7017,6 @@ def assert_pilot_evidence_smoke(
     return result.stdout
 
 
-def write_implementation_scope_request(file_path: Path) -> None:
-    file_path.write_text(
-        json.dumps(
-            {
-                "kind": "design-ai-implementation-scope-request",
-                "schemaVersion": 1,
-                "objective": "Clarify the settings save action without changing the architecture.",
-                "intendedBehavior": ["Keep the primary action clear and keyboard accessible."],
-                "files": {
-                    "inspect": ["src/settings/**/*.tsx", "src/settings/**/*.test.tsx"],
-                    "change": ["src/settings/**/*.tsx"],
-                    "generated": [],
-                },
-                "dependencies": [],
-                "migrations": [],
-                "externalWrites": [
-                    {"system": "GitHub", "action": "push branch", "destination": "acme/site"}
-                ],
-                "verificationCommands": ["npm test", "npm run build"],
-                "risks": ["The current label may be referenced by an existing test."],
-                "preExistingChanges": [],
-                "release": {"commit": True, "push": True, "deployment": False},
-            },
-            indent=2,
-        ) + "\n",
-        encoding="utf-8",
-    )
-
-
 def write_implementation_evidence_request(file_path: Path, target_root: Path) -> None:
     status = subprocess.run(
         ["git", "-c", "core.quotepath=false", "status", "--short", "--untracked-files=all"],
@@ -8601,41 +7026,7 @@ def write_implementation_evidence_request(file_path: Path, target_root: Path) ->
         check=True,
     ).stdout.strip()
     file_path.write_text(
-        json.dumps(
-            {
-                "kind": "design-ai-implementation-evidence-request",
-                "schemaVersion": 1,
-                "consumer": "package-smoke-agent",
-                "implementationStartedAt": "2026-07-15T12:01:00.000Z",
-                "implementationCompletedAt": "2026-07-15T12:02:00.000Z",
-                "executedWork": [
-                    {
-                        "statusEntry": status,
-                        "path": "src/settings/view.tsx",
-                        "summary": "Implemented the approved settings action.",
-                    }
-                ],
-                "verificationResults": [
-                    {
-                        "command": command,
-                        "status": "not-run",
-                        "startedAt": "",
-                        "completedAt": "",
-                        "exitCode": None,
-                        "summary": "Not run during package contract smoke.",
-                        "artifacts": [],
-                    }
-                    for command in ["npm test", "npm run build"]
-                ],
-                "observations": [
-                    {"id": "a11y", "category": "accessibility", "status": "unverified", "summary": "Not exercised.", "artifacts": []},
-                    {"id": "responsive", "category": "responsive", "status": "unverified", "summary": "Not exercised.", "artifacts": []},
-                    {"id": "browser", "category": "browser", "status": "unverified", "summary": "Not exercised.", "artifacts": []},
-                ],
-                "remainingRisks": [],
-            },
-            indent=2,
-        ) + "\n",
+        json.dumps(implementation_evidence_request_fixture(status), indent=2) + "\n",
         encoding="utf-8",
     )
 
@@ -8708,69 +7099,6 @@ def write_pilot_record(
     file_path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
 
 
-def write_inspect_fixture(file_path: Path) -> None:
-    file_path.write_text(
-        """<!doctype html>
-<html lang="ko">
-  <head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
-  <body><span>휴대폰 번호</span><input name="phone"><button>저장</button></body>
-</html>
-""",
-        encoding="utf-8",
-    )
-
-
-def write_browser_adapter(file_path: Path) -> None:
-    file_path.write_text(
-        r'''#!/usr/bin/env node
-let input = "";
-for await (const chunk of process.stdin) input += chunk;
-const request = JSON.parse(input);
-const { writeFileSync } = await import("node:fs");
-const pixel = Buffer.from(
-  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==",
-  "base64",
-);
-const probes = [];
-for (const viewport of request.viewports) {
-  for (const check of request.checks) {
-    const kind = check === "responsive" ? "screenshot" : check === "accessibility" ? "accessibility" : "trace";
-    const file = `${check}-${viewport.name}.${kind === "screenshot" ? "png" : kind === "accessibility" ? "json" : "txt"}`;
-    const contents = kind === "screenshot"
-      ? pixel
-      : kind === "accessibility"
-        ? JSON.stringify({ role: "document", viewport: viewport.name })
-        : `${check} passed at ${viewport.name}\n`;
-    writeFileSync(file, contents);
-    probes.push({
-      check,
-      viewport: viewport.name,
-      status: "pass",
-      observedAt: new Date().toISOString(),
-      observation: `${check} passed at ${viewport.name}`,
-      artifacts: [{ kind, path: file }],
-    });
-  }
-}
-process.stdout.write(JSON.stringify({
-  kind: "design-ai-browser-probe-result",
-  schemaVersion: 1,
-  tool: { name: "package-smoke-adapter", version: "1.0.0" },
-  policy: {
-    allowedOrigin: request.networkPolicy.allowedOrigin,
-    allowedMethods: request.networkPolicy.allowedMethods,
-    crossOrigin: "blocked",
-    webSockets: "blocked",
-    downloads: "blocked",
-  },
-  probes,
-}));
-''',
-        encoding="utf-8",
-    )
-    file_path.chmod(0o755)
-
-
 def assert_inspect_smoke(
     cmd: list[str],
     source_path: Path,
@@ -8782,7 +7110,7 @@ def assert_inspect_smoke(
 ) -> str:
     before = source_path.read_bytes()
     result = run_plain(cmd, cwd=cwd, env=env)
-    assert_inspect_json(result.stdout, context=context, cmd=cmd)
+    assert_inspect_smoke_output(result.stdout, context=context, cmd=cmd)
     if source_path.read_bytes() != before:
         raise SystemExit(f"{context}: inspect changed the selected source file")
     if report_path is not None:
@@ -8802,36 +7130,14 @@ def assert_browser_verification_smoke(
     source_before = source_report.read_bytes()
     target_before = sorted(path.relative_to(target_root) for path in target_root.rglob("*"))
     result = run_plain(cmd, cwd=cwd, env=env)
-    try:
-        payload = json.loads(result.stdout)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: browser verification output is not JSON: {error}") from error
-    if payload.get("kind") != "design-ai-browser-verification" or payload.get("schemaVersion") != 1:
-        raise SystemExit(f"{context}: browser verification contract identity changed")
-    summary = payload.get("summary")
-    if not isinstance(summary, dict) or summary.get("status") != "pass":
-        raise SystemExit(f"{context}: browser verification did not pass")
-    if (summary.get("passed"), summary.get("failed"), summary.get("unverified")) != (14, 0, 0):
-        raise SystemExit(f"{context}: browser verification probe counts changed")
-    boundary = payload.get("boundary")
-    attestation = boundary.get("adapterAttestation") if isinstance(boundary, dict) else None
-    if not isinstance(attestation, dict) or attestation.get("networkPolicy") != "attested":
-        raise SystemExit(f"{context}: browser adapter network-policy attestation missing")
-    if attestation.get("targetRepoMutation") != "unverified" or attestation.get("externalWrites") != "unverified":
-        raise SystemExit(f"{context}: browser adapter write boundaries must remain unverified")
-    source_contract = payload.get("sourceReport")
-    if not isinstance(source_contract, dict) or source_contract.get("postRunDigestMatch") is not True:
-        raise SystemExit(f"{context}: browser source-report post-run digest match missing")
-    if boundary.get("sourceReportDigestMatchedAfterRun") is not True:
-        raise SystemExit(f"{context}: browser boundary post-run digest match missing")
-    evidence_path = Path(str(boundary.get("localEvidencePath", "")))
-    if not (evidence_path / "browser-verification.json").is_file():
-        raise SystemExit(f"{context}: normalized browser verification sidecar missing")
-    if source_report.read_bytes() != source_before:
-        raise SystemExit(f"{context}: browser verification changed the source report")
-    target_after = sorted(path.relative_to(target_root) for path in target_root.rglob("*"))
-    if target_after != target_before:
-        raise SystemExit(f"{context}: browser verification changed the target root")
+    assert_browser_verification_smoke_output(
+        result.stdout,
+        source_report,
+        target_root,
+        source_before=source_before,
+        target_before=target_before,
+        context=context,
+    )
 
 
 def assert_prompt_stdout_smoke(
@@ -9113,998 +7419,26 @@ def assert_pack_eval_smoke(
     assert_pack_eval_json(eval_result.stdout, context=context, cmd=eval_cmd)
 
 
-def write_learning_relevance_fixture(profile_path: Path) -> None:
-    profile_path.write_text(
-        json.dumps(
-            {
-                "version": 1,
-                "updatedAt": "2026-05-22T00:00:02.000Z",
-                "entries": [
-                    {
-                        "id": "learn-brand",
-                        "category": "brand",
-                        "text": "Use quiet enterprise brand language",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:00.000Z",
-                    },
-                    {
-                        "id": "learn-relevant",
-                        "category": "accessibility",
-                        "text": "Prioritize keyboard accessibility details for Button component API specs",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:01.000Z",
-                    },
-                    {
-                        "id": "learn-unrelated-newer",
-                        "category": "korean",
-                        "text": "Prefer dense Korean mobile checkout layout",
-                        "source": "package-smoke",
-                        "createdAt": "2026-05-22T00:00:02.000Z",
-                    },
-                ],
-            },
-            indent=2,
-        )
-        + "\n",
-        encoding="utf-8",
-    )
 
 
-def assert_learning_relevance_context(payload: dict[str, object], *, context: str, cmd: list[str]) -> None:
-    learning_context = payload.get("learningContext")
-    require_package_smoke(
-        isinstance(learning_context, dict),
-        context=context,
-        cmd=cmd,
-        message="learningContext should be present when --with-learning is used",
-    )
-
-    selection = learning_context.get("selection")
-    require_package_smoke(
-        isinstance(selection, dict),
-        context=context,
-        cmd=cmd,
-        message="learningContext selection metadata missing",
-    )
-    require_package_smoke(
-        selection.get("mode") == "brief-relevance",
-        context=context,
-        cmd=cmd,
-        message="learningContext should use brief-relevance selection",
-    )
-    require_package_smoke(
-        selection.get("candidateCount") == 3,
-        context=context,
-        cmd=cmd,
-        message="learningContext candidate count changed",
-    )
-    require_package_smoke(
-        selection.get("matchedCount") >= 1,
-        context=context,
-        cmd=cmd,
-        message="learningContext should report at least one relevant match",
-    )
-    require_package_smoke(
-        selection.get("selectedCount") == 1,
-        context=context,
-        cmd=cmd,
-        message="learningContext should report the limited selected entry count",
-    )
-    require_package_smoke(
-        selection.get("fallbackCount") == 0,
-        context=context,
-        cmd=cmd,
-        message="learningContext should not use recency fallback when the relevant entry fits the limit",
-    )
-
-    selected = selection.get("selected")
-    require_package_smoke(
-        isinstance(selected, list) and len(selected) == 1 and isinstance(selected[0], dict),
-        context=context,
-        cmd=cmd,
-        message="learningContext selection should explain the selected entry",
-    )
-    selected_entry = selected[0]
-    require_package_smoke(
-        selected_entry.get("id") == "learn-relevant",
-        context=context,
-        cmd=cmd,
-        message="learning selection explanation should point at the relevant entry",
-    )
-    require_package_smoke(
-        selected_entry.get("reason") == "brief-match",
-        context=context,
-        cmd=cmd,
-        message="learning selection explanation should mark the relevant entry as a brief match",
-    )
-    require_package_smoke(
-        type(selected_entry.get("score")) in (int, float) and selected_entry.get("score") > 0,
-        context=context,
-        cmd=cmd,
-        message="learning selection explanation should include a positive relevance score",
-    )
-    matched_tokens = selected_entry.get("matchedTokens")
-    require_package_smoke(
-        (
-            isinstance(matched_tokens, list)
-            and "button" in matched_tokens
-            and "accessibility" in matched_tokens
-        ),
-        context=context,
-        cmd=cmd,
-        message="learning selection explanation should include matched brief tokens",
-    )
-
-    entries = learning_context.get("entries")
-    require_package_smoke(
-        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
-        context=context,
-        cmd=cmd,
-        message="learningContext should include the single limited entry",
-    )
-    require_package_smoke(
-        entries[0].get("id") == "learn-relevant",
-        context=context,
-        cmd=cmd,
-        message="brief relevance should pick the Button accessibility entry over the newer unrelated entry",
-    )
-
-    prompt = payload.get("prompt")
-    require_package_smoke(isinstance(prompt, str), context=context, cmd=cmd, message="prompt should be a string")
-    require_package_smoke(
-        "Learning selection: brief relevance" in prompt,
-        context=context,
-        cmd=cmd,
-        message="prompt markdown should disclose brief-relevance learning selection",
-    )
-    require_package_smoke(
-        "Prioritize keyboard accessibility details" in prompt,
-        context=context,
-        cmd=cmd,
-        message="prompt markdown should include the relevant learning entry",
-    )
-    require_package_smoke(
-        "dense Korean mobile checkout" not in prompt,
-        context=context,
-        cmd=cmd,
-        message="prompt markdown should exclude the newer unrelated learning entry when limit is 1",
-    )
 
 
-def assert_recall_context(payload: dict[str, object], *, context: str, cmd: list[str]) -> None:
-    recall = payload.get("recall")
-    require_package_smoke(
-        isinstance(recall, dict),
-        context=context,
-        cmd=cmd,
-        message="recall should be present when --with-recall is used",
-    )
-
-    require_package_smoke(
-        recall.get("mode") == "lexical",
-        context=context,
-        cmd=cmd,
-        message="recall should use the deterministic lexical scorer",
-    )
-    require_package_smoke(
-        isinstance(recall.get("candidateCount"), int) and recall.get("candidateCount") > 0,
-        context=context,
-        cmd=cmd,
-        message="recall should report the corpus candidate count it scanned",
-    )
-    selected_count = recall.get("selectedCount")
-    require_package_smoke(
-        isinstance(selected_count, int) and selected_count >= 1,
-        context=context,
-        cmd=cmd,
-        message="recall should select at least one corpus file for the Button brief",
-    )
-
-    selected = recall.get("selected")
-    require_package_smoke(
-        isinstance(selected, list) and len(selected) == selected_count and len(selected) >= 1,
-        context=context,
-        cmd=cmd,
-        message="recall selected list should match the reported selected count",
-    )
-    top = selected[0]
-    require_package_smoke(
-        isinstance(top, dict) and isinstance(top.get("id"), str) and top.get("id"),
-        context=context,
-        cmd=cmd,
-        message="recall selection should cite the corpus relPath as its id",
-    )
-    require_package_smoke(
-        type(top.get("score")) in (int, float) and top.get("score") > 0,
-        context=context,
-        cmd=cmd,
-        message="recall selection should include a positive relevance score",
-    )
-    require_package_smoke(
-        isinstance(top.get("matchedTokens"), list) and len(top.get("matchedTokens")) >= 1,
-        context=context,
-        cmd=cmd,
-        message="recall selection should list the matched brief tokens",
-    )
-
-    markdown = recall.get("markdown")
-    require_package_smoke(
-        isinstance(markdown, str) and "## Recalled design knowledge" in markdown,
-        context=context,
-        cmd=cmd,
-        message="recall markdown should carry the Recalled design knowledge section",
-    )
-    require_package_smoke(
-        top.get("id") in markdown,
-        context=context,
-        cmd=cmd,
-        message="recall markdown should cite the top recalled corpus file",
-    )
-
-    prompt = payload.get("prompt")
-    require_package_smoke(
-        isinstance(prompt, str) and "## Recalled design knowledge" in prompt,
-        context=context,
-        cmd=cmd,
-        message="prompt markdown should render the recalled knowledge section",
-    )
 
 
-def assert_learning_usage_payload(
-    payload: dict[str, object],
-    *,
-    expected_command: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    learning_usage = payload.get("learningUsage")
-    require_package_smoke(
-        isinstance(learning_usage, dict),
-        context=context,
-        cmd=cmd,
-        message="learningUsage should be present when --with-learning records usage",
-    )
-    require_package_smoke(
-        learning_usage.get("recorded") is True,
-        context=context,
-        cmd=cmd,
-        message="learningUsage should report a recorded local sidecar event",
-    )
-
-    event = learning_usage.get("event")
-    require_package_smoke(
-        isinstance(event, dict),
-        context=context,
-        cmd=cmd,
-        message="learningUsage event metadata missing",
-    )
-    require_package_smoke(
-        event.get("command") == expected_command,
-        context=context,
-        cmd=cmd,
-        message=f"learningUsage event should record command {expected_command}",
-    )
-    require_package_smoke(
-        event.get("selectedEntryIds") == ["learn-relevant"],
-        context=context,
-        cmd=cmd,
-        message="learningUsage event should record the selected learning entry id",
-    )
-    require_package_smoke(
-        isinstance(event.get("briefHash"), str) and len(event.get("briefHash")) == 16,
-        context=context,
-        cmd=cmd,
-        message="learningUsage event should store a short brief hash instead of raw brief text",
-    )
-    require_package_smoke(
-        "query" not in event and "brief" not in event,
-        context=context,
-        cmd=cmd,
-        message="learningUsage event should not persist raw brief/query text",
-    )
 
 
-def assert_learning_usage_sidecar(
-    usage_path: Path,
-    *,
-    expected_commands: list[str],
-    context: str,
-    cmd: list[str],
-) -> None:
-    require_package_smoke(
-        usage_path.exists(),
-        context=context,
-        cmd=cmd,
-        message="learning usage sidecar file should be written next to the learning profile",
-    )
-    try:
-        payload = json.loads(usage_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learning usage sidecar JSON") from error
-
-    events = payload.get("events")
-    require_package_smoke(
-        isinstance(events, list) and len(events) >= len(expected_commands),
-        context=context,
-        cmd=cmd,
-        message="learning usage sidecar should contain prompt/pack usage events",
-    )
-    recent_events = events[-len(expected_commands):]
-    require_package_smoke(
-        [event.get("command") for event in recent_events if isinstance(event, dict)] == expected_commands,
-        context=context,
-        cmd=cmd,
-        message="learning usage sidecar should preserve prompt/pack command order",
-    )
-    for event in recent_events:
-        require_package_smoke(
-            isinstance(event, dict)
-            and event.get("selectedEntryIds") == ["learn-relevant"]
-            and isinstance(event.get("briefHash"), str)
-            and "query" not in event
-            and "brief" not in event,
-            context=context,
-            cmd=cmd,
-            message="learning usage sidecar event should be privacy-preserving and reference selected ids",
-        )
 
 
-def assert_learning_usage_report_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn usage JSON") from error
-
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn usage JSON should report the learning profile path",
-    )
-    require_package_smoke(
-        payload.get("usageFile") == str(usage_path),
-        context=context,
-        cmd=cmd,
-        message="learn usage JSON should report the usage sidecar path",
-    )
-    require_package_smoke(
-        payload.get("exists") is True,
-        context=context,
-        cmd=cmd,
-        message="learn usage JSON should confirm the usage sidecar exists",
-    )
-    require_package_smoke(
-        payload.get("eventCount") >= 2,
-        context=context,
-        cmd=cmd,
-        message="learn usage JSON should count prompt/pack sidecar events",
-    )
-    require_package_smoke(
-        payload.get("usedEntryCount") == 1 and payload.get("unusedEntryCount") >= 1,
-        context=context,
-        cmd=cmd,
-        message="learn usage JSON should summarize used and unused profile entries",
-    )
-    command_counts = payload.get("commandCounts")
-    require_package_smoke(
-        isinstance(command_counts, dict)
-        and command_counts.get("prompt") >= 1
-        and command_counts.get("pack") >= 1,
-        context=context,
-        cmd=cmd,
-        message="learn usage JSON should summarize prompt and pack command counts",
-    )
-    selected_counts = payload.get("selectedEntryCounts")
-    require_package_smoke(
-        isinstance(selected_counts, dict)
-        and selected_counts.get("learn-relevant") >= 2,
-        context=context,
-        cmd=cmd,
-        message="learn usage JSON should count selected learning entry ids",
-    )
-    latest_event = payload.get("latestEvent")
-    require_package_smoke(
-        isinstance(latest_event, dict)
-        and isinstance(latest_event.get("briefHash"), str)
-        and "query" not in latest_event
-        and "brief" not in latest_event,
-        context=context,
-        cmd=cmd,
-        message="learn usage report should keep event details privacy-preserving",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict) and privacy.get("storesRawBriefText") is False,
-        context=context,
-        cmd=cmd,
-        message="learn usage JSON should explicitly state that raw brief text is not stored",
-    )
 
 
-def assert_learning_usage_report_human(
-    raw: str,
-    *,
-    context: str,
-    cmd: list[str],
-) -> None:
-    for expected in (
-        "Local learning usage report",
-        "Usage sidecar:",
-        "Events:",
-        "Top selected entries:",
-        "Recent events:",
-        "Privacy: usage events store selected entry ids and a short brief hash",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn usage human output missing {expected!r}",
-        )
 
 
-def assert_learning_signal_report_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    context: str,
-    cmd: list[str],
-    require_agent_status_pass: bool = False,
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn signals JSON") from error
-
-    require_package_smoke(
-        payload.get("version") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn signals JSON version changed",
-    )
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn signals JSON should report the learning profile path",
-    )
-    learning = payload.get("learning")
-    require_package_smoke(
-        isinstance(learning, dict)
-        and learning.get("count") >= 3
-        and isinstance(learning.get("auditSummary"), dict),
-        context=context,
-        cmd=cmd,
-        message="learn signals JSON should include learning profile audit summary",
-    )
-    usage = payload.get("usage")
-    require_package_smoke(
-        isinstance(usage, dict)
-        and usage.get("usageFile") == str(usage_path)
-        and usage.get("eventCount") >= 2,
-        context=context,
-        cmd=cmd,
-        message="learn signals JSON should include usage sidecar summary",
-    )
-    evals = payload.get("evals")
-    eval_files = evals.get("files") if isinstance(evals, dict) else None
-    require_package_smoke(
-        isinstance(evals, dict)
-        and isinstance(eval_files, list)
-        and any(isinstance(item, dict) and item.get("kind") == "route-eval" for item in eval_files),
-        context=context,
-        cmd=cmd,
-        message="learn signals JSON should include route eval signal files",
-    )
-    check_capture = payload.get("checkCapture")
-    require_package_smoke(
-        isinstance(check_capture, dict)
-        and isinstance(check_capture.get("count"), int)
-        and isinstance(check_capture.get("latestEntries"), list),
-        context=context,
-        cmd=cmd,
-        message="learn signals JSON should include check capture summary shape",
-    )
-    workspace = payload.get("workspace")
-    require_package_smoke(
-        isinstance(workspace, dict)
-        and isinstance(workspace.get("nextActionCount"), int),
-        context=context,
-        cmd=cmd,
-        message="learn signals JSON should include workspace readiness summary",
-    )
-    readiness = payload.get("readiness")
-    checks = readiness.get("checks") if isinstance(readiness, dict) else None
-    check_count_by_status = readiness.get("checkCountByStatus") if isinstance(readiness, dict) else None
-    required_check_count_by_status = readiness.get("requiredCheckCountByStatus") if isinstance(readiness, dict) else None
-    optional_check_count_by_status = readiness.get("optionalCheckCountByStatus") if isinstance(readiness, dict) else None
-    count_status_keys = ("pass", "info", "warn", "fail", "missing", "template", "unknown")
-    require_package_smoke(
-        isinstance(readiness, dict)
-        and readiness.get("status") == payload.get("status")
-        and isinstance(checks, list)
-        and isinstance(check_count_by_status, dict)
-        and isinstance(required_check_count_by_status, dict)
-        and isinstance(optional_check_count_by_status, dict)
-        and all(isinstance(check_count_by_status.get(key), int) for key in count_status_keys)
-        and all(isinstance(required_check_count_by_status.get(key), int) for key in count_status_keys)
-        and all(isinstance(optional_check_count_by_status.get(key), int) for key in count_status_keys)
-        and sum(check_count_by_status.get(key, 0) for key in count_status_keys) == len(checks),
-        context=context,
-        cmd=cmd,
-        message="learn signals JSON should include readiness status count index",
-    )
-    agent_development = payload.get("agentDevelopment")
-    agent_actions = agent_development.get("actions") if isinstance(agent_development, dict) else None
-    require_package_smoke(
-        isinstance(agent_development, dict)
-        and isinstance(agent_actions, list)
-        and isinstance(agent_development.get("actionCount"), int)
-        and agent_development.get("actionCount") == len(agent_actions)
-        and any(isinstance(item, dict) and item.get("category") == "skill-evolution" for item in agent_actions),
-        context=context,
-        cmd=cmd,
-        message="learn signals JSON should include agent development backlog actions",
-    )
-    if require_agent_status_pass:
-        require_package_smoke(
-            agent_development.get("status") == "pass",
-            context=context,
-            cmd=cmd,
-            message="learn signals JSON should include passing agent development backlog actions",
-        )
-    agent_privacy = agent_development.get("privacy") if isinstance(agent_development, dict) else None
-    require_package_smoke(
-        isinstance(agent_privacy, dict)
-        and agent_privacy.get("mutatesProfile") is False
-        and agent_privacy.get("mutatesSkillFiles") is False
-        and agent_privacy.get("callsExternalAiApis") is False,
-        context=context,
-        cmd=cmd,
-        message="learn signals JSON should keep agent development backlog local and preview-only",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("mutatesProfile") is False
-        and privacy.get("storesRawBriefText") is False,
-        context=context,
-        cmd=cmd,
-        message="learn signals JSON should be read-only and privacy-preserving",
-    )
 
 
-def assert_learning_signal_report_human(
-    raw: str,
-    *,
-    context: str,
-    cmd: list[str],
-) -> None:
-    for expected in (
-        "Learning signal registry",
-        "Signal source:",
-        "Learning audit:",
-        "Eval signals:",
-        "Workspace readiness:",
-        "Agent development backlog:",
-        "Privacy: signal registry is read-only",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn signals human output missing {expected!r}",
-        )
 
 
-def assert_learning_signal_report_markdown(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "# Learning Signal Registry Report",
-        f"- Learning file: {profile_path}",
-        f"- Usage file: {usage_path}",
-        "## Readiness Summary",
-        "Readiness check index:",
-        "- Required ids:",
-        "- Optional ids:",
-        "- Status index:",
-        "- Required index:",
-        "- Status counts:",
-        "- Required status counts:",
-        "- Optional status counts:",
-        "## Learning Profile",
-        "## Usage Signals",
-        "## Eval Signals",
-        "## Check Capture",
-        "## Workspace Readiness",
-        "## Agent Development Backlog",
-        "```bash",
-        "design-ai learn --propose-skills",
-        "## Privacy And Boundaries",
-        "- Mutates learning profile: no",
-        "- Stores raw brief text: no",
-        "This report is read-only evidence",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn signals Markdown report missing {expected!r}",
-        )
 
 
-def assert_agent_backlog_report_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    context: str,
-    cmd: list[str],
-    require_status_pass: bool = False,
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn agent backlog JSON") from error
-
-    require_package_smoke(
-        payload.get("version") == 1
-        and payload.get("file") == str(profile_path)
-        and payload.get("usageFile") == str(usage_path),
-        context=context,
-        cmd=cmd,
-        message="learn agent backlog JSON should report the learning profile and usage paths",
-    )
-    if require_status_pass:
-        require_package_smoke(
-            payload.get("status") == "pass" and payload.get("signalStatus") == "pass",
-            context=context,
-            cmd=cmd,
-            message="learn agent backlog strict JSON should report passing backlog and signal status",
-        )
-    counts = payload.get("counts")
-    require_package_smoke(
-        isinstance(counts, dict)
-        and counts.get("actions", 0) >= 1
-        and counts.get("evalSignals", 0) >= 1
-        and counts.get("checkCaptures", 0) >= 1
-        and counts.get("usageEvents", 0) >= 2,
-        context=context,
-        cmd=cmd,
-        message="learn agent backlog JSON should include focused backlog counts",
-    )
-    actions = payload.get("actions")
-    require_package_smoke(
-        isinstance(actions, list)
-        and any(
-            isinstance(item, dict)
-            and item.get("id") == "agent-skill-proposal-preview"
-            and item.get("category") == "skill-evolution"
-            and "learn --propose-skills" in str(item.get("command", ""))
-            for item in actions
-        ),
-        context=context,
-        cmd=cmd,
-        message="learn agent backlog JSON should include skill-evolution next action",
-    )
-    action_plan = payload.get("actionPlan")
-    action_plan_steps = action_plan.get("steps") if isinstance(action_plan, dict) else None
-    action_plan_verification = action_plan.get("verification") if isinstance(action_plan, dict) else None
-    safety_summary = action_plan.get("safetySummary") if isinstance(action_plan, dict) else None
-    execution_queue = action_plan.get("executionQueue") if isinstance(action_plan, dict) else None
-    ordered_queue = execution_queue.get("ordered") if isinstance(execution_queue, dict) else None
-    command_manifest = execution_queue.get("commandManifest") if isinstance(execution_queue, dict) else None
-    operator_runbook = execution_queue.get("operatorRunbook") if isinstance(execution_queue, dict) else None
-    next_command_selection = execution_queue.get("nextCommandSelection") if isinstance(execution_queue, dict) else None
-    next_command_alignment = execution_queue.get("nextCommandAlignment") if isinstance(execution_queue, dict) else None
-    operator_handoff = execution_queue.get("operatorHandoff") if isinstance(execution_queue, dict) else None
-    operator_handoff_state = operator_handoff.get("state") if isinstance(operator_handoff, dict) else None
-    operator_handoff_source = operator_handoff.get("source") if isinstance(operator_handoff, dict) else ""
-    operator_handoff_matches_source = (
-        (
-            operator_handoff_source == "operator-runbook"
-            and operator_handoff.get("phase") == operator_runbook.get("nextStage")
-            and operator_handoff.get("command") == operator_runbook.get("nextCommand")
-        )
-        or (
-            operator_handoff_source == "execution-queue"
-            and operator_handoff.get("phase") == "execute"
-            and operator_handoff.get("command") == execution_queue.get("nextCommand")
-        )
-    ) if isinstance(operator_handoff, dict) else False
-    operator_next_command_selection = operator_runbook.get("nextCommandSelection") if isinstance(operator_runbook, dict) else None
-    command_effect_summary = execution_queue.get("commandEffectSummary") if isinstance(execution_queue, dict) else None
-    command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
-    gate_phase_summary = command_effect_review.get("gatePhaseSummary") if isinstance(command_effect_review, dict) else None
-    gate_runbook = command_effect_review.get("gateRunbook") if isinstance(command_effect_review, dict) else None
-    def valid_optional_apply_command(item: object) -> bool:
-        if not isinstance(item, dict):
-            return False
-        apply_command = item.get("applyCommand", "")
-        apply_args = item.get("applyCommandArgs", [])
-        apply_safety = item.get("applyCommandSafety")
-        if not apply_command:
-            return True
-        return (
-            isinstance(apply_command, str)
-            and isinstance(apply_args, list)
-            and len(apply_args) >= 2
-            and isinstance(apply_safety, dict)
-            and apply_safety.get("level") in {"read-only", "writes-local-file", "mutates-local-state"}
-            and isinstance(apply_safety.get("writesLocalFiles"), bool)
-            and isinstance(apply_safety.get("mutatesLocalState"), bool)
-            and isinstance(apply_safety.get("requiresCleanWorkspace"), bool)
-            and isinstance(item.get("applyRequiresReviewBeforeMutation"), bool)
-        )
-    def is_agent_backlog_refresh_command(item: object) -> bool:
-        if not isinstance(item, dict):
-            return False
-        command = str(item.get("command", ""))
-        args = item.get("commandArgs", [])
-        return (
-            "learn --agent-backlog" in command
-            and isinstance(args, list)
-            and args[:3] == ["design-ai", "learn", "--agent-backlog"]
-            and "--from-file" in args
-            and "--file" in args
-            and "--usage-file" in args
-            and "--strict" in args
-            and "--json" in args
-        )
-    require_package_smoke(
-        isinstance(action_plan, dict)
-        and action_plan.get("version") == 1
-        and action_plan.get("stepCount", 0) >= 1
-        and isinstance(safety_summary, dict)
-        and safety_summary.get("total", 0) >= 1
-        and safety_summary.get("readOnly", 0) >= 1
-        and safety_summary.get("writesLocalFile", -1) >= 0
-        and safety_summary.get("mutatesLocalState", -1) >= 0
-        and safety_summary.get("requiresReviewBeforeMutation", -1) >= 0
-        and isinstance(execution_queue, dict)
-        and execution_queue.get("previewCount", -1) >= 1
-        and execution_queue.get("fileWriteReviewCount", -1) >= 0
-        and execution_queue.get("mutationReviewCount", -1) >= 0
-        and execution_queue.get("orderedCount", 0) >= 1
-        and execution_queue.get("commandManifestCount", 0) >= 1
-        and isinstance(execution_queue.get("nextCommandArgs"), list)
-        and len(execution_queue.get("nextCommandArgs")) >= 2
-        and isinstance(next_command_selection, dict)
-        and next_command_selection.get("strategy") == "first-command-in-safety-ordered-queue"
-        and next_command_selection.get("actionId") == execution_queue.get("nextActionId")
-        and isinstance(next_command_selection.get("safetyOrder"), list)
-        and next_command_selection.get("safetyOrder") == ["read-only", "writes-local-file", "mutates-local-state"]
-        and isinstance(next_command_selection.get("matchesPlanNextAction"), bool)
-        and isinstance(next_command_selection.get("reason"), str)
-        and bool(next_command_selection.get("reason"))
-        and isinstance(next_command_alignment, dict)
-        and next_command_alignment.get("strategy") == "compare-operator-runbook-next-command-to-execution-queue-next-command"
-        and next_command_alignment.get("operatorStage") == operator_runbook.get("nextStage")
-        and next_command_alignment.get("operatorCommand") == operator_runbook.get("nextCommand")
-        and next_command_alignment.get("queueActionId") == execution_queue.get("nextActionId")
-        and next_command_alignment.get("queueCommand") == execution_queue.get("nextCommand")
-        and isinstance(next_command_alignment.get("matchesQueueNextCommand"), bool)
-        and isinstance(next_command_alignment.get("matchesQueueNextAction"), bool)
-        and isinstance(next_command_alignment.get("operatorRunsBeforeQueueCommand"), bool)
-        and isinstance(next_command_alignment.get("queueMatchesRankedNextAction"), bool)
-        and isinstance(next_command_alignment.get("reason"), str)
-        and bool(next_command_alignment.get("reason"))
-        and isinstance(operator_handoff, dict)
-        and operator_handoff.get("version") == 1
-        and operator_handoff.get("decision") in {"run-operator-gate", "run-shared-command", "run-operator-command", "run-queue-command", "none"}
-        and isinstance(operator_handoff_state, dict)
-        and operator_handoff_state.get("version") == 1
-        and operator_handoff_state.get("status") in {"ready", "gate-required", "review-required", "no-command"}
-        and isinstance(operator_handoff_state.get("ready"), bool)
-        and isinstance(operator_handoff_state.get("hasCommand"), bool)
-        and isinstance(operator_handoff_state.get("complete"), bool)
-        and isinstance(operator_handoff_state.get("canRunWithoutReview"), bool)
-        and isinstance(operator_handoff_state.get("requiresGate"), bool)
-        and isinstance(operator_handoff_state.get("requiresRefresh"), bool)
-        and isinstance(operator_handoff_state.get("summary"), str)
-        and bool(operator_handoff_state.get("summary"))
-        and operator_handoff.get("source") in {"operator-runbook", "execution-queue"}
-        and operator_handoff_matches_source
-        and isinstance(operator_handoff.get("commandArgs"), list)
-        and len(operator_handoff.get("commandArgs")) >= 2
-        and isinstance(operator_handoff.get("required"), bool)
-        and isinstance(operator_handoff.get("isGate"), bool)
-        and operator_handoff.get("nextQueueActionId") == execution_queue.get("nextActionId")
-        and isinstance(operator_handoff.get("nextQueueCommandRequiresGate"), bool)
-        and isinstance(operator_handoff.get("operatorGateAppliesToNextQueueAction"), bool)
-        and operator_handoff.get("nextQueueCommand") == execution_queue.get("nextCommand")
-        and isinstance(operator_handoff.get("nextQueueActionBlockedByGate"), bool)
-        and isinstance(operator_handoff.get("refreshCommand"), str)
-        and bool(operator_handoff.get("refreshCommand"))
-        and isinstance(operator_handoff.get("refreshCommandArgs"), list)
-        and len(operator_handoff.get("refreshCommandArgs")) >= 2
-        and is_agent_backlog_refresh_command({
-            "command": operator_handoff.get("refreshCommand"),
-            "commandArgs": operator_handoff.get("refreshCommandArgs"),
-        })
-        and isinstance(operator_handoff.get("refreshCommandRequired"), bool)
-        and isinstance(operator_handoff.get("requiresOperatorReview"), bool)
-        and isinstance(operator_handoff.get("reason"), str)
-        and bool(operator_handoff.get("reason"))
-        and isinstance(operator_runbook, dict)
-        and operator_runbook.get("version") == 1
-        and operator_runbook.get("stageCount") == 4
-        and operator_runbook.get("commandCount", 0) >= execution_queue.get("commandManifestCount", 0)
-        and operator_runbook.get("requiredCommandCount", 0) >= execution_queue.get("commandManifestCount", 0)
-        and isinstance(operator_runbook.get("phases"), list)
-        and operator_runbook.get("phases") == ["before", "execute", "after", "refresh"]
-        and operator_runbook.get("nextStage") in {"before", "execute"}
-        and isinstance(operator_runbook.get("nextCommand"), str)
-        and bool(operator_runbook.get("nextCommand"))
-        and isinstance(operator_runbook.get("nextCommandArgs"), list)
-        and len(operator_runbook.get("nextCommandArgs")) >= 2
-        and isinstance(operator_runbook.get("nextCommandRequired"), bool)
-        and isinstance(operator_next_command_selection, dict)
-        and operator_next_command_selection.get("strategy") == "first-command-in-operator-runbook-stage-order"
-        and operator_next_command_selection.get("stage") == operator_runbook.get("nextStage")
-        and operator_next_command_selection.get("command") == operator_runbook.get("nextCommand")
-        and isinstance(operator_next_command_selection.get("stageOrder"), list)
-        and operator_next_command_selection.get("stageOrder") == ["before", "execute", "after", "refresh"]
-        and isinstance(operator_next_command_selection.get("required"), bool)
-        and isinstance(operator_next_command_selection.get("reason"), str)
-        and bool(operator_next_command_selection.get("reason"))
-        and isinstance(operator_runbook.get("stages"), list)
-        and any(
-            isinstance(stage, dict)
-            and stage.get("phase") == "execute"
-            and stage.get("commandCount", 0) >= 1
-            and any(
-                isinstance(item, dict)
-                and item.get("actionId") == "agent-skill-proposal-preview"
-                and item.get("runPolicy") == "preview-only"
-                and "learn --propose-skills" in str(item.get("command", ""))
-                and item.get("commandArgs", [])[:3] == ["design-ai", "learn", "--propose-skills"]
-                for item in stage.get("commands", [])
-            )
-            for stage in operator_runbook.get("stages", [])
-        )
-        and any(
-            isinstance(stage, dict)
-            and stage.get("phase") == "refresh"
-            and any(
-                isinstance(item, dict)
-                and item.get("required") is True
-                and is_agent_backlog_refresh_command(item)
-                for item in stage.get("commands", [])
-            )
-            for stage in operator_runbook.get("stages", [])
-        )
-        and isinstance(command_effect_summary, dict)
-        and command_effect_summary.get("totalCommands", 0) >= 1
-        and command_effect_summary.get("outputTargetCount", -1) >= 0
-        and command_effect_summary.get("profileTargetCount", -1) >= 0
-        and command_effect_summary.get("usageTargetCount", -1) >= 0
-        and command_effect_summary.get("mutationFlagCount", -1) >= 0
-        and isinstance(command_effect_summary.get("outputTargets"), list)
-        and isinstance(command_effect_summary.get("profileTargets"), list)
-        and isinstance(command_effect_summary.get("usageTargets"), list)
-        and isinstance(command_effect_summary.get("mutationFlags"), list)
-        and isinstance(command_effect_review, dict)
-        and command_effect_review.get("level") in {"clear", "target-review", "mutation-review"}
-        and isinstance(command_effect_review.get("requiresOperatorReview"), bool)
-        and isinstance(command_effect_review.get("headline"), str)
-        and isinstance(command_effect_review.get("checklist"), list)
-        and isinstance(gate_phase_summary, dict)
-        and gate_phase_summary.get("count", 0) >= 1
-        and gate_phase_summary.get("requiredCount", 0) >= 1
-        and gate_phase_summary.get("optionalCount", -1) >= 0
-        and isinstance(gate_phase_summary.get("phases"), list)
-        and gate_phase_summary.get("hasRefresh") is True
-        and isinstance(gate_runbook, dict)
-        and isinstance(gate_runbook.get("before"), list)
-        and isinstance(gate_runbook.get("after"), list)
-        and isinstance(gate_runbook.get("refresh"), list)
-        and isinstance(gate_runbook.get("other"), list)
-        and any(
-            isinstance(item, dict)
-            and item.get("phase") == "refresh"
-            and item.get("required") is True
-            and is_agent_backlog_refresh_command(item)
-            for item in gate_runbook.get("refresh", [])
-        )
-        and isinstance(command_effect_review.get("gateCommands"), list)
-        and any(
-            isinstance(item, dict)
-            and item.get("phase") == "refresh"
-            and item.get("required") is True
-            and is_agent_backlog_refresh_command(item)
-            for item in command_effect_review.get("gateCommands", [])
-        )
-        and execution_queue.get("nextActionId")
-        and "learn --propose-skills" in str(execution_queue.get("nextCommand", ""))
-        and execution_queue.get("nextCommandRunPolicy") == "preview-only"
-        and isinstance(ordered_queue, list)
-        and any(
-            isinstance(item, dict)
-            and item.get("actionId") == "agent-skill-proposal-preview"
-            and item.get("safetyLevel") == "read-only"
-            and item.get("runPolicy") == "preview-only"
-            for item in ordered_queue
-        )
-        and isinstance(command_manifest, list)
-        and any(
-            isinstance(item, dict)
-            and item.get("actionId") == "agent-skill-proposal-preview"
-            and item.get("runPolicy") == "preview-only"
-            and isinstance(item.get("commandEffects"), dict)
-            and valid_optional_apply_command(item)
-            and item["commandEffects"].get("writesLocalFiles") is False
-            and item["commandEffects"].get("mutatesLocalState") is False
-            and item["commandEffects"].get("outputTargets") == []
-            and item["commandEffects"].get("mutationFlags") == []
-            for item in command_manifest
-        )
-        and isinstance(action_plan_steps, list)
-        and any(
-            isinstance(item, dict)
-            and item.get("actionId") == "agent-skill-proposal-preview"
-            and "learn --propose-skills" in str(item.get("command", ""))
-            and item.get("requiresReviewBeforeMutation") is False
-            and isinstance(item.get("commandSafety"), dict)
-            and valid_optional_apply_command(item)
-            and item["commandSafety"].get("level") == "read-only"
-            and item["commandSafety"].get("writesLocalFiles") is False
-            and item["commandSafety"].get("mutatesLocalState") is False
-            for item in action_plan_steps
-        )
-        and isinstance(action_plan_verification, list)
-        and any(
-            isinstance(item, dict)
-            and is_agent_backlog_refresh_command(item)
-            for item in action_plan_verification
-        ),
-        context=context,
-        cmd=cmd,
-        message="learn agent backlog JSON should include executable action plan steps and verification",
-    )
-    commands = payload.get("commands")
-    require_package_smoke(
-        isinstance(commands, dict)
-        and "learn --signals" in str(commands.get("signalsJson", ""))
-        and "learn --signals" in str(commands.get("signalsReport", "")),
-        context=context,
-        cmd=cmd,
-        message="learn agent backlog JSON should include signal registry follow-up commands",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("mutatesProfile") is False
-        and privacy.get("mutatesSkillFiles") is False
-        and privacy.get("callsExternalAiApis") is False
-        and privacy.get("storesRawBriefText") is False,
-        context=context,
-        cmd=cmd,
-        message="learn agent backlog JSON should keep read-only local privacy boundaries",
-    )
-    assert_agent_backlog_readiness_json(
-        payload,
-        expect_check_capture_gap=False,
-        context=context,
-        cmd=cmd,
-    )
 
 
 EXPECTED_AGENT_BACKLOG_REFRESH_ONLY_RUNBOOK_REASON = (
@@ -10129,2144 +7463,57 @@ EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY = (
 )
 
 
-def assert_agent_backlog_no_command_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse no-command learn agent backlog JSON") from error
 
-    counts = payload.get("counts")
-    action_plan = payload.get("actionPlan")
-    execution_queue = action_plan.get("executionQueue") if isinstance(action_plan, dict) else None
-    next_command_selection = execution_queue.get("nextCommandSelection") if isinstance(execution_queue, dict) else None
-    next_command_alignment = execution_queue.get("nextCommandAlignment") if isinstance(execution_queue, dict) else None
-    operator_handoff = execution_queue.get("operatorHandoff") if isinstance(execution_queue, dict) else None
-    operator_handoff_state = operator_handoff.get("state") if isinstance(operator_handoff, dict) else None
-    operator_runbook = execution_queue.get("operatorRunbook") if isinstance(execution_queue, dict) else None
-    operator_next_command_selection = operator_runbook.get("nextCommandSelection") if isinstance(operator_runbook, dict) else None
-    command_effect_review = execution_queue.get("commandEffectReview") if isinstance(execution_queue, dict) else None
-    gate_phase_summary = command_effect_review.get("gatePhaseSummary") if isinstance(command_effect_review, dict) else None
-    gate_runbook = command_effect_review.get("gateRunbook") if isinstance(command_effect_review, dict) else None
 
-    require_package_smoke(
-        payload.get("version") == 1
-        and payload.get("status") == "pass"
-        and payload.get("signalStatus") == "pass"
-        and payload.get("file") == str(profile_path)
-        and payload.get("usageFile") == str(usage_path),
-        context=context,
-        cmd=cmd,
-        message="no-command learn agent backlog JSON should report passing status and paths",
-    )
-    require_package_smoke(
-        isinstance(counts, dict)
-        and counts.get("actions") == 0
-        and counts.get("checkCaptures") == 0
-        and counts.get("usageEvents", 0) >= 1
-        and counts.get("evalSignals", 0) >= 1,
-        context=context,
-        cmd=cmd,
-        message="no-command learn agent backlog JSON should report an empty focused backlog",
-    )
-    require_package_smoke(
-        payload.get("actions") == []
-        and isinstance(action_plan, dict)
-        and action_plan.get("stepCount") == 0
-        and action_plan.get("nextStep") is None
-        and action_plan.get("steps") == []
-        and isinstance(execution_queue, dict)
-        and execution_queue.get("orderedCount") == 0
-        and execution_queue.get("commandManifestCount") == 0
-        and execution_queue.get("previewCount") == 0
-        and execution_queue.get("fileWriteReviewCount") == 0
-        and execution_queue.get("mutationReviewCount") == 0
-        and execution_queue.get("nextCommand") == ""
-        and execution_queue.get("nextCommandArgs") == []
-        and execution_queue.get("nextCommandRunPolicy") == "",
-        context=context,
-        cmd=cmd,
-        message="no-command learn agent backlog JSON should keep the execution queue empty",
-    )
-    require_package_smoke(
-        isinstance(next_command_selection, dict)
-        and next_command_selection.get("reason") == "No command-bearing backlog action is available."
-        and isinstance(next_command_alignment, dict)
-        and next_command_alignment.get("operatorStage") == "refresh"
-        and next_command_alignment.get("queueCommand") == ""
-        and next_command_alignment.get("reason") == EXPECTED_AGENT_BACKLOG_EMPTY_QUEUE_ALIGNMENT_REASON,
-        context=context,
-        cmd=cmd,
-        message="no-command learn agent backlog JSON should explain empty queue alignment",
-    )
-    require_package_smoke(
-        isinstance(operator_handoff, dict)
-        and operator_handoff.get("decision") == "none"
-        and operator_handoff.get("command") == ""
-        and operator_handoff.get("commandArgs") == []
-        and operator_handoff.get("hasCommand", operator_handoff_state.get("hasCommand") if isinstance(operator_handoff_state, dict) else None) is False
-        and operator_handoff.get("refreshCommandRequired") is False
-        and operator_handoff.get("reason") == EXPECTED_AGENT_BACKLOG_NO_COMMAND_HANDOFF_REASON
-        and isinstance(operator_handoff_state, dict)
-        and operator_handoff_state.get("status") == "no-command"
-        and operator_handoff_state.get("ready") is True
-        and operator_handoff_state.get("complete") is True
-        and operator_handoff_state.get("hasCommand") is False
-        and operator_handoff_state.get("requiresRefresh") is False,
-        context=context,
-        cmd=cmd,
-        message="no-command learn agent backlog JSON should expose completed operator handoff state",
-    )
-    require_package_smoke(
-        isinstance(operator_runbook, dict)
-        and operator_runbook.get("stageCount") == 4
-        and operator_runbook.get("commandCount") == 1
-        and operator_runbook.get("requiredCommandCount") == 0
-        and operator_runbook.get("nextStage") == "refresh"
-        and operator_runbook.get("nextCommandRequired") is False
-        and "learn --agent-backlog" in str(operator_runbook.get("nextCommand", ""))
-        and isinstance(operator_next_command_selection, dict)
-        and operator_next_command_selection.get("stage") == "refresh"
-        and operator_next_command_selection.get("required") is False
-        and operator_next_command_selection.get("reason") == EXPECTED_AGENT_BACKLOG_REFRESH_ONLY_RUNBOOK_REASON,
-        context=context,
-        cmd=cmd,
-        message="no-command learn agent backlog JSON should preserve optional refresh-only runbook reason",
-    )
-    require_package_smoke(
-        isinstance(command_effect_review, dict)
-        and command_effect_review.get("level") == "clear"
-        and command_effect_review.get("requiresOperatorReview") is False
-        and isinstance(gate_phase_summary, dict)
-        and gate_phase_summary.get("count") == 1
-        and gate_phase_summary.get("requiredCount") == 0
-        and gate_phase_summary.get("optionalCount") == 1
-        and gate_phase_summary.get("hasRefresh") is True
-        and isinstance(gate_runbook, dict)
-        and any(
-            isinstance(item, dict)
-            and item.get("phase") == "refresh"
-            and item.get("required") is False
-            and "learn --agent-backlog" in str(item.get("command", ""))
-            for item in gate_runbook.get("refresh", [])
-        ),
-        context=context,
-        cmd=cmd,
-        message="no-command learn agent backlog JSON should keep refresh gate optional",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("mutatesProfile") is False
-        and privacy.get("mutatesSkillFiles") is False
-        and privacy.get("callsExternalAiApis") is False,
-        context=context,
-        cmd=cmd,
-        message="no-command learn agent backlog JSON should keep local read-only privacy boundaries",
-    )
-    assert_agent_backlog_readiness_json(
-        payload,
-        expect_check_capture_gap=True,
-        context=context,
-        cmd=cmd,
-    )
 
 
-def assert_agent_backlog_readiness_json(
-    payload: dict,
-    *,
-    expect_check_capture_gap: bool,
-    context: str,
-    cmd: list[str],
-) -> None:
-    readiness = payload.get("readiness")
-    checks = readiness.get("checks") if isinstance(readiness, dict) else None
-    check_by_id = {
-        item.get("id"): item
-        for item in checks
-        if isinstance(item, dict) and isinstance(item.get("id"), str)
-    } if isinstance(checks, list) else {}
-    check_capture = check_by_id.get("check-capture")
-    agent_development = check_by_id.get("agent-development")
-    optional_gaps = readiness.get("optionalGaps") if isinstance(readiness, dict) else None
-    optional_gap_details = readiness.get("optionalGapDetails") if isinstance(readiness, dict) else None
-    required_check_ids = readiness.get("requiredCheckIds") if isinstance(readiness, dict) else None
-    optional_check_ids = readiness.get("optionalCheckIds") if isinstance(readiness, dict) else None
-    check_status_by_id = readiness.get("checkStatusById") if isinstance(readiness, dict) else None
-    check_required_by_id = readiness.get("checkRequiredById") if isinstance(readiness, dict) else None
-    check_count_by_status = readiness.get("checkCountByStatus") if isinstance(readiness, dict) else None
-    required_check_count_by_status = readiness.get("requiredCheckCountByStatus") if isinstance(readiness, dict) else None
-    optional_check_count_by_status = readiness.get("optionalCheckCountByStatus") if isinstance(readiness, dict) else None
-    blocking_checks = readiness.get("blockingChecks") if isinstance(readiness, dict) else None
-    count_status_keys = ("pass", "info", "warn", "fail", "missing", "template", "unknown")
-    check_count_total = sum(
-        check_count_by_status.get(key, 0)
-        for key in count_status_keys
-    ) if isinstance(check_count_by_status, dict) else -1
-    required_check_count_total = sum(
-        required_check_count_by_status.get(key, 0)
-        for key in count_status_keys
-    ) if isinstance(required_check_count_by_status, dict) else -1
-    optional_check_count_total = sum(
-        optional_check_count_by_status.get(key, 0)
-        for key in count_status_keys
-    ) if isinstance(optional_check_count_by_status, dict) else -1
-    detail_by_id = {
-        item.get("id"): item
-        for item in optional_gap_details
-        if isinstance(item, dict) and isinstance(item.get("id"), str)
-    } if isinstance(optional_gap_details, list) else {}
-    check_capture_detail = detail_by_id.get("check-capture")
-    check_capture_detail_valid = (
-        isinstance(check_capture_detail, dict)
-        and check_capture_detail.get("label") == "Check learning capture"
-        and check_capture_detail.get("status") == "info"
-        and check_capture_detail.get("reason") == EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_REASON
-        and check_capture_detail.get("nextCondition") == EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_NEXT_CONDITION
-        and check_capture_detail.get("automationPolicy") == EXPECTED_CHECK_CAPTURE_OPTIONAL_GAP_AUTOMATION_POLICY
-    )
-    require_package_smoke(
-        isinstance(readiness, dict)
-        and readiness.get("version") == 1
-        and readiness.get("status") == payload.get("signalStatus")
-        and isinstance(readiness.get("summary"), str)
-        and bool(readiness.get("summary"))
-        and isinstance(readiness.get("requiredReady"), bool)
-        and isinstance(readiness.get("requiredPassCount"), int)
-        and isinstance(readiness.get("requiredCount"), int)
-        and readiness.get("requiredCount", 0) >= 1
-        and isinstance(readiness.get("blockingCount"), int)
-        and isinstance(readiness.get("optionalGapCount"), int)
-        and isinstance(blocking_checks, list)
-        and isinstance(optional_gaps, list)
-        and isinstance(optional_gap_details, list)
-        and isinstance(required_check_ids, list)
-        and isinstance(optional_check_ids, list)
-        and isinstance(check_status_by_id, dict)
-        and isinstance(check_required_by_id, dict)
-        and isinstance(checks, list)
-        and len(checks) >= 2
-        and isinstance(check_count_by_status, dict)
-        and isinstance(required_check_count_by_status, dict)
-        and isinstance(optional_check_count_by_status, dict)
-        and all(isinstance(check_count_by_status.get(key), int) for key in count_status_keys)
-        and all(isinstance(required_check_count_by_status.get(key), int) for key in count_status_keys)
-        and all(isinstance(optional_check_count_by_status.get(key), int) for key in count_status_keys)
-        and check_count_total == len(checks)
-        and required_check_count_total == len(required_check_ids)
-        and optional_check_count_total == len(optional_check_ids)
-        and "agent-development" in required_check_ids
-        and "check-capture" in optional_check_ids
-        and isinstance(agent_development, dict)
-        and agent_development.get("required") is True
-        and check_status_by_id.get("agent-development") == agent_development.get("status")
-        and check_required_by_id.get("agent-development") is True
-        and isinstance(agent_development.get("summary"), str)
-        and isinstance(check_capture, dict)
-        and check_capture.get("required") is False
-        and check_status_by_id.get("check-capture") == check_capture.get("status")
-        and check_required_by_id.get("check-capture") is False
-        and isinstance(check_capture.get("summary"), str)
-        and (
-            (
-                expect_check_capture_gap
-                and check_capture.get("status") == "info"
-                and "check-capture" in optional_gaps
-                and check_capture_detail_valid
-                and readiness.get("optionalGapCount", 0) >= 1
-            )
-            or (
-                not expect_check_capture_gap
-                and check_capture.get("status") == "pass"
-                and "check-capture" not in optional_gaps
-                and optional_gap_details == []
-            )
-        ),
-        context=context,
-        cmd=cmd,
-        message="learn agent backlog JSON should include signal readiness summary with optional gap details, check index, and status count index",
-    )
 
 
-def assert_agent_backlog_report_human(
-    raw: str,
-    *,
-    context: str,
-    cmd: list[str],
-) -> None:
-    for expected in (
-        "Agent development backlog",
-        "Signal source:",
-        "Backlog actions:",
-        "Action plan:",
-        "safety summary:",
-        "execution queue:",
-        "next action:",
-        "next command:",
-        "next command policy:",
-        "queue order:",
-        "command manifest:",
-        "command effects:",
-        "command effect review:",
-        "command effect gate phases:",
-        "command effect gate runbook:",
-        "command effect gates:",
-        "operator runbook:",
-        "operator next command:",
-        "refresh:",
-        "safety: read-only",
-        "requires mutation review: no",
-        "learn --propose-skills",
-        "Privacy: agent backlog is read-only",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn agent backlog human output missing {expected!r}",
-        )
 
 
-def assert_agent_backlog_report_markdown(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "# Agent Development Backlog Report",
-        f"- Learning file: {profile_path}",
-        f"- Usage file: {usage_path}",
-        "## Summary",
-        "## Signal Readiness",
-        "- Required ready:",
-        "- Required checks:",
-        "- Blocking checks:",
-        "- Optional gaps:",
-        "Readiness check index:",
-        "- Required ids:",
-        "- Optional ids:",
-        "- Status index:",
-        "- Required index:",
-        "- Status counts:",
-        "- Required status counts:",
-        "- Optional status counts:",
-        "Readiness checks:",
-        "check-capture [optional]",
-        "agent-development [required]",
-        "## Backlog Actions",
-        "design-ai learn --propose-skills",
-        "## Action Plan",
-        "Safety summary:",
-        "- Read-only: 1",
-        "- Writes local file: 0",
-        "- Mutates local state: 0",
-        "Execution queue:",
-        "- Preview/read-only commands: 1",
-        "- Local file-write review commands: 0",
-        "- Local mutation review commands: 0",
-        "- Ordered commands: 1",
-        "- Command manifest entries: 1",
-        "- Command effect targets:",
-        "- Command effect review:",
-        "- Command effect gate phases:",
-        "- Command effect gate runbook:",
-        "- Command effect gates:",
-        "- Operator runbook:",
-        "- Operator next command:",
-        "- Operator handoff state:",
-        "- Recommended next action: agent-skill-proposal-preview",
-        "- Recommended next command policy: preview-only",
-        "Recommended next command:",
-        "Queue order:",
-        "1. agent-skill-proposal-preview (read-only, preview-only)",
-        "Command manifest:",
-        "1. agent-skill-proposal-preview - preview-only",
-        "- Command safety: read-only",
-        "- Writes local files: no",
-        "- Mutates local state: no",
-        "- Requires mutation review: no",
-        "design-ai learn --agent-backlog",
-        "## Follow-Up Commands",
-        "design-ai learn --signals",
-        "## Privacy And Boundaries",
-        "- Mutates learning profile: no",
-        "- Mutates skill files: no",
-        "- Calls external AI APIs: no",
-        "This report is read-only evidence",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn agent backlog Markdown report missing {expected!r}",
-        )
 
 
-def assert_agent_backlog_no_command_report_markdown(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "# Agent Development Backlog Report",
-        f"- Learning file: {profile_path}",
-        f"- Usage file: {usage_path}",
-        "## Summary",
-        "- Actions: 0",
-        "- Check captures: 0",
-        "## Signal Readiness",
-        "- Required ready: yes",
-        "- Required checks:",
-        "- Blocking checks: 0",
-        "- Optional gaps: 1",
-        "Readiness check index:",
-        "- Required ids:",
-        "- Optional ids:",
-        "- Status index:",
-        "- Required index:",
-        "- Status counts:",
-        "- Required status counts:",
-        "- Optional status counts:",
-        "Readiness checks:",
-        "check-capture [optional] info",
-        "agent-development [required] pass",
-        "Optional gap details:",
-        "No real warn/fail check result has been intentionally captured",
-        "Next condition: Run `design-ai check <artifact.md> --learn --yes`",
-        "Automation policy: Do not emit placeholder mutation commands",
-        "## Backlog Actions",
-        "No agent development backlog actions emitted.",
-        "## Action Plan",
-        "Safety summary:",
-        "- Read-only: 0",
-        "- Writes local file: 0",
-        "- Mutates local state: 0",
-        "Execution queue:",
-        "- Preview/read-only commands: 0",
-        "- Local file-write review commands: 0",
-        "- Local mutation review commands: 0",
-        "- Ordered commands: 0",
-        "- Command manifest entries: 0",
-        "- Command effect review: No command target or mutation flag exposure detected.",
-        "- Operator runbook: 4 stage(s), 1 command(s), 0 required",
-        "- Operator next command: refresh: `design-ai learn --agent-backlog",
-        "- Operator next command selection: first-command-in-operator-runbook-stage-order",
-        "- Recommended next command selection: first-command-in-safety-ordered-queue",
-        "- Operator/queue next command alignment: different",
-        "- Operator handoff state: no-command; ready yes; can run without review no; refresh optional",
-        "- Operator handoff summary: Focused agent backlog is clear; no handoff command is required.",
-        "- Operator handoff refresh: design-ai learn --agent-backlog",
-        "No execution steps emitted.",
-        "## Follow-Up Commands",
-        "design-ai learn --signals",
-        "## Privacy And Boundaries",
-        "- Mutates learning profile: no",
-        "- Mutates skill files: no",
-        "- Calls external AI APIs: no",
-        "This report is read-only evidence",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"no-command learn agent backlog Markdown report missing {expected!r}",
-        )
 
 
-def assert_skill_proposal_report_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    context: str,
-    cmd: list[str],
-    returncode: int | None = None,
-    expect_status: str | None = "warn",
-) -> None:
-    assert_no_ansi(raw, cmd)
-    if returncode is not None:
-        require_package_smoke(
-            returncode == 1,
-            context=context,
-            cmd=cmd,
-            message="learn skill proposals strict JSON should exit with code 1 when proposal review is pending",
-        )
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn skill proposal JSON") from error
 
-    require_package_smoke(
-        payload.get("version") == 1
-        and payload.get("file") == str(profile_path)
-        and payload.get("usageFile") == str(usage_path),
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals JSON should report the learning profile and usage paths",
-    )
-    require_package_smoke(
-        payload.get("dryRun") is True and payload.get("applied") is False,
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals must remain preview-only",
-    )
-    if expect_status is not None:
-        require_package_smoke(
-            payload.get("status") == expect_status,
-            context=context,
-            cmd=cmd,
-            message=f"learn skill proposals JSON should report {expect_status!r} status when proposals need review",
-        )
-    require_package_smoke(
-        payload.get("checkCaptureCount") >= 2
-        and payload.get("candidateCount") >= 1
-        and payload.get("proposalCount") >= 1
-        and payload.get("count") == payload.get("proposalCount"),
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals JSON should summarize repeated check captures",
-    )
-    proposals = payload.get("proposals")
-    require_package_smoke(
-        isinstance(proposals, list)
-        and any(
-            isinstance(item, dict)
-            and item.get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
-            and item.get("sourceIssueCount", 0) >= 2
-            and item.get("proposedInstructionDelta")
-            and item.get("verificationCommand")
-            and isinstance(item.get("evidenceSources"), list)
-            and len(item.get("evidenceSources")) >= 2
-            for item in proposals
-        ),
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals JSON should include the repeated component-spec skill delta",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("mutatesProfile") is False
-        and privacy.get("mutatesSkillFiles") is False
-        and privacy.get("callsExternalAiApis") is False,
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals JSON should be read-only and local",
-    )
-    return payload
 
 
-def assert_skill_proposal_review_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    review_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    payload = assert_skill_proposal_report_json(
-        raw,
-        profile_path=profile_path,
-        usage_path=usage_path,
-        context=context,
-        cmd=cmd,
-        expect_status=None,
-    )
-    review = payload.get("review")
-    require_package_smoke(
-        payload.get("reviewFile") == str(review_path)
-        and payload.get("pendingReviewCount") == 0
-        and payload.get("reviewedCount") >= 1
-        and isinstance(review, dict)
-        and review.get("file") == str(review_path)
-        and review.get("exists") is True
-        and review.get("matchedCount") >= 1
-        and review.get("appliedCount") >= 1,
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals review JSON should join applied review decisions",
-    )
-    proposals = payload.get("proposals")
-    require_package_smoke(
-        isinstance(proposals, list)
-        and any(
-            isinstance(item, dict)
-            and item.get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
-            and item.get("reviewStatus") == "applied"
-            and item.get("reviewClearsStrict") is True
-            for item in proposals
-        ),
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals review JSON should mark applied proposals as strict-clearing",
-    )
 
 
-def assert_skill_proposal_review_check_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    review_path: Path,
-    context: str,
-    cmd: list[str],
-    expect_status: str = "pass",
-    returncode: int | None = None,
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn skill proposal review-check JSON") from error
 
-    if returncode is not None:
-        expected_returncode = 0 if expect_status == "pass" else 1
-        require_package_smoke(
-            returncode == expected_returncode,
-            context=context,
-            cmd=cmd,
-            message=f"learn skill proposal review-check strict JSON should exit with code {expected_returncode} when status is {expect_status}",
-        )
 
-    review = payload.get("review")
-    summary = payload.get("summary")
-    checks = payload.get("checks")
-    require_package_smoke(
-        payload.get("kind") == "skill-proposal-review-check"
-        and payload.get("version") == 1
-        and payload.get("file") == str(profile_path)
-        and payload.get("usageFile") == str(usage_path)
-        and payload.get("reviewFile") == str(review_path)
-        and payload.get("status") == expect_status
-        and payload.get("pendingReviewCount") == 0
-        and payload.get("reviewedCount") >= 1
-        and isinstance(review, dict)
-        and review.get("file") == str(review_path)
-        and review.get("exists") is True
-        and review.get("status") == "pass",
-        context=context,
-        cmd=cmd,
-        message=f"learn skill proposal review-check JSON should report {expect_status} review-file readiness",
-    )
-    require_package_smoke(
-        isinstance(summary, dict)
-        and summary.get("status") == expect_status
-        and summary.get("failures") == 0
-        and summary.get("warnings") == 0
-        and isinstance(checks, list)
-        and len(checks) >= 5
-        and all(isinstance(item, dict) and item.get("level") == "pass" and item.get("passed") is True for item in checks),
-        context=context,
-        cmd=cmd,
-        message="learn skill proposal review-check JSON should include passing check summary",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("mutatesProfile") is False
-        and privacy.get("mutatesSkillFiles") is False
-        and privacy.get("callsExternalAiApis") is False
-        and privacy.get("storesRawBriefText") is False,
-        context=context,
-        cmd=cmd,
-        message="learn skill proposal review-check JSON should be read-only and local",
-    )
 
 
-def assert_skill_proposal_review_check_markdown(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    review_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "# Skill Proposal Review Check",
-        "- Status: pass",
-        "- Proposal status:",
-        "- Signal status:",
-        f"- File: {profile_path}",
-        f"- Usage sidecar: {usage_path}",
-        f"- Review file: {review_path}",
-        "- Pending review: 0",
-        "## Checks",
-        "pass: review-file-configured - A skill proposal review file is configured.",
-        "pass: current-proposals-cleared - All current proposals are applied or rejected.",
-        "pass: no-stale-review-decisions - No stale review decisions were found.",
-        "## Review Summary",
-        "- Status: pass",
-        "- Applied: 1",
-        "## Privacy And Boundaries",
-        "- Mutates learning profile: no",
-        "- Mutates skill files: no",
-        "- Calls external AI APIs: no",
-        "- Stores raw brief text: no",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn skill proposal review-check Markdown report missing {expected!r}",
-        )
 
 
-def assert_skill_proposal_apply_plan_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    review_path: Path,
-    signal_source: Path | None = None,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn skill proposal apply-plan JSON") from error
 
-    review = payload.get("review")
-    tasks = payload.get("tasks")
-    commands = payload.get("commands")
-    command_args = payload.get("commandArgs")
-    command_contract = payload.get("commandContract")
-    privacy = payload.get("privacy")
-    review_check_json_command = str(commands.get("reviewCheckJson", "")) if isinstance(commands, dict) else ""
-    command_context_args = [
-        "design-ai",
-        "learn",
-        "--propose-skills",
-        "--file",
-        str(profile_path),
-        "--usage-file",
-        str(usage_path),
-    ]
-    if signal_source is not None:
-        command_context_args.extend(["--from-file", str(signal_source)])
-    command_context_args.extend([
-        "--review-file",
-        str(review_path),
-    ])
-    expected_command_args = {
-        "reviewCheckJson": [*command_context_args, "--review-check", "--json"],
-        "reviewCheckReport": [
-            *command_context_args,
-            "--review-check",
-            "--report",
-            "--out",
-            "skill-proposal-review-check.md",
-        ],
-        "proposalPatchPreview": [
-            *command_context_args,
-            "--patch",
-            "--out",
-            "skill-proposals.patch",
-        ],
-        "strictGate": [*command_context_args, "--strict", "--json"],
-    }
-    command_sequence = command_contract.get("commandSequence") if isinstance(command_contract, dict) else None
-    command_sequence_summary = command_contract.get("commandSequenceSummary") if isinstance(command_contract, dict) else None
-    command_sequence_by_key = command_contract.get("commandSequenceByKey") if isinstance(command_contract, dict) else None
-    operator_runbook = command_contract.get("operatorRunbook") if isinstance(command_contract, dict) else None
-    operator_stage_selection = operator_runbook.get("stageSelection") if isinstance(operator_runbook, dict) else None
-    operator_stage_decision = (
-        operator_stage_selection.get("decision") if isinstance(operator_stage_selection, dict) else None
-    )
-    operator_stage_decision_safety = (
-        operator_stage_decision.get("safety") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_commands = (
-        operator_stage_decision.get("commands") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_by_key = (
-        operator_stage_decision.get("commandByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_step_by_key = (
-        operator_stage_decision.get("commandStepByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_run_policy_by_key = (
-        operator_stage_decision.get("commandRunPolicyByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_safety_level_by_key = (
-        operator_stage_decision.get("commandSafetyLevelByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_args_by_key = (
-        operator_stage_decision.get("commandArgsByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_string_by_key = (
-        operator_stage_decision.get("commandStringByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_display_label_by_key = (
-        operator_stage_decision.get("commandDisplayLabelByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_description_by_key = (
-        operator_stage_decision.get("commandDescriptionByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_output_artifact_by_key = (
-        operator_stage_decision.get("commandOutputArtifactByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_output_artifact_type_by_key = (
-        operator_stage_decision.get("commandOutputArtifactTypeByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_output_artifact_action_by_key = (
-        operator_stage_decision.get("commandOutputArtifactActionByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_output_artifact_media_type_by_key = (
-        operator_stage_decision.get("commandOutputArtifactMediaTypeByKey") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_stage_decision_command_output_artifact_disposition_by_key = (
-        operator_stage_decision.get("commandOutputArtifactDispositionByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_manual_apply_candidate_by_key = (
-        operator_stage_decision.get("commandOutputArtifactManualApplyCandidateByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_requires_manual_review_by_key = (
-        operator_stage_decision.get("commandOutputArtifactRequiresManualReviewByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_review_instruction_by_key = (
-        operator_stage_decision.get("commandOutputArtifactReviewInstructionByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_requires_clean_workspace_before_apply_by_key = (
-        operator_stage_decision.get("commandOutputArtifactRequiresCleanWorkspaceBeforeApplyByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_apply_precondition_ids_by_key = (
-        operator_stage_decision.get("commandOutputArtifactApplyPreconditionIdsByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_apply_precondition_labels_by_key = (
-        operator_stage_decision.get("commandOutputArtifactApplyPreconditionLabelsByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_apply_preconditions_by_key = (
-        operator_stage_decision.get("commandOutputArtifactApplyPreconditionsByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_apply_precondition_count_by_key = (
-        operator_stage_decision.get("commandOutputArtifactApplyPreconditionCountByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_required_apply_precondition_count_by_key = (
-        operator_stage_decision.get("commandOutputArtifactRequiredApplyPreconditionCountByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_satisfied_apply_precondition_count_by_key = (
-        operator_stage_decision.get("commandOutputArtifactSatisfiedApplyPreconditionCountByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_pending_apply_precondition_count_by_key = (
-        operator_stage_decision.get("commandOutputArtifactPendingApplyPreconditionCountByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_required_pending_apply_precondition_count_by_key = (
-        operator_stage_decision.get("commandOutputArtifactRequiredPendingApplyPreconditionCountByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_manual_apply_ready_by_key = (
-        operator_stage_decision.get("commandOutputArtifactManualApplyReadyByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_manual_apply_status_by_key = (
-        operator_stage_decision.get("commandOutputArtifactManualApplyStatusByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_manual_apply_status_label_by_key = (
-        operator_stage_decision.get("commandOutputArtifactManualApplyStatusLabelByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_manual_apply_status_tone_by_key = (
-        operator_stage_decision.get("commandOutputArtifactManualApplyStatusToneByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_manual_apply_blocked_reason_by_key = (
-        operator_stage_decision.get("commandOutputArtifactManualApplyBlockedReasonByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_command_output_artifact_manual_apply_blocked_reason_code_by_key = (
-        operator_stage_decision.get("commandOutputArtifactManualApplyBlockedReasonCodeByKey")
-        if isinstance(operator_stage_decision, dict)
-        else None
-    )
-    operator_stage_decision_next_command_entry = (
-        operator_stage_decision.get("nextCommandEntry") if isinstance(operator_stage_decision, dict) else None
-    )
-    operator_selected_stage = (
-        operator_stage_selection.get("nextStage") if isinstance(operator_stage_selection, dict) else None
-    )
-    operator_selected_required_stage = (
-        operator_stage_selection.get("nextRequiredStage") if isinstance(operator_stage_selection, dict) else None
-    )
-    operator_selected_required_command_stage = (
-        operator_stage_selection.get("nextRequiredCommandStage")
-        if isinstance(operator_stage_selection, dict)
-        else None
-    )
-    expected_command_sequence = [
-        (1, "reviewCheckJson", "preview-only", "read-only", False),
-        (2, "reviewCheckReport", "output-artifact", "local-output", True),
-        (3, "proposalPatchPreview", "output-artifact", "local-output", True),
-        (4, "strictGate", "strict-readiness-gate", "read-only", False),
-    ]
-    expected_local_output_decision_safety = {
-        "level": "local-output",
-        "writesLocalFiles": True,
-        "writesOutputArtifact": True,
-        "mutatesLocalState": True,
-        "mutatesProfile": False,
-        "mutatesReviewFile": False,
-        "mutatesSkillFiles": False,
-        "callsExternalAiApis": False,
-        "requiresCleanWorkspace": False,
-        "reason": "This follow-up command writes a local preview artifact with --out but does not mutate learning, review, or skill files.",
-    }
-    expected_operator_runbook_stages = [
-        (1, "previewArtifacts", "local-output-preview", False, ["reviewCheckReport", "proposalPatchPreview"]),
-        (2, "manualSkillEdit", "manual-review", True, []),
-        (3, "reviewReadiness", "read-only-check", True, ["reviewCheckJson"]),
-        (4, "strictGate", "read-only-gate", True, ["strictGate"]),
-    ]
-    require_package_smoke(
-        payload.get("kind") == "skill-proposal-apply-plan"
-        and payload.get("version") == 1
-        and payload.get("file") == str(profile_path)
-        and payload.get("usageFile") == str(usage_path)
-        and payload.get("reviewFile") == str(review_path)
-        and payload.get("status") == "warn"
-        and payload.get("acceptedCount") == 1
-        and payload.get("count") == 1
-        and payload.get("pendingReviewCount") == 1
-        and isinstance(review, dict)
-        and review.get("file") == str(review_path)
-        and review.get("exists") is True
-        and review.get("acceptedCount") == 1
-        and isinstance(tasks, list)
-        and len(tasks) == 1
-        and isinstance(tasks[0], dict)
-        and tasks[0].get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
-        and tasks[0].get("proposalId", "").startswith("skill-proposal-component-spec-writer-")
-        and "accepted" in " ".join(tasks[0].get("manualSteps", []))
-        and "applied" in " ".join(tasks[0].get("manualSteps", []))
-        and isinstance(commands, dict)
-        and "learn --propose-skills" in review_check_json_command
-        and f"--file {profile_path}" in review_check_json_command
-        and f"--usage-file {usage_path}" in review_check_json_command
-        and (signal_source is None or f"--from-file {signal_source}" in review_check_json_command)
-        and f"--review-file {review_path}" in review_check_json_command
-        and "--review-check --json" in review_check_json_command
-        and isinstance(command_args, dict)
-        and all(command_args.get(key) == expected for key, expected in expected_command_args.items())
-        and isinstance(command_contract, dict)
-        and command_contract.get("valid") is True
-        and command_contract.get("status") == "pass"
-        and command_contract.get("commandCount") == 4
-        and command_contract.get("checkCount") == 18
-        and command_contract.get("passCount") == 18
-        and command_contract.get("warningCount") == 0
-        and command_contract.get("requiredKeys") == list(expected_command_args.keys())
-        and command_contract.get("missingCommandKeys") == []
-        and command_contract.get("unexpectedCommandKeys") == []
-        and command_contract.get("baseCommand") == ["design-ai", "learn", "--propose-skills"]
-        and command_contract.get("reviewFileRequired") is True
-        and command_contract.get("reviewFile") == str(review_path)
-        and command_contract.get("forbiddenFlags") == ["--yes"]
-        and command_contract.get("failureCount") == 0
-        and command_contract.get("failedCheckIds") == []
-        and command_contract.get("failedChecks") == []
-        and command_contract.get("nextCommandKey") == "reviewCheckJson"
-        and command_contract.get("nextCommand") == review_check_json_command
-        and command_contract.get("nextCommandArgs") == expected_command_args["reviewCheckJson"]
-        and command_contract.get("nextCommandRunPolicy") == "preview-only"
-        and isinstance(command_contract.get("nextCommandSafety"), dict)
-        and command_contract["nextCommandSafety"].get("level") == "read-only"
-        and command_contract["nextCommandSafety"].get("writesLocalFiles") is False
-        and command_contract["nextCommandSafety"].get("mutatesLocalState") is False
-        and command_contract["nextCommandSafety"].get("mutatesProfile") is False
-        and command_contract["nextCommandSafety"].get("mutatesReviewFile") is False
-        and command_contract["nextCommandSafety"].get("mutatesSkillFiles") is False
-        and command_contract["nextCommandSafety"].get("callsExternalAiApis") is False
-        and command_contract.get("commandSequenceCount") == 4
-        and command_contract.get("commandSequenceKeys") == list(expected_command_args.keys())
-        and isinstance(command_sequence_summary, dict)
-        and command_sequence_summary.get("executable") is True
-        and command_sequence_summary.get("blocked") is False
-        and command_sequence_summary.get("stepCount") == 4
-        and command_sequence_summary.get("readOnlyStepCount") == 2
-        and command_sequence_summary.get("localOutputStepCount") == 2
-        and command_sequence_summary.get("writesLocalFiles") is True
-        and command_sequence_summary.get("writesOutputArtifacts") is True
-        and command_sequence_summary.get("mutatesProfile") is False
-        and command_sequence_summary.get("mutatesReviewFile") is False
-        and command_sequence_summary.get("mutatesSkillFiles") is False
-        and command_sequence_summary.get("callsExternalAiApis") is False
-        and command_sequence_summary.get("requiresCleanWorkspace") is False
-        and command_sequence_summary.get("runPolicy") == "mixed-preview-local-output"
-        and isinstance(command_sequence, list)
-        and len(command_sequence) == 4
-        and isinstance(command_sequence_by_key, dict)
-        and list(command_sequence_by_key.keys()) == list(expected_command_args.keys())
-        and isinstance(operator_runbook, dict)
-        and operator_runbook.get("version") == 1
-        and operator_runbook.get("executable") is True
-        and operator_runbook.get("blocked") is False
-        and operator_runbook.get("stageCount") == 4
-        and operator_runbook.get("requiredStageCount") == 3
-        and operator_runbook.get("commandStageCount") == 3
-        and operator_runbook.get("nextStageKey") == "previewArtifacts"
-        and operator_runbook.get("nextStageCommandKeys") == ["reviewCheckReport", "proposalPatchPreview"]
-        and operator_runbook.get("nextRequiredStageKey") == "manualSkillEdit"
-        and operator_runbook.get("nextRequiredStageCommandKeys") == []
-        and operator_runbook.get("nextRequiredCommandStageKey") == "reviewReadiness"
-        and operator_runbook.get("nextRequiredCommandStageCommandKeys") == ["reviewCheckJson"]
-        and isinstance(operator_stage_selection, dict)
-        and operator_stage_selection.get("strategy") == "optional-preview-before-required-manual-edit"
-        and isinstance(operator_stage_decision, dict)
-        and operator_stage_decision.get("action") == "offer-optional-preview"
-        and operator_stage_decision.get("stageKey") == "previewArtifacts"
-        and operator_stage_decision.get("stageKind") == "local-output-preview"
-        and operator_stage_decision.get("required") is False
-        and operator_stage_decision.get("hasCommands") is True
-        and operator_stage_decision.get("commandCount") == 2
-        and operator_stage_decision.get("commandKeys") == ["reviewCheckReport", "proposalPatchPreview"]
-        and isinstance(operator_stage_decision_commands, list)
-        and len(operator_stage_decision_commands) == 2
-        and [command.get("key") for command in operator_stage_decision_commands] == [
-            "reviewCheckReport",
-            "proposalPatchPreview",
-        ]
-        and [command.get("step") for command in operator_stage_decision_commands] == [2, 3]
-        and operator_stage_decision_commands[0].get("command") == commands.get("reviewCheckReport")
-        and operator_stage_decision_commands[0].get("commandArgs") == expected_command_args["reviewCheckReport"]
-        and operator_stage_decision_commands[0].get("runPolicy") == "output-artifact"
-        and operator_stage_decision_commands[0].get("safetyLevel") == "local-output"
-        and operator_stage_decision_commands[0].get("safety") == expected_local_output_decision_safety
-        and operator_stage_decision_commands[0].get("writesLocalFiles") is True
-        and operator_stage_decision_commands[0].get("mutatesSkillFiles") is False
-        and operator_stage_decision_commands[1].get("command") == commands.get("proposalPatchPreview")
-        and operator_stage_decision_commands[1].get("commandArgs") == expected_command_args["proposalPatchPreview"]
-        and operator_stage_decision_commands[1].get("runPolicy") == "output-artifact"
-        and operator_stage_decision_commands[1].get("safetyLevel") == "local-output"
-        and operator_stage_decision_commands[1].get("safety") == expected_local_output_decision_safety
-        and operator_stage_decision_commands[1].get("writesLocalFiles") is True
-        and operator_stage_decision_commands[1].get("mutatesSkillFiles") is False
-        and isinstance(operator_stage_decision_command_by_key, dict)
-        and list(operator_stage_decision_command_by_key.keys()) == [
-            "reviewCheckReport",
-            "proposalPatchPreview",
-        ]
-        and operator_stage_decision_command_by_key["reviewCheckReport"] == operator_stage_decision_commands[0]
-        and operator_stage_decision_command_by_key["proposalPatchPreview"] == operator_stage_decision_commands[1]
-        and operator_stage_decision_command_step_by_key == {
-            "reviewCheckReport": 2,
-            "proposalPatchPreview": 3,
-        }
-        and operator_stage_decision_command_run_policy_by_key == {
-            "reviewCheckReport": "output-artifact",
-            "proposalPatchPreview": "output-artifact",
-        }
-        and operator_stage_decision_command_safety_level_by_key == {
-            "reviewCheckReport": "local-output",
-            "proposalPatchPreview": "local-output",
-        }
-        and operator_stage_decision_command_args_by_key == {
-            "reviewCheckReport": expected_command_args["reviewCheckReport"],
-            "proposalPatchPreview": expected_command_args["proposalPatchPreview"],
-        }
-        and operator_stage_decision_command_string_by_key == {
-            "reviewCheckReport": commands.get("reviewCheckReport"),
-            "proposalPatchPreview": commands.get("proposalPatchPreview"),
-        }
-        and operator_stage_decision_command_display_label_by_key == {
-            "reviewCheckReport": "Review check Markdown report",
-            "proposalPatchPreview": "Skill proposal patch preview",
-        }
-        and operator_stage_decision_command_description_by_key == {
-            "reviewCheckReport": "Generate a Markdown review-check artifact for accepted proposal readiness.",
-            "proposalPatchPreview": "Generate a unified diff preview for accepted skill proposal edits.",
-        }
-        and operator_stage_decision_command_output_artifact_by_key == {
-            "reviewCheckReport": "skill-proposal-review-check.md",
-            "proposalPatchPreview": "skill-proposals.patch",
-        }
-        and operator_stage_decision_command_output_artifact_type_by_key == {
-            "reviewCheckReport": "markdown-report",
-            "proposalPatchPreview": "unified-diff",
-        }
-        and operator_stage_decision_command_output_artifact_action_by_key == {
-            "reviewCheckReport": "render-markdown-report",
-            "proposalPatchPreview": "render-unified-diff-preview",
-        }
-        and operator_stage_decision_command_output_artifact_media_type_by_key == {
-            "reviewCheckReport": "text/markdown",
-            "proposalPatchPreview": "text/x-diff",
-        }
-        and operator_stage_decision_command_output_artifact_disposition_by_key == {
-            "reviewCheckReport": "review-only",
-            "proposalPatchPreview": "manual-apply-preview",
-        }
-        and operator_stage_decision_command_output_artifact_manual_apply_candidate_by_key == {
-            "reviewCheckReport": False,
-            "proposalPatchPreview": True,
-        }
-        and operator_stage_decision_command_output_artifact_requires_manual_review_by_key == {
-            "reviewCheckReport": False,
-            "proposalPatchPreview": True,
-        }
-        and operator_stage_decision_command_output_artifact_review_instruction_by_key == {
-            "reviewCheckReport": "Review the Markdown readiness report before changing proposal review status.",
-            "proposalPatchPreview": "Review the unified diff manually before applying any skill-file edits.",
-        }
-        and operator_stage_decision_command_output_artifact_requires_clean_workspace_before_apply_by_key == {
-            "reviewCheckReport": False,
-            "proposalPatchPreview": True,
-        }
-        and operator_stage_decision_command_output_artifact_apply_precondition_ids_by_key == {
-            "reviewCheckReport": [],
-            "proposalPatchPreview": ["manual-review", "clean-workspace"],
-        }
-        and operator_stage_decision_command_output_artifact_apply_precondition_labels_by_key == {
-            "reviewCheckReport": [],
-            "proposalPatchPreview": ["Manual review completed", "Clean workspace confirmed"],
-        }
-        and operator_stage_decision_command_output_artifact_apply_preconditions_by_key == {
-            "reviewCheckReport": [],
-            "proposalPatchPreview": [
-                {"id": "manual-review", "label": "Manual review completed", "required": True},
-                {"id": "clean-workspace", "label": "Clean workspace confirmed", "required": True},
-            ],
-        }
-        and operator_stage_decision_command_output_artifact_apply_precondition_count_by_key == {
-            "reviewCheckReport": 0,
-            "proposalPatchPreview": 2,
-        }
-        and operator_stage_decision_command_output_artifact_required_apply_precondition_count_by_key == {
-            "reviewCheckReport": 0,
-            "proposalPatchPreview": 2,
-        }
-        and operator_stage_decision_command_output_artifact_satisfied_apply_precondition_count_by_key == {
-            "reviewCheckReport": 0,
-            "proposalPatchPreview": 0,
-        }
-        and operator_stage_decision_command_output_artifact_pending_apply_precondition_count_by_key == {
-            "reviewCheckReport": 0,
-            "proposalPatchPreview": 2,
-        }
-        and operator_stage_decision_command_output_artifact_required_pending_apply_precondition_count_by_key == {
-            "reviewCheckReport": 0,
-            "proposalPatchPreview": 2,
-        }
-        and operator_stage_decision_command_output_artifact_manual_apply_ready_by_key == {
-            "reviewCheckReport": False,
-            "proposalPatchPreview": False,
-        }
-        and operator_stage_decision_command_output_artifact_manual_apply_status_by_key == {
-            "reviewCheckReport": "not-applicable",
-            "proposalPatchPreview": "blocked",
-        }
-        and operator_stage_decision_command_output_artifact_manual_apply_status_label_by_key == {
-            "reviewCheckReport": "Review only",
-            "proposalPatchPreview": "Blocked",
-        }
-        and operator_stage_decision_command_output_artifact_manual_apply_status_tone_by_key == {
-            "reviewCheckReport": "neutral",
-            "proposalPatchPreview": "warning",
-        }
-        and operator_stage_decision_command_output_artifact_manual_apply_blocked_reason_by_key == {
-            "reviewCheckReport": "This output artifact is review-only and cannot be applied.",
-            "proposalPatchPreview": "Complete required apply preconditions before applying this patch preview.",
-        }
-        and operator_stage_decision_command_output_artifact_manual_apply_blocked_reason_code_by_key == {
-            "reviewCheckReport": "not-manual-apply-candidate",
-            "proposalPatchPreview": "required-preconditions-pending",
-        }
-        and operator_stage_decision_next_command_entry == operator_stage_decision_commands[0]
-        and operator_stage_decision_next_command_entry.get("safety") == expected_local_output_decision_safety
-        and operator_stage_decision.get("nextCommandKey") == "reviewCheckReport"
-        and operator_stage_decision.get("nextCommandDisplayLabel") == "Review check Markdown report"
-        and operator_stage_decision.get("nextCommandDescription") == "Generate a Markdown review-check artifact for accepted proposal readiness."
-        and operator_stage_decision.get("nextCommandOutputArtifact") == "skill-proposal-review-check.md"
-        and operator_stage_decision.get("nextCommandOutputArtifactType") == "markdown-report"
-        and operator_stage_decision.get("nextCommandOutputArtifactAction") == "render-markdown-report"
-        and operator_stage_decision.get("nextCommandOutputArtifactMediaType") == "text/markdown"
-        and operator_stage_decision.get("nextCommandOutputArtifactDisposition") == "review-only"
-        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyCandidate") is False
-        and operator_stage_decision.get("nextCommandOutputArtifactRequiresManualReview") is False
-        and operator_stage_decision.get("nextCommandOutputArtifactReviewInstruction") == "Review the Markdown readiness report before changing proposal review status."
-        and operator_stage_decision.get("nextCommandOutputArtifactRequiresCleanWorkspaceBeforeApply") is False
-        and operator_stage_decision.get("nextCommandOutputArtifactApplyPreconditionIds") == []
-        and operator_stage_decision.get("nextCommandOutputArtifactApplyPreconditionLabels") == []
-        and operator_stage_decision.get("nextCommandOutputArtifactApplyPreconditions") == []
-        and operator_stage_decision.get("nextCommandOutputArtifactApplyPreconditionCount") == 0
-        and operator_stage_decision.get("nextCommandOutputArtifactRequiredApplyPreconditionCount") == 0
-        and operator_stage_decision.get("nextCommandOutputArtifactSatisfiedApplyPreconditionCount") == 0
-        and operator_stage_decision.get("nextCommandOutputArtifactPendingApplyPreconditionCount") == 0
-        and operator_stage_decision.get("nextCommandOutputArtifactRequiredPendingApplyPreconditionCount") == 0
-        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyReady") is False
-        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyStatus") == "not-applicable"
-        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyStatusLabel") == "Review only"
-        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyStatusTone") == "neutral"
-        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyBlockedReason") == "This output artifact is review-only and cannot be applied."
-        and operator_stage_decision.get("nextCommandOutputArtifactManualApplyBlockedReasonCode") == "not-manual-apply-candidate"
-        and operator_stage_decision.get("nextCommandStep") == 2
-        and operator_stage_decision.get("nextCommand") == commands.get("reviewCheckReport")
-        and operator_stage_decision.get("nextCommandArgs") == expected_command_args["reviewCheckReport"]
-        and operator_stage_decision.get("nextCommandRunPolicy") == "output-artifact"
-        and operator_stage_decision.get("nextCommandSafetyLevel") == "local-output"
-        and operator_stage_decision.get("nextCommandSafety") == expected_local_output_decision_safety
-        and operator_stage_decision.get("runPolicy") == "optional-local-output-preview"
-        and isinstance(operator_stage_decision_safety, dict)
-        and operator_stage_decision_safety.get("level") == "local-output"
-        and operator_stage_decision_safety.get("writesLocalFiles") is True
-        and operator_stage_decision_safety.get("writesOutputArtifacts") is True
-        and operator_stage_decision_safety.get("mutatesLocalState") is True
-        and operator_stage_decision_safety.get("mutatesProfile") is False
-        and operator_stage_decision_safety.get("mutatesReviewFile") is False
-        and operator_stage_decision_safety.get("mutatesSkillFiles") is False
-        and operator_stage_decision_safety.get("callsExternalAiApis") is False
-        and operator_stage_decision_safety.get("requiresCleanWorkspace") is False
-        and operator_stage_decision.get("nextRequiredStageKey") == "manualSkillEdit"
-        and operator_stage_decision.get("nextRequiredCommandStageKey") == "reviewReadiness"
-        and operator_stage_decision.get("requiresOperatorActionBeforeRequiredCommands") is True
-        and operator_stage_selection.get("stageOrder") == [stage[1] for stage in expected_operator_runbook_stages]
-        and operator_stage_selection.get("nextStageKey") == "previewArtifacts"
-        and operator_stage_selection.get("nextStageCommandKeys") == ["reviewCheckReport", "proposalPatchPreview"]
-        and isinstance(operator_selected_stage, dict)
-        and operator_selected_stage.get("key") == "previewArtifacts"
-        and operator_selected_stage.get("kind") == "local-output-preview"
-        and operator_selected_stage.get("required") is False
-        and operator_selected_stage.get("hasCommands") is True
-        and operator_selected_stage.get("commandCount") == 2
-        and operator_selected_stage.get("writesOutputArtifacts") is True
-        and operator_selected_stage.get("mutatesSkillFiles") is False
-        and operator_stage_selection.get("nextRequiredStageKey") == "manualSkillEdit"
-        and operator_stage_selection.get("nextRequiredStageCommandKeys") == []
-        and isinstance(operator_selected_required_stage, dict)
-        and operator_selected_required_stage.get("key") == "manualSkillEdit"
-        and operator_selected_required_stage.get("kind") == "manual-review"
-        and operator_selected_required_stage.get("required") is True
-        and operator_selected_required_stage.get("hasCommands") is False
-        and operator_selected_required_stage.get("commandCount") == 0
-        and operator_stage_selection.get("nextRequiredCommandStageKey") == "reviewReadiness"
-        and operator_stage_selection.get("nextRequiredCommandStageCommandKeys") == ["reviewCheckJson"]
-        and isinstance(operator_selected_required_command_stage, dict)
-        and operator_selected_required_command_stage.get("key") == "reviewReadiness"
-        and operator_selected_required_command_stage.get("kind") == "read-only-check"
-        and operator_selected_required_command_stage.get("required") is True
-        and operator_selected_required_command_stage.get("hasCommands") is True
-        and operator_selected_required_command_stage.get("commandCount") == 1
-        and operator_selected_required_command_stage.get("writesLocalFiles") is False
-        and operator_selected_required_command_stage.get("callsExternalAiApis") is False
-        and operator_runbook.get("stageKeys") == [stage[1] for stage in expected_operator_runbook_stages]
-        and isinstance(operator_runbook.get("stageByKey"), dict)
-        and list(operator_runbook["stageByKey"].keys()) == [stage[1] for stage in expected_operator_runbook_stages]
-        and isinstance(operator_runbook.get("stages"), list)
-        and len(operator_runbook["stages"]) == 4
-        and all(
-            isinstance(operator_runbook["stageByKey"].get(key), dict)
-            and operator_runbook["stageByKey"][key].get("step") == step
-            and operator_runbook["stageByKey"][key].get("kind") == kind
-            and operator_runbook["stageByKey"][key].get("required") is required
-            and operator_runbook["stageByKey"][key].get("commandKeys") == command_keys
-            for step, key, kind, required, command_keys
-            in expected_operator_runbook_stages
-        )
-        and all(
-            isinstance(stage, dict)
-            and stage.get("step") == step
-            and stage.get("key") == key
-            and stage.get("kind") == kind
-            and stage.get("required") is required
-            and stage.get("commandKeys") == command_keys
-            and [
-                command.get("key")
-                for command in stage.get("commands", [])
-                if isinstance(command, dict)
-            ] == command_keys
-            for stage, (step, key, kind, required, command_keys)
-            in zip(operator_runbook["stages"], expected_operator_runbook_stages, strict=True)
-        )
-        and "Generate optional local review artifacts" in str(operator_runbook.get("reason", ""))
-        and all(
-            isinstance(command_sequence_by_key.get(key), dict)
-            and command_sequence_by_key[key].get("key") == key
-            and command_sequence_by_key[key].get("command") == str(commands.get(key, ""))
-            and command_sequence_by_key[key].get("runPolicy") == run_policy
-            and isinstance(command_sequence_by_key[key].get("safety"), dict)
-            and command_sequence_by_key[key]["safety"].get("level") == safety_level
-            for _, key, run_policy, safety_level, _
-            in expected_command_sequence
-        )
-        and all(
-            isinstance(item, dict)
-            and item.get("step") == step
-            and item.get("key") == key
-            and item.get("command") == str(commands.get(key, ""))
-            and item.get("commandArgs") == expected_command_args[key]
-            and item.get("runPolicy") == run_policy
-            and isinstance(item.get("safety"), dict)
-            and item["safety"].get("level") == safety_level
-            and item["safety"].get("writesLocalFiles") is writes_local_files
-            and item["safety"].get("writesOutputArtifact") is writes_local_files
-            and item["safety"].get("mutatesProfile") is False
-            and item["safety"].get("mutatesReviewFile") is False
-            and item["safety"].get("mutatesSkillFiles") is False
-            and item["safety"].get("callsExternalAiApis") is False
-            for item, (step, key, run_policy, safety_level, writes_local_files)
-            in zip(command_sequence, expected_command_sequence, strict=True)
-        )
-        and "Run reviewCheckJson after manual skill edits" in str(command_contract.get("nextAction", ""))
-        and isinstance(command_contract.get("summary"), dict)
-        and command_contract["summary"].get("failures") == 0
-        and command_contract["summary"].get("warnings") == 0
-        and command_contract["summary"].get("passes") == 18
-        and command_contract["summary"].get("total") == 18
-        and isinstance(command_contract.get("checks"), list)
-        and all(check.get("passed") is True for check in command_contract.get("checks", []))
-        and isinstance(privacy, dict)
-        and privacy.get("mutatesProfile") is False
-        and privacy.get("mutatesReviewFile") is False
-        and privacy.get("mutatesSkillFiles") is False
-        and privacy.get("callsExternalAiApis") is False,
-        context=context,
-        cmd=cmd,
-        message="learn skill proposal apply-plan JSON should include accepted manual apply tasks and read-only privacy boundaries",
-    )
 
 
-def assert_skill_proposal_apply_plan_markdown(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    review_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "# Skill Proposal Apply Plan",
-        "- Status: warn",
-        "- Proposal status:",
-        "- Signal status:",
-        f"- File: {profile_path}",
-        f"- Usage sidecar: {usage_path}",
-        f"- Review file: {review_path}",
-        "- Accepted proposals: 1",
-        "## Manual Apply Tasks",
-        "skills/component-spec-writer/SKILL.md",
-        "After the skill edit and verification pass, update the review decision from `accepted` to `applied`.",
-        "## Follow-up Commands",
-        "--review-check --json",
-        "## Command Contract",
-        "- Valid: yes",
-        "- Required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
-        "- Check count: 18",
-        "- Pass count: 18",
-        "- Warning count: 0",
-        "- Failure count: 0",
-        "- Failed checks: none",
-        "- Next command key: reviewCheckJson",
-        "- Next command policy: preview-only",
-        "- Next command safety: read-only",
-        "- Next command: `design-ai learn --propose-skills",
-        "- Command sequence count: 4",
-        "- Command sequence policy: mixed-preview-local-output",
-        "- Command sequence executable: yes",
-        "- Command sequence local outputs: 2",
-        "- Command sequence mutates profile: no",
-        "- Command sequence mutates review file: no",
-        "- Command sequence mutates skill files: no",
-        "- Command sequence calls external AI APIs: no",
-        "- Operator runbook stages: 4",
-        "- Operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
-        "- Operator runbook required stages: 3",
-        "- Operator runbook next stage: previewArtifacts",
-        "- Operator runbook next required stage: manualSkillEdit",
-        "- Operator runbook next required command stage: reviewReadiness",
-        "- Operator runbook stage selection: optional-preview-before-required-manual-edit",
-        "- Operator runbook decision: offer-optional-preview",
-        "- Operator runbook decision safety: local-output",
-        "- Operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
-        "- Operator runbook decision next command: reviewCheckReport",
-        "- Operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
-        "Command sequence:",
-        "- 1. reviewCheckJson (preview-only / read-only): `design-ai learn --propose-skills",
-        "- 2. reviewCheckReport (output-artifact / local-output): `design-ai learn --propose-skills",
-        "- 3. proposalPatchPreview (output-artifact / local-output): `design-ai learn --propose-skills",
-        "- 4. strictGate (strict-readiness-gate / read-only): `design-ai learn --propose-skills",
-        "Operator runbook:",
-        "- 1. previewArtifacts (optional / local-output-preview): reviewCheckReport, proposalPatchPreview",
-        "- 2. manualSkillEdit (required / manual-review): manual",
-        "- 3. reviewReadiness (required / read-only-check): reviewCheckJson",
-        "- 4. strictGate (required / read-only-gate): strictGate",
-        "- Next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
-        "## Privacy And Boundaries",
-        "- Mutates learning profile: no",
-        "- Mutates review file: no",
-        "- Mutates skill files: no",
-        "- Calls external AI APIs: no",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn skill proposal apply-plan Markdown report missing {expected!r}",
-        )
 
 
-def assert_skill_proposal_apply_plan_human(
-    raw: str,
-    *,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "Skill proposal apply plan",
-        "Manual apply tasks:",
-        "Follow-up commands:",
-        "Command contract:",
-        "- valid: yes",
-        "- status: pass",
-        "- required keys: reviewCheckJson, reviewCheckReport, proposalPatchPreview, strictGate",
-        "- forbidden flags: --yes",
-        "- check count: 18",
-        "- pass count: 18",
-        "- warning count: 0",
-        "- failure count: 0",
-        "- failed checks: none",
-        "- next command key: reviewCheckJson",
-        "- next command policy: preview-only",
-        "- next command safety: read-only",
-        "- next command: design-ai learn --propose-skills",
-        "- command sequence count: 4",
-        "- command sequence policy: mixed-preview-local-output",
-        "- command sequence executable: yes",
-        "- command sequence local outputs: 2",
-        "- command sequence mutates profile: no",
-        "- command sequence mutates review file: no",
-        "- command sequence mutates skill files: no",
-        "- command sequence calls external AI APIs: no",
-        "- operator runbook stages: 4",
-        "- operator runbook keys: previewArtifacts, manualSkillEdit, reviewReadiness, strictGate",
-        "- operator runbook required stages: 3",
-        "- operator runbook next stage: previewArtifacts",
-        "- operator runbook next required stage: manualSkillEdit",
-        "- operator runbook next required command stage: reviewReadiness",
-        "- operator runbook stage selection: optional-preview-before-required-manual-edit",
-        "- operator runbook decision: offer-optional-preview",
-        "- operator runbook decision safety: local-output",
-        "- operator runbook decision commands: reviewCheckReport, proposalPatchPreview",
-        "- operator runbook decision next command: reviewCheckReport",
-        "- operator runbook selected stage: previewArtifacts (optional, local-output-preview)",
-        "Command sequence:",
-        "- 1. reviewCheckJson: preview-only / read-only",
-        "- 2. reviewCheckReport: output-artifact / local-output",
-        "- 3. proposalPatchPreview: output-artifact / local-output",
-        "- 4. strictGate: strict-readiness-gate / read-only",
-        "Operator runbook:",
-        "- 1. previewArtifacts: optional / local-output-preview / reviewCheckReport, proposalPatchPreview",
-        "- 2. manualSkillEdit: required / manual-review / manual",
-        "- 3. reviewReadiness: required / read-only-check / reviewCheckJson",
-        "- 4. strictGate: required / read-only-gate / strictGate",
-        "- next action: Run reviewCheckJson after manual skill edits, then use strictGate before marking proposals applied.",
-        "Privacy: apply plan is read-only",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn skill proposal apply-plan human output missing {expected!r}",
-        )
 
 
-def assert_skill_proposal_review_template_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    context: str,
-    cmd: list[str],
-    expected_decision_count: int = 1,
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn skill proposal review-template JSON") from error
 
-    decisions = payload.get("decisions")
-    require_package_smoke(
-        payload.get("version") == 1
-        and payload.get("source") == "design-ai learn --propose-skills --review-template"
-        and payload.get("proposalFile") == str(profile_path)
-        and payload.get("usageFile") == str(usage_path)
-        and isinstance(payload.get("reviewPolicy"), dict)
-        and payload["reviewPolicy"].get("clearsStrict") == ["applied", "rejected"]
-        and payload["reviewPolicy"].get("remainsPending") == ["accepted", "deferred"],
-        context=context,
-        cmd=cmd,
-        message="learn skill proposal review template JSON should describe review policy and source files",
-    )
-    require_package_smoke(
-        isinstance(decisions, list)
-        and len(decisions) == expected_decision_count,
-        context=context,
-        cmd=cmd,
-        message=f"learn skill proposal review template JSON should contain {expected_decision_count} pending decision scaffold(s)",
-    )
-    if expected_decision_count > 0:
-        require_package_smoke(
-            any(
-                isinstance(item, dict)
-                and str(item.get("proposalId", "")).startswith("skill-proposal-component-spec-writer-")
-                and item.get("status") == "deferred"
-                and item.get("reviewedAt") == ""
-                and item.get("reviewer") == ""
-                and "skills/component-spec-writer/SKILL.md" in str(item.get("note", ""))
-                for item in decisions
-            ),
-            context=context,
-            cmd=cmd,
-            message="learn skill proposal review template JSON should scaffold a deferred component-spec proposal decision",
-        )
 
 
-def assert_skill_proposal_min_evidence_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    context: str,
-    cmd: list[str],
-    expected_min_evidence: int = 3,
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn skill proposal min-evidence JSON") from error
 
-    require_package_smoke(
-        payload.get("version") == 1
-        and payload.get("file") == str(profile_path)
-        and payload.get("usageFile") == str(usage_path),
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals min-evidence JSON should report the learning profile and usage paths",
-    )
-    require_package_smoke(
-        payload.get("dryRun") is True and payload.get("applied") is False,
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals min-evidence JSON must remain preview-only",
-    )
-    require_package_smoke(
-        payload.get("minEvidenceCount") == expected_min_evidence,
-        context=context,
-        cmd=cmd,
-        message=f"learn skill proposals min-evidence JSON should report minEvidenceCount {expected_min_evidence}",
-    )
-    require_package_smoke(
-        payload.get("checkCaptureCount") >= 2
-        and payload.get("candidateCount") >= 1
-        and payload.get("proposalCount") == 0
-        and payload.get("count") == 0
-        and payload.get("skippedCount") >= 1,
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals min-evidence JSON should skip two-entry groups when threshold is higher",
-    )
-    skipped = payload.get("skipped")
-    require_package_smoke(
-        isinstance(skipped, list)
-        and any(
-            isinstance(item, dict)
-            and item.get("candidateSkillPath") == "skills/component-spec-writer/SKILL.md"
-            and item.get("sourceIssueCount") == 2
-            and f"Needs at least {expected_min_evidence}" in str(item.get("reason", ""))
-            for item in skipped
-        ),
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals min-evidence JSON should explain skipped component-spec evidence",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("mutatesProfile") is False
-        and privacy.get("mutatesSkillFiles") is False
-        and privacy.get("callsExternalAiApis") is False,
-        context=context,
-        cmd=cmd,
-        message="learn skill proposals min-evidence JSON should keep read-only privacy boundaries",
-    )
 
 
-def assert_skill_proposal_report_human(
-    raw: str,
-    *,
-    context: str,
-    cmd: list[str],
-) -> None:
-    for expected in (
-        "Skill evolution proposals",
-        "Signal source:",
-        "Status: warn",
-        "Proposed skill deltas:",
-        "skills/component-spec-writer/SKILL.md",
-        "No changes made. This command is preview-only",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn skill proposals human output missing {expected!r}",
-        )
 
 
-def assert_skill_proposal_report_markdown(
-    raw: str,
-    *,
-    profile_path: Path,
-    usage_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "# Skill Evolution Proposal Report",
-        f"- File: {profile_path}",
-        f"- Usage sidecar: {usage_path}",
-        "- Status: warn",
-        "## Proposed Skill Deltas",
-        "skills/component-spec-writer/SKILL.md",
-        "Proposed instruction delta:",
-        "```bash",
-        "node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json",
-        "## Privacy And Boundaries",
-        "- Mutates learning profile: no",
-        "- Mutates skill files: no",
-        "- Calls external AI APIs: no",
-        "This report is preview-only evidence; it does not apply changes.",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn skill proposals Markdown report missing {expected!r}",
-        )
 
 
-def assert_skill_proposal_patch(
-    raw: str,
-    *,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "# design-ai skill proposal patch preview",
-        "# Preview-only output from `design-ai learn --propose-skills --patch`.",
-        "# Review manually before applying. This command does not edit skill files.",
-        "diff --git a/skills/component-spec-writer/SKILL.md b/skills/component-spec-writer/SKILL.md",
-        "--- a/skills/component-spec-writer/SKILL.md",
-        "+++ b/skills/component-spec-writer/SKILL.md",
-        "+## Local Learning Proposal: skill-proposal-component-spec-writer-",
-        "+- Category: accessibility",
-        "+- Routes: component-spec",
-        "+- Risk: low",
-        "+- Evidence count: 2",
-        "+- Proposed instruction: Add a pre-handoff accessibility checkpoint",
-        "+- Verification: `node cli/bin/design-ai.mjs check --examples --route component-spec --limit 1 --strict --json`",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn skill proposals patch output missing {expected!r}",
-        )
 
 
-def assert_learning_eval_report_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    eval_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn eval JSON") from error
 
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn eval JSON should report the learning profile path",
-    )
-    require_package_smoke(
-        payload.get("source") == str(eval_path),
-        context=context,
-        cmd=cmd,
-        message="learn eval JSON should report the checkpoint source path",
-    )
-    require_package_smoke(
-        payload.get("status") == "pass"
-        and payload.get("caseCount") == 1
-        and payload.get("passed") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn eval JSON should pass the expected checkpoint case",
-    )
-    cases = payload.get("cases")
-    require_package_smoke(
-        isinstance(cases, list)
-        and len(cases) == 1
-        and cases[0].get("id") == "button-accessibility"
-        and cases[0].get("routeId") == EXPECTED_ROUTE_ID
-        and cases[0].get("briefHash")
-        and cases[0].get("selectedEntryIds") == ["learn-relevant"]
-        and cases[0].get("missingExpectedIds") == [],
-        context=context,
-        cmd=cmd,
-        message="learn eval JSON should include selected ids and checkpoint status",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("storesRawBriefText") is False
-        and privacy.get("storesBriefHash") is True
-        and privacy.get("exposesMatchedTokens") is False,
-        context=context,
-        cmd=cmd,
-        message="learn eval JSON should describe privacy-preserving checkpoint output",
-    )
-    require_package_smoke(
-        EXPECTED_ROUTE_BRIEF not in raw
-        and "\"brief\"" not in raw
-        and "\"query\"" not in raw,
-        context=context,
-        cmd=cmd,
-        message="learn eval JSON should not expose raw brief or query text",
-    )
 
 
-def assert_learning_eval_template_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn eval-template JSON") from error
 
-    source_profile = payload.get("sourceProfile")
-    require_package_smoke(
-        payload.get("version") == 1
-        and isinstance(source_profile, dict)
-        and source_profile.get("file") == str(profile_path)
-        and source_profile.get("entryCount") >= 1,
-        context=context,
-        cmd=cmd,
-        message="learn eval-template JSON should report the source learning profile",
-    )
-    cases = payload.get("cases")
-    require_package_smoke(
-        payload.get("caseCount") == 1
-        and isinstance(cases, list)
-        and len(cases) == 1
-        and cases[0].get("expectedSelectedIds") == ["learn-relevant"]
-        and cases[0].get("minMatchedCount") == 1
-        and cases[0].get("requireNoFallback") is True,
-        context=context,
-        cmd=cmd,
-        message="learn eval-template JSON should generate a runnable expected-selection checkpoint",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("storesRawBriefText") is True
-        and privacy.get("storesBriefHash") is False
-        and privacy.get("exposesMatchedTokens") is False,
-        context=context,
-        cmd=cmd,
-        message="learn eval-template JSON should disclose that checkpoint templates store raw brief text",
-    )
-    require_package_smoke(
-        EXPECTED_ROUTE_BRIEF in raw
-        and "\"brief\"" in raw,
-        context=context,
-        cmd=cmd,
-        message="learn eval-template JSON should include runnable raw brief text in checkpoint cases",
-    )
 
 
-def assert_learning_eval_template_report_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    eval_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse generated learn eval JSON") from error
 
-    require_package_smoke(
-        payload.get("file") == str(profile_path)
-        and payload.get("source") == str(eval_path)
-        and payload.get("status") == "pass"
-        and payload.get("caseCount") == 1
-        and payload.get("passed") == 1,
-        context=context,
-        cmd=cmd,
-        message="generated learn eval-template checkpoint should pass learn --eval --strict",
-    )
-    cases = payload.get("cases")
-    require_package_smoke(
-        isinstance(cases, list)
-        and len(cases) == 1
-        and cases[0].get("selectedEntryIds") == ["learn-relevant"]
-        and cases[0].get("missingExpectedIds") == [],
-        context=context,
-        cmd=cmd,
-        message="generated learn eval-template report should select the expected learning entry",
-    )
 
-
-def assert_learning_eval_strict_failure_json(
-    raw: str,
-    *,
-    returncode: int,
-    profile_path: Path,
-    eval_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    require_package_smoke(
-        returncode == 1,
-        context=context,
-        cmd=cmd,
-        message="learn eval --strict should exit with code 1 when checkpoints fail",
-    )
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn eval strict JSON") from error
-
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn eval strict JSON should report the learning profile path",
-    )
-    require_package_smoke(
-        payload.get("source") == str(eval_path),
-        context=context,
-        cmd=cmd,
-        message="learn eval strict JSON should report the checkpoint source path",
-    )
-    require_package_smoke(
-        payload.get("status") == "fail"
-        and payload.get("caseCount") == 1
-        and payload.get("failed") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn eval strict JSON should report the failed checkpoint case",
-    )
-    cases = payload.get("cases")
-    issue_codes = []
-    if isinstance(cases, list) and cases and isinstance(cases[0].get("issues"), list):
-        issue_codes = [issue.get("code") for issue in cases[0]["issues"] if isinstance(issue, dict)]
-    require_package_smoke(
-        isinstance(cases, list)
-        and len(cases) == 1
-        and cases[0].get("status") == "fail"
-        and cases[0].get("missingExpectedIds") == ["missing-entry"]
-        and "expected-entry-not-in-profile" in issue_codes
-        and "expected-entry-not-selected" in issue_codes,
-        context=context,
-        cmd=cmd,
-        message="learn eval strict JSON should include deterministic failure details",
-    )
-    privacy = payload.get("privacy")
-    require_package_smoke(
-        isinstance(privacy, dict)
-        and privacy.get("storesRawBriefText") is False
-        and privacy.get("storesBriefHash") is True
-        and privacy.get("exposesMatchedTokens") is False,
-        context=context,
-        cmd=cmd,
-        message="learn eval strict JSON should describe privacy-preserving checkpoint output",
-    )
-    require_package_smoke(
-        EXPECTED_ROUTE_BRIEF not in raw
-        and "\"brief\"" not in raw
-        and "\"query\"" not in raw,
-        context=context,
-        cmd=cmd,
-        message="learn eval strict JSON should not expose raw brief or query text",
-    )
-
-
-def assert_learning_eval_report_human(
-    raw: str,
-    *,
-    context: str,
-    cmd: list[str],
-) -> None:
-    for expected in (
-        "Local learning eval report",
-        "Checkpoint:",
-        "Status: pass",
-        "button-accessibility / component-spec: pass",
-        "Privacy: eval reports expose brief hashes and selected ids, not raw brief text.",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn eval human output missing {expected!r}",
-        )
-
-
-def assert_learning_query_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn query JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn query JSON must be an object")
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn query file path differs from the smoke profile",
-    )
-    require_package_smoke(
-        payload.get("query") == "keyboard accessibility",
-        context=context,
-        cmd=cmd,
-        message="learn query text changed",
-    )
-    require_package_smoke(
-        payload.get("count") == 1 and payload.get("totalCount") == 3,
-        context=context,
-        cmd=cmd,
-        message="learn query should return only the matching entry while reporting total profile size",
-    )
-
-    entries = payload.get("entries")
-    require_package_smoke(
-        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
-        context=context,
-        cmd=cmd,
-        message="learn query entries list should contain exactly one matching entry",
-    )
-    require_package_smoke(
-        entries[0].get("id") == "learn-relevant",
-        context=context,
-        cmd=cmd,
-        message="learn query should return the Button accessibility entry",
-    )
-    selection = payload.get("selection")
-    require_package_smoke(
-        isinstance(selection, dict),
-        context=context,
-        cmd=cmd,
-        message="learn query explain selection metadata missing",
-    )
-    require_package_smoke(
-        selection.get("fallbackEnabled") is False and selection.get("selectedCount") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn query explain should select exactly one entry without fallback",
-    )
-    selected = selection.get("selected")
-    require_package_smoke(
-        isinstance(selected, list) and len(selected) == 1 and isinstance(selected[0], dict),
-        context=context,
-        cmd=cmd,
-        message="learn query explain selected list should contain one entry",
-    )
-    require_package_smoke(
-        selected[0].get("id") == "learn-relevant"
-        and selected[0].get("reason") == "brief-match"
-        and type(selected[0].get("score")) in (int, float)
-        and selected[0].get("score") > 0,
-        context=context,
-        cmd=cmd,
-        message="learn query explain should include score and match reason",
-    )
-    matched_tokens = selected[0].get("matchedTokens")
-    require_package_smoke(
-        isinstance(matched_tokens, list)
-        and "keyboard" in matched_tokens
-        and "accessibility" in matched_tokens,
-        context=context,
-        cmd=cmd,
-        message="learn query explain should include matched query tokens",
-    )
-
-
-def assert_learning_query_human(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    for expected in (
-        "Local learning profile",
-        "Entries: 1/3",
-        "Query: keyboard accessibility",
-        "Limit: 2",
-        "Explain: selection score, matched tokens, and reason",
-        "[accessibility] Prioritize keyboard accessibility details for Button component API specs",
-        "matched accessibility, keyboard",
-        "reason brief-match",
-    ):
-        require_package_smoke(
-            expected in raw,
-            context=context,
-            cmd=cmd,
-            message=f"learn query human output missing {expected!r}",
-        )
-    require_package_smoke(
-        "dense Korean mobile checkout" not in raw and "quiet enterprise brand voice" not in raw,
-        context=context,
-        cmd=cmd,
-        message="learn query human output should exclude unrelated profile entries",
-    )
-
-
-def assert_learning_query_export_json(
-    raw: str,
-    *,
-    profile_path: Path,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{context}: failed to parse learn query export JSON") from error
-
-    require_package_smoke(isinstance(payload, dict), context=context, cmd=cmd, message="learn query export JSON must be an object")
-    require_package_smoke(
-        payload.get("file") == str(profile_path),
-        context=context,
-        cmd=cmd,
-        message="learn query export file path differs from the smoke profile",
-    )
-    require_package_smoke(
-        payload.get("query") == "keyboard accessibility",
-        context=context,
-        cmd=cmd,
-        message="learn query export text changed",
-    )
-    selection = payload.get("selection")
-    require_package_smoke(
-        isinstance(selection, dict),
-        context=context,
-        cmd=cmd,
-        message="learn query export selection metadata missing",
-    )
-    require_package_smoke(
-        selection.get("fallbackEnabled") is False and selection.get("fallbackCount") == 0,
-        context=context,
-        cmd=cmd,
-        message="learn query export should not use recency fallback",
-    )
-    require_package_smoke(
-        selection.get("selectedCount") == 1,
-        context=context,
-        cmd=cmd,
-        message="learn query export should select one matching entry",
-    )
-    entries = payload.get("entries")
-    require_package_smoke(
-        isinstance(entries, list) and len(entries) == 1 and isinstance(entries[0], dict),
-        context=context,
-        cmd=cmd,
-        message="learn query export entries list should contain exactly one matching entry",
-    )
-    require_package_smoke(
-        entries[0].get("id") == "learn-relevant",
-        context=context,
-        cmd=cmd,
-        message="learn query export should return the Button accessibility entry",
-    )
-    markdown = payload.get("markdown")
-    require_package_smoke(
-        isinstance(markdown, str) and "no recency fallback" in markdown,
-        context=context,
-        cmd=cmd,
-        message="learn query export markdown should disclose that fallback is disabled",
-    )
-
-
-def assert_learning_relevance_smoke(
-    command_factory,
-    profile_path: Path,
-    *,
-    env: dict[str, str],
-    cwd: Path | None = None,
-    context: str,
-) -> None:
+def _assert_learning_relevance_profile_and_usage(command_factory, profile_path, env, cwd, context):
     write_learning_relevance_fixture(profile_path)
     relevance_env = env.copy()
     relevance_env["DESIGN_AI_LEARNING_FILE"] = str(profile_path)
@@ -12437,6 +7684,19 @@ def assert_learning_relevance_smoke(
         str(usage_path),
     )
     usage_human_result = run_plain(usage_human_cmd, cwd=cwd, env=relevance_env)
+    return relevance_env, usage_path, usage_human_cmd, usage_human_result
+
+
+def _assert_learning_usage_and_signal_setup(
+    command_factory,
+    profile_path,
+    cwd,
+    context,
+    relevance_env,
+    usage_path,
+    usage_human_cmd,
+    usage_human_result,
+):
     assert_learning_usage_report_human(
         usage_human_result.stdout,
         context=f"{context} learn usage human",
@@ -12607,6 +7867,10 @@ def assert_learning_relevance_smoke(
         str(signal_dir),
     )
     signals_human_result = run_plain(signals_human_cmd, cwd=signal_workspace_root, env=relevance_env)
+    return profile_payload, signal_dir, signal_workspace_root, signals_human_cmd, signals_human_result
+
+
+def _assert_learning_signals_and_backlog(command_factory, profile_path, context, relevance_env, usage_path, profile_payload, signal_dir, signal_workspace_root, signals_human_cmd, signals_human_result):
     assert_learning_signal_report_human(
         signals_human_result.stdout,
         context=f"{context} learn signals human",
@@ -12777,6 +8041,10 @@ def assert_learning_relevance_smoke(
         "--json",
     )
     agent_backlog_strict_json_result = run_plain(agent_backlog_strict_json_cmd, cwd=signal_workspace_root, env=relevance_env)
+    return agent_backlog_strict_json_cmd, agent_backlog_strict_json_result
+
+
+def _assert_learning_backlog_and_proposal_report(command_factory, profile_path, cwd, context, relevance_env, usage_path, profile_payload, signal_dir, signal_workspace_root, agent_backlog_strict_json_cmd, agent_backlog_strict_json_result):
     assert_agent_backlog_report_json(
         agent_backlog_strict_json_result.stdout,
         profile_path=profile_path,
@@ -12940,6 +8208,23 @@ def assert_learning_relevance_smoke(
     )
 
     skill_proposals_review_template_path = proposal_profile_path.with_name(f"{proposal_profile_path.stem}.review-template.json")
+    return proposal_profile_path, proposal_usage_path, proposal_before, skill_proposals_json_cmd, skill_proposals_payload, skill_proposals_review_template_path
+
+
+def _assert_learning_skill_proposal_review(
+    command_factory,
+    profile_path,
+    cwd,
+    context,
+    relevance_env,
+    signal_dir,
+    proposal_profile_path,
+    proposal_usage_path,
+    proposal_before,
+    skill_proposals_json_cmd,
+    skill_proposals_payload,
+    skill_proposals_review_template_path,
+):
     skill_proposals_review_template_cmd = command_factory(
         "learn",
         "--propose-skills",
@@ -13109,7 +8394,10 @@ def assert_learning_relevance_smoke(
         cmd=skill_proposals_review_check_report_cmd,
         message="learn skill proposals review-check Markdown report output must not mutate the profile or review file",
     )
+    return review_proposal_id
 
+
+def _assert_learning_skill_proposal_apply_plan(command_factory, profile_path, cwd, context, relevance_env, signal_dir, proposal_profile_path, proposal_usage_path, proposal_before, review_proposal_id):
     skill_proposals_apply_plan_review_path = profile_path.with_name(f"{profile_path.stem}-skill-proposals.accepted.review.json")
     skill_proposals_apply_plan_review_path.write_text(json.dumps({
         "version": 1,
@@ -13273,6 +8561,10 @@ def assert_learning_relevance_smoke(
         "--strict",
         "--json",
     )
+    return skill_proposals_strict_json_cmd
+
+
+def _assert_learning_proposal_artifacts_and_eval_template(command_factory, profile_path, cwd, context, relevance_env, signal_dir, proposal_profile_path, proposal_usage_path, proposal_before, skill_proposals_strict_json_cmd):
     run_expected_failure(
         skill_proposals_strict_json_cmd,
         cwd=cwd,
@@ -13437,6 +8729,10 @@ def assert_learning_relevance_smoke(
         "--json",
     )
     eval_template_check_result = run_plain(eval_template_check_cmd, cwd=cwd, env=relevance_env)
+    return eval_template_path, eval_template_check_cmd, eval_template_check_result
+
+
+def _assert_learning_eval_and_query(command_factory, profile_path, cwd, context, relevance_env, eval_template_path, eval_template_check_cmd, eval_template_check_result):
     assert_learning_eval_template_report_json(
         eval_template_check_result.stdout,
         profile_path=profile_path,
@@ -13577,6 +8873,48 @@ def assert_learning_relevance_smoke(
         context=f"{context} learn eval out file",
         cmd=eval_out_cmd,
     )
+
+
+def assert_learning_relevance_smoke(
+    command_factory,
+    profile_path: Path,
+    *,
+    env: dict[str, str],
+    cwd: Path | None = None,
+    context: str,
+) -> None:
+    relevance_env, usage_path, usage_human_cmd, usage_human_result = _assert_learning_relevance_profile_and_usage(command_factory, profile_path, env, cwd, context)
+    profile_payload, signal_dir, signal_workspace_root, signals_human_cmd, signals_human_result = (
+        _assert_learning_usage_and_signal_setup(
+            command_factory,
+            profile_path,
+            cwd,
+            context,
+            relevance_env,
+            usage_path,
+            usage_human_cmd,
+            usage_human_result,
+        )
+    )
+    agent_backlog_strict_json_cmd, agent_backlog_strict_json_result = _assert_learning_signals_and_backlog(command_factory, profile_path, context, relevance_env, usage_path, profile_payload, signal_dir, signal_workspace_root, signals_human_cmd, signals_human_result)
+    proposal_profile_path, proposal_usage_path, proposal_before, skill_proposals_json_cmd, skill_proposals_payload, skill_proposals_review_template_path = _assert_learning_backlog_and_proposal_report(command_factory, profile_path, cwd, context, relevance_env, usage_path, profile_payload, signal_dir, signal_workspace_root, agent_backlog_strict_json_cmd, agent_backlog_strict_json_result)
+    review_proposal_id = _assert_learning_skill_proposal_review(
+        command_factory,
+        profile_path,
+        cwd,
+        context,
+        relevance_env,
+        signal_dir,
+        proposal_profile_path,
+        proposal_usage_path,
+        proposal_before,
+        skill_proposals_json_cmd,
+        skill_proposals_payload,
+        skill_proposals_review_template_path,
+    )
+    skill_proposals_strict_json_cmd = _assert_learning_skill_proposal_apply_plan(command_factory, profile_path, cwd, context, relevance_env, signal_dir, proposal_profile_path, proposal_usage_path, proposal_before, review_proposal_id)
+    eval_template_path, eval_template_check_cmd, eval_template_check_result = _assert_learning_proposal_artifacts_and_eval_template(command_factory, profile_path, cwd, context, relevance_env, signal_dir, proposal_profile_path, proposal_usage_path, proposal_before, skill_proposals_strict_json_cmd)
+    _assert_learning_eval_and_query(command_factory, profile_path, cwd, context, relevance_env, eval_template_path, eval_template_check_cmd, eval_template_check_result)
 
 
 def assert_index_roundtrip_smoke(
@@ -13833,6 +9171,7 @@ def assert_embedding_stub_provider_roundtrip_smoke(
 
 def run_self_test() -> None:
     context = "package smoke self-test"
+    run_image_console_self_test()
     cmd = ["design-ai", "doctor", "--json"]
     assert_doctor_json_clean(
         passing_doctor_report_json(),
@@ -21178,6 +16517,14 @@ def smoke_tarball(tarball: Path) -> None:
             "DESIGN_AI_PREFIX": "smoke-design-",
             "NO_COLOR": "1",
         })
+        assert_image_console_smoke(
+            lambda port: [str(bin_path), "image", "serve", "--host", "127.0.0.1", "--port", str(port)],
+            cwd=install_root,
+            env=smoke_env,
+            root=tmp_root / "image-console-installed",
+            context="package smoke installed bin Image Console",
+        )
+        installed_site_phase = SiteSmokePhaseAuthority("installed-bin")
 
         assert_version_smoke(
             [str(bin_path), "version"],
@@ -21294,6 +16641,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site JSON",
         )
+        installed_site_phase.advance("summary-json")
         assert_site_linked_preview_json_smoke(
             [str(bin_path), "site", "--stdin", "--linked-preview", "--strict", "--json"],
             install_root / "linked-preview-site",
@@ -21301,12 +16649,14 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site linked preview JSON",
         )
+        installed_site_phase.advance("linked-preview-json")
         assert_site_next_actions_json_smoke(
             [str(bin_path), "site", "--stdin", "--next-actions", "--json"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site next-actions JSON",
         )
+        installed_site_phase.advance("next-actions-json")
         installed_site_next_actions_out = install_root / "site-next-actions.json"
         assert_site_next_actions_json_file_smoke(
             [
@@ -21324,6 +16674,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site next-actions JSON out file",
         )
+        installed_site_phase.advance("next-actions-json-out")
         installed_site_next_actions_human_out = install_root / "site-next-actions.md"
         assert_site_next_actions_human_file_smoke(
             [
@@ -21340,24 +16691,28 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site next-actions human out file",
         )
+        installed_site_phase.advance("next-actions-markdown-out")
         assert_site_sample_json_smoke(
             [str(bin_path), "site", "--sample"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site sample JSON",
         )
+        installed_site_phase.advance("sample-json")
         assert_site_intake_template_json_smoke(
             [str(bin_path), "site", "--intake-template", "--json"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site intake template JSON",
         )
+        installed_site_phase.advance("intake-template-json")
         assert_site_intake_template_markdown_smoke(
             [str(bin_path), "site", "--intake-template"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site intake template Markdown",
         )
+        installed_site_phase.advance("intake-template-markdown")
         assert_site_intake_template_json_smoke(
             [str(bin_path), "site", "--intake-template", "--language", "ko", "--json"],
             cwd=install_root,
@@ -21421,12 +16776,14 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site intake template JSON out file",
         )
+        installed_site_phase.advance("intake-template-korean")
         assert_site_init_json_smoke(
             [str(bin_path), *SITE_INIT_SMOKE_ARGS],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site init JSON",
         )
+        installed_site_phase.advance("init-json")
         installed_site_from_intake = write_site_from_intake_fixture(install_root)
         assert_site_from_intake_json_smoke(
             [str(bin_path), "site", "--from-intake", str(installed_site_from_intake), "--json"],
@@ -21537,6 +16894,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site from-intake stdin JSON out file",
         )
+        installed_site_phase.advance("from-intake-json")
         installed_site_from_intake_bundle_dir = install_root / "site-from-intake-handoff-bundle"
         assert_site_init_bundle_smoke(
             [
@@ -21607,6 +16965,7 @@ def smoke_tarball(tarball: Path) -> None:
             input_text=SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN,
             expected_refactor_task_ids=["task-accessibility"],
         )
+        installed_site_phase.advance("from-intake-tasks")
         installed_site_init_bundle_dir = install_root / "site-init-handoff-bundle"
         assert_site_init_bundle_smoke(
             [str(bin_path), *SITE_INIT_SMOKE_ARGS, "--bundle", "--out", str(installed_site_init_bundle_dir)],
@@ -21615,18 +16974,21 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site init handoff bundle",
         )
+        installed_site_phase.advance("init-bundle")
         assert_site_prompt_templates_json_smoke(
             [str(bin_path), "site", "--prompt-list", "--json"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site prompt template listing JSON",
         )
+        installed_site_phase.advance("prompt-list-json")
         assert_site_mcp_check_json_smoke(
             [str(bin_path), "site", "--stdin", "--mcp-check", "--json"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site mcp-check JSON",
         )
+        installed_site_phase.advance("mcp-check-json")
         installed_site_mcp_check_probes_cmd = [str(bin_path), "site", "--stdin", "--mcp-check", "--probes", "--json"]
         installed_site_mcp_check_probes_payload = assert_site_mcp_check_probes_json_smoke(
             installed_site_mcp_check_probes_cmd,
@@ -21703,6 +17065,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin emitted site mcp-check probes JSON out file",
         )
+        installed_site_phase.advance("mcp-probes-json")
         assert_site_mcp_plan_probes_json_smoke(
             site_mcp_probe_embedded_command(
                 installed_site_mcp_check_probes_payload,
@@ -21740,6 +17103,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site mcp-plan probes markdown",
         )
+        installed_site_phase.advance("mcp-probes-markdown")
         installed_site_mcp_plan_probes_payload = assert_site_mcp_plan_probes_json_smoke(
             [str(bin_path), "site", "--stdin", "--mcp-plan", "--probes", "--json"],
             cwd=install_root,
@@ -21806,12 +17170,14 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site mcp-plan probes JSON out file",
         )
+        installed_site_phase.advance("mcp-plan-json")
         assert_site_workflow_graph_json_smoke(
             [str(bin_path), "site", "--stdin", "--graph", "--json"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site workflow graph JSON",
         )
+        installed_site_phase.advance("workflow-graph-json")
         assert_site_report_evidence_markdown_smoke(
             [str(bin_path), "site", "--stdin", "--report"],
             cwd=install_root,
@@ -21832,6 +17198,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site handoff bundle",
         )
+        installed_site_phase.advance("handoff-bundle")
         installed_site_evidence_bundle_dir = install_root / "installed-site-evidence-handoff-bundle"
         assert_site_bundle_evidence_smoke(
             [str(bin_path), "site", "--stdin", "--bundle", "--out", str(installed_site_evidence_bundle_dir)],
@@ -21846,12 +17213,14 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site bundle-check JSON",
         )
+        installed_site_phase.advance("bundle-check")
         assert_site_bundle_compare_json_smoke(
             [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-compare", str(installed_site_bundle_dir), "--strict", "--json"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site bundle-compare JSON",
         )
+        installed_site_phase.advance("bundle-compare")
         installed_site_warning_bundle_dir = install_root / "installed-site-warning-handoff-bundle"
         assert_site_warning_bundle_smoke(
             [str(bin_path), "site", "--stdin", "--bundle", "--out", str(installed_site_warning_bundle_dir)],
@@ -21894,6 +17263,7 @@ def smoke_tarball(tarball: Path) -> None:
             expected_task_id="task-content-quality",
             expected_selected_task_id="task-content-quality",
         )
+        installed_site_phase.advance("bundle-handoff")
         assert_site_bundle_handoff_human_smoke(
             [str(bin_path), "site", str(installed_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict"],
             cwd=install_root,
@@ -21911,6 +17281,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site bundle-repair JSON",
         )
+        installed_site_phase.advance("bundle-repair")
         assert_site_bundle_check_json_smoke(
             [str(bin_path), "site", str(installed_site_evidence_bundle_dir), "--bundle-check", "--strict", "--json"],
             cwd=install_root,
@@ -21938,12 +17309,15 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin site tasks JSON",
         )
+        installed_site_phase.advance("tasks-json")
         assert_site_prompt_markdown_smoke(
             [str(bin_path), "site", "--stdin", "--prompt", "codex-implementation", "--task", "task-homepage-cta"],
             cwd=install_root,
             env=smoke_env,
             context="package smoke installed bin site task-selected prompt markdown",
         )
+        installed_site_phase.advance("prompt-markdown")
+        installed_site_phase.finish()
         assert_main_help_smoke(
             [str(bin_path), "help"],
             env=smoke_env,
@@ -22184,6 +17558,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin start plan",
         )
+        installed_review_phase = ReviewSmokePhaseAuthority("installed-bin")
         installed_inspect_source = tmp_root / "installed-inspect-source.html"
         installed_quality_report = tmp_root / "installed-quality-report.json"
         write_inspect_fixture(installed_inspect_source)
@@ -22209,6 +17584,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin canonical review",
         )
+        installed_review_phase.advance("review-workflow")
         installed_review_workflow.write_text(installed_review_source, encoding="utf-8")
         installed_review_handoff = tmp_root / "installed-review-handoff.json"
         installed_handoff_source = assert_review_handoff_smoke(
@@ -22225,6 +17601,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin review handoff",
         )
+        installed_review_phase.advance("review-handoff")
         installed_review_handoff.write_text(installed_handoff_source, encoding="utf-8")
         installed_review_receipt_source = assert_review_handoff_receipt_smoke(
             [
@@ -22240,6 +17617,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin review handoff receipt",
         )
+        installed_review_phase.advance("review-handoff-receipt")
         installed_review_receipt = tmp_root / "installed-review-handoff-receipt.json"
         installed_review_receipt.write_text(installed_review_receipt_source, encoding="utf-8")
         installed_intake_source = assert_target_repo_intake_smoke(
@@ -22259,6 +17637,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin target repo intake",
         )
+        installed_review_phase.advance("target-repo-intake")
         installed_target_intake = tmp_root / "installed-target-repo-intake.json"
         installed_target_intake.write_text(installed_intake_source, encoding="utf-8")
         installed_scope_request = tmp_root / "installed-implementation-scope-request.json"
@@ -22281,6 +17660,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin implementation scope proposal",
         )
+        installed_review_phase.advance("implementation-scope-proposal")
         installed_scope_proposal = tmp_root / "installed-implementation-scope-proposal.json"
         installed_scope_proposal.write_text(installed_scope_source, encoding="utf-8")
         installed_scope_approval_source = assert_implementation_scope_approval_smoke(
@@ -22305,6 +17685,8 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin implementation scope approval",
         )
+        installed_review_phase.advance("implementation-scope-approval")
+        installed_review_phase.finish()
         installed_scope_approval = tmp_root / "installed-implementation-scope-approval.json"
         installed_scope_approval.write_text(installed_scope_approval_source, encoding="utf-8")
         assert_inspect_smoke(
@@ -22850,6 +18232,14 @@ def smoke_tarball(tarball: Path) -> None:
             "DESIGN_AI_PREFIX": "npx-design-",
             "NO_COLOR": "1",
         })
+        assert_image_console_smoke(
+            lambda port: npm_exec_cmd(tarball, "image", "serve", "--host", "127.0.0.1", "--port", str(port)),
+            cwd=npx_root,
+            env=npx_env,
+            root=tmp_root / "image-console-npm-exec",
+            context="package smoke npm exec Image Console",
+        )
+        npm_exec_site_phase = SiteSmokePhaseAuthority("npm-exec")
         assert_version_smoke(
             npm_exec_cmd(tarball, "version"),
             cwd=npx_root,
@@ -22950,6 +18340,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site JSON",
         )
+        npm_exec_site_phase.advance("summary-json")
         assert_site_linked_preview_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--linked-preview", "--strict", "--json"),
             npx_root / "linked-preview-site",
@@ -22957,12 +18348,14 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site linked preview JSON",
         )
+        npm_exec_site_phase.advance("linked-preview-json")
         assert_site_next_actions_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--next-actions", "--json"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site next-actions JSON",
         )
+        npm_exec_site_phase.advance("next-actions-json")
         npx_site_next_actions_out = npx_root / "site-next-actions.json"
         assert_site_next_actions_json_file_smoke(
             npm_exec_cmd(
@@ -22980,6 +18373,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site next-actions JSON out file",
         )
+        npm_exec_site_phase.advance("next-actions-json-out")
         npx_site_next_actions_human_out = npx_root / "site-next-actions.md"
         assert_site_next_actions_human_file_smoke(
             npm_exec_cmd(
@@ -22996,24 +18390,28 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site next-actions human out file",
         )
+        npm_exec_site_phase.advance("next-actions-markdown-out")
         assert_site_sample_json_smoke(
             npm_exec_cmd(tarball, "site", "--sample"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site sample JSON",
         )
+        npm_exec_site_phase.advance("sample-json")
         assert_site_intake_template_json_smoke(
             npm_exec_cmd(tarball, "site", "--intake-template", "--json"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site intake template JSON",
         )
+        npm_exec_site_phase.advance("intake-template-json")
         assert_site_intake_template_markdown_smoke(
             npm_exec_cmd(tarball, "site", "--intake-template"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site intake template Markdown",
         )
+        npm_exec_site_phase.advance("intake-template-markdown")
         assert_site_intake_template_json_smoke(
             npm_exec_cmd(tarball, "site", "--intake-template", "--language", "ko", "--json"),
             cwd=npx_root,
@@ -23059,12 +18457,14 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site intake template JSON out file",
         )
+        npm_exec_site_phase.advance("intake-template-korean")
         assert_site_init_json_smoke(
             npm_exec_cmd(tarball, *SITE_INIT_SMOKE_ARGS),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site init JSON",
         )
+        npm_exec_site_phase.advance("init-json")
         npx_site_from_intake = write_site_from_intake_fixture(npx_root)
         assert_site_from_intake_json_smoke(
             npm_exec_cmd(tarball, "site", "--from-intake", str(npx_site_from_intake), "--json"),
@@ -23175,6 +18575,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site from-intake stdin JSON out file",
         )
+        npm_exec_site_phase.advance("from-intake-json")
         npx_site_from_intake_bundle_dir = npx_root / "site-from-intake-handoff-bundle"
         assert_site_init_bundle_smoke(
             npm_exec_cmd(
@@ -23245,6 +18646,7 @@ def smoke_tarball(tarball: Path) -> None:
             input_text=SITE_FROM_INTAKE_TASKS_SMOKE_MARKDOWN,
             expected_refactor_task_ids=["task-accessibility"],
         )
+        npm_exec_site_phase.advance("from-intake-tasks")
         npx_site_init_bundle_dir = npx_root / "site-init-handoff-bundle"
         assert_site_init_bundle_smoke(
             npm_exec_cmd(tarball, *SITE_INIT_SMOKE_ARGS, "--bundle", "--out", str(npx_site_init_bundle_dir)),
@@ -23253,18 +18655,21 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site init handoff bundle",
         )
+        npm_exec_site_phase.advance("init-bundle")
         assert_site_prompt_templates_json_smoke(
             npm_exec_cmd(tarball, "site", "--prompt-list", "--json"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site prompt template listing JSON",
         )
+        npm_exec_site_phase.advance("prompt-list-json")
         assert_site_mcp_check_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--mcp-check", "--json"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site mcp-check JSON",
         )
+        npm_exec_site_phase.advance("mcp-check-json")
         npx_site_mcp_check_probes_cmd = npm_exec_cmd(tarball, "site", "--stdin", "--mcp-check", "--probes", "--json")
         npx_site_mcp_check_probes_payload = assert_site_mcp_check_probes_json_smoke(
             npx_site_mcp_check_probes_cmd,
@@ -23341,6 +18746,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec emitted site mcp-check probes JSON out file",
         )
+        npm_exec_site_phase.advance("mcp-probes-json")
         assert_site_mcp_plan_probes_json_smoke(
             site_mcp_probe_embedded_command(
                 npx_site_mcp_check_probes_payload,
@@ -23378,6 +18784,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site mcp-plan probes markdown",
         )
+        npm_exec_site_phase.advance("mcp-probes-markdown")
         npx_site_mcp_plan_probes_payload = assert_site_mcp_plan_probes_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--mcp-plan", "--probes", "--json"),
             cwd=npx_root,
@@ -23444,12 +18851,14 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site mcp-plan probes JSON out file",
         )
+        npm_exec_site_phase.advance("mcp-plan-json")
         assert_site_workflow_graph_json_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--graph", "--json"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site workflow graph JSON",
         )
+        npm_exec_site_phase.advance("workflow-graph-json")
         assert_site_report_evidence_markdown_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--report"),
             cwd=npx_root,
@@ -23470,6 +18879,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site handoff bundle",
         )
+        npm_exec_site_phase.advance("handoff-bundle")
         npx_site_evidence_bundle_dir = npx_root / "npx-site-evidence-handoff-bundle"
         assert_site_bundle_evidence_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--bundle", "--out", str(npx_site_evidence_bundle_dir)),
@@ -23484,12 +18894,14 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site bundle-check JSON",
         )
+        npm_exec_site_phase.advance("bundle-check")
         assert_site_bundle_compare_json_smoke(
             npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-compare", str(npx_site_bundle_dir), "--strict", "--json"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site bundle-compare JSON",
         )
+        npm_exec_site_phase.advance("bundle-compare")
         npx_site_warning_bundle_dir = npx_root / "npx-site-warning-handoff-bundle"
         assert_site_warning_bundle_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--bundle", "--out", str(npx_site_warning_bundle_dir)),
@@ -23532,6 +18944,7 @@ def smoke_tarball(tarball: Path) -> None:
             expected_task_id="task-content-quality",
             expected_selected_task_id="task-content-quality",
         )
+        npm_exec_site_phase.advance("bundle-handoff")
         assert_site_bundle_handoff_human_smoke(
             npm_exec_cmd(tarball, "site", str(npx_site_bundle_dir), "--bundle-handoff", "--task", "task-content-quality", "--strict"),
             cwd=npx_root,
@@ -23549,6 +18962,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site bundle-repair JSON",
         )
+        npm_exec_site_phase.advance("bundle-repair")
         assert_site_bundle_check_json_smoke(
             npm_exec_cmd(tarball, "site", str(npx_site_evidence_bundle_dir), "--bundle-check", "--strict", "--json"),
             cwd=npx_root,
@@ -23576,12 +18990,15 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec site tasks JSON",
         )
+        npm_exec_site_phase.advance("tasks-json")
         assert_site_prompt_markdown_smoke(
             npm_exec_cmd(tarball, "site", "--stdin", "--prompt", "codex-implementation", "--task", "task-homepage-cta"),
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec site task-selected prompt markdown",
         )
+        npm_exec_site_phase.advance("prompt-markdown")
+        npm_exec_site_phase.finish()
         assert_main_help_smoke(
             npm_exec_cmd(tarball, "help"),
             cwd=npx_root,
@@ -23847,6 +19264,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec specialization benchmark",
         )
+        npx_review_phase = ReviewSmokePhaseAuthority("npm-exec")
         npx_inspect_source = npx_root / "npx-inspect-source.html"
         npx_quality_report = npx_root / "npx-quality-report.json"
         write_inspect_fixture(npx_inspect_source)
@@ -23873,6 +19291,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec canonical review",
         )
+        npx_review_phase.advance("review-workflow")
         npx_review_workflow.write_text(npx_review_source, encoding="utf-8")
         npx_review_handoff = npx_root / "npx-review-handoff.json"
         npx_handoff_source = assert_review_handoff_smoke(
@@ -23890,6 +19309,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec review handoff",
         )
+        npx_review_phase.advance("review-handoff")
         npx_review_handoff.write_text(npx_handoff_source, encoding="utf-8")
         npx_review_receipt_source = assert_review_handoff_receipt_smoke(
             npm_exec_cmd(
@@ -23906,6 +19326,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec review handoff receipt",
         )
+        npx_review_phase.advance("review-handoff-receipt")
         npx_review_receipt = tmp_root / "npx-review-handoff-receipt.json"
         npx_review_receipt.write_text(npx_review_receipt_source, encoding="utf-8")
         npx_intake_source = assert_target_repo_intake_smoke(
@@ -23926,6 +19347,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec target repo intake",
         )
+        npx_review_phase.advance("target-repo-intake")
         npx_target_intake = tmp_root / "npx-target-repo-intake.json"
         npx_target_intake.write_text(npx_intake_source, encoding="utf-8")
         npx_scope_request = tmp_root / "npx-implementation-scope-request.json"
@@ -23949,6 +19371,7 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec implementation scope proposal",
         )
+        npx_review_phase.advance("implementation-scope-proposal")
         npx_scope_proposal = tmp_root / "npx-implementation-scope-proposal.json"
         npx_scope_proposal.write_text(npx_scope_source, encoding="utf-8")
         npx_scope_approval_source = assert_implementation_scope_approval_smoke(
@@ -23974,6 +19397,8 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec implementation scope approval",
         )
+        npx_review_phase.advance("implementation-scope-approval")
+        npx_review_phase.finish()
         npx_scope_approval = tmp_root / "npx-implementation-scope-approval.json"
         npx_scope_approval.write_text(npx_scope_approval_source, encoding="utf-8")
         implementation_source = target_repo_intake_root / "src" / "settings" / "view.tsx"
@@ -23982,8 +19407,14 @@ def smoke_tarball(tarball: Path) -> None:
             "export function Settings() { return <button>Save</button>; }\n",
             encoding="utf-8",
         )
+        installed_implementation_evidence_phase = ImplementationEvidenceSmokePhaseAuthority(
+            "installed-bin"
+        )
+        npx_implementation_evidence_phase = ImplementationEvidenceSmokePhaseAuthority("npm-exec")
         implementation_evidence_request = tmp_root / "implementation-evidence-request.json"
         write_implementation_evidence_request(implementation_evidence_request, target_repo_intake_root)
+        installed_implementation_evidence_phase.advance("implementation-evidence-request")
+        npx_implementation_evidence_phase.advance("implementation-evidence-request")
         installed_implementation_evidence_source = assert_implementation_evidence_smoke(
             [
                 str(bin_path),
@@ -24004,6 +19435,8 @@ def smoke_tarball(tarball: Path) -> None:
             env=smoke_env,
             context="package smoke installed bin implementation evidence",
         )
+        installed_implementation_evidence_phase.advance("review-evidence")
+        installed_implementation_evidence_phase.finish()
         installed_implementation_evidence = tmp_root / "installed-implementation-evidence.json"
         installed_implementation_evidence.write_text(
             installed_implementation_evidence_source,
@@ -24030,6 +19463,8 @@ def smoke_tarball(tarball: Path) -> None:
             env=npx_env,
             context="package smoke npm exec implementation evidence",
         )
+        npx_implementation_evidence_phase.advance("review-evidence")
+        npx_implementation_evidence_phase.finish()
         npx_implementation_evidence = tmp_root / "npx-implementation-evidence.json"
         npx_implementation_evidence.write_text(npx_implementation_evidence_source, encoding="utf-8")
 
@@ -24670,7 +20105,27 @@ def smoke_tarball(tarball: Path) -> None:
 def pack_and_smoke() -> None:
     with tempfile.TemporaryDirectory(prefix="design-ai-pack-") as tmp:
         dist = Path(tmp)
-        run(["npm", "pack", "--pack-destination", str(dist)])
+        pack_home = dist / "home"
+        pack_cache = dist / "npm-cache"
+        pack_tmp = dist / "tmp"
+        pack_home.mkdir()
+        pack_cache.mkdir()
+        pack_tmp.mkdir()
+        pack_userconfig = pack_home / ".npmrc"
+        pack_userconfig.write_text("", encoding="utf-8")
+        pack_env = os.environ.copy()
+        pack_env.update({
+            "HOME": str(pack_home),
+            "TMPDIR": str(pack_tmp),
+            "TMP": str(pack_tmp),
+            "TEMP": str(pack_tmp),
+            "npm_config_cache": str(pack_cache),
+            "npm_config_userconfig": str(pack_userconfig),
+            "npm_config_update_notifier": "false",
+            "npm_config_audit": "false",
+            "npm_config_fund": "false",
+        })
+        run(["npm", "pack", "--pack-destination", str(dist)], env=pack_env)
         tarballs = sorted(dist.glob("*.tgz"))
         if len(tarballs) != 1:
             raise SystemExit(f"expected exactly one packed tarball, found {len(tarballs)} in {dist}")

@@ -53,6 +53,7 @@ REQUIRED_PATHS = {
     "package.json",
     "README.md",
     "README.ko.md",
+    ".env.example",
     "LICENSE",
     "AGENTS.md",
     "AGENTS.ko.md",
@@ -77,6 +78,13 @@ REQUIRED_PATHS = {
     "cli/lib/browser-verification.schema.json",
     "cli/lib/browser-verification.mjs",
     "cli/lib/dispatch.mjs",
+    "cli/lib/image-prompt-contract.d.ts",
+    "cli/lib/image-prompt-contract.mjs",
+    "cli/lib/prompt-guide-client.mjs",
+    "cli/lib/image-provider.mjs",
+    "cli/lib/image-asset-manifest.mjs",
+    "cli/lib/image-workflow.mjs",
+    "cli/lib/image-console-server.mjs",
     "cli/lib/mcp-server.mjs",
     "cli/lib/plugin-manifest.mjs",
     "cli/lib/route-operation.mjs",
@@ -123,6 +131,7 @@ REQUIRED_PATHS = {
     "cli/commands/review-pack.mjs",
     "cli/commands/benchmark.mjs",
     "cli/commands/verify-browser.mjs",
+    "cli/commands/image.mjs",
     "cli/sdk/start-adapter.mjs",
     "cli/sdk/inspect-adapter.mjs",
     "cli/sdk/review-adapter.mjs",
@@ -192,6 +201,13 @@ REQUIRED_PATHS = {
     "docs/website-console/pilot-evidence.js",
     "docs/website-console/review-comparison.js",
     "docs/website-console/styles.css",
+    "docs/image-console/index.html",
+    "docs/image-console/app.js",
+    "docs/image-console/contract.js",
+    "docs/image-console/styles.css",
+    "docs/integrations/prompt-guide-image-prompts.md",
+    "examples/image-prompts/generation.json",
+    "examples/image-prompts/editing.json",
     "tools/audit/run-all.py",
     "tools/audit/frontmatter-check.py",
     "tools/audit/link-check.py",
@@ -655,6 +671,26 @@ def run_self_test() -> int:
         "tools/audit/check-coverage.py" in required_paths,
         "coverage audit script should be required package contents",
     )
+    for image_console_path in (
+        "cli/commands/image.mjs",
+        "cli/lib/image-prompt-contract.d.ts",
+        "cli/lib/image-prompt-contract.mjs",
+        "cli/lib/prompt-guide-client.mjs",
+        "cli/lib/image-provider.mjs",
+        "cli/lib/image-asset-manifest.mjs",
+        "cli/lib/image-workflow.mjs",
+        "cli/lib/image-console-server.mjs",
+        "docs/image-console/index.html",
+        "docs/image-console/app.js",
+        "docs/image-console/contract.js",
+        "docs/image-console/styles.css",
+        ".env.example",
+        "docs/integrations/prompt-guide-image-prompts.md",
+    ):
+        assert_condition(
+            image_console_path in required_paths,
+            f"Image Console artifact should be required package contents: {image_console_path}",
+        )
     for localized_entrypoint in (
         "README.ko.md",
         "AGENTS.ko.md",
@@ -689,6 +725,25 @@ def run_self_test() -> int:
         not missing_fixture_paths,
         "package.json files fixture should include all required package contents: "
         + ", ".join(missing_fixture_paths),
+    )
+    image_contract_missing_fixture = set(package_file_paths)
+    image_contract_missing_fixture.remove("cli/lib/image-prompt-contract.d.ts")
+    image_contract_missing_summary = verify_package_contents(
+        {
+            "name": package_json["name"],
+            "version": package_json["version"],
+            "filename": "missing-image-contract.tgz",
+            "size": 1024,
+            "unpackedSize": 4096,
+            "files": [{"path": path} for path in sorted(image_contract_missing_fixture)],
+        },
+        package_json=package_json,
+        plugin_json=plugin_json,
+        required_paths=set(required_paths),
+    )
+    assert_condition(
+        "cli/lib/image-prompt-contract.d.ts" in image_contract_missing_summary["missing"],
+        "missing Image Console type contract should be reported",
     )
 
     passing_pack = {

@@ -2,6 +2,30 @@
 
 Pre-flight steps for every design-ai release. Stamped at v3.12 — usable from v4.0 onward as the canonical pre-release ritual.
 
+## Current-source Image Console release hardening (unreleased)
+
+This current-source evidence belongs to the unreleased v5.2.0 candidate and does
+not change published v5.1.0 behavior. The
+deterministic local mock loopback flow exercises packaged static assets, health,
+catalog, generation draft validation, rejection before approval, and one
+approved local provider execution through both installed-bin and one-shot
+packed-tarball paths. It makes no Prompt Guide/provider-network call, keeps
+temporary HOME, npm cache, provider, and asset roots isolated, reaps child
+processes, and preserves repository status; registry live coverage remains
+pending future publish.
+
+The release gate also requires the Image Console runtime, static assets, server
+configuration, and `cli/lib/image-prompt-contract.d.ts` in package contents.
+Run the focused Image Console tests and smoke self-tests before the full gate;
+do not describe this current-source v5.2.0 evidence as a published capability.
+
+Use the [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
+integration guide as the sole exact current-source receipt for test, audit,
+package, documentation, packed-smoke, browser-QA, and external-verification
+results. The exact packed-artifact digest and wall time belong to the run
+handoff, not published release metadata, because this document is itself
+packaged.
+
 ## Before tagging any release
 
 ### 0. Core automated gate

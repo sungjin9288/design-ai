@@ -1,5 +1,10 @@
 # Product readiness
 
+The [product completion plan](product-completion-plan.md) owns the 2026-09-05
+architecture, current-source engineering checklist, and separate live,
+review/merge, publication, distribution, and external-pilot completion gates.
+Its local hardening does not change the published baseline below.
+
 Current status: **v5.1.0 is published.** npm `latest`, GitHub Release, and the
 Homebrew formula identify the same additive P6-P13 release. The public contract
 has 29 MCP tools and 20 SDK exports. Model training is not part of the shipped
@@ -15,8 +20,14 @@ participation remains
 consent-gated and unverified. P17A now validates the metadata, activation,
 progressive disclosure, local source authority, completion criteria, line budgets,
 and inventory parity of all 21 skills, while removing guessed MCP operations and
-dated operational claims from durable playbooks. This is current-source internal
-hardening, not a new public capability or release.** CLI `design-ai start`,
+dated operational claims from durable playbooks. P17B.2-P17B.5 now separate
+Website Console, learning, review, and P11 implementation-evidence smoke
+responsibilities behind direct imports while retaining the stable entry points,
+exact command coverage, fixtures, outputs, and failure contracts. This is
+current-source internal hardening, not published v5.1.0 behavior. Image Console
+release hardening is part of the current-source v5.2.0 release candidate and
+remains unreleased; this is not published behavior. The deterministic local mock
+loopback flow makes no Prompt Guide/provider-network call. Registry live coverage remains pending future publish.** CLI `design-ai start`,
 SDK `start()`, MCP `design_ai_start`, and Website Console share one canonical
 read-only start payload. CLI `design-ai inspect`, SDK `inspectHtml()`, and MCP
 `design_ai_inspect_html` share the canonical quality report. The inspector confirms
@@ -24,6 +35,18 @@ only supported static HTML evidence and leaves runtime behavior unverified.
 CLI `design-ai review`, SDK `reviewHtml()`, MCP `design_ai_review_html`, and Website
 Console now compose those two contracts into one linked review session with exact
 source identity, ordered stages, and a pending human decision.
+
+### Current-source Image Console release candidate
+
+The current-source Image Console is the local v5.2.0 release candidate. Its canonical
+test, audit, package, documentation, packed-smoke, browser-QA, and external-
+verification receipt is maintained in the
+[Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
+integration guide. The deterministic local mock loopback is verified, while a
+live Prompt Guide call, real provider generation/edit, registry smoke, tag, and
+publish remain separate gates. None is represented as published
+v5.1.0 behavior.
+
 CLI `design-ai review-handoff`, SDK `reviewHandoff()`, MCP
 `design_ai_review_handoff`, and Website Console preserve that session as a
 self-validating but undelivered transfer. Optional browser evidence must match the
@@ -86,7 +109,8 @@ This document separates shipped product scope from future product ideas so the r
 |---|---|---|---|
 | Design consulting skills | Complete for v5.0.0 | 21 skills across design systems, interface craft, website improvement, UX audit, critique, handoff, motion, illustration, print, video, game UI, conversational UI, and spatial design | Keep knowledge fresh through normal stability review |
 | Skill contract reliability | Implemented in current source; unreleased | Zero-dependency metadata and playbook validator, isolated negative fixtures, 21/21 skill check, manifest parity, and release-self-test integration; `npm run release:check` passes with 832 tests, 8 strict audits, 794 packaged files, a 0/0 documentation warning policy, SDK smoke, installed-bin smoke, and one-shot package smoke; no CLI, SDK, MCP, package version, publication, or P16 state change | Modularize the oversized smoke harness under P17B while preserving entry points and exact contract behavior |
-| Smoke harness maintainability | P17B.1 implemented in current source; unreleased | One Website Console contract owner for 42 values, one validator module for eight shared validators, and one isolated snapshot/negative-fixture runner; exact baseline parity; stable shared/local/registry entry points; all new files under 400 lines and largest extracted function 85 lines | Move remaining Website Console scenario fixtures, assertion groups, and dual execution runners, then extract learning, review, and lifecycle domains without reducing coverage |
+| Smoke harness maintainability | P17B.5 implementation-evidence extraction verified for the current source | P17B.2-P17B.4 remain sealed baselines. P17B.5 gives the P11 assertion, package adapter, pure request fixture, and installed-bin/one-shot npm phase authority focused owners while stable package wrappers retain real command execution and guards. The moved callable AST digest and seven failure expressions match the baseline; all five new modules are below 400 lines, every new or moved function is at most 79 lines, and package 5.1.0, SDK smoke bytes, P16, the byte-identical registry fixture, and the 716-command normalized packed-sequence digest are unchanged. Focused self-tests, 832 Node tests, eight strict audits, 861 packaged files, the 0/0 documentation policy, release self-tests, and actual packed installed-bin/one-shot npm smoke pass with a disposable local npm cache | Extract pilot and lifecycle domains separately after review and implementation evidence remain stable, without reducing coverage |
+| Image Console release hardening | v5.2.0 local release candidate; current-source, unreleased | Canonical `image` help metadata and fragments, package-contents requirements for runtime/static/configuration/type artifacts, shared installed-bin and one-shot local mock loopback smoke, draft-first validation, rejection before approval, one deterministic provider execution, isolated temporary roots, child reaping, repository-status preservation, release-metadata negative fixtures, and desktop/mobile/keyboard/a11y browser QA; no Prompt Guide/provider-network call, secret, raw response, or full compiled prompt is persisted; registry smoke parity is self-test-only until a future publish | Pass PR CI, then run a controlled live Prompt Guide plus real provider generation/edit check when server-only configuration is available before a separate tag and publish decision |
 | Design agent workflows | Complete for v5.0.0 | 16 public slash commands, 4 review agents, route/prompt/artifact/pack/check/search/show/examples CLI workflows; shared implementation-plan, critique-loop, and DESIGN.md contracts across CLI, SDK, MCP, and Website Console | Collect adoption feedback and keep release evidence current |
 | One start flow | Published in v5.1.0 | Shared `start` operation, CLI/SDK/MCP exact JSON parity, Website Console import/review/export, closed input contracts, and installed-bin plus one-shot smoke coverage | Collect real workflow evidence without weakening the read-only boundary |
 | Read-only quality engine | Published in v5.1.0 | Shared static HTML operation across CLI/SDK/MCP, canonical eight-lens report validation, benchmark reproduction, immutable-source assertions, and `npm run release:check` evidence with 694 tests, 8 strict audits, 676 packaged files, warning-free docs, and installed-bin plus one-shot smoke coverage | Keep static confirmation separate from optional browser evidence |

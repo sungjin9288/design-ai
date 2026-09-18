@@ -1,0 +1,12 @@
+{
+  "taskType": "generation",
+  "domain": "manufacturing",
+  "outputType": "multi_agent_architecture",
+  "intent": "중소제조용 Multi AI Agent 플랫폼 Architecture",
+  "audience": "공공기관 및 제조기업 의사결정자",
+  "language": "ko",
+  "aspectRatio": "16:9",
+  "exactTexts": ["지능형 통합관제 Orchestrator", "Digital Twin", "품질 Simulator", "Execution Gateway"],
+  "constraints": ["Orchestrator를 가장 크게 표현", "Integration & Data Fabric은 작고 단순하게 표현", "흰색 배경"],
+  "negativeConstraints": ["관리자와 운영자 도형 금지", "현실적인 공장 사진 금지", "긴 문단 금지"]
+}

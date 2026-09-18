@@ -1,0 +1,12 @@
+{
+  "taskType": "editing",
+  "domain": "architecture",
+  "outputType": "architecture_edit",
+  "intent": "기존 Architecture 구조를 유지하면서 핵심 Agent 영역 확대",
+  "language": "ko",
+  "aspectRatio": "16:9",
+  "preserve": ["전체 비율", "기존 Label", "Platform Core 연결 관계"],
+  "modify": ["상단 Agent 영역 확대", "Orchestrator 강조", "Integration Layer 축소"],
+  "remove": ["관리자 도형", "운영자 도형"],
+  "mustNotChange": ["Digital Twin과 품질 Simulator의 계층 관계"]
+}

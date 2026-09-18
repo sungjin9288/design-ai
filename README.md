@@ -88,7 +88,16 @@ The current source installs 21 skills, 16 public slash commands, and 4 agents un
 /design-from-brief Korean fintech for freelancers
 ```
 
-CLI commands include `design-ai start <brief|--from-file file|--stdin> ...`, the canonical `design-ai review <source.html> --brief text ...` workflow, self-validating `design-ai review-handoff <review-workflow.json> --recipient name ...`, consumer-side `design-ai review-handoff-verify <review-handoff.json> --consumer name ...`, bounded `design-ai review-intake <receipt.json> --target-root path --consumer name ...`, immutable `design-ai review-scope <intake.json> --request request.json --consumer name ...`, separate `design-ai review-scope-approve <proposal.json> ... --yes`, read-only `design-ai review-evidence <approval.json> --request request.json --target-root path --consumer name ...`, source-linked `design-ai review-pilot <implementation-evidence.json> --workflow review-workflow.json --record pilot-record.json ...`, `design-ai review-pack [id]`, the lower-level `design-ai inspect <source.html> --brief text --review-pack <id> ...`, and approval-gated `design-ai verify-browser <quality-report.json> ...` alongside the existing install, route, prompt, artifact, pack, learn, check, workspace, site, corpus, audit, MCP, version, and help workflows. Run `design-ai help --json` for the complete machine-readable catalog or `design-ai help <command>` for exact options.
+CLI commands include `design-ai start <brief|--from-file file|--stdin> ...`, the canonical `design-ai review <source.html> --brief text ...` workflow, self-validating `design-ai review-handoff <review-workflow.json> --recipient name ...`, consumer-side `design-ai review-handoff-verify <review-handoff.json> --consumer name ...`, bounded `design-ai review-intake <receipt.json> --target-root path --consumer name ...`, immutable `design-ai review-scope <intake.json> --request request.json --consumer name ...`, separate `design-ai review-scope-approve <proposal.json> ... --yes`, read-only `design-ai review-evidence <approval.json> --request request.json --target-root path --consumer name ...`, source-linked `design-ai review-pilot <implementation-evidence.json> --workflow review-workflow.json --record pilot-record.json ...`, `design-ai review-pack [id]`, the lower-level `design-ai inspect <source.html> --brief text --review-pack <id> ...`, approval-gated `design-ai verify-browser <quality-report.json> ...`, and local `design-ai image serve` alongside the existing install, route, prompt, artifact, pack, learn, check, workspace, site, corpus, audit, MCP, version, and help workflows. Run `design-ai help --json` for the complete machine-readable catalog or `design-ai help <command>` for exact options.
+
+### Local Image Console
+
+`design-ai image serve` starts a loopback-only, approval-gated image workflow. Prompt Guide credentials remain server-side; generation or editing creates a read-only validated draft before the configured provider-neutral local subprocess can run. See [Prompt Guide Image Console](docs/integrations/prompt-guide-image-prompts.md) for the server-only environment contract and synthetic fixtures.
+
+Image Console release hardening is included in the current-source v5.2.0 release
+candidate and remains unreleased; the public baseline is still v5.1.0. The
+deterministic local mock loopback flow makes no Prompt Guide/provider-network
+call, and its registry smoke parity remains pending future publish.
 
 See [`docs/DISTRIBUTION.md`](docs/DISTRIBUTION.md) for the full distribution guide.
 

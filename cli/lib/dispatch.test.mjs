@@ -76,6 +76,7 @@ test("suggestCommand ignores aliases and distant input", () => {
 
 test("canonical command list matches the help catalog topics", () => {
   assert.deepEqual(CANONICAL_COMMANDS, HELP_TOPICS);
+  assert.equal(CANONICAL_COMMANDS.includes("image"), true);
 });
 
 test("unknown commands print canonical suggestions and exit with code 1", async () => {

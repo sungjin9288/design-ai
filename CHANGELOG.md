@@ -2,10 +2,45 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
-## Unreleased
+## v5.2.0 — Image Console and release reliability (2026-09)
+
+Image Console release hardening is part of the current-source v5.2.0 candidate
+and remains unreleased; it is not published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Registry live
+coverage remains pending future publish, with the canonical receipt maintained
+in
+[`docs/integrations/prompt-guide-image-prompts.md`](docs/integrations/prompt-guide-image-prompts.md).
 
 ### Added
 
+- Added current-source Image Console release hardening: the canonical `image`
+  help topic, reusable package/registry smoke contract, and bounded local mock
+  loopback flow now cover packaged static assets, health, catalog, generation
+  draft validation, pre-approval rejection, and one approved deterministic
+  local provider execution. The flow uses isolated temporary roots, reaps its
+  child process, preserves repository status, and never records API keys, raw
+  responses, or the full compiled prompt.
+- The deterministic local mock loopback smoke makes no Prompt Guide/provider-network call; registry live coverage remains pending future publish.
+- The exact current-source test, audit, package, documentation, packed-smoke,
+  browser-QA, and external-verification receipt is maintained once in the
+  [Prompt Guide Image Console](docs/integrations/prompt-guide-image-prompts.md)
+  integration guide; registry live coverage remains pending future publish.
+- Added focused P11 implementation-evidence assertion, package-adapter, request
+  fixture, and phase-authority modules. Installed-bin and one-shot npm smoke each
+  execute `review-evidence` once at their existing command blocks.
+- Added an independently runnable implementation-evidence contract self-test for
+  the canonical callable AST, positive and failure fixtures, phase ordering, and
+  unsupported executors, then connected it to `release:self-test`.
+- Added focused review-smoke modules for inspect, review comparison, P6 review,
+  P7 handoff, P8 receipt, P9 intake, P10 scope proposal/approval, and browser
+  review evidence. Installed-bin and one-shot npm smoke now each advance the
+  same explicit P6-P10 phase authority at their existing command blocks.
+- Added focused Website Console smoke-domain fixture and assertion modules for
+  JSON/Markdown scenarios, package intake/evidence payloads, and MCP/bundle
+  contracts. The stable smoke entry point imports those responsibility modules
+  directly, and installed-bin plus one-shot npm paths now advance one
+  explicit ordered phase authority from their real command blocks without
+  changing CLI behavior or coverage; registry smoke retains the byte-stable
+  normal Website Console fixture.
 - Added an independently runnable Website Console smoke-contract self-test with
   a byte-stable SHA-256 snapshot, command-order checks, and negative fixtures for
   unsafe guidance, malformed probe payloads, and repair-state drift.
@@ -33,6 +68,26 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Changed
 
+- Added release metadata negative fixtures for current-source Image Console
+  evidence and made package contents require the complete Image Console
+  runtime, static assets, server configuration, and
+  `image-prompt-contract.d.ts`; registry smoke mirrors the contract only for a
+  future post-publish run and does not claim live registry coverage here.
+- Split only the P11 implementation-evidence smoke contract into direct focused
+  imports while preserving stable package wrapper names, real command execution,
+  input and Git mutation guards, return and exception behavior, failure messages,
+  and the 716-command packed sequence. Pilot, Website Console runtime, SDK smoke,
+  registry runtime, and lifecycle domains are unchanged.
+- Split the existing review assertions into direct responsibility imports while
+  retaining stable entry-point callable names, real command execution, and exact
+  assertion failure behavior. Implementation evidence, pilot evidence, learning
+  proposal review, product runtime, SDK smoke, and lifecycle coverage are
+  unchanged.
+- Split the package and registry learning smoke assertions into directly imported
+  profile, transfer, relevance/eval, agent-backlog, skill-proposal report/review,
+  and skill-proposal apply-plan modules. The stable smoke entry points still own
+  command execution, while responsibility-named validators preserve exact
+  payload, report, patch, template, sidecar, fixture, and failure contracts.
 - Moved 42 Website Console contract constants and shared site/probe/repair
   validators into focused contract and validator modules while preserving the
   existing `smoke_assertions`, local package-smoke, and registry-smoke surfaces.
@@ -45,11 +100,51 @@ User-facing release notes for design-ai. Versions follow semver.
 
 ### Fixed
 
+- Contain provider stdin failures when an adapter exits before reading input,
+  without terminating the Image Console gateway.
+- Bind editing approval to the compose-time source descriptor, rejecting even
+  coherent image/manifest replacement before creating a job.
+- Consume approval immediately, ignore stale job success/failure responses,
+  and preserve the current source selection during Image Console asset refresh.
+  Keep asset-list failures actionable and hide stale draft metadata after reset.
 - Restored GitHub Pages project paths in multilingual alternate links and mirrored
   the combined sitemap at locale roots. Head alternate links now provide stable
   language-root sitemap discovery while visible language controls retain contextual
   page links, removing homepage and nested-page 404s without changing local preview
   navigation.
+
+### Verified
+
+- All 8 audits passed for the v5.2.0 release candidate.
+- `npm run release:check` passed with 882/882 Node tests, 880 packaged files,
+  0/0 documentation-policy warnings, release self-tests, and installed-bin plus
+  one-shot `npm exec` smoke against the packed tarball.
+- Image Console browser QA passed at 1440×900 and 390×844 with no horizontal
+  overflow, keyboard tab operation, skip-link focus transfer, a 3 px visible
+  focus ring, 44 px minimum controls, reduced-motion handling, WCAG 2.1 AA
+  contrast, and no console warnings or errors before the intentional
+  missing-provider request.
+- The exact current-source receipt remains in the
+  [Prompt Guide Image Console](docs/integrations/prompt-guide-image-prompts.md)
+  integration guide. A live Prompt Guide call, real provider execution, and
+  post-publish registry smoke remain unverified until their separate gates run.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 5.1.0 → 5.2.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+
+- Local operators can compose, validate, explicitly approve, generate, persist,
+  and later edit image assets through one loopback-only console without exposing
+  Prompt Guide credentials to the browser or provider process.
+- Maintainers can verify the Image Console through focused contracts, packaged
+  installed-bin and one-shot smoke, browser evidence, and release metadata that
+  fails closed when the canonical receipt disappears.
+- Skill and smoke-domain hardening keeps the existing review, learning, Website
+  Console, and external-pilot contracts independently testable as the package
+  grows.
 
 ## v5.1.0 — Verified design delivery loop (2026-07)
 

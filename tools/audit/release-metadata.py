@@ -213,6 +213,18 @@ PRODUCT_READINESS_RELEASE_POLICY_PRODUCT_READINESS_FULL_GATE_RELEASE_CHECK_TERM_
     ("release self-tests",),
     ("packed-tarball smoke",),
 )
+IMAGE_CONSOLE_EVIDENCE_TERM_GROUPS = (
+    ("Image Console release hardening",),
+    ("current-source", "current source"),
+    ("unreleased", "not published"),
+    ("deterministic local mock loopback", "local mock loopback"),
+    ("no Prompt Guide/provider-network call", "no Prompt Guide/provider network call"),
+    ("registry live coverage remains pending future publish", "post-publish registry coverage remains pending"),
+    (
+        "docs/integrations/prompt-guide-image-prompts.md",
+        "integrations/prompt-guide-image-prompts.md",
+    ),
+)
 PRODUCT_READINESS_PHRASE_CHECKS = (
     (
         "product readiness warning strict compare phrase",
@@ -4069,6 +4081,34 @@ def product_readiness_phrase_doc_errors(label: str, text: str) -> list[str]:
     return errors
 
 
+def image_console_evidence_errors(label: str, text: str) -> list[str]:
+    errors: list[str] = []
+    normalized = text.casefold()
+    for term_group in IMAGE_CONSOLE_EVIDENCE_TERM_GROUPS:
+        if not any(term.casefold() in normalized for term in term_group):
+            expected = " or ".join(term_group)
+            errors.append(f"{label} is missing Image Console release evidence: {expected}")
+    return errors
+
+
+def unreleased_changelog_entry(changelog_text: str) -> str:
+    match = re.search(r"^## Unreleased\s*$", changelog_text, re.MULTILINE)
+    if not match:
+        return ""
+    next_match = re.search(r"^## v\d+\.\d+\.\d+\b", changelog_text[match.end():], re.MULTILINE)
+    end = match.end() + next_match.start() if next_match else len(changelog_text)
+    return changelog_text[match.start():end]
+
+
+def current_source_roadmap_entry(roadmap_text: str) -> str:
+    match = re.search(r"^## Current-source Image Console release evidence\s*$", roadmap_text, re.MULTILINE)
+    if not match:
+        return ""
+    next_match = re.search(r"^## Phase\b", roadmap_text[match.end():], re.MULTILINE)
+    end = match.end() + next_match.start() if next_match else len(roadmap_text)
+    return roadmap_text[match.start():end]
+
+
 def release_policy_doc_set_errors(release_policy_docs: dict[str, str]) -> list[str]:
     required_labels = set(REQUIRED_RELEASE_POLICY_DOC_LABELS)
     missing_errors = [
@@ -4139,6 +4179,17 @@ def release_metadata_summary(
                 f"{version_bump.group('to')} != {version}"
             )
         errors.extend(audit_count_errors("CHANGELOG.md top entry", changelog_entry, audit_count))
+    current_changelog_scope = "\n".join(
+        part
+        for part in (unreleased_changelog_entry(changelog_text), changelog_entry)
+        if part
+    )
+    errors.extend(
+        image_console_evidence_errors(
+            "CHANGELOG.md current release scope",
+            current_changelog_scope,
+        )
+    )
 
     roadmap_entry = roadmap_entry_for_version(roadmap_text, version)
     if not roadmap_entry:
@@ -4152,6 +4203,7 @@ def release_metadata_summary(
             )
         )
         errors.extend(audit_count_errors("docs/ROADMAP.md current entry", roadmap_entry, audit_count))
+    errors.extend(image_console_evidence_errors("docs/ROADMAP.md current-source entry", current_source_roadmap_entry(roadmap_text)))
 
     errors.extend(release_policy_doc_set_errors(release_policy_docs))
     for label, text in release_policy_docs.items():
@@ -4163,6 +4215,7 @@ def release_metadata_summary(
                 product_readiness_text,
             )
         )
+        errors.extend(image_console_evidence_errors("docs/PRODUCT-READINESS.md", product_readiness_text))
 
     return {
         "version": version,
@@ -4213,6 +4266,10 @@ def run_self_test() -> int:
     }
     changelog = """# Changelog
 
+## Unreleased
+
+Image Console release hardening is current-source only and unreleased; this is not published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Registry live coverage remains pending future publish. Canonical receipt: docs/integrations/prompt-guide-image-prompts.md.
+
 ## v1.2.3 — Fixture release (2026-05)
 
 ### Verified
@@ -4227,6 +4284,10 @@ def run_self_test() -> int:
 ## v1.2.2 — Previous release (2026-04)
 """
     roadmap = """# Roadmap
+
+## Current-source Image Console release evidence
+
+Image Console release hardening is current-source only and unreleased; this is not published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Registry live coverage remains pending future publish. Canonical receipt: integrations/prompt-guide-image-prompts.md.
 
 ## Phase 99 — Fixture release (v1.2.3) ✓ shipped
 
@@ -4467,6 +4528,8 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "docs/DISTRIBUTION.ko.md": korean_policy_doc,
     }
     product_readiness_doc = """
+Image Console release hardening is current-source only and unreleased; this is not published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Registry live coverage remains pending future publish. Canonical receipt: integrations/prompt-guide-image-prompts.md.
+
 Product readiness covers Website Console handoff bundle compare through `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` with bundle digest comparison plus warning-state strict smoke coverage that keeps identical warning bundles at `sameBundle: true` while exiting non-zero under `--strict`. Public registry Website Console coverage includes handoff bundle, bundle-check/compare/handoff/repair including warning-state bundle-compare strict smoke coverage after publish, plus bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata for deterministic-local, no-external-call, and no-target-repo-mutation handoff validation, plus MCP probe count telemetry and package/shared smoke self-test coverage for Website Console MCP probe counts, plus bundled Website Console `mcp-probes.json` saved probe evidence payload instead of the full `site --mcp-check --probes --json` response. Local release confidence says `npm run release:check` now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases, after the Product Readiness and release-facing policy docs bundle boundary metadata guards for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata plus full `release:self-test` evidence recording, after the release-facing policy docs guard for Website Console bundle boundary metadata full `release:check` evidence, and after the release-facing policy docs Product Readiness release policy full gate evidence guard, covering unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
 """
     passing = release_metadata_summary(
@@ -4487,6 +4550,28 @@ Product readiness covers Website Console handoff bundle compare through `design-
         passing["product_readiness_checked"] is True,
         "complete fixture should report Product Readiness guard coverage",
     )
+    release_entry_changelog = changelog.replace(
+        "## Unreleased",
+        "## v1.2.3 — Fixture release (2026-05)",
+        1,
+    ).replace(
+        "\n## v1.2.3 — Fixture release (2026-05)\n\n### Verified",
+        "\n### Verified",
+        1,
+    )
+    release_entry_passing = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=release_entry_changelog,
+        roadmap_text=roadmap,
+        release_policy_docs=release_policy_docs,
+        audit_count=8,
+        product_readiness_text=product_readiness_doc,
+    )
+    assert_condition(
+        release_entry_passing["errors"] == [],
+        "Image Console evidence should remain valid after promotion into the current release entry",
+    )
     assert_condition(
         tuple(passing) == RELEASE_METADATA_SUMMARY_KEYS,
         "complete fixture should preserve the release metadata summary key order",
@@ -4503,6 +4588,66 @@ Product readiness covers Website Console handoff bundle compare through `design-
     assert_condition(
         '"product_readiness_checked": true' in passing_json_output,
         "JSON formatter should expose Product Readiness guard coverage",
+    )
+    image_changelog_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog.replace("Image Console release hardening", "Console release hardening", 1),
+        roadmap_text=roadmap,
+        release_policy_docs=release_policy_docs,
+        audit_count=8,
+        product_readiness_text=product_readiness_doc,
+    )
+    assert_condition(
+        "CHANGELOG.md current release scope is missing Image Console release evidence"
+        in "\n".join(image_changelog_drift["errors"]),
+        "Current changelog Image Console evidence drift should be reported",
+    )
+    image_receipt_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog.replace(
+            "docs/integrations/prompt-guide-image-prompts.md",
+            "docs/integrations/image-console.md",
+            1,
+        ),
+        roadmap_text=roadmap,
+        release_policy_docs=release_policy_docs,
+        audit_count=8,
+        product_readiness_text=product_readiness_doc,
+    )
+    assert_condition(
+        "docs/integrations/prompt-guide-image-prompts.md"
+        in "\n".join(image_receipt_drift["errors"]),
+        "Current changelog canonical Image Console receipt drift should be reported",
+    )
+    image_roadmap_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap.replace("Image Console release hardening", "Console release hardening", 1),
+        release_policy_docs=release_policy_docs,
+        audit_count=8,
+        product_readiness_text=product_readiness_doc,
+    )
+    assert_condition(
+        "docs/ROADMAP.md current-source entry is missing Image Console release evidence"
+        in "\n".join(image_roadmap_drift["errors"]),
+        "Roadmap Image Console evidence drift should be reported",
+    )
+    image_readiness_drift = release_metadata_summary(
+        package_json=package_json,
+        plugin_json=plugin_json,
+        changelog_text=changelog,
+        roadmap_text=roadmap,
+        release_policy_docs=release_policy_docs,
+        audit_count=8,
+        product_readiness_text=product_readiness_doc.replace("Image Console release hardening", "Console release hardening", 1),
+    )
+    assert_condition(
+        "docs/PRODUCT-READINESS.md is missing Image Console release evidence"
+        in "\n".join(image_readiness_drift["errors"]),
+        "Product Readiness Image Console evidence drift should be reported",
     )
     assert_condition(
         format_human_summary(passing) == "Release metadata check passed: v1.2.3, 8 audits, CHANGELOG 2026-05",

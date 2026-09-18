@@ -88,7 +88,21 @@ design-ai install
 /design-from-brief 프리랜서를 위한 한국 핀테크
 ```
 
-CLI에는 `design-ai start`, 표준 `design-ai review`, `review-handoff`, `review-handoff-verify`, 제한된 `review-intake`, 변경 불가능한 `review-scope`, 별도 승인을 기록하는 `review-scope-approve`, 읽기 전용 `review-evidence`, 실제 파일럿 원본을 연결하는 `review-pilot`, `review-pack`, 하위 수준의 `inspect`, 승인 후 실행하는 `verify-browser`와 기존 install, route, prompt, artifact, pack, learn, check, workspace, site, corpus, audit, MCP, version, help workflow가 있어요. 전체 machine-readable 목록은 `design-ai help --json`, 각 명령의 정확한 옵션은 `design-ai help <command>`로 확인하세요.
+CLI에는 `design-ai start`, 표준 `design-ai review`, `review-handoff`, `review-handoff-verify`, 제한된 `review-intake`, 변경 불가능한 `review-scope`, 별도 승인을 기록하는 `review-scope-approve`, 읽기 전용 `review-evidence`, 실제 파일럿 원본을 연결하는 `review-pilot`, `review-pack`, 하위 수준의 `inspect`, 승인 후 실행하는 `verify-browser`, 로컬 `design-ai image serve`와 기존 install, route, prompt, artifact, pack, learn, check, workspace, site, corpus, audit, MCP, version, help workflow가 있어요. 전체 machine-readable 목록은 `design-ai help --json`, 각 명령의 정확한 옵션은 `design-ai help <command>`로 확인하세요.
+
+### 로컬 Image Console
+
+`design-ai image serve`는 loopback에서만 동작하는 승인형 image workflow를
+실행해요. Prompt Guide credential은 server process에만 남고, generation과
+editing은 provider-neutral local subprocess를 실행하기 전에 읽기 전용 draft를
+구성하고 검증해요. Server-only environment contract와 synthetic fixture는
+[Prompt Guide Image Console](docs/integrations/prompt-guide-image-prompts.md)을
+확인하세요.
+
+Image Console은 현재 소스의 v5.2.0 release candidate에 포함됐지만 아직
+공개되지 않았어요. 공개 기준은 v5.1.0이며, local mock loopback 검증은 Prompt
+Guide/provider-network call을 수행하지 않아요. Registry smoke는 실제 publish
+후 별도로 확인해요.
 
 자세한 내용은 [`docs/DISTRIBUTION.ko.md`](docs/DISTRIBUTION.ko.md)를 확인하세요.
 

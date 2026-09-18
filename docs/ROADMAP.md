@@ -1,30 +1,214 @@
 # Roadmap
 
-## Phase 797 - Website Console smoke domain extraction
+## Current-source Image Console release evidence
+
+Image Console release hardening is part of the current-source v5.2.0 release
+candidate and remains unreleased; this is not published behavior. The
+deterministic local mock loopback flow covers
+packaged static assets, health, catalog, generation draft validation, rejection
+before approval, and one approved deterministic local provider execution through
+installed-bin and one-shot packed-tarball paths. It makes no Prompt Guide/provider-network call, uses isolated temporary HOME, npm cache, provider, and asset roots, reaps child processes, and asserts unchanged repository status. Registry live coverage remains pending future publish. Package contents require the complete
+Image Console runtime, static, configuration, and
+`cli/lib/image-prompt-contract.d.ts` artifacts.
+
+The exact current-source test, audit, package, documentation, packed-smoke,
+browser-QA, and external-verification receipt is maintained once in the
+[Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
+integration guide. Registry live coverage remains pending future publish.
+
+## Phase 802 - Product completion design and Image Console correctness
+
+- [x] Established the [overall completion plan](product-completion-plan.md),
+  domain ownership, state lifetimes, and evidence-gated P17 follow-up sequence.
+- [x] Reconciled EN/KO architecture with thin skill dispatchers and existing
+  opt-in embedding retrieval.
+- [x] Contained provider stdin failures, bound edit approval to the original
+  asset snapshot, and prevented stale job responses from replacing newer UI state.
+- [x] Added regression tests for each reproduced failure.
+- [x] Complete browser generation/edit QA and the full local release gate;
+  the canonical Image Console guide owns the latest measurement.
+
+The baseline PR #62 CI passed at `dc329273ab26ce4ae428f4827fbfeac79eb2461e`.
+This working-tree hardening requires its own verification; no new merge, tag,
+publication, live provider result, or external participation is claimed.
+
+## Phase 801 - Image Console release integration (v5.2.0)
+
+- [x] Chose a backward-compatible minor release because the Image Console and
+  prompt-generation workflow are additive and keep the existing CLI, SDK, MCP,
+  learning, and approval boundaries intact.
+- [x] Aligned the package and Claude plugin manifests at v5.2.0.
+- [x] Converted the accumulated Image Console, skill-contract, smoke-domain,
+  external-pilot, and documentation work into one release entry.
+- [x] Added a release-metadata transition guard that keeps checking the canonical
+  Image Console receipt after the changelog moves from Unreleased to v5.2.0.
+- [x] Completed local release and browser verification without a Prompt Guide or
+  provider-network call.
+- [x] Pass pull-request CI at `dc329273ab26ce4ae428f4827fbfeac79eb2461e`.
+- [ ] Merge the exact reviewed release candidate after owner approval.
+- [ ] Run a controlled live Prompt Guide and real provider generation/edit check
+  when server-only configuration is available.
+- [ ] Create and push the v5.2.0 tag only after merge approval; then verify npm,
+  GitHub Release, public registry smoke, docs, and any Homebrew follow-up.
+
+### Verified
+
+- All 8 audits passed for the v5.2.0 release candidate.
+- `npm run release:check` passed with 882/882 Node tests, 880 package files,
+  0/0 documentation-policy warnings, release self-tests, and packed installed-bin
+  plus one-shot npm smoke.
+- Browser QA passed at desktop and mobile widths with keyboard navigation, visible
+  focus, 44 px targets, reduced motion, WCAG 2.1 AA contrast, no horizontal
+  overflow, and clean console output before the expected missing-provider error.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 5.1.0 → 5.2.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+
+- The complete approval-gated Image Console can be reviewed and installed under
+  one candidate identity without representing its mock proof as a live provider
+  result or a published package.
+- The same PR can prove that release-facing documentation, package contents,
+  smoke contracts, and browser evidence describe the same source tree.
+
+### What's still ahead
+
+- Fresh CI for subsequent source changes, reviewer approval, merge, controlled live integration when
+  credentials exist, tag workflows, npm/GitHub publication, public registry
+  smoke, and post-publish distribution verification.
+
+## Phase 800 - Implementation-evidence smoke domain extraction (P17B.5)
+
+- [x] Materialized and verified the exact P17B.4 dirty baseline at
+  `695721ba102d3d2f2c2bd0224e862fb0d0198b70` before editing; the pre-edit
+  716-command packed smoke passed in 581.77 seconds.
+- [x] Moved only the P11 implementation-evidence assertion into a focused domain
+  while preserving its `smoke_assertions` import name, exact AST digest, and all
+  seven `SystemExit` failure expressions.
+- [x] Added a focused package adapter, pure request fixture builder, and separate
+  installed-bin and one-shot npm P11 phase authorities without moving real
+  command execution or the stable wrapper guards out of `package-smoke.py`.
+- [x] Added an independently runnable contract self-test for the AST snapshot,
+  positive and existing failure fixtures, phase-sequence negatives, and
+  unsupported executors, then wired it into `release:self-test`.
+- [x] Kept all five new modules below 400 lines and every new or moved function at
+  or below 79 lines; P12 pilot, Website Console runtime, SDK smoke, registry
+  runtime, lifecycle coverage, dependencies, migrations, and package 5.1.0 are
+  unchanged.
+- [x] Preserved the 4387-byte registry Website Console fixture and the exact
+  716-command normalized sequence SHA-256
+  `0654a8730d42526860bb1d00c16f1c828395ffd0aca448a1f137fcb30fd24a46`.
+- [x] Passed the full release gate: 832 Node tests, eight strict audits, 861
+  packaged files, 0/0 documentation warnings, release self-tests, and actual
+  packed installed-bin plus one-shot npm smoke in 680.33 seconds.
+- [ ] Extract pilot contracts after review and implementation evidence remain
+  stable.
+- [ ] Extract install/help/search/route lifecycle contracts last.
+
+### Boundary
+
+- P17B.5 changes only P11 smoke-test organization. It adds no dependency,
+  migration, product-runtime change, CLI/SDK/MCP/Website Console API, package
+  version, P16 state, external write, commit, push, publish, or deploy.
+
+## Phase 799 - Review smoke domain extraction (P17B.4)
+
+- [x] Used committed clean P17B.3 baseline
+  `695721ba102d3d2f2c2bd0224e862fb0d0198b70` before source edits.
+- [x] Moved only inspect, review comparison, P6 review, P7 handoff, P8 receipt,
+  P9 intake, P10 scope proposal/approval, and browser-review assertions into
+  focused modules while keeping stable smoke entry points and real command
+  execution local.
+- [x] Preserved the nine moved callable ASTs (including `review_workflow_digest`)
+  and assertion failure-message behavior, the
+  npm 5.1.0 package version, SDK smoke bytes, P16 evidence digest, registry
+  fixture digest, and normalized packed command sequence.
+- [x] Added the narrow P6-P10 phase authority for installed-bin and one-shot npm
+  paths; focused negative cases reject missing, duplicate, reordered, and
+  unknown phases without a generic command facade.
+- [x] Kept all new modules below 400 lines and each new or moved function at or
+  below 200 lines; P11/P12, learning proposal review, product runtime, SDK
+  smoke, and install/search/show/route lifecycle remain untouched.
+- [x] Passed the full release gate: 832 Node tests, eight strict audits, 858
+  packaged files, documentation policy, release self-tests, and packed
+  installed-bin/one-shot npm smoke with a disposable local npm cache.
+
+### Boundary
+
+- P17B.4 changes only review-smoke organization. It adds no dependency,
+  migration, product-runtime change, CLI/SDK/MCP API, external write, commit,
+  push, publish, or deploy.
+
+## Phase 798 - Learning smoke domain extraction (P17B.3)
+
+- [x] Applied and verified the sealed P17B.2 dirty baseline before editing.
+- [x] Split learning smoke ownership into direct profile, transfer,
+  relevance/eval, agent-backlog, skill-proposal report/review, and skill-proposal
+  apply-plan imports while leaving command execution in the stable entry points.
+- [x] Grouped backlog and apply-plan validation by contract responsibility instead
+  of positional argument bags or mechanically split condition ranges; retained
+  the original public failure messages.
+- [x] Delivered 30 new learning modules below 400 lines. The largest is 394 lines,
+  the largest new-module function is 173 lines, and the largest added entry-point
+  scenario helper is 184 lines. The entrypoints are now 12,655 / 20,228 / 7,311
+  lines (`smoke_assertions.py` / `package-smoke.py` / `registry-smoke.py`).
+- [x] Preserved the actual 716-command packed-smoke sequence and normalized
+  SHA-256 `0654a8730d42526860bb1d00c16f1c828395ffd0aca448a1f137fcb30fd24a46`.
+- [x] Preserved the 4387-byte registry Website Console fixture, npm 5.1.0, and
+  the immutable P16 program digest.
+- [x] Passed focused self-tests, F821 and syntax checks, 832 Node tests, eight
+  strict audits, the 845-file package-content check, documentation policy,
+  release self-tests, and packed smoke.
+- [x] Extracted the review domain in Phase 799.
+- [x] Extracted implementation-evidence after review remained stable in Phase 800.
+- [ ] Extract pilot contracts after review and evidence remain stable.
+- [ ] Extract install/help/search/route lifecycle contracts last.
+
+### Boundary
+
+- P17B.3 changes only smoke-test architecture and verification. It adds no CLI,
+  SDK, MCP, Website Console runtime, public API, package version, dependency,
+  migration, P16 state, external write, commit, push, merge, publish, or deploy.
+- JSON, Markdown, human output, patch, template, sidecar, workspace fixture,
+  command coverage, and negative failure contracts remain authoritative.
+
+## Phase 797 - Website Console smoke domain extraction (P17B.2)
 
 - [x] Recorded the pre-extraction smoke harness sizes and focused self-test times.
 - [x] Moved 42 Website Console contract constants into
   `smoke_domains/site_contracts.py` and eight shared command, MCP probe, and
   repair validators into `smoke_domains/site_validators.py`.
-- [x] Preserved the original `smoke_assertions.py`, local package-smoke, and
-  registry-smoke import surfaces.
+- [x] Preserved stable callable names, execution paths, and focused self-test
+  paths for `smoke_assertions.py`, local package-smoke, and registry-smoke.
 - [x] Added a byte-stable contract snapshot plus positive and negative fixtures
   in a separate, independently runnable self-test wired through
   `smoke:site-contracts:self-test` and the release self-test chain.
 - [x] Proved exact parity with the pre-extraction values and command rewrite order.
-- [x] Kept all new files below 400 lines and every extracted function below 200
-  lines; the largest function is 85 lines.
+- [x] Delivered 17 new modules and 64 extracted functions; all new files remain
+  below 400 lines, the largest file is 354 lines, and the largest extracted
+  function is 163 lines. The entrypoints are 12,655 / 24,494 / 9,078 lines
+  (`smoke_assertions.py` / `package-smoke.py` / `registry-smoke.py`).
 - [x] Preserved the exact 716-command packed-smoke sequence and normalized
   SHA-256 before and after extraction; recorded 1,444.11-second and
   914.29-second local wall-clock observations.
-- [ ] Move Website Console payload fixtures, assertion groups, and installed-bin
-  plus one-shot runners behind the same domain boundary.
-- [ ] Split the learning, review/evidence/pilot, and lifecycle domains in that
-  order after Website Console extraction is complete.
+- [x] Moved Website Console JSON and Markdown fixtures into focused smoke-domain
+  modules, including package-smoke intake/evidence/warning payload fixtures.
+- [x] Moved Website Console assertion groups into focused responsibility modules
+  imported directly by `smoke_assertions.py` without changing failure messages.
+- [x] Added one explicit ordered Website Console runner plan shared by installed-bin
+  and one-shot npm executors; their command factories and coverage remain separate.
+- [x] Ran the full release evidence gate for the delivered source snapshot:
+  832 Node tests, eight strict audits, package contents, documentation policy,
+  release self-tests, and packed smoke all passed.
+- [x] Extracted the learning profile and skill proposals domain in Phase 798;
+  review, evidence, pilot, and lifecycle domains remain separate follow-up work.
 
 ### Boundary
 
-- P17B.1 changes only test architecture and release verification. It adds no CLI,
+- P17B.2 changes only smoke-test architecture and release verification. It adds no CLI,
   SDK, MCP, Website Console, package-version, publication, or P16 state change.
 - The original smoke entry points, command sequence, JSON contracts, local versus
   registry coverage, and failure messages remain authoritative.

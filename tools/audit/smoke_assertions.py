@@ -16,6 +16,12 @@ from capability_manifest import (
     validate_capability_manifest,
 )
 from doctor_assertions import EXPECTED_DOCTOR_PASS_LABELS, assert_doctor_report_clean
+from smoke_domains.assertion_helpers import (
+    assert_contains_fragments,
+    assert_no_ansi,
+    assert_output_write_success,
+    assert_smoke_json_keys,
+)
 from smoke_domains.site_contracts import (
     EXPECTED_SITE_COUNTS_KEYS,
     EXPECTED_SITE_INTAKE_TEMPLATE_COMMAND_KEYS,
@@ -55,6 +61,73 @@ from smoke_domains.site_contracts import (
     EXPECTED_SITE_WORKFLOW_GRAPH_PAYLOAD_KEYS,
     EXPECTED_SITE_WORKFLOW_GRAPH_SITE_KEYS,
     EXPECTED_SITE_WORKFLOW_GRAPH_SUMMARY_KEYS,
+)
+from smoke_domains.site_fixtures_workspace import (
+    passing_site_json,
+    passing_site_next_actions_human,
+    passing_site_next_actions_json,
+)
+from smoke_domains.site_fixtures_intake import (
+    passing_site_from_intake_json,
+    passing_site_init_json,
+    passing_site_intake_template_json,
+    passing_site_sample_json,
+    passing_site_tasks_json,
+)
+from smoke_domains.site_fixtures_prompts import (
+    passing_site_prompt_markdown,
+    passing_site_prompt_templates_json,
+)
+from smoke_domains.site_fixtures_mcp import (
+    passing_site_mcp_check_json,
+    passing_site_mcp_check_probes_human,
+    passing_site_mcp_check_probes_json,
+)
+from smoke_domains.site_fixtures_mcp_plan import (
+    passing_site_mcp_plan_json,
+    passing_site_mcp_plan_markdown,
+    passing_site_mcp_plan_probes_markdown,
+    passing_site_workflow_graph_json,
+)
+from smoke_domains.site_assertions_workspace import (
+    assert_site_bundle_compare_warning_strict_json,
+    assert_site_json,
+    assert_site_next_actions_human,
+    assert_site_next_actions_human_file_output,
+    assert_site_next_actions_json,
+    assert_site_next_actions_json_file_output,
+)
+from smoke_domains.site_assertions_sample import (
+    assert_site_from_intake_json,
+    assert_site_init_json,
+    assert_site_project_workspace_json,
+    assert_site_sample_json,
+)
+from smoke_domains.site_assertions_intake import (
+    assert_site_intake_template_json,
+    assert_site_intake_template_json_file_output,
+    assert_site_intake_template_markdown,
+    assert_site_intake_template_markdown_file_output,
+    assert_site_tasks_json,
+)
+from smoke_domains.site_assertions_mcp import (
+    assert_site_mcp_check_json,
+    assert_site_mcp_check_probes_human,
+    assert_site_mcp_check_probes_human_file_output,
+    assert_site_mcp_check_probes_json,
+    assert_site_mcp_check_probes_json_file_output,
+)
+from smoke_domains.site_assertions_mcp_plan import (
+    assert_site_mcp_plan_json,
+    assert_site_mcp_plan_markdown,
+    assert_site_mcp_plan_probes_json,
+    assert_site_mcp_plan_probes_json_file_output,
+    assert_site_mcp_plan_probes_markdown,
+)
+from smoke_domains.site_assertions_graph import assert_site_workflow_graph_json
+from smoke_domains.site_assertions_prompts import (
+    assert_site_prompt_markdown,
+    assert_site_prompt_templates_json,
 )
 from smoke_domains.site_validators import (
     assert_site_repair_apply_report_payload,
@@ -254,6 +327,7 @@ EXPECTED_HELP_TOPICS = (
     "learn",
     "workspace",
     "site",
+    "image",
     "mcp",
     "version",
     "help",
@@ -315,9 +389,13 @@ EXPECTED_HELP_TOPIC_USAGES = {
     "learn": "design-ai learn [--init|--remember text|--feedback text|--list|--export|--query text|--explain|--recall query|--backup|--redact|--verify|--diff|--restore|--restore-backups [--prune]|--import|--audit [--fix]|--curate|--stats|--usage|--signals [--strict]|--agent-backlog [--strict]|--propose-skills [--min-evidence N] [--review-file path] [--review-check|--apply-plan] [--strict]|--eval-template|--eval [--strict]|--forget id|--clear] [--json|--report|--patch|--review-template] [--out file]",
     "workspace": "design-ai workspace [--root path] [--learning-file path] [--learning-usage path] [--learning-eval path] [--strict] [--json]",
     "site": "design-ai site <workspace.json|--stdin> [--strict] [--json|--mcp-check [--probes]|--mcp-plan [--probes] [--json]|--linked-preview [--json]|--next-actions [--json]|--graph|--tasks|--bundle|--report|--prompts|--prompt id [--task id]] [--out file] | site <bundle-dir> --bundle-check [--json] | site <bundle-dir> --bundle-compare other-bundle-dir [--json] | site <bundle-dir> --bundle-handoff [--task id] [--json] | site <bundle-dir> --bundle-repair [--yes] [--json] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] [--next-actions] [--out file] | site --init --name name [--live-url url] [--repo-url url|--local-path path] --bundle --out dir | site --from-intake file.md|--stdin [--json|--next-actions [--json]|--tasks|--bundle [--tasks] --out dir] [--out file] | site --intake-template [--language en|ko] [--json] [--out file] | site --sample [--out file] | site --prompt-list [--json]",
+    "image": "design-ai image serve [--host 127.0.0.1] [--port 4318]",
     "mcp": "design-ai mcp",
     "version": "design-ai version [--json]",
     "help": "design-ai help [command|--json]",
+}
+EXPECTED_HELP_TOPIC_DESCRIPTIONS = {
+    "image": "Start the local approval-gated Image Console gateway",
 }
 EXPECTED_HELP_TOPIC_FRAGMENTS = {
     "install": ("Usage:", "design-ai install [--json]"),
@@ -583,6 +661,11 @@ EXPECTED_HELP_TOPIC_FRAGMENTS = {
         "--prompt id",
         "--task id",
         "--out file",
+    ),
+    "image": (
+        "Usage:",
+        "design-ai image serve [--host 127.0.0.1] [--port 4318]",
+        "Starts the local Image Console. Prompt Guide and provider credentials stay in this server process.",
     ),
     "mcp": (
         "Usage:",
@@ -1226,17 +1309,8 @@ def load_run_all_audit_scripts() -> tuple[str, ...]:
     return tuple(re.findall(r'script="([^"]+\.py)"', match.group("body")))
 
 
-def assert_no_ansi(output: str, cmd: list[str]) -> None:
-    if ANSI_ESCAPE_RE.search(output):
-        raise SystemExit(f"NO_COLOR command emitted ANSI escape sequence: {format_cmd(cmd)}")
 
 
-def assert_contains_fragments(raw: str, fragments: tuple[str, ...], *, context: str, label: str) -> None:
-    missing = [fragment for fragment in fragments if fragment not in raw]
-    if missing:
-        raise SystemExit(
-            f"{label} after {context} missing expected content: {' | '.join(missing)}"
-        )
 
 
 def passing_unknown_command_output() -> str:
@@ -1577,19 +1651,6 @@ def assert_output_overwrite_failure(
     )
 
 
-def assert_output_write_success(raw: str, *, context: str, cmd: list[str], expected_path: str) -> None:
-    assert_no_ansi(raw, cmd)
-    if raw.lstrip().startswith("{") or raw.lstrip().startswith("#"):
-        raise SystemExit(f"output write success after {context} looks like artifact content")
-    if "Output file already exists:" in raw or "Use --force to overwrite." in raw:
-        raise SystemExit(f"output write success after {context} reported overwrite failure")
-
-    assert_contains_fragments(
-        raw,
-        ("Wrote", expected_path),
-        context=context,
-        label="output write success",
-    )
 
 
 def seed_force_overwrite_target(output_path: Path, *, context: str, cmd: list[str]) -> None:
@@ -3116,19 +3177,6 @@ def assert_list_catalog_output(raw: str, *, kind: str, context: str, cmd: list[s
             )
 
 
-def assert_smoke_json_keys(
-    value: object,
-    expected_keys: list[str],
-    *,
-    label: str,
-    context: str,
-    command_label: str,
-) -> dict[str, object]:
-    if not isinstance(value, dict):
-        raise SystemExit(f"{command_label} after {context} {label} is not an object")
-    if list(value) != expected_keys:
-        raise SystemExit(f"{command_label} after {context} {label} keys changed")
-    return value
 
 
 def assert_list_catalog_json(raw: str, *, kind: str, context: str, cmd: list[str]) -> None:
@@ -3870,757 +3918,22 @@ def passing_start_json() -> str:
     })
 
 
-def assert_inspect_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"failed to parse inspect JSON after {context}") from error
-
-    assert_smoke_json_keys(
-        payload,
-        ["kind", "schemaVersion", "generatedAt", "subject", "context", "boundary", "sources", "lenses", "findings", "summary", "approval"],
-        label="top-level",
-        context=context,
-        command_label="inspect JSON",
-    )
-    if payload.get("kind") != "design-ai-quality-report" or payload.get("schemaVersion") != 1:
-        raise SystemExit(f"inspect JSON after {context} kind or schema version changed")
-
-    boundary = payload.get("boundary")
-    if not (
-        isinstance(boundary, dict)
-        and boundary.get("mode") == "read-only"
-        and boundary.get("targetRepoMutation") is False
-        and boundary.get("externalWrites") is False
-        and boundary.get("localEvidenceWrites") is False
-    ):
-        raise SystemExit(f"inspect JSON after {context} changed the read-only boundary")
-
-    summary = payload.get("summary")
-    if not (
-        isinstance(summary, dict)
-        and summary.get("status") == "fail"
-        and summary.get("confirmedFindings") == 1
-        and summary.get("unverifiedFindings") == 1
-    ):
-        raise SystemExit(f"inspect JSON after {context} lost the confirmed/unverified benchmark split")
-
-    findings = payload.get("findings")
-    if not (
-        isinstance(findings, list)
-        and len(findings) == 2
-        and findings[0].get("status") == "confirmed"
-        and findings[0].get("lens") == "accessibility"
-        and findings[1].get("status") == "unverified"
-    ):
-        raise SystemExit(f"inspect JSON after {context} findings changed")
-
-    expected_lenses = [
-        "purpose-frequency",
-        "response",
-        "spatial-continuity",
-        "interruptibility",
-        "timing-cohesion",
-        "performance",
-        "accessibility",
-        "responsive-resilience",
-    ]
-    lenses = payload.get("lenses")
-    lens_ids = [item.get("id") for item in lenses] if isinstance(lenses, list) else []
-    if lens_ids != expected_lenses:
-        raise SystemExit(f"inspect JSON after {context} lens inventory changed")
-
-
-def assert_review_comparison_json(
-    raw: str,
-    baseline_path: Path,
-    candidate_path: Path,
-    *,
-    compact: bool,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        comparison = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"failed to parse review comparison JSON after {context}") from error
-
-    expected_kind = "design-ai-review-comparison-summary" if compact else "design-ai-review-comparison"
-    if (
-        comparison.get("kind") != expected_kind
-        or comparison.get("schemaVersion") != 1
-        or comparison.get("status") != "attention-required"
-    ):
-        raise SystemExit(f"review comparison JSON after {context} changed identity or status")
-
-    source_container = comparison.get("sources") if compact else comparison
-    for field, source_path in (("baseline", baseline_path), ("candidate", candidate_path)):
-        source_bytes = source_path.read_bytes()
-        artifact = source_container.get(field, {}) if isinstance(source_container, dict) else {}
-        if (
-            artifact.get("reference") != str(source_path.resolve())
-            or artifact.get("sha256") != hashlib.sha256(source_bytes).hexdigest()
-            or artifact.get("bytes") != len(source_bytes)
-        ):
-            raise SystemExit(f"review comparison JSON after {context} lost {field} source identity")
-        if not compact and (
-            artifact.get("source") != source_bytes.decode("utf-8")
-            or artifact.get("value") != json.loads(source_bytes)
-        ):
-            raise SystemExit(f"review comparison JSON after {context} changed {field} source content")
-
-    summary = comparison.get("summary", {})
-    if (
-        summary.get("resolved") != 0
-        or summary.get("persistent") != 2
-        or summary.get("introduced") != 0
-        or summary.get("uncertain") != 0
-    ):
-        raise SystemExit(f"review comparison JSON after {context} changed finding decisions")
-    if comparison.get("approval") != {
-        "status": "pending",
-        "requiredBefore": ["target repository mutation", "commit", "push", "deployment", "external writes"],
-    }:
-        raise SystemExit(f"review comparison JSON after {context} changed its approval gate")
-    boundary = comparison.get("boundary", {})
-    if boundary != {
-        "mode": "read-only-review-comparison",
-        "localWrites": False,
-        "targetRepoMutation": False,
-        "externalWrites": False,
-        "networkCalls": False,
-        "boundedImprovementEstablished": False,
-        "productionQualityEstablished": False,
-        "adoptionEstablished": False,
-    }:
-        raise SystemExit(f"review comparison JSON after {context} expanded its claim or mutation boundary")
-    if compact:
-        representation = comparison.get("representation", {})
-        if (
-            representation.get("mode") != "compact"
-            or representation.get("fullArtifactKind") != "design-ai-review-comparison"
-            or representation.get("omittedFields") != [
-                "baseline.source", "baseline.value", "candidate.source", "candidate.value",
-            ]
-        ):
-            raise SystemExit(f"review comparison JSON after {context} changed compact representation evidence")
-
-
-def review_workflow_digest(value: object) -> str:
-    encoded = json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(encoded).hexdigest()
-
-
-def assert_review_workflow_json(
-    raw: str,
-    source_path: Path,
-    *,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        workflow = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"failed to parse review workflow JSON after {context}") from error
-
-    assert_smoke_json_keys(
-        workflow,
-        [
-            "kind", "schemaVersion", "status", "source", "plan", "report",
-            "linkage", "stages", "nextAction", "boundary",
-        ],
-        label="top-level",
-        context=context,
-        command_label="review workflow JSON",
-    )
-    if (
-        workflow.get("kind") != "design-ai-review-workflow"
-        or workflow.get("schemaVersion") != 1
-        or workflow.get("status") != "static-review-complete"
-    ):
-        raise SystemExit(f"review workflow JSON after {context} changed its contract identity")
-
-    source_bytes = source_path.read_bytes()
-    source = workflow.get("source")
-    expected_source = {
-        "reference": str(source_path.resolve()),
-        "sha256": hashlib.sha256(source_bytes).hexdigest(),
-        "bytes": len(source_bytes),
-    }
-    if source != expected_source:
-        raise SystemExit(f"review workflow JSON after {context} lost exact source identity")
-
-    plan = workflow.get("plan")
-    report = workflow.get("report")
-    if not (
-        isinstance(plan, dict)
-        and plan.get("kind") == "design-ai-start"
-        and plan.get("schemaVersion") == 1
-        and isinstance(plan.get("route"), dict)
-        and plan["route"].get("id") == "design-review"
-        and isinstance(report, dict)
-        and report.get("kind") == "design-ai-quality-report"
-        and report.get("schemaVersion") == 1
-        and isinstance(report.get("context"), dict)
-        and report["context"].get("routeId") == "design-engineering-review"
-    ):
-        raise SystemExit(f"review workflow JSON after {context} changed its nested artifact identities")
-
-    summary = report.get("summary")
-    if not (
-        isinstance(summary, dict)
-        and summary.get("status") == "fail"
-        and summary.get("confirmedFindings") == 1
-        and summary.get("unverifiedFindings") == 1
-    ):
-        raise SystemExit(f"review workflow JSON after {context} lost confirmed and unverified evidence")
-
-    linkage = workflow.get("linkage")
-    expected_linkage = {
-        "status": "pass",
-        "briefMatch": True,
-        "localeMatch": True,
-        "viewportMatch": True,
-        "sourceReferenceMatch": True,
-        "planSha256": review_workflow_digest(plan),
-        "designContractSha256": review_workflow_digest(plan.get("designContract")),
-        "reportSha256": review_workflow_digest(report),
-    }
-    if linkage != expected_linkage:
-        raise SystemExit(f"review workflow JSON after {context} changed artifact linkage evidence")
-
-    expected_stages = [
-        {"id": "plan", "status": "complete", "artifactKind": "design-ai-start"},
-        {"id": "static-review", "status": "complete", "artifactKind": "design-ai-quality-report"},
-        {"id": "browser-verification", "status": "not-run", "artifactKind": None},
-        {"id": "implementation-handoff", "status": "not-started", "artifactKind": None},
-    ]
-    if workflow.get("stages") != expected_stages:
-        raise SystemExit(f"review workflow JSON after {context} changed the canonical stage sequence")
-
-    approval = report.get("approval")
-    required_before = approval.get("requiredBefore") if isinstance(approval, dict) else None
-    next_action = workflow.get("nextAction")
-    if next_action != {
-        "id": "human-review-required",
-        "status": "pending",
-        "summary": summary.get("nextAction"),
-        "approvalRequiredBefore": required_before,
-    }:
-        raise SystemExit(f"review workflow JSON after {context} changed the human review gate")
-
-    if workflow.get("boundary") != {
-        "mode": "read-only",
-        "localWrites": False,
-        "targetRepoMutation": False,
-        "externalWrites": False,
-    }:
-        raise SystemExit(f"review workflow JSON after {context} changed its read-only boundary")
-
-
-def assert_review_handoff_json(
-    raw: str,
-    workflow_path: Path,
-    *,
-    recipient: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        handoff = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"failed to parse review handoff JSON after {context}") from error
-
-    assert_smoke_json_keys(
-        handoff,
-        [
-            "kind", "schemaVersion", "status", "recipient", "artifacts",
-            "linkage", "stages", "nextAction", "boundary",
-        ],
-        label="top-level",
-        context=context,
-        command_label="review handoff JSON",
-    )
-    if (
-        handoff.get("kind") != "design-ai-review-handoff"
-        or handoff.get("schemaVersion") != 1
-        or handoff.get("status") != "static-evidence-prepared"
-    ):
-        raise SystemExit(f"review handoff JSON after {context} changed its contract identity")
-    if handoff.get("recipient") != {
-        "name": recipient,
-        "delivery": "not-delivered",
-        "consumerValidation": "pending",
-    }:
-        raise SystemExit(f"review handoff JSON after {context} changed its pending recipient state")
-
-    artifacts = handoff.get("artifacts")
-    if not isinstance(artifacts, dict) or set(artifacts) != {
-        "reviewWorkflow", "qualityReport", "browserVerification",
-    }:
-        raise SystemExit(f"review handoff JSON after {context} changed its artifact inventory")
-    workflow_artifact = artifacts.get("reviewWorkflow")
-    workflow_source = workflow_path.read_text(encoding="utf-8")
-    if not isinstance(workflow_artifact, dict) or set(workflow_artifact) != {
-        "reference", "sha256", "bytes", "source", "value",
-    }:
-        raise SystemExit(f"review handoff JSON after {context} changed its workflow artifact shape")
-    if (
-        workflow_artifact.get("reference") != str(workflow_path.resolve())
-        or workflow_artifact.get("source") != workflow_source
-        or workflow_artifact.get("sha256") != hashlib.sha256(workflow_source.encode("utf-8")).hexdigest()
-        or workflow_artifact.get("bytes") != len(workflow_source.encode("utf-8"))
-    ):
-        raise SystemExit(f"review handoff JSON after {context} lost exact workflow source identity")
-    try:
-        workflow_value = json.loads(workflow_source)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"review handoff source workflow after {context} is invalid JSON") from error
-    if workflow_artifact.get("value") != workflow_value:
-        raise SystemExit(f"review handoff JSON after {context} changed its embedded workflow value")
-    if artifacts.get("qualityReport") is not None or artifacts.get("browserVerification") is not None:
-        raise SystemExit(f"review handoff JSON after {context} added undeclared browser evidence")
-
-    linkage = handoff.get("linkage")
-    expected_linkage = {
-        "status": "pass",
-        "reviewWorkflowArtifactSha256": review_workflow_digest(workflow_value),
-        "qualityReportArtifactSha256": workflow_value.get("linkage", {}).get("reportSha256"),
-        "browserVerificationArtifactSha256": None,
-        "qualityReportArtifactMatch": None,
-        "browserSourceReportMatch": None,
-        "viewportCoverage": "not-run",
-    }
-    if linkage != expected_linkage:
-        raise SystemExit(f"review handoff JSON after {context} changed artifact linkage evidence")
-    if handoff.get("stages") != [
-        {"id": "plan", "status": "complete", "artifactKind": "design-ai-start"},
-        {"id": "static-review", "status": "complete", "artifactKind": "design-ai-quality-report"},
-        {"id": "browser-verification", "status": "not-run", "artifactKind": None},
-        {"id": "implementation-handoff", "status": "prepared", "artifactKind": "design-ai-review-handoff"},
-    ]:
-        raise SystemExit(f"review handoff JSON after {context} changed its stage sequence")
-    if handoff.get("nextAction") != {
-        "id": "consumer-validation-required",
-        "status": "pending",
-        "summary": f"Deliver this prepared handoff to {recipient}, then validate it before implementation.",
-        "approvalRequiredBefore": workflow_value.get("nextAction", {}).get("approvalRequiredBefore"),
-    }:
-        raise SystemExit(f"review handoff JSON after {context} changed its consumer gate")
-    if handoff.get("boundary") != {
-        "mode": "read-only",
-        "localWrites": False,
-        "targetRepoMutation": False,
-        "externalWrites": False,
-        "deliveryPerformed": False,
-    }:
-        raise SystemExit(f"review handoff JSON after {context} changed its undelivered boundary")
-
-
-def assert_review_handoff_receipt_json(
-    raw: str,
-    handoff_path: Path,
-    *,
-    consumer: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        receipt = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"failed to parse review handoff receipt JSON after {context}") from error
-
-    assert_smoke_json_keys(
-        receipt,
-        [
-            "kind", "schemaVersion", "status", "consumer", "handoff", "evidence",
-            "remainingApprovals", "nextAction", "boundary",
-        ],
-        label="top-level",
-        context=context,
-        command_label="review handoff receipt JSON",
-    )
-    if (
-        receipt.get("kind") != "design-ai-review-handoff-receipt"
-        or receipt.get("schemaVersion") != 1
-        or receipt.get("status") != "contract-validated"
-    ):
-        raise SystemExit(f"review handoff receipt JSON after {context} changed its contract identity")
-
-    handoff_source = handoff_path.read_text(encoding="utf-8")
-    try:
-        handoff_value = json.loads(handoff_source)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"review handoff receipt source after {context} is invalid JSON") from error
-    if receipt.get("consumer") != {
-        "name": consumer,
-        "expectedRecipient": consumer,
-        "recipientMatch": True,
-        "identity": "self-declared",
-        "contractValidation": "pass",
-        "acceptance": "not-claimed",
-    }:
-        raise SystemExit(f"review handoff receipt JSON after {context} changed its consumer boundary")
-    handoff_artifact = receipt.get("handoff")
-    if not isinstance(handoff_artifact, dict) or set(handoff_artifact) != {
-        "reference", "sha256", "bytes", "source", "value",
-    }:
-        raise SystemExit(f"review handoff receipt JSON after {context} changed its handoff artifact")
-    if (
-        handoff_artifact.get("reference") != str(handoff_path.resolve())
-        or handoff_artifact.get("source") != handoff_source
-        or handoff_artifact.get("value") != handoff_value
-        or handoff_artifact.get("sha256") != hashlib.sha256(handoff_source.encode("utf-8")).hexdigest()
-        or handoff_artifact.get("bytes") != len(handoff_source.encode("utf-8"))
-    ):
-        raise SystemExit(f"review handoff receipt JSON after {context} lost exact handoff identity")
-
-    report_summary = handoff_value["artifacts"]["reviewWorkflow"]["value"]["report"]["summary"]
-    browser_artifact = handoff_value["artifacts"]["browserVerification"]
-    browser_status = browser_artifact["value"]["summary"]["status"] if browser_artifact else "not-run"
-    if receipt.get("evidence") != {
-        "qualityStatus": report_summary["status"],
-        "confirmedFindings": report_summary["confirmedFindings"],
-        "unverifiedFindings": report_summary["unverifiedFindings"],
-        "browserStatus": browser_status,
-    }:
-        raise SystemExit(f"review handoff receipt JSON after {context} changed its evidence summary")
-    if receipt.get("remainingApprovals") != handoff_value["nextAction"]["approvalRequiredBefore"]:
-        raise SystemExit(f"review handoff receipt JSON after {context} changed remaining approvals")
-    if receipt.get("nextAction") != {
-        "id": "target-repo-intake-required",
-        "status": "pending",
-        "summary": "Inspect the declared target repository before any implementation begins.",
-        "implementationAuthorized": False,
-    }:
-        raise SystemExit(f"review handoff receipt JSON after {context} changed its next action")
-    if receipt.get("boundary") != {
-        "mode": "read-only",
-        "localWrites": False,
-        "targetRepoMutation": False,
-        "externalWrites": False,
-        "transportVerified": False,
-        "consumerIdentityVerified": False,
-        "acceptanceRecorded": False,
-        "implementationStarted": False,
-    }:
-        raise SystemExit(f"review handoff receipt JSON after {context} exceeded its proof boundary")
-
-
-def assert_target_repo_intake_json(
-    raw: str,
-    receipt_path: Path,
-    target_root: Path,
-    *,
-    consumer: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        intake = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"failed to parse target repo intake JSON after {context}") from error
-
-    assert_smoke_json_keys(
-        intake,
-        [
-            "kind", "schemaVersion", "status", "consumer", "receipt", "target", "project",
-            "git", "inspection", "issues", "remainingApprovals", "nextAction", "boundary",
-        ],
-        label="top-level",
-        context=context,
-        command_label="target repo intake JSON",
-    )
-    if (
-        intake.get("kind") != "design-ai-target-repo-intake"
-        or intake.get("schemaVersion") != 1
-        or intake.get("status") != "ready-for-scope-review"
-    ):
-        raise SystemExit(f"target repo intake JSON after {context} changed its contract identity")
-
-    receipt_source = receipt_path.read_text(encoding="utf-8")
-    receipt_value = json.loads(receipt_source)
-    receipt_link = intake.get("receipt")
-    if receipt_link != {
-        "reference": str(receipt_path.resolve()),
-        "sha256": hashlib.sha256(receipt_source.encode("utf-8")).hexdigest(),
-        "bytes": len(receipt_source.encode("utf-8")),
-        "kind": "design-ai-review-handoff-receipt",
-        "schemaVersion": 1,
-        "status": "contract-validated",
-        "consumer": consumer,
-        "handoffSha256": receipt_value["handoff"]["sha256"],
-        "reviewWorkflowSha256": receipt_value["handoff"]["value"]["artifacts"]["reviewWorkflow"]["sha256"],
-        "remainingApprovals": receipt_value["remainingApprovals"],
-    }:
-        raise SystemExit(f"target repo intake JSON after {context} changed its receipt linkage")
-    if intake.get("consumer") != {
-        "name": consumer,
-        "receiptConsumerMatch": True,
-        "identity": "self-declared",
-    }:
-        raise SystemExit(f"target repo intake JSON after {context} changed its consumer boundary")
-
-    target = intake.get("target", {})
-    if (
-        target.get("declaredPath") != str(target_root)
-        or target.get("resolvedPath") != str(target_root.resolve())
-        or target.get("pathMatch") is not True
-        or target.get("repositoryUrlMatch") is not True
-    ):
-        raise SystemExit(f"target repo intake JSON after {context} changed its target identity")
-    project = intake.get("project", {})
-    if (
-        project.get("metadataStatus") != "pass"
-        or project.get("manifest") != "package.json"
-        or project.get("packageManager") != "pnpm"
-        or project.get("framework") != "Vite"
-        or project.get("startCommand") != "pnpm run dev"
-    ):
-        raise SystemExit(f"target repo intake JSON after {context} changed project metadata")
-    git = intake.get("git", {})
-    if (
-        git.get("status") != "pass"
-        or git.get("repository") is not True
-        or git.get("targetWithinRepository") is not True
-        or git.get("branch") != "main"
-        or git.get("clean") is not True
-        or git.get("remoteMatch") is not True
-        or git.get("changes") != {"total": 0, "entries": [], "truncated": False}
-    ):
-        raise SystemExit(f"target repo intake JSON after {context} changed Git evidence")
-    inspection = intake.get("inspection", {})
-    if (
-        inspection.get("scope") != "root-metadata-and-git-state"
-        or inspection.get("metadataFilesRead") != ["package.json"]
-        or inspection.get("applicationSourceFilesRead") != []
-        or not inspection.get("gitCommands")
-    ):
-        raise SystemExit(f"target repo intake JSON after {context} changed its inspection boundary")
-    if any(issue.get("level") in {"warn", "fail"} for issue in intake.get("issues", [])):
-        raise SystemExit(f"target repo intake JSON after {context} reported unexpected readiness issues")
-    expected_approvals = list(dict.fromkeys([
-        *receipt_value["remainingApprovals"],
-        "implementation scope",
-    ]))
-    if intake.get("remainingApprovals") != receipt_value["remainingApprovals"]:
-        raise SystemExit(f"target repo intake JSON after {context} changed remaining approvals")
-    if intake.get("nextAction") != {
-        "id": "implementation-scope-approval-required",
-        "status": "pending",
-        "summary": "Review the proposed files, scope, risks, and verification commands before implementation.",
-        "approvalRequiredBefore": expected_approvals,
-        "implementationAuthorized": False,
-    }:
-        raise SystemExit(f"target repo intake JSON after {context} changed its scope gate")
-    if intake.get("boundary") != {
-        "mode": "read-only",
-        "localWrites": False,
-        "targetRepoMutation": False,
-        "externalWrites": False,
-        "networkCalls": False,
-        "previewStarted": False,
-        "applicationSourceRead": False,
-        "consumerIdentityVerified": False,
-        "implementationStarted": False,
-    }:
-        raise SystemExit(f"target repo intake JSON after {context} exceeded its read-only boundary")
-
-
-def assert_implementation_scope_proposal_json(
-    raw: str,
-    intake_path: Path,
-    request_path: Path,
-    *,
-    consumer: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        proposal = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"failed to parse implementation scope proposal after {context}") from error
-
-    assert_smoke_json_keys(
-        proposal,
-        [
-            "kind", "schemaVersion", "status", "consumer", "intake", "request",
-            "linkage", "baseline", "scope", "approvalGates", "issues", "nextAction", "boundary",
-        ],
-        label="top-level",
-        context=context,
-        command_label="implementation scope proposal JSON",
-    )
-    if (
-        proposal.get("kind") != "design-ai-implementation-scope-proposal"
-        or proposal.get("schemaVersion") != 1
-        or proposal.get("status") != "approval-pending"
-        or proposal.get("consumer") != {
-            "name": consumer,
-            "intakeConsumerMatch": True,
-            "identity": "self-declared",
-        }
-    ):
-        raise SystemExit(f"implementation scope proposal after {context} changed identity or status")
-
-    for field, source_path in (("intake", intake_path), ("request", request_path)):
-        source = source_path.read_text(encoding="utf-8")
-        artifact = proposal.get(field, {})
-        if (
-            artifact.get("reference") != str(source_path.resolve())
-            or artifact.get("source") != source
-            or artifact.get("sha256") != hashlib.sha256(source.encode("utf-8")).hexdigest()
-            or artifact.get("bytes") != len(source.encode("utf-8"))
-            or artifact.get("value") != json.loads(source)
-        ):
-            raise SystemExit(f"implementation scope proposal after {context} changed {field} source identity")
-
-    gates = {gate.get("id"): gate.get("status") for gate in proposal.get("approvalGates", [])}
-    if gates.get("source-inspection") != "pending" or gates.get("target-files") != "pending":
-        raise SystemExit(f"implementation scope proposal after {context} changed implementation gates")
-    if gates.get("external-writes") != "pending" or gates.get("commit") != "pending" or gates.get("push") != "pending":
-        raise SystemExit(f"implementation scope proposal after {context} changed release gates")
-    if proposal.get("nextAction", {}).get("implementationAuthorized") is not False:
-        raise SystemExit(f"implementation scope proposal after {context} authorized implementation early")
-    if proposal.get("boundary") != {
-        "mode": "read-only",
-        "localWrites": False,
-        "targetRepoMutation": False,
-        "externalWrites": False,
-        "networkCalls": False,
-        "applicationSourceRead": False,
-        "scopeApproved": False,
-        "implementationStarted": False,
-    }:
-        raise SystemExit(f"implementation scope proposal after {context} exceeded its read-only boundary")
-
-
-def assert_implementation_scope_approval_json(
-    raw: str,
-    proposal_path: Path,
-    *,
-    approver: str,
-    approval_ref: str,
-    approved_at: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        approval = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"failed to parse implementation scope approval after {context}") from error
-
-    if (
-        approval.get("kind") != "design-ai-implementation-scope-approval"
-        or approval.get("schemaVersion") != 1
-        or approval.get("status") != "approved-for-implementation"
-        or approval.get("approver") != {
-            "name": approver,
-            "identity": "self-declared",
-            "reference": approval_ref,
-            "approvedAt": approved_at,
-        }
-    ):
-        raise SystemExit(f"implementation scope approval after {context} changed identity or decision")
-    proposal_source = proposal_path.read_text(encoding="utf-8")
-    proposal_artifact = approval.get("proposal", {})
-    if (
-        proposal_artifact.get("source") != proposal_source
-        or proposal_artifact.get("sha256") != hashlib.sha256(proposal_source.encode("utf-8")).hexdigest()
-        or proposal_artifact.get("bytes") != len(proposal_source.encode("utf-8"))
-        or proposal_artifact.get("value") != json.loads(proposal_source)
-    ):
-        raise SystemExit(f"implementation scope approval after {context} changed proposal identity")
-    decision = approval.get("decision", {})
-    if decision.get("authorizedGateIds") != ["source-inspection", "target-files"]:
-        raise SystemExit(f"implementation scope approval after {context} changed implementation authority")
-    if decision.get("remainingGateIds") != ["external-writes", "commit", "push"]:
-        raise SystemExit(f"implementation scope approval after {context} changed remaining release gates")
-    boundary = approval.get("boundary", {})
-    if boundary.get("targetRepoMutation") is not False or boundary.get("implementationStarted") is not False:
-        raise SystemExit(f"implementation scope approval after {context} claimed implementation work")
-    for field in ["externalWritesAuthorized", "commitAuthorized", "pushAuthorized", "deploymentAuthorized"]:
-        if boundary.get(field) is not False:
-            raise SystemExit(f"implementation scope approval after {context} expanded {field}")
-
-
-def assert_implementation_evidence_json(
-    raw: str,
-    approval_path: Path,
-    request_path: Path,
-    target_root: Path,
-    *,
-    consumer: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-    try:
-        evidence = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"failed to parse implementation evidence after {context}") from error
-
-    if (
-        evidence.get("kind") != "design-ai-implementation-evidence"
-        or evidence.get("schemaVersion") != 1
-        or evidence.get("status") != "attention-required"
-        or evidence.get("consumer") != consumer
-    ):
-        raise SystemExit(f"implementation evidence after {context} changed identity or status")
-    for field, source_path in (("approval", approval_path), ("request", request_path)):
-        source = source_path.read_text(encoding="utf-8")
-        artifact = evidence.get(field, {})
-        if (
-            artifact.get("reference") != str(source_path.resolve())
-            or artifact.get("source") != source
-            or artifact.get("sha256") != hashlib.sha256(source.encode("utf-8")).hexdigest()
-            or artifact.get("bytes") != len(source.encode("utf-8"))
-            or artifact.get("value") != json.loads(source)
-        ):
-            raise SystemExit(f"implementation evidence after {context} changed {field} source identity")
-    observed = evidence.get("observed", {})
-    changes = observed.get("worktreeChanges", [])
-    if (
-        observed.get("targetPath") != str(target_root)
-        or observed.get("branch") != "main"
-        or len(changes) != 1
-        or changes[0].get("path") != "src/settings/view.tsx"
-        or changes[0].get("reported") is not True
-        or changes[0].get("selector") != "src/settings/**/*.tsx"
-    ):
-        raise SystemExit(f"implementation evidence after {context} changed observed Git evidence")
-    verification = evidence.get("verification", {})
-    if (
-        verification.get("expectedCommands") != ["npm test", "npm run build"]
-        or verification.get("summary") != {"pass": 0, "fail": 0, "notRun": 2}
-        or len(evidence.get("observations", [])) != 3
-        or evidence.get("artifacts") != []
-        or not evidence.get("issues")
-    ):
-        raise SystemExit(f"implementation evidence after {context} promoted missing proof")
-    boundary = evidence.get("boundary", {})
-    if (
-        boundary.get("mode") != "read-only-evidence"
-        or boundary.get("verificationCommandsExecuted") != []
-        or boundary.get("evidenceFilesRead") != []
-        or boundary.get("applicationSourceRead") is not False
-    ):
-        raise SystemExit(f"implementation evidence after {context} changed its read boundary")
-    for field in [
-        "localWrites", "targetRepoMutation", "externalWrites", "networkCalls",
-        "implementationPerformed", "commitAuthorized", "commitPerformed",
-        "pushAuthorized", "pushPerformed", "deploymentAuthorized", "deploymentPerformed",
-    ]:
-        if boundary.get(field) is not False:
-            raise SystemExit(f"implementation evidence after {context} expanded {field}")
+from smoke_domains.review_handoff import (
+    assert_review_handoff_json,
+    assert_review_handoff_receipt_json,
+)
+from smoke_domains.implementation_evidence import assert_implementation_evidence_json
+from smoke_domains.review_intake import assert_target_repo_intake_json
+from smoke_domains.review_quality import (
+    assert_inspect_json,
+    assert_review_comparison_json,
+    review_workflow_digest,
+)
+from smoke_domains.review_scope import (
+    assert_implementation_scope_approval_json,
+    assert_implementation_scope_proposal_json,
+)
+from smoke_domains.review_workflow import assert_review_workflow_json
 
 
 def assert_pilot_evidence_json(
@@ -5549,7 +4862,7 @@ def passing_help_catalog_json() -> str:
             {
                 "topic": topic,
                 "usage": EXPECTED_HELP_TOPIC_USAGES[topic],
-                "description": f"{topic} help topic",
+                "description": EXPECTED_HELP_TOPIC_DESCRIPTIONS.get(topic, f"{topic} help topic"),
                 "aliases": [
                     alias
                     for alias, target in EXPECTED_HELP_ALIASES.items()
@@ -5882,1243 +5195,38 @@ def passing_workspace_json() -> str:
     )
 
 
-def passing_site_json() -> str:
-    return json.dumps(
-        {
-            "filePath": "stdin",
-            "valid": True,
-            "status": "pass",
-            "site": {
-                "id": "sample-korean-saas",
-                "name": "Korean SaaS marketing site",
-                "liveUrl": "https://example.com",
-                "repoUrl": "https://github.com/acme/korean-saas-site",
-                "localPath": "/Users/you/dev/korean-saas-site",
-                "deployProvider": "vercel",
-                "cms": "sanity",
-                "database": "none",
-                "pages": ["/", "/pricing", "/signup", "/docs"],
-                "userFlows": [
-                    "Visitor compares pricing and starts signup",
-                    "Existing customer finds feature proof before contacting sales",
-                ],
-                "viewports": ["desktop", "tablet", "mobile"],
-            },
-            "counts": {
-                "pages": 4,
-                "userFlows": 2,
-                "viewports": 3,
-                "auditCategories": 9,
-                "auditFindings": 3,
-                "refactorTasks": 1,
-                "executedWork": 0,
-                "verificationResults": 0,
-                "remainingRisks": 3,
-                "nextActions": 0,
-                "requiredMcp": 3,
-                "optionalMcp": 6,
-                "unavailableMcp": 0,
-            },
-            "auditStatusCounts": {
-                "todo": 7,
-                "in-progress": 2,
-                "done": 0,
-                "blocked": 0,
-            },
-            "mcpStatusCounts": {
-                "required": 3,
-                "optional": 6,
-                "unused": 1,
-                "unavailable": 0,
-            },
-            "taskPriorityCounts": {
-                "p0": 0,
-                "p1": 1,
-                "p2": 0,
-                "p3": 0,
-            },
-            "requiredMcp": ["github", "browser", "deploy"],
-            "topTasks": [
-                {
-                    "id": "task-homepage-cta",
-                    "title": "Clarify homepage CTA hierarchy",
-                    "priority": "p1",
-                    "category": "visual-design",
-                    "impact": "high",
-                    "effort": "medium",
-                    "pages": ["/"],
-                },
-            ],
-            "issues": [
-                {
-                    "level": "pass",
-                    "id": "workspace-ready",
-                    "message": "Workspace is ready for report and prompt generation",
-                },
-            ],
-        },
-        ensure_ascii=False,
-        indent=2,
-    )
 
 
-def passing_site_next_actions_json() -> str:
-    return json.dumps(
-        {
-            "kind": "website-improvement-next-actions",
-            "version": 1,
-            "filePath": "stdin",
-            "status": "pass",
-            "workspaceStatus": "pass",
-            "mcpStatus": "pass",
-            "mcpProbeStatus": "pass",
-            "mcpProbeCounts": {
-                "count": 4,
-                "pass": 4,
-                "warn": 0,
-                "fail": 0,
-            },
-            "site": {
-                "name": "Korean SaaS marketing site",
-                "liveUrl": "https://example.com",
-                "repoUrl": "https://github.com/acme/korean-saas-site",
-                "localPath": "/Users/you/dev/korean-saas-site",
-            },
-            "counts": {
-                "actions": 3,
-                "blocking": 0,
-                "warnings": 0,
-                "tasks": 1,
-                "requiredMcpMissing": 0,
-                "taskGaps": 0,
-                "probeGaps": 0,
-            },
-            "topTasks": [
-                {
-                    "id": "task-homepage-cta",
-                    "title": "Clarify homepage CTA hierarchy",
-                    "priority": "p1",
-                    "category": "visual-design",
-                    "impact": "high",
-                    "effort": "medium",
-                },
-            ],
-            "actions": [
-                {
-                    "rank": 1,
-                    "severity": "implementation",
-                    "title": "Prepare Codex implementation prompt for task-homepage-cta",
-                    "reason": "Clarify homepage CTA hierarchy is the highest-priority available refactor task.",
-                    "command": "design-ai site <workspace.json> --prompt codex-implementation --task 1 --out codex-implementation.md",
-                    "references": ["task-homepage-cta"],
-                },
-                {
-                    "rank": 2,
-                    "severity": "handoff",
-                    "title": "Create implementation evidence trail",
-                    "reason": "Executed work or verification results are still empty, so the handoff report should capture what remains unverified.",
-                    "command": "design-ai site <workspace.json> --report --out website-handoff.md",
-                    "references": ["implementationEvidence"],
-                },
-                {
-                    "rank": 3,
-                    "severity": "handoff",
-                    "title": "Export portable handoff bundle",
-                    "reason": "A bundle keeps summary, tasks, MCP evidence, prompts, and handoff report together for the target website repo workflow.",
-                    "command": "design-ai site <workspace.json> --bundle --out website-handoff-bundle",
-                    "references": ["bundle"],
-                },
-            ],
-            "commands": {
-                "summary": "design-ai site <workspace.json> --json",
-                "mcpCheck": "design-ai site <workspace.json> --mcp-check --strict --json",
-                "mcpPlan": "design-ai site <workspace.json> --mcp-plan --out mcp-action-plan.md",
-                "mcpCheckProbes": "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json",
-                "mcpPlanProbes": "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json",
-                "tasks": "design-ai site <workspace.json> --tasks --out website-workspace.tasks.json",
-                "implementationPrompt": "design-ai site <workspace.json> --prompt codex-implementation --task 1 --out codex-implementation.md",
-                "handoffReport": "design-ai site <workspace.json> --report --out website-handoff.md",
-                "handoffBundle": "design-ai site <workspace.json> --bundle --out website-handoff-bundle",
-            },
-            "boundaries": [
-                "This next-action report is deterministic and local.",
-                "It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write deployment/CMS/Sentry data.",
-                "MCP probes are read-only local URL/path/reference checks and do not connect to external MCP servers.",
-                "Run implementation commands in the target website workflow after readiness blockers are cleared.",
-            ],
-            "externalCalls": False,
-            "targetRepoMutation": False,
-        },
-        ensure_ascii=False,
-        indent=2,
-    )
 
 
-def passing_site_next_actions_human() -> str:
-    return "\n".join(
-        [
-            "Website Improvement next actions: Korean SaaS marketing site",
-            "",
-            "Status: pass",
-            "Workspace status: pass",
-            "MCP status: pass",
-            "MCP probe status: pass",
-            "MCP probes: 4/4 passing, 0 warning, 0 failing",
-            "Actions: 3 (0 blocking, 0 warning)",
-            "",
-            "Prioritized actions:",
-            "1. [implementation] Prepare Codex implementation prompt for task-homepage-cta",
-            "   Why: Clarify homepage CTA hierarchy is the highest-priority available refactor task.",
-            "   Command: `design-ai site <workspace.json> --prompt codex-implementation --task 1 --out codex-implementation.md`",
-            "   References: task-homepage-cta",
-            "2. [handoff] Create implementation evidence trail",
-            "   Why: Executed work or verification results are still empty, so the handoff report should capture what remains unverified.",
-            "   Command: `design-ai site <workspace.json> --report --out website-handoff.md`",
-            "   References: implementationEvidence",
-            "3. [handoff] Export portable handoff bundle",
-            "   Why: A bundle keeps summary, tasks, MCP evidence, prompts, and handoff report together for the target website repo workflow.",
-            "   Command: `design-ai site <workspace.json> --bundle --out website-handoff-bundle`",
-            "   References: bundle",
-            "",
-            "Boundaries:",
-            "- This next-action report is deterministic and local.",
-            "- It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write deployment/CMS/Sentry data.",
-            "- MCP probes are read-only local URL/path/reference checks and do not connect to external MCP servers.",
-            "- Run implementation commands in the target website workflow after readiness blockers are cleared.",
-        ]
-    )
 
 
-def passing_site_intake_template_json(language: str = "en") -> str:
-    if language == "ko":
-        recommended_file_name = "company-website-intake.ko.md"
-        content = "\n".join(
-            [
-                "# 회사 웹사이트 Intake Template",
-                "",
-                "## Site Profile",
-                "- 사이트 이름:",
-                "- Live URL:",
-                "- 대상 repo URL 또는 local path:",
-                "",
-                "## 우선순위 페이지",
-                "- /",
-                "",
-                "## 주요 사용자 흐름",
-                "- 방문자가 가치를 비교하고 signup을 시작",
-                "",
-                "## MCP Readiness Notes",
-                "- GitHub: required",
-                "",
-                "## 초기 Audit Findings",
-                "- Visual Design: todo",
-                "",
-                "## 첫 Bundle Commands",
-                "design-ai site --init \\",
-                "  --bundle \\",
-                "  --out website-handoff-bundle \\",
-                "",
-                "## Target Repo Verification Plan",
-                "- target repo에서 lint, typecheck, build, visual QA를 실행합니다.",
-                "",
-                "## Stop Conditions",
-                "- production secret, 고객 데이터, live deployment 수정 전 멈춥니다.",
-            ]
-        )
-    else:
-        recommended_file_name = "company-website-intake.md"
-        content = "\n".join(
-            [
-                "# Company Website Intake Template",
-                "",
-                "## Site Profile",
-                "- Site name:",
-                "- Live URL:",
-                "- Target repo URL or local path:",
-                "",
-                "## Priority Pages",
-                "- /",
-                "",
-                "## Primary User Flows",
-                "- Visitor evaluates value and starts signup",
-                "",
-                "## MCP Readiness Notes",
-                "- GitHub: required",
-                "",
-                "## Initial Audit Findings",
-                "- Visual Design: todo",
-                "",
-                "## First Bundle Commands",
-                "design-ai site --init \\",
-                "  --bundle \\",
-                "  --out website-handoff-bundle \\",
-                "",
-                "## Target Repo Verification Plan",
-                "- Run lint, typecheck, build, and visual QA in the target repo.",
-                "",
-                "## Stop Conditions",
-                "- Stop before mutating production secrets, customer data, or live deployments.",
-            ]
-        )
-    return json.dumps(
-        {
-            "kind": "website-improvement-intake-template",
-            "version": 1,
-            "format": "markdown",
-            "language": language,
-            "recommendedFileName": recommended_file_name,
-            "sections": [
-                "site-profile",
-                "priority-pages",
-                "primary-user-flows",
-                "brand-and-content-notes",
-                "mcp-readiness-notes",
-                "initial-audit-findings",
-                "first-bundle-commands",
-                "target-repo-verification-plan",
-                "stop-conditions",
-            ],
-            "privacy": {
-                "storesCredentials": False,
-                "storesProductionSecrets": False,
-                "storesCustomerData": False,
-            },
-            "commands": {
-                "nextActions": "design-ai site --init --name \"<site name>\" --live-url <live-url> --local-path <absolute-target-repo-path> --next-actions --out website-next-actions.md --force",
-                "bundle": "design-ai site --init --name \"<site name>\" --live-url <live-url> --local-path <absolute-target-repo-path> --bundle --out website-handoff-bundle --strict --force",
-                "bundleCheck": "design-ai site website-handoff-bundle --bundle-check --strict --json --out website-bundle-check.json --force",
-                "bundleHandoff": "design-ai site website-handoff-bundle --bundle-handoff --strict --out target-repo-handoff.md --force",
-            },
-            "content": content,
-        },
-        ensure_ascii=False,
-        indent=2,
-    )
 
 
-def passing_site_sample_json() -> str:
-    return json.dumps(
-        {
-            "version": 1,
-            "updatedAt": "2026-05-30T00:00:00.000Z",
-            "siteProfile": {
-                "id": "sample-korean-saas",
-                "name": "Korean SaaS marketing site",
-                "liveUrl": "https://example.com",
-                "repoUrl": "https://github.com/acme/korean-saas-site",
-                "localPath": "/Users/you/dev/korean-saas-site",
-                "figmaUrl": "https://figma.com/file/example",
-                "brandNotes": "Quiet B2B SaaS tone, Pretendard typography, dense but readable Korean product copy, indigo accent only for action and focus.",
-                "deployProvider": "vercel",
-                "sentryProject": "acme/korean-saas-web",
-                "cms": "sanity",
-                "database": "none",
-                "pages": ["/", "/pricing", "/signup", "/docs"],
-                "userFlows": [
-                    "Visitor compares pricing and starts signup",
-                    "Existing customer finds feature proof before contacting sales",
-                ],
-                "viewports": ["desktop", "tablet", "mobile"],
-            },
-            "auditChecklist": {
-                "visual-design": {
-                    "status": "in-progress",
-                    "notes": "Hero hierarchy and CTA contrast need review before company pilot.",
-                    "findings": ["Primary CTA competes with secondary link on the homepage"],
-                },
-                "ux-flow": {"status": "todo", "notes": "Map visitor path from landing page to pricing and signup.", "findings": []},
-                "responsive": {"status": "todo", "notes": "Check 1440, 1024, 390, and 360 width layouts.", "findings": []},
-                "accessibility": {
-                    "status": "todo",
-                    "notes": "Keyboard and focus audit required for nav, pricing toggle, and forms.",
-                    "findings": ["Focus state is not yet documented for the mobile menu"],
-                },
-                "performance": {"status": "todo", "notes": "Run Lighthouse after visual pass.", "findings": []},
-                "seo": {"status": "todo", "notes": "Inspect title, description, heading order, canonical, OG.", "findings": []},
-                "technical-quality": {"status": "todo", "notes": "Confirm component reuse before editing target repo.", "findings": []},
-                "runtime-issues": {"status": "todo", "notes": "Open console/network once preview deploy is available.", "findings": []},
-                "content-quality": {
-                    "status": "in-progress",
-                    "notes": "Copy should lead with proof and reduce generic SaaS phrasing.",
-                    "findings": ["Pricing page does not explain plan fit in the first viewport"],
-                },
-            },
-            "mcpReadiness": {
-                "github": "required",
-                "figma": "optional",
-                "browser": "required",
-                "chromeDevtools": "optional",
-                "deploy": "required",
-                "sentry": "optional",
-                "database": "unused",
-                "cms": "optional",
-                "collaboration": "optional",
-                "research": "optional",
-            },
-            "refactorTasks": [
-                {
-                    "id": "task-homepage-cta",
-                    "title": "Clarify homepage CTA hierarchy",
-                    "category": "visual-design",
-                    "problem": "Primary and secondary actions compete in the hero, which weakens the visitor's first decision.",
-                    "evidence": "Sample finding: Primary CTA competes with secondary link on the homepage.",
-                    "impact": "high",
-                    "effort": "medium",
-                    "priority": "p1",
-                    "pages": ["/"],
-                    "recommendedMcp": ["browser", "figma"],
-                    "codexPrompt": "Inspect the target homepage implementation, preserve existing design system patterns, and revise the hero CTA hierarchy so the primary signup action is visually dominant while the secondary action remains available.",
-                    "verification": [
-                        "Run target repo lint/build",
-                        "Verify desktop/tablet/mobile hero layout",
-                        "Confirm focus indicators and text contrast",
-                    ],
-                    "risks": ["Could change conversion copy without stakeholder approval"],
-                },
-            ],
-            "implementationEvidence": {
-                "executedWork": [],
-                "verificationResults": [],
-                "remainingRisks": [
-                    "MCP readiness gaps may limit verification depth.",
-                    "Copy or brand changes may require stakeholder review.",
-                    "Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
-                ],
-                "nextActions": [],
-            },
-            "reportNotes": "MVP audit is a planning console. Run the generated prompts inside the target website repo before marking implementation complete.",
-        },
-        ensure_ascii=False,
-        indent=2,
-    )
 
 
-def passing_site_init_json() -> str:
-    return json.dumps(
-        {
-            "version": 1,
-            "updatedAt": "2026-06-17T00:00:00.000Z",
-            "siteProfile": {
-                "id": "company-marketing-site",
-                "name": "Company marketing site",
-                "liveUrl": "https://example.com",
-                "repoUrl": "https://github.com/acme/site",
-                "localPath": "",
-                "figmaUrl": "",
-                "brandNotes": "",
-                "deployProvider": "vercel",
-                "sentryProject": "",
-                "cms": "none",
-                "database": "none",
-                "pages": ["/", "/pricing"],
-                "userFlows": ["Visitor compares plans and starts signup"],
-                "viewports": ["desktop", "mobile"],
-            },
-            "auditChecklist": {
-                "visual-design": {
-                    "status": "todo",
-                    "notes": "Review layout, typography, color, spacing, hierarchy, and CTA treatment across /, /pricing.",
-                    "findings": [],
-                },
-                "ux-flow": {
-                    "status": "todo",
-                    "notes": "Map and test the primary flow(s): Visitor compares plans and starts signup.",
-                    "findings": [],
-                },
-                "responsive": {"status": "todo", "notes": "Verify configured viewports: desktop, mobile.", "findings": []},
-                "accessibility": {"status": "todo", "notes": "Check keyboard navigation, focus indicators, semantic structure, ARIA usage, and contrast before implementation handoff.", "findings": []},
-                "performance": {"status": "todo", "notes": "Run target-repo or deployment performance checks after the first visual/UX pass.", "findings": []},
-                "seo": {"status": "todo", "notes": "Inspect title, description, canonical, OG metadata, sitemap exposure, and heading order for priority pages.", "findings": []},
-                "technical-quality": {"status": "todo", "notes": "Inspect target repo architecture before editing; preserve existing components, tokens, styling conventions, and verification commands.", "findings": []},
-                "runtime-issues": {"status": "todo", "notes": "Use Browser/Chrome DevTools or deployment logs to check console errors, network failures, hydration issues, and broken assets.", "findings": []},
-                "content-quality": {"status": "todo", "notes": "Review copy clarity, information architecture, proof points, trust signals, Korean/English tone, and CTA wording.", "findings": []},
-            },
-            "mcpReadiness": {
-                "github": "required",
-                "figma": "unused",
-                "browser": "required",
-                "chromeDevtools": "optional",
-                "deploy": "required",
-                "sentry": "unused",
-                "database": "unused",
-                "cms": "unused",
-                "collaboration": "optional",
-                "research": "optional",
-            },
-            "refactorTasks": [],
-            "implementationEvidence": {
-                "executedWork": [],
-                "verificationResults": [],
-                "remainingRisks": [
-                    "MCP readiness gaps may limit verification depth.",
-                    "Copy or brand changes may require stakeholder review.",
-                    "Automated performance/accessibility tooling is outside this MVP unless run in the target repo.",
-                ],
-                "nextActions": [
-                    "Run `design-ai site <workspace.json> --mcp-check --probes --json` before target-repo implementation.",
-                    "Add audit findings in the Website Console, then run `design-ai site <workspace.json> --tasks --out website-workspace.tasks.json`.",
-                ],
-            },
-            "reportNotes": "Generated by `design-ai site --init` for real-project Website Improvement intake. Actual target repo code changes happen outside this design-ai repository.",
-        },
-        ensure_ascii=False,
-        indent=2,
-    )
 
 
-def passing_site_from_intake_json() -> str:
-    payload = json.loads(passing_site_init_json())
-    payload["siteProfile"]["viewports"] = ["desktop", "tablet", "mobile"]
-    payload["auditChecklist"]["responsive"]["notes"] = "Verify configured viewports: desktop, tablet, mobile."
-    payload["reportNotes"] = (
-        "Generated by `design-ai site --from-intake company-website-intake.md` from a local company website "
-        "intake Markdown file. Actual target repo code changes happen outside this design-ai repository."
-    )
-    return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
-def passing_site_tasks_json() -> str:
-    payload = json.loads(passing_site_sample_json())
-    payload["updatedAt"] = "2026-05-30T00:01:00.000Z"
-    payload["refactorTasks"].extend([
-        {
-            "id": "task-accessibility",
-            "title": "Resolve Accessibility finding",
-            "category": "accessibility",
-            "problem": "Focus state is not yet documented for the mobile menu",
-            "evidence": "Audit finding captured in the Website Improvement Console.",
-            "impact": "high",
-            "effort": "medium",
-            "priority": "p0",
-            "pages": ["/", "/pricing", "/signup"],
-            "recommendedMcp": ["browser", "chromeDevtools"],
-            "codexPrompt": "You are working in the target website repo, not in design-ai.\nSite: Korean SaaS marketing site\nLive URL: https://example.com\nCategory: Accessibility\nProblem: Focus state is not yet documented for the mobile menu\n\nInspect the target repo first. Reuse existing architecture, UI components, state patterns, styling conventions, and design tokens. Do not add dependencies unless the existing codebase clearly requires them.\n\nImplement the smallest safe improvement, then verify desktop/tablet/mobile behavior, keyboard focus, screen-reader semantics where relevant, and the target repo's lint/typecheck/build commands.",
-            "verification": [
-                "Tab through all interactive controls",
-                "Confirm visible focus and accessible names",
-                "Run target repo lint/typecheck/build when available",
-            ],
-            "risks": [
-                "Target repo architecture may constrain the fix",
-                "Manual stakeholder review may be needed before changing copy or brand language",
-            ],
-        },
-        {
-            "id": "task-content-quality",
-            "title": "Resolve Content Quality finding",
-            "category": "content-quality",
-            "problem": "Pricing page does not explain plan fit in the first viewport",
-            "evidence": "Audit finding captured in the Website Improvement Console.",
-            "impact": "medium",
-            "effort": "medium",
-            "priority": "p1",
-            "pages": ["/", "/pricing", "/signup"],
-            "recommendedMcp": ["figma", "research", "cms"],
-            "codexPrompt": "You are working in the target website repo, not in design-ai.\nSite: Korean SaaS marketing site\nLive URL: https://example.com\nCategory: Content Quality\nProblem: Pricing page does not explain plan fit in the first viewport\n\nInspect the target repo first. Reuse existing architecture, UI components, state patterns, styling conventions, and design tokens. Do not add dependencies unless the existing codebase clearly requires them.\n\nImplement the smallest safe improvement, then verify desktop/tablet/mobile behavior, keyboard focus, screen-reader semantics where relevant, and the target repo's lint/typecheck/build commands.",
-            "verification": [
-                "Read the page as a first-time visitor",
-                "Check whether claims have concrete proof",
-                "Run target repo lint/typecheck/build when available",
-            ],
-            "risks": [
-                "Target repo architecture may constrain the fix",
-                "Manual stakeholder review may be needed before changing copy or brand language",
-            ],
-        },
-    ])
-    return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
-def passing_site_prompt_markdown() -> str:
-    return """# Codex implementation prompt
-Site profile:
-- Name: Korean SaaS marketing site
-- Live URL: https://example.com
-- Repo URL: https://github.com/acme/korean-saas-site
-- Local path: /Users/you/dev/korean-saas-site
-- Figma URL: https://figma.com/file/example
-- Deploy: vercel
-- Sentry: acme/korean-saas-web
-- CMS: sanity
-- Database: none
-- Viewports: desktop, tablet, mobile
-
-Priority pages:
-- /
-- /pricing
-- /signup
-- /docs
-
-User flows:
-- Visitor compares pricing and starts signup
-- Existing customer finds feature proof before contacting sales
-
-Brand/design notes:
-Quiet B2B SaaS tone, Pretendard typography, dense but readable Korean product copy, indigo accent only for action and focus.
-
-Selected task:
-- Task ID: task-homepage-cta
-- Title: Clarify homepage CTA hierarchy
-- Category: Visual Design
-- Problem: Primary and secondary actions compete in the hero, which weakens the visitor's first decision.
-- Evidence: Sample finding: Primary CTA competes with secondary link on the homepage.
-- Impact: high
-- Effort: medium
-- Priority: p1
-- Pages: /
-- Recommended MCP: browser, figma
-
-Verification:
-- Run target repo lint/build
-- Verify desktop/tablet/mobile hero layout
-- Confirm focus indicators and text contrast
-
-Risks:
-- Could change conversion copy without stakeholder approval
-
-Rules:
-- Work in the target website repository, not in this design-ai repository.
-- Inspect existing architecture, components, state, styling, and design tokens before editing.
-- Keep changes scoped and avoid new dependencies unless clearly justified.
-- Preserve accessibility: keyboard reachability, visible focus, semantic HTML, screen-reader labels, and WCAG 2.1 AA contrast.
-- Verify desktop, tablet, and mobile layouts.
-
-Implement the smallest safe fix. After editing, run the target repo's most relevant lint/typecheck/build/test command and summarize changed files plus verification.
-"""
 
 
-def passing_site_prompt_templates_json() -> str:
-    templates = [
-        {
-            "id": "implementation-plan",
-            "label": "Implementation plan",
-            "agent": "codex-or-claude",
-            "output": "Portable implementation plan",
-            "description": "Plan one website improvement task with source, approval, and verification evidence.",
-            "taskSelectable": True,
-        },
-        {
-            "id": "critique-loop",
-            "label": "Critique loop",
-            "agent": "codex-or-claude",
-            "output": "Observed critique and revision loop",
-            "description": "Review, revise, and re-observe one website decision without losing the evidence trail.",
-            "taskSelectable": True,
-        },
-        {
-            "id": "design-contract",
-            "label": "Agent-readable DESIGN.md",
-            "agent": "codex-or-claude",
-            "output": "DESIGN.md contract",
-            "description": "Create the canonical brand, component, motion, accessibility, and responsive contract for agents.",
-            "taskSelectable": False,
-        },
-        {
-            "id": "codex-repo-intake",
-            "label": "Codex repo intake",
-            "agent": "codex",
-            "output": "Repository inspection plan",
-            "description": "Inspect the target website repo and return structure, likely touch points, risks, and verification commands.",
-            "taskSelectable": False,
-        },
-        {
-            "id": "codex-implementation",
-            "label": "Codex implementation",
-            "agent": "codex",
-            "output": "Focused implementation prompt",
-            "description": "Implement the selected website improvement task in the target repo with scoped verification.",
-            "taskSelectable": True,
-        },
-        {
-            "id": "codex-visual-qa",
-            "label": "Codex visual QA",
-            "agent": "codex",
-            "output": "Browser/Playwright QA checklist",
-            "description": "Verify priority pages across configured viewports for layout, focus, console, and asset issues.",
-            "taskSelectable": False,
-        },
-        {
-            "id": "codex-deployment",
-            "label": "Codex deployment verification",
-            "agent": "codex",
-            "output": "Deployment verification prompt",
-            "description": "Check preview or production deployment, logs, metadata, user flows, and remaining launch risks.",
-            "taskSelectable": False,
-        },
-        {
-            "id": "claude-design-review",
-            "label": "Claude design review",
-            "agent": "claude",
-            "output": "Senior design critique",
-            "description": "Review visual hierarchy, layout rhythm, typography, CTA clarity, responsive behavior, and accessibility concerns.",
-            "taskSelectable": False,
-        },
-        {
-            "id": "claude-competitor",
-            "label": "Claude competitor research",
-            "agent": "claude",
-            "output": "Competitor opportunity map",
-            "description": "Compare relevant peer sites for structure, conversion path, proof, pricing, tone, content, and SEO positioning.",
-            "taskSelectable": False,
-        },
-        {
-            "id": "claude-copy-ux",
-            "label": "Claude copy/UX critique",
-            "agent": "claude",
-            "output": "Copy and UX improvement notes",
-            "description": "Critique copy, information architecture, trust signals, CTA language, and conversion flow.",
-            "taskSelectable": False,
-        },
-        {
-            "id": "handoff-report",
-            "label": "Final handoff report",
-            "agent": "codex-or-claude",
-            "output": "Final handoff report prompt",
-            "description": "Generate a final report covering target site info, audit summary, recommendations, executed work, verification, risks, and next actions.",
-            "taskSelectable": False,
-        },
-    ]
-    return json.dumps({"count": len(templates), "templates": templates}, ensure_ascii=False, indent=2)
 
 
-def passing_site_mcp_check_json() -> str:
-    items = [
-        {
-            "key": "github",
-            "label": "GitHub",
-            "requestedStatus": "required",
-            "state": "ready",
-            "level": "pass",
-            "evidence": [
-                "repoUrl: https://github.com/acme/korean-saas-site",
-                "localPath: /Users/you/dev/korean-saas-site",
-            ],
-            "actions": [],
-        },
-        {
-            "key": "figma",
-            "label": "Figma",
-            "requestedStatus": "optional",
-            "state": "ready",
-            "level": "pass",
-            "evidence": ["figmaUrl: https://figma.com/file/example"],
-            "actions": [],
-        },
-        {
-            "key": "browser",
-            "label": "Browser/Playwright",
-            "requestedStatus": "required",
-            "state": "ready",
-            "level": "pass",
-            "evidence": ["liveUrl: https://example.com", "viewports: desktop, tablet, mobile"],
-            "actions": [],
-        },
-        {
-            "key": "chromeDevtools",
-            "label": "Chrome DevTools",
-            "requestedStatus": "optional",
-            "state": "ready",
-            "level": "pass",
-            "evidence": ["liveUrl: https://example.com"],
-            "actions": [],
-        },
-        {
-            "key": "deploy",
-            "label": "Deploy",
-            "requestedStatus": "required",
-            "state": "ready",
-            "level": "pass",
-            "evidence": ["deployProvider: vercel", "liveUrl: https://example.com"],
-            "actions": [],
-        },
-        {
-            "key": "sentry",
-            "label": "Sentry",
-            "requestedStatus": "optional",
-            "state": "ready",
-            "level": "pass",
-            "evidence": ["sentryProject: acme/korean-saas-web"],
-            "actions": [],
-        },
-        {
-            "key": "database",
-            "label": "Database",
-            "requestedStatus": "unused",
-            "state": "unused",
-            "level": "pass",
-            "evidence": ["Marked unused in mcpReadiness."],
-            "actions": [],
-        },
-        {
-            "key": "cms",
-            "label": "CMS",
-            "requestedStatus": "optional",
-            "state": "ready",
-            "level": "pass",
-            "evidence": ["cms: sanity"],
-            "actions": [],
-        },
-        {
-            "key": "collaboration",
-            "label": "Collaboration",
-            "requestedStatus": "optional",
-            "state": "ready",
-            "level": "pass",
-            "evidence": ["Optional collaboration is tracked in handoff notes for this local MVP."],
-            "actions": [],
-        },
-        {
-            "key": "research",
-            "label": "Research",
-            "requestedStatus": "optional",
-            "state": "ready",
-            "level": "pass",
-            "evidence": ["liveUrl: https://example.com"],
-            "actions": [],
-        },
-    ]
-    return json.dumps(
-        {
-            "filePath": "stdin",
-            "status": "pass",
-            "workspaceStatus": "pass",
-            "site": {
-                "name": "Korean SaaS marketing site",
-                "liveUrl": "https://example.com",
-                "repoUrl": "https://github.com/acme/korean-saas-site",
-                "localPath": "/Users/you/dev/korean-saas-site",
-            },
-            "counts": {
-                "total": 10,
-                "required": 3,
-                "optional": 6,
-                "ready": 9,
-                "missing": 0,
-                "unused": 1,
-                "unavailable": 0,
-                "taskGaps": 0,
-            },
-            "items": items,
-            "taskGaps": [],
-            "workspaceIssues": [],
-            "nextActions": [],
-        },
-        ensure_ascii=False,
-        indent=2,
-    )
 
 
-def passing_site_mcp_check_probes_json() -> str:
-    payload = json.loads(passing_site_mcp_check_json())
-    payload["probes"] = {
-        "enabled": True,
-        "mode": "read-only-local",
-        "externalCalls": False,
-        "status": "pass",
-        "count": 4,
-        "pass": 4,
-        "warn": 0,
-        "fail": 0,
-        "items": [
-            {
-                "id": "github-repo-reference",
-                "key": "github",
-                "label": "GitHub repo reference",
-                "requestedStatus": "required",
-                "level": "pass",
-                "passed": True,
-                "message": "Target repo reference is parseable for Codex handoff.",
-                "evidence": ["github repo: acme/korean-saas-site"],
-                "actions": [],
-            },
-            {
-                "id": "figma-url-reference",
-                "key": "figma",
-                "label": "Figma file reference",
-                "requestedStatus": "optional",
-                "level": "pass",
-                "passed": True,
-                "message": "Figma URL is parseable for design-context handoff.",
-                "evidence": ["figma reference: file/example"],
-                "actions": [],
-            },
-            {
-                "id": "browser-smoke-target",
-                "key": "browser",
-                "label": "Browser smoke target",
-                "requestedStatus": "required",
-                "level": "pass",
-                "passed": True,
-                "message": "Browser smoke target and viewport set are ready for manual or MCP-driven QA.",
-                "evidence": ["liveUrl host: example.com", "viewports: desktop, tablet, mobile"],
-                "actions": [],
-            },
-            {
-                "id": "deploy-provider-reference",
-                "key": "deploy",
-                "label": "Deployment provider reference",
-                "requestedStatus": "required",
-                "level": "pass",
-                "passed": True,
-                "message": "Deployment provider and live URL are configured for verification handoff.",
-                "evidence": ["deployProvider: vercel", "liveUrl host: example.com"],
-                "actions": [],
-            },
-        ],
-    }
-    payload["commands"] = {
-        "mcpCheckProbesHumanOut": "design-ai site <workspace.json> --mcp-check --probes --out mcp-check-probes.txt",
-        "mcpCheckProbesJsonOut": "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json",
-        "mcpPlanProbesJson": "design-ai site <workspace.json> --mcp-plan --probes --json",
-        "mcpPlanProbesJsonOut": "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json",
-    }
-    return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
-def passing_site_mcp_check_probes_human() -> str:
-    return """Website Improvement MCP readiness: Korean SaaS marketing site
-
-Status: pass
-Workspace status: pass
-Required MCP: 3
-Ready: 9
-Missing: 0
-Task gaps: 0
-
-MCP checks:
-- [pass] GitHub (required) -> ready
-   Evidence: repoUrl: https://github.com/acme/korean-saas-site; localPath: /Users/you/dev/korean-saas-site
-- [pass] Figma (optional) -> ready
-   Evidence: figmaUrl: https://figma.com/file/example
-- [pass] Browser/Playwright (required) -> ready
-   Evidence: liveUrl: https://example.com; viewports: desktop, tablet, mobile
-- [pass] Chrome DevTools (optional) -> ready
-   Evidence: liveUrl: https://example.com
-- [pass] Deploy (required) -> ready
-   Evidence: deployProvider: vercel; liveUrl: https://example.com
-- [pass] Sentry (optional) -> ready
-   Evidence: sentryProject: acme/korean-saas-web
-- [pass] Database (unused) -> unused
-   Evidence: Marked unused in mcpReadiness.
-- [pass] CMS (optional) -> ready
-   Evidence: cms: sanity
-- [pass] Collaboration (optional) -> ready
-   Evidence: Optional collaboration is tracked in handoff notes for this local MVP.
-- [pass] Research (optional) -> ready
-   Evidence: liveUrl: https://example.com
-
-Task MCP gaps:
-- none
-
-Read-only probes:
-Mode: read-only-local; external calls: no; status: pass
-- [pass] GitHub repo reference (required) -> pass
-   Evidence: github repo: acme/korean-saas-site
-- [pass] Figma file reference (optional) -> pass
-   Evidence: figma reference: file/example
-- [pass] Browser smoke target (required) -> pass
-   Evidence: liveUrl host: example.com; viewports: desktop, tablet, mobile
-- [pass] Deployment provider reference (required) -> pass
-   Evidence: deployProvider: vercel; liveUrl host: example.com
-
-Probe commands:
-- Save readiness probe report: `design-ai site <workspace.json> --mcp-check --probes --out mcp-check-probes.txt`
-- Save readiness probe JSON: `design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json`
-- Generate probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json`
-- Save probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json`
-
-Next actions:
-- none
-"""
 
 
-def passing_site_mcp_plan_markdown() -> str:
-    return """# Website improvement MCP action plan: Korean SaaS marketing site
-
-## Summary
-- Source: stdin
-- Status: pass
-- Workspace status: pass
-- Live URL: https://example.com
-- Repo: https://github.com/acme/korean-saas-site
-- Ready MCP: 9/10
-- Missing MCP: 0
-- Task/MCP gaps: 0
-
-## Readiness Matrix
-| MCP | Requested | State | Level | Evidence |
-| --- | --- | --- | --- | --- |
-| GitHub | required | ready | pass | repoUrl: https://github.com/acme/korean-saas-site; localPath: /Users/you/dev/korean-saas-site |
-| Figma | optional | ready | pass | figmaUrl: https://figma.com/file/example |
-| Browser/Playwright | required | ready | pass | liveUrl: https://example.com; viewports: desktop, tablet, mobile |
-
-## Blocking Items
-- No blocking readiness issues.
-
-## Warnings
-- No optional readiness or task/MCP warnings.
-
-## Task/MCP Alignment
-| Task | Priority / impact | Recommended MCP | Readiness state |
-| --- | --- | --- | --- |
-| task-homepage-cta | p1 / high | browser, figma | browser: ready, figma: ready |
-
-## Execution Sequence
-1. Fix every blocking item before target-repo implementation handoff.
-2. Resolve warnings that affect the next selected refactor task, or mark the MCP unused when it is intentionally out of scope.
-3. Re-run the strict readiness gate and keep the JSON output with the handoff package.
-4. Generate or refresh starter tasks, then export the selected Codex implementation prompt.
-5. Run target-repo lint/typecheck/build plus desktop, tablet, mobile, keyboard, and screen-reader verification after implementation.
-
-## Commands
-- `design-ai site <workspace.json> --mcp-check --strict --json`
-- `design-ai site <workspace.json> --tasks --out website-workspace.tasks.json`
-- `design-ai site <workspace.json> --prompt codex-implementation --task 1 --out codex-implementation.md`
-- `design-ai site <workspace.json> --report --out website-handoff.md`
-
-## Boundaries
-- This plan is deterministic and local.
-- It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write to deployment/CMS/Sentry systems.
-- Run the generated Codex/Claude prompts in the target website workflow after this readiness plan is clean.
-"""
 
 
-def passing_site_mcp_plan_probes_markdown() -> str:
-    return passing_site_mcp_plan_markdown().replace(
-        "\n## Blocking Items",
-        """
-## Read-Only Probes
-
-- Probe status: pass
-- Mode: read-only-local
-- External calls: no
-
-| Probe | MCP | Level | Result | Evidence | Next Action |
-| --- | --- | --- | --- | --- | --- |
-| GitHub repo reference | github | pass | pass | github repo: acme/korean-saas-site | none |
-| Figma file reference | figma | pass | pass | figma reference: file/example | none |
-| Browser smoke target | browser | pass | pass | liveUrl host: example.com; viewports: desktop, tablet, mobile | none |
-| Deployment provider reference | deploy | pass | pass | deployProvider: vercel; liveUrl host: example.com | none |
-
-## Blocking Items""",
-    )
 
 
-def passing_site_mcp_plan_json(*, probes: bool = False) -> str:
-    mcp_payload = json.loads(passing_site_mcp_check_probes_json() if probes else passing_site_mcp_check_json())
-    payload = {
-        "kind": "website-improvement-mcp-action-plan",
-        "version": 1,
-        "filePath": "stdin",
-        "status": "pass",
-        "workspaceStatus": "pass",
-        "site": mcp_payload["site"],
-        "counts": mcp_payload["counts"],
-        "readinessMatrix": mcp_payload["items"],
-        "probes": mcp_payload.get("probes") if probes else None,
-        "blockingItems": [],
-        "warnings": [],
-        "taskAlignment": [
-            {
-                "task": "task-homepage-cta",
-                "priorityImpact": "p1 / high",
-                "recommendedMcp": "browser, figma",
-                "readinessState": "browser: ready, figma: ready",
-            },
-        ],
-        "taskGaps": [],
-        "workspaceIssues": [],
-        "nextActions": [],
-        "executionSequence": [
-            "Fix every blocking item before target-repo implementation handoff.",
-            "Resolve warnings that affect the next selected refactor task, or mark the MCP unused when it is intentionally out of scope.",
-            "Re-run the strict readiness gate and keep the JSON output with the handoff package.",
-            "Generate or refresh starter tasks, then export the selected Codex implementation prompt.",
-            "Run target-repo lint/typecheck/build plus desktop, tablet, mobile, keyboard, and screen-reader verification after implementation.",
-        ],
-        "commands": {
-            "mcpCheck": "design-ai site <workspace.json> --mcp-check --strict --json",
-            "mcpCheckProbesHumanOut": "design-ai site <workspace.json> --mcp-check --probes --out mcp-check-probes.txt",
-            "mcpCheckProbesJsonOut": "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json",
-            "mcpPlanProbesJsonOut": "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json",
-            "tasks": "design-ai site <workspace.json> --tasks --out website-workspace.tasks.json",
-            "implementationPrompt": "design-ai site <workspace.json> --prompt codex-implementation --task 1 --out codex-implementation.md",
-            "handoffReport": "design-ai site <workspace.json> --report --out website-handoff.md",
-        },
-        "boundaries": [
-            "This plan is deterministic and local.",
-            "It does not call external MCPs, mutate the target website repo, run Lighthouse/axe, capture screenshots, or write to deployment/CMS/Sentry systems.",
-            "Run the generated Codex/Claude prompts in the target website workflow after this readiness plan is clean.",
-        ],
-        "externalCalls": False,
-        "targetRepoMutation": False,
-    }
-    return json.dumps(payload, ensure_ascii=False, indent=2)
 
 
-def passing_site_workflow_graph_json() -> str:
-    categories = [
-        ("visual-design", "Visual Design", "in-progress"),
-        ("ux-flow", "UX Flow", "todo"),
-        ("responsive", "Responsive QA", "todo"),
-        ("accessibility", "Accessibility", "todo"),
-        ("performance", "Performance", "todo"),
-        ("seo", "SEO", "todo"),
-        ("technical-quality", "Technical Quality", "todo"),
-        ("runtime-issues", "Runtime Issues", "todo"),
-        ("content-quality", "Content Quality", "in-progress"),
-    ]
-    mcps = [
-        ("github", "GitHub", "required", "pass"),
-        ("figma", "Figma", "optional", "pass"),
-        ("browser", "Browser/Playwright", "required", "pass"),
-        ("chromeDevtools", "Chrome DevTools", "optional", "pass"),
-        ("deploy", "Deploy", "required", "pass"),
-        ("sentry", "Sentry", "optional", "pass"),
-        ("database", "Database", "unused", "pass"),
-        ("cms", "CMS", "optional", "pass"),
-        ("collaboration", "Collaboration", "optional", "pass"),
-        ("research", "Research", "optional", "pass"),
-    ]
-    tasks = [
-        ("task-accessibility", "Resolve Accessibility finding", "accessibility", ["browser", "chromeDevtools"]),
-        ("task-homepage-cta", "Clarify homepage CTA hierarchy", "visual-design", ["browser", "figma"]),
-        ("task-content-quality", "Resolve Content Quality finding", "content-quality", ["figma", "research", "cms"]),
-    ]
-    prompts = [
-        ("implementation-plan", "Implementation plan"),
-        ("critique-loop", "Critique loop"),
-        ("design-contract", "Agent-readable DESIGN.md"),
-        ("codex-repo-intake", "Codex repo intake"),
-        ("codex-implementation", "Codex implementation"),
-        ("codex-visual-qa", "Codex visual QA"),
-        ("codex-deployment", "Codex deployment verification"),
-        ("claude-design-review", "Claude design review"),
-        ("claude-competitor", "Claude competitor research"),
-        ("claude-copy-ux", "Claude copy/UX critique"),
-        ("handoff-report", "Final handoff report"),
-    ]
-    nodes = [
-        {"id": "workspace:intake", "type": "workspace", "label": "Workspace intake", "status": "pass", "data": {"source": "stdin"}},
-        {"id": "profile:sample-korean-saas", "type": "site-profile", "label": "Korean SaaS marketing site", "status": "pass", "data": {"id": "sample-korean-saas"}},
-    ]
-    nodes.extend(
-        {"id": f"audit:{category_id}", "type": "audit-category", "label": label, "status": status, "data": {"category": category_id}}
-        for category_id, label, status in categories
-    )
-    nodes.extend(
-        {
-            "id": f"mcp:{key}",
-            "type": "mcp-readiness",
-            "label": label,
-            "status": level,
-            "data": {"key": key, "requestedStatus": requested},
-        }
-        for key, label, requested, level in mcps
-    )
-    nodes.extend(
-        {
-            "id": f"task:{task_id}",
-            "type": "refactor-task",
-            "label": title,
-            "status": "planned",
-            "data": {"id": task_id, "category": category},
-        }
-        for task_id, title, category, _recommended in tasks
-    )
-    nodes.extend(
-        {
-            "id": f"prompt:{prompt_id}",
-            "type": "prompt-template",
-            "label": label,
-            "status": "ready",
-            "data": {"id": prompt_id},
-        }
-        for prompt_id, label in prompts
-    )
-    nodes.extend([
-        {"id": "handoff:report", "type": "handoff-report", "label": "Handoff report", "status": "ready", "data": {}},
-        {"id": "handoff:bundle", "type": "handoff-bundle", "label": "Local handoff bundle", "status": "ready", "data": {}},
-        {"id": "handoff:target-repo", "type": "target-repo", "label": "Target website repo", "status": "external", "data": {}},
-    ])
-
-    edges: list[dict[str, str]] = []
-
-    def edge(from_id: str, to_id: str, edge_type: str, label: str) -> None:
-        edges.append({
-            "id": f"{from_id}->{to_id}:{edge_type}",
-            "from": from_id,
-            "to": to_id,
-            "type": edge_type,
-            "label": label,
-        })
-
-    edge("workspace:intake", "profile:sample-korean-saas", "profile", "Workspace defines the target site profile")
-    for category_id, _label, _status in categories:
-        edge("profile:sample-korean-saas", f"audit:{category_id}", "audit-input", "Site context drives this audit category")
-    for key, _label, _requested, _level in mcps:
-        edge("profile:sample-korean-saas", f"mcp:{key}", "readiness-input", "Site profile provides MCP readiness evidence")
-    for task_id, _title, category, recommended in tasks:
-        edge(f"audit:{category}", f"task:{task_id}", "finding-to-task", "Audit finding informs this refactor task")
-        edge("profile:sample-korean-saas", f"task:{task_id}", "site-context", "Site profile scopes this refactor task")
-        for key in recommended:
-            edge(f"mcp:{key}", f"task:{task_id}", "mcp-support", "MCP readiness supports task execution")
-    for prompt_id, _label in prompts:
-        edge("profile:sample-korean-saas", f"prompt:{prompt_id}", "profile-context", "Prompt template receives site profile context")
-    for task_id, _title, _category, _recommended in tasks:
-        edge(f"task:{task_id}", "prompt:codex-implementation", "implementation-prompt", "Task can be exported as a Codex implementation prompt")
-    edge("profile:sample-korean-saas", "handoff:report", "handoff-input", "Site profile anchors the handoff report")
-    for task_id, _title, _category, _recommended in tasks:
-        edge(f"task:{task_id}", "handoff:report", "handoff-input", "Refactor task is summarized in the handoff report")
-    for key, _label, requested, _level in mcps:
-        if requested != "unused":
-            edge(f"mcp:{key}", "handoff:report", "readiness-input", "MCP readiness is summarized in the handoff report")
-    for prompt_id, _label in prompts:
-        edge(f"prompt:{prompt_id}", "handoff:target-repo", "agent-prompt", "Prompt can be used in the target website workflow")
-    edge("handoff:report", "handoff:bundle", "bundle-input", "Handoff report can be packaged into a local bundle")
-    edge("handoff:bundle", "handoff:target-repo", "handoff", "Verified bundle can become target-repo implementation context")
-
-    return json.dumps(
-        {
-            "version": 1,
-            "kind": "website-improvement-workflow-graph",
-            "generatedAt": "2026-05-30T00:00:00.000Z",
-            "filePath": "stdin",
-            "status": "pass",
-            "workspaceStatus": "pass",
-            "mcpStatus": "pass",
-            "externalCalls": False,
-            "site": {
-                "id": "sample-korean-saas",
-                "name": "Korean SaaS marketing site",
-                "liveUrl": "https://example.com",
-                "repoUrl": "https://github.com/acme/korean-saas-site",
-                "localPath": "/Users/you/dev/korean-saas-site",
-            },
-            "summary": {
-                "status": "pass",
-                "workspaceStatus": "pass",
-                "mcpStatus": "pass",
-                "nodeCount": len(nodes),
-                "edgeCount": len(edges),
-                "auditCategoryCount": 9,
-                "taskCount": 3,
-                "generatedTaskCount": 2,
-                "requiredMcpCount": 3,
-                "promptTemplateCount": 11,
-            },
-            "nodes": nodes,
-            "edges": edges,
-            "boundaries": [
-                "deterministic-local",
-                "no-external-mcp-calls",
-                "no-target-repo-mutation",
-                "no-new-dependencies",
-            ],
-        },
-        ensure_ascii=False,
-        indent=2,
-    )
 
 
 def passing_workspace_strict_clean_json() -> str:
@@ -7469,6 +5577,9 @@ def parse_help_topics(raw: str, *, context: str, cmd: list[str]) -> list[str]:
         description = item.get("description")
         if not isinstance(description, str) or not description:
             raise SystemExit(f"help JSON after {context} topic {topic} has invalid description")
+        expected_description = EXPECTED_HELP_TOPIC_DESCRIPTIONS.get(topic)
+        if expected_description is not None and description != expected_description:
+            raise SystemExit(f"help JSON after {context} description differs for topic {topic}")
         aliases = item.get("aliases")
         if not isinstance(aliases, list) or not all(isinstance(alias, str) and alias for alias in aliases):
             raise SystemExit(f"help JSON after {context} topic {topic} has invalid aliases")
@@ -8072,1341 +6183,60 @@ def assert_workspace_strict_failure_json(
         raise SystemExit(f"workspace strict JSON after {context} is missing a strict readiness issue")
 
 
-def assert_site_bundle_compare_warning_strict_json(
-    raw: str,
-    *,
-    returncode: int,
-    context: str,
-    cmd: list[str],
-) -> None:
-    if returncode != 1:
-        raise SystemExit(f"site bundle compare strict after {context} expected exit code 1, got {returncode}")
-    assert_no_ansi(raw, cmd)
-    payload = json.loads(raw)
-    if payload.get("status") != "warn" or payload.get("valid") is not True:
-        raise SystemExit(f"site bundle compare strict after {context} expected warning/valid output")
-    if payload.get("sameBundle") is not True or payload.get("digestMatch") is not True:
-        raise SystemExit(f"site bundle compare strict after {context} expected identical warning bundle identity")
-    if payload.get("counts", {}).get("changedFiles") != 0:
-        raise SystemExit(f"site bundle compare strict after {context} expected no changed files")
-    for side in ("left", "right"):
-        report = payload.get(side)
-        if not isinstance(report, dict):
-            raise SystemExit(f"site bundle compare strict after {context} missing {side} report")
-        if report.get("status") != "warn" or report.get("valid") is not True:
-            raise SystemExit(f"site bundle compare strict after {context} expected {side} warning/valid bundle")
-        if report.get("mcpStatus") != "warn":
-            raise SystemExit(f"site bundle compare strict after {context} expected {side} MCP warning status")
-        digest = report.get("checksumBundleDigest")
-        if not isinstance(digest, str) or len(digest) != 64:
-            raise SystemExit(f"site bundle compare strict after {context} {side} bundle digest changed")
-    issue_ids = [issue.get("id") for issue in payload.get("issues", [])]
-    if "bundle-compare-left-warn" not in issue_ids or "bundle-compare-right-warn" not in issue_ids:
-        raise SystemExit(f"site bundle compare strict after {context} missing left/right warning issues: {issue_ids!r}")
-
-
-def assert_site_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"site JSON after {context} is not valid JSON: {error}") from error
-
-    payload = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_PAYLOAD_KEYS,
-        label="top-level",
-        context=context,
-        command_label="site JSON",
-    )
-    if payload.get("valid") is not True or payload.get("status") != "pass":
-        raise SystemExit(f"site JSON after {context} expected pass-valid summary")
-    if not isinstance(payload.get("filePath"), str) or not payload["filePath"]:
-        raise SystemExit(f"site JSON after {context} filePath is missing")
-
-    site = assert_smoke_json_keys(
-        payload.get("site"),
-        EXPECTED_SITE_PROFILE_KEYS,
-        label="site",
-        context=context,
-        command_label="site JSON",
-    )
-    expected_site = {
-        "id": "sample-korean-saas",
-        "name": "Korean SaaS marketing site",
-        "liveUrl": "https://example.com",
-        "repoUrl": "https://github.com/acme/korean-saas-site",
-        "localPath": "/Users/you/dev/korean-saas-site",
-        "deployProvider": "vercel",
-        "cms": "sanity",
-        "database": "none",
-    }
-    for key, expected in expected_site.items():
-        if site.get(key) != expected:
-            raise SystemExit(f"site JSON after {context} site {key} differs from expected sample workspace")
-    if site.get("pages") != ["/", "/pricing", "/signup", "/docs"]:
-        raise SystemExit(f"site JSON after {context} pages differ from expected sample workspace")
-    if site.get("viewports") != ["desktop", "tablet", "mobile"]:
-        raise SystemExit(f"site JSON after {context} viewports differ from expected sample workspace")
-    if not isinstance(site.get("userFlows"), list) or len(site["userFlows"]) != 2:
-        raise SystemExit(f"site JSON after {context} userFlows differ from expected sample workspace")
-
-    counts = assert_smoke_json_keys(
-        payload.get("counts"),
-        EXPECTED_SITE_COUNTS_KEYS,
-        label="counts",
-        context=context,
-        command_label="site JSON",
-    )
-    expected_counts = {
-        "pages": 4,
-        "userFlows": 2,
-        "viewports": 3,
-        "auditCategories": 9,
-        "auditFindings": 3,
-        "refactorTasks": 1,
-        "executedWork": 0,
-        "verificationResults": 0,
-        "remainingRisks": 3,
-        "nextActions": 0,
-        "requiredMcp": 3,
-        "optionalMcp": 6,
-        "unavailableMcp": 0,
-    }
-    for key, expected in expected_counts.items():
-        if counts.get(key) != expected:
-            raise SystemExit(f"site JSON after {context} count {key} differs from expected sample workspace")
-
-    if payload.get("requiredMcp") != ["github", "browser", "deploy"]:
-        raise SystemExit(f"site JSON after {context} requiredMcp differs from expected sample workspace")
-
-    top_tasks = payload.get("topTasks")
-    if not isinstance(top_tasks, list) or len(top_tasks) != 1:
-        raise SystemExit(f"site JSON after {context} topTasks must contain one sample task")
-    top_task = assert_smoke_json_keys(
-        top_tasks[0],
-        EXPECTED_SITE_TOP_TASK_KEYS,
-        label="topTasks entry",
-        context=context,
-        command_label="site JSON",
-    )
-    if top_task.get("title") != "Clarify homepage CTA hierarchy" or top_task.get("priority") != "p1":
-        raise SystemExit(f"site JSON after {context} top task differs from expected sample workspace")
-    if top_task.get("pages") != ["/"]:
-        raise SystemExit(f"site JSON after {context} top task pages differ from expected sample workspace")
-
-    issues = payload.get("issues")
-    if not isinstance(issues, list) or len(issues) != 1:
-        raise SystemExit(f"site JSON after {context} issues must contain one pass issue")
-    issue = assert_smoke_json_keys(
-        issues[0],
-        EXPECTED_SITE_ISSUE_KEYS,
-        label="issues entry",
-        context=context,
-        command_label="site JSON",
-    )
-    if issue.get("level") != "pass" or issue.get("id") != "workspace-ready":
-        raise SystemExit(f"site JSON after {context} pass issue differs from expected workspace-ready issue")
-
-
-def assert_site_next_actions_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"site next-actions JSON after {context} is not valid JSON: {error}") from error
-
-    payload = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_NEXT_ACTIONS_PAYLOAD_KEYS,
-        label="top-level",
-        context=context,
-        command_label="site next-actions JSON",
-    )
-    if payload.get("kind") != "website-improvement-next-actions" or payload.get("version") != 1:
-        raise SystemExit(f"site next-actions JSON after {context} kind/version changed")
-    if (
-        payload.get("status") != "pass"
-        or payload.get("workspaceStatus") != "pass"
-        or payload.get("mcpStatus") != "pass"
-        or payload.get("mcpProbeStatus") != "pass"
-    ):
-        raise SystemExit(f"site next-actions JSON after {context} expected pass status fields")
-    if not isinstance(payload.get("filePath"), str) or not payload["filePath"]:
-        raise SystemExit(f"site next-actions JSON after {context} filePath is missing")
-    if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
-        raise SystemExit(f"site next-actions JSON after {context} boundary flags must remain false")
-    if payload.get("mcpProbeCounts") != EXPECTED_SITE_MCP_PROBE_COUNTS:
-        raise SystemExit(f"site next-actions JSON after {context} MCP probe counts changed: {payload.get('mcpProbeCounts')!r}")
-
-    site = assert_smoke_json_keys(
-        payload.get("site"),
-        EXPECTED_SITE_NEXT_ACTIONS_SITE_KEYS,
-        label="site",
-        context=context,
-        command_label="site next-actions JSON",
-    )
-    if site.get("name") != "Korean SaaS marketing site" or site.get("liveUrl") != "https://example.com":
-        raise SystemExit(f"site next-actions JSON after {context} site summary changed")
-    if site.get("repoUrl") != "https://github.com/acme/korean-saas-site":
-        raise SystemExit(f"site next-actions JSON after {context} repo URL changed")
-
-    counts = assert_smoke_json_keys(
-        payload.get("counts"),
-        EXPECTED_SITE_NEXT_ACTIONS_COUNTS_KEYS,
-        label="counts",
-        context=context,
-        command_label="site next-actions JSON",
-    )
-    expected_counts = {
-        "actions": 3,
-        "blocking": 0,
-        "warnings": 0,
-        "tasks": 1,
-        "requiredMcpMissing": 0,
-        "taskGaps": 0,
-        "probeGaps": 0,
-    }
-    for key, expected in expected_counts.items():
-        if counts.get(key) != expected:
-            raise SystemExit(f"site next-actions JSON after {context} count {key} differs from expected sample workspace")
-
-    top_tasks = payload.get("topTasks")
-    if not isinstance(top_tasks, list) or len(top_tasks) != 1:
-        raise SystemExit(f"site next-actions JSON after {context} topTasks must contain one sample task")
-    top_task = assert_smoke_json_keys(
-        top_tasks[0],
-        EXPECTED_SITE_NEXT_ACTIONS_TOP_TASK_KEYS,
-        label="topTasks entry",
-        context=context,
-        command_label="site next-actions JSON",
-    )
-    if top_task.get("id") != "task-homepage-cta" or top_task.get("priority") != "p1":
-        raise SystemExit(f"site next-actions JSON after {context} top task changed")
-
-    actions = payload.get("actions")
-    if not isinstance(actions, list) or len(actions) != 3:
-        raise SystemExit(f"site next-actions JSON after {context} actions must contain three operator actions")
-    expected_severities = ["implementation", "handoff", "handoff"]
-    expected_commands = [
-        "--prompt codex-implementation --task 1 --out codex-implementation.md",
-        "--report --out website-handoff.md",
-        "--bundle --out website-handoff-bundle",
-    ]
-    for index, action in enumerate(actions):
-        action = assert_smoke_json_keys(
-            action,
-            EXPECTED_SITE_NEXT_ACTION_KEYS,
-            label="actions entry",
-            context=context,
-            command_label="site next-actions JSON",
-        )
-        if action.get("rank") != index + 1 or action.get("severity") != expected_severities[index]:
-            raise SystemExit(f"site next-actions JSON after {context} action ranking changed")
-        command = action.get("command")
-        if not isinstance(command, str) or expected_commands[index] not in command:
-            raise SystemExit(f"site next-actions JSON after {context} action command changed: {command!r}")
-        if not isinstance(action.get("references"), list) or not action["references"]:
-            raise SystemExit(f"site next-actions JSON after {context} action references missing")
-
-    commands = assert_smoke_json_keys(
-        payload.get("commands"),
-        EXPECTED_SITE_NEXT_ACTION_COMMAND_KEYS,
-        label="commands",
-        context=context,
-        command_label="site next-actions JSON",
-    )
-    if "--mcp-check --strict --json" not in commands.get("mcpCheck", ""):
-        raise SystemExit(f"site next-actions JSON after {context} mcpCheck command changed")
-    if "--mcp-check --probes --json --out mcp-check-probes.json" not in commands.get("mcpCheckProbes", ""):
-        raise SystemExit(f"site next-actions JSON after {context} mcpCheckProbes command changed")
-    if "--mcp-plan --probes --json --out mcp-action-plan-probes.json" not in commands.get("mcpPlanProbes", ""):
-        raise SystemExit(f"site next-actions JSON after {context} mcpPlanProbes command changed")
-    if "--tasks --out website-workspace.tasks.json" not in commands.get("tasks", ""):
-        raise SystemExit(f"site next-actions JSON after {context} tasks command changed")
-    if "--prompt codex-implementation --task 1" not in commands.get("implementationPrompt", ""):
-        raise SystemExit(f"site next-actions JSON after {context} implementation prompt command changed")
-    if "--bundle --out website-handoff-bundle" not in commands.get("handoffBundle", ""):
-        raise SystemExit(f"site next-actions JSON after {context} handoff bundle command changed")
-
-    boundaries = payload.get("boundaries")
-    if not isinstance(boundaries, list) or len(boundaries) < 3:
-        raise SystemExit(f"site next-actions JSON after {context} boundaries missing")
-    boundary_text = "\n".join(str(item) for item in boundaries)
-    for fragment in ("deterministic and local", "does not call external MCPs", "mutate the target website repo"):
-        if fragment not in boundary_text:
-            raise SystemExit(f"site next-actions JSON after {context} boundary guidance missing {fragment!r}")
-
-
-def assert_site_next_actions_json_file_output(
-    raw_stdout: str,
-    file_contents: str,
-    *,
-    output_path: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
-    assert_site_next_actions_json(
-        file_contents,
-        context=f"{context} out file",
-        cmd=cmd,
-    )
-
-
-def assert_site_next_actions_human(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    required_fragments = (
-        "Website Improvement next actions: Korean SaaS marketing site",
-        "Status: pass",
-        "Workspace status: pass",
-        "MCP status: pass",
-        "MCP probe status: pass",
-        "MCP probes: 4/4 passing, 0 warning, 0 failing",
-        "Actions: 3 (0 blocking, 0 warning)",
-        "Prioritized actions:",
-        "1. [implementation] Prepare Codex implementation prompt for task-homepage-cta",
-        "Create implementation evidence trail",
-        "Export portable handoff bundle",
-        "Command: `design-ai site",
-        "--prompt codex-implementation --task 1 --out codex-implementation.md",
-        "--report --out website-handoff.md",
-        "--bundle --out website-handoff-bundle",
-        "Boundaries:",
-        "deterministic and local",
-        "does not call external MCPs",
-        "mutate the target website repo",
-    )
-    missing = [fragment for fragment in required_fragments if fragment not in raw]
-    if missing:
-        raise SystemExit(f"site next-actions human after {context} missing fragment: {missing[0]!r}")
-    if '"kind": "website-improvement-next-actions"' in raw:
-        raise SystemExit(f"site next-actions human after {context} unexpectedly emitted JSON")
-
-
-def assert_site_next_actions_human_file_output(
-    raw_stdout: str,
-    file_contents: str,
-    *,
-    output_path: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
-    assert_site_next_actions_human(
-        file_contents,
-        context=f"{context} out file",
-        cmd=cmd,
-    )
-
-
-def assert_site_sample_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"site sample JSON after {context} is not valid JSON: {error}") from error
-
-    payload = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_SAMPLE_KEYS,
-        label="top-level",
-        context=context,
-        command_label="site sample JSON",
-    )
-    if payload.get("version") != 1:
-        raise SystemExit(f"site sample JSON after {context} expected workspace version 1")
-    if not isinstance(payload.get("updatedAt"), str) or not payload["updatedAt"]:
-        raise SystemExit(f"site sample JSON after {context} updatedAt is missing")
-
-    profile = assert_smoke_json_keys(
-        payload.get("siteProfile"),
-        EXPECTED_SITE_SAMPLE_PROFILE_KEYS,
-        label="siteProfile",
-        context=context,
-        command_label="site sample JSON",
-    )
-    expected_profile = {
-        "id": "sample-korean-saas",
-        "name": "Korean SaaS marketing site",
-        "liveUrl": "https://example.com",
-        "repoUrl": "https://github.com/acme/korean-saas-site",
-        "localPath": "/Users/you/dev/korean-saas-site",
-        "figmaUrl": "https://figma.com/file/example",
-        "deployProvider": "vercel",
-        "sentryProject": "acme/korean-saas-web",
-        "cms": "sanity",
-        "database": "none",
-    }
-    for key, expected in expected_profile.items():
-        if profile.get(key) != expected:
-            raise SystemExit(f"site sample JSON after {context} profile {key} differs from expected sample workspace")
-    if profile.get("pages") != ["/", "/pricing", "/signup", "/docs"]:
-        raise SystemExit(f"site sample JSON after {context} pages differ from expected sample workspace")
-    if profile.get("viewports") != ["desktop", "tablet", "mobile"]:
-        raise SystemExit(f"site sample JSON after {context} viewports differ from expected sample workspace")
-    if not isinstance(profile.get("brandNotes"), str) or "Pretendard" not in profile["brandNotes"]:
-        raise SystemExit(f"site sample JSON after {context} brand notes must remain descriptive")
-
-    checklist = payload.get("auditChecklist")
-    if not isinstance(checklist, dict) or len(checklist) != 9:
-        raise SystemExit(f"site sample JSON after {context} auditChecklist must contain all nine audit categories")
-    if checklist.get("visual-design", {}).get("status") != "in-progress":
-        raise SystemExit(f"site sample JSON after {context} visual-design status differs from expected sample workspace")
-
-    readiness = payload.get("mcpReadiness")
-    if not isinstance(readiness, dict) or readiness.get("github") != "required" or readiness.get("browser") != "required":
-        raise SystemExit(f"site sample JSON after {context} required MCP readiness differs from expected sample workspace")
-
-    tasks = payload.get("refactorTasks")
-    if not isinstance(tasks, list) or len(tasks) != 1:
-        raise SystemExit(f"site sample JSON after {context} expected one sample refactor task")
-    task = assert_smoke_json_keys(
-        tasks[0],
-        EXPECTED_SITE_SAMPLE_TASK_KEYS,
-        label="refactorTasks entry",
-        context=context,
-        command_label="site sample JSON",
-    )
-    if task.get("title") != "Clarify homepage CTA hierarchy" or task.get("priority") != "p1":
-        raise SystemExit(f"site sample JSON after {context} task differs from expected sample workspace")
-    if "browser" not in task.get("recommendedMcp", []):
-        raise SystemExit(f"site sample JSON after {context} task should recommend browser MCP")
-
-    evidence = payload.get("implementationEvidence")
-    if not isinstance(evidence, dict):
-        raise SystemExit(f"site sample JSON after {context} implementationEvidence must be an object")
-    for key in ("executedWork", "verificationResults", "remainingRisks", "nextActions"):
-        if not isinstance(evidence.get(key), list):
-            raise SystemExit(f"site sample JSON after {context} implementationEvidence.{key} must be an array")
-    if evidence.get("executedWork") or evidence.get("verificationResults") or evidence.get("nextActions"):
-        raise SystemExit(f"site sample JSON after {context} sample evidence should start empty")
-    if len(evidence.get("remainingRisks", [])) != 3 or "MCP readiness gaps" not in evidence["remainingRisks"][0]:
-        raise SystemExit(f"site sample JSON after {context} sample remaining risks changed")
-
-    if not isinstance(payload.get("reportNotes"), str) or "target website repo" not in payload["reportNotes"]:
-        raise SystemExit(f"site sample JSON after {context} reportNotes must preserve target repo boundary")
-
-
-def assert_site_project_workspace_json(
-    raw: str,
-    *,
-    context: str,
-    cmd: list[str],
-    command_label: str,
-    provenance_fragment: str,
-    expected_viewports: list[str],
-) -> None:
-    assert_no_ansi(raw, cmd)
-
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"{command_label} after {context} is not valid JSON: {error}") from error
-
-    payload = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_SAMPLE_KEYS,
-        label="top-level",
-        context=context,
-        command_label=command_label,
-    )
-    if payload.get("version") != 1:
-        raise SystemExit(f"{command_label} after {context} expected workspace version 1")
-    if not isinstance(payload.get("updatedAt"), str) or not payload["updatedAt"]:
-        raise SystemExit(f"{command_label} after {context} updatedAt is missing")
-
-    profile = assert_smoke_json_keys(
-        payload.get("siteProfile"),
-        EXPECTED_SITE_SAMPLE_PROFILE_KEYS,
-        label="siteProfile",
-        context=context,
-        command_label=command_label,
-    )
-    expected_profile = {
-        "id": "company-marketing-site",
-        "name": "Company marketing site",
-        "liveUrl": "https://example.com",
-        "repoUrl": "https://github.com/acme/site",
-        "localPath": "",
-        "figmaUrl": "",
-        "deployProvider": "vercel",
-        "sentryProject": "",
-        "cms": "none",
-        "database": "none",
-    }
-    for key, expected in expected_profile.items():
-        if profile.get(key) != expected:
-            raise SystemExit(f"{command_label} after {context} profile {key} differs from expected project workspace")
-    if profile.get("pages") != ["/", "/pricing"]:
-        raise SystemExit(f"{command_label} after {context} pages differ from expected project workspace")
-    if profile.get("userFlows") != ["Visitor compares plans and starts signup"]:
-        raise SystemExit(f"{command_label} after {context} user flows differ from expected project workspace")
-    if profile.get("viewports") != expected_viewports:
-        raise SystemExit(f"{command_label} after {context} viewports differ from expected project workspace")
-    if not isinstance(profile.get("brandNotes"), str):
-        raise SystemExit(f"{command_label} after {context} brand notes must be a string")
-
-    checklist = payload.get("auditChecklist")
-    if not isinstance(checklist, dict) or len(checklist) != 9:
-        raise SystemExit(f"{command_label} after {context} auditChecklist must contain all nine audit categories")
-    if any(row.get("status") != "todo" for row in checklist.values() if isinstance(row, dict)):
-        raise SystemExit(f"{command_label} after {context} checklist rows should start in todo state")
-    if "Visitor compares plans" not in checklist.get("ux-flow", {}).get("notes", ""):
-        raise SystemExit(f"{command_label} after {context} UX flow notes should include the provided flow")
-
-    readiness = payload.get("mcpReadiness")
-    if not isinstance(readiness, dict):
-        raise SystemExit(f"{command_label} after {context} mcpReadiness must be an object")
-    expected_readiness = {
-        "github": "required",
-        "browser": "required",
-        "deploy": "required",
-        "figma": "unused",
-        "cms": "unused",
-        "database": "unused",
-    }
-    for key, expected in expected_readiness.items():
-        if readiness.get(key) != expected:
-            raise SystemExit(f"{command_label} after {context} MCP readiness {key} differs from expected project workspace")
-
-    tasks = payload.get("refactorTasks")
-    if tasks != []:
-        raise SystemExit(f"{command_label} after {context} refactorTasks should start empty")
-
-    evidence = payload.get("implementationEvidence")
-    if not isinstance(evidence, dict):
-        raise SystemExit(f"{command_label} after {context} implementationEvidence must be an object")
-    if evidence.get("executedWork") or evidence.get("verificationResults"):
-        raise SystemExit(f"{command_label} after {context} implementation evidence should start empty")
-    if len(evidence.get("remainingRisks", [])) != 3:
-        raise SystemExit(f"{command_label} after {context} remaining risks should use the default risk set")
-    if not any("--mcp-check --probes --json" in item for item in evidence.get("nextActions", [])):
-        raise SystemExit(f"{command_label} after {context} nextActions should include the MCP probe command")
-    if not isinstance(payload.get("reportNotes"), str) or provenance_fragment not in payload["reportNotes"]:
-        raise SystemExit(f"{command_label} after {context} reportNotes must preserve command provenance")
-
-
-def assert_site_init_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_site_project_workspace_json(
-        raw,
-        context=context,
-        cmd=cmd,
-        command_label="site init JSON",
-        provenance_fragment="design-ai site --init",
-        expected_viewports=["desktop", "mobile"],
-    )
-
-
-def assert_site_from_intake_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_site_project_workspace_json(
-        raw,
-        context=context,
-        cmd=cmd,
-        command_label="site from-intake JSON",
-        provenance_fragment="design-ai site --from-intake",
-        expected_viewports=["desktop", "tablet", "mobile"],
-    )
-
-
-def assert_site_intake_template_json(raw: str, *, context: str, cmd: list[str], language: str = "en") -> None:
-    assert_no_ansi(raw, cmd)
-
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"site intake template JSON after {context} is not valid JSON: {error}") from error
-
-    payload = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_INTAKE_TEMPLATE_KEYS,
-        label="top-level",
-        context=context,
-        command_label="site intake template JSON",
-    )
-    if payload.get("kind") != "website-improvement-intake-template":
-        raise SystemExit(f"site intake template JSON after {context} kind changed")
-    if payload.get("version") != 1:
-        raise SystemExit(f"site intake template JSON after {context} expected version 1")
-    if payload.get("format") != "markdown":
-        raise SystemExit(f"site intake template JSON after {context} expected markdown format")
-    if payload.get("language") != language:
-        raise SystemExit(f"site intake template JSON after {context} expected language {language}")
-    expected_file_name = "company-website-intake.ko.md" if language == "ko" else "company-website-intake.md"
-    if payload.get("recommendedFileName") != expected_file_name:
-        raise SystemExit(f"site intake template JSON after {context} recommended file name changed")
-
-    sections = payload.get("sections")
-    if not isinstance(sections, list) or len(sections) < 8:
-        raise SystemExit(f"site intake template JSON after {context} expected section metadata")
-    for section in ("site-profile", "priority-pages", "mcp-readiness-notes", "stop-conditions"):
-        if section not in sections:
-            raise SystemExit(f"site intake template JSON after {context} missing section metadata: {section}")
-
-    privacy = assert_smoke_json_keys(
-        payload.get("privacy"),
-        EXPECTED_SITE_INTAKE_TEMPLATE_PRIVACY_KEYS,
-        label="privacy",
-        context=context,
-        command_label="site intake template JSON",
-    )
-    for key in EXPECTED_SITE_INTAKE_TEMPLATE_PRIVACY_KEYS:
-        if privacy.get(key) is not False:
-            raise SystemExit(f"site intake template JSON after {context} privacy flag {key} must remain false")
-
-    commands = assert_smoke_json_keys(
-        payload.get("commands"),
-        EXPECTED_SITE_INTAKE_TEMPLATE_COMMAND_KEYS,
-        label="commands",
-        context=context,
-        command_label="site intake template JSON",
-    )
-    if "design-ai site --init" not in commands.get("bundle", "") or "--bundle --out website-handoff-bundle" not in commands.get("bundle", ""):
-        raise SystemExit(f"site intake template JSON after {context} bundle command changed")
-    if "--bundle-check --strict --json" not in commands.get("bundleCheck", ""):
-        raise SystemExit(f"site intake template JSON after {context} bundle check command changed")
-
-    content = payload.get("content")
-    assert_site_intake_template_markdown(content, context=context, cmd=cmd, language=language)
-
-
-def assert_site_intake_template_markdown(raw: object, *, context: str, cmd: list[str], language: str = "en") -> None:
-    if not isinstance(raw, str):
-        raise SystemExit(f"site intake template Markdown after {context} did not emit text")
-    assert_no_ansi(raw, cmd)
-    if raw.lstrip().startswith("{"):
-        raise SystemExit(f"site intake template Markdown after {context} unexpectedly emitted JSON")
-    if language == "ko":
-        required_fragments = [
-            "# 회사 웹사이트 Intake Template",
-            "## Site Profile",
-            "## 우선순위 페이지",
-            "## 주요 사용자 흐름",
-            "## MCP Readiness Notes",
-            "## 초기 Audit Findings",
-            "## 첫 Bundle Commands",
-            "## Target Repo Verification Plan",
-            "## Stop Conditions",
-            "design-ai site --init",
-            "--bundle",
-            "--out website-handoff-bundle",
-        ]
-    else:
-        required_fragments = [
-            "# Company Website Intake Template",
-            "## Site Profile",
-            "## Priority Pages",
-            "## Primary User Flows",
-            "## MCP Readiness Notes",
-            "## Initial Audit Findings",
-            "## First Bundle Commands",
-            "## Target Repo Verification Plan",
-            "## Stop Conditions",
-            "design-ai site --init",
-            "--bundle",
-            "--out website-handoff-bundle",
-        ]
-    for fragment in required_fragments:
-        if fragment not in raw:
-            raise SystemExit(f"site intake template Markdown after {context} missing fragment: {fragment!r}")
-
-
-def assert_site_intake_template_markdown_file_output(
-    raw_stdout: str,
-    file_contents: str,
-    *,
-    output_path: str,
-    context: str,
-    cmd: list[str],
-    language: str = "en",
-) -> None:
-    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
-    assert_site_intake_template_markdown(
-        file_contents,
-        context=f"{context} out file",
-        cmd=cmd,
-        language=language,
-    )
-
-
-def assert_site_intake_template_json_file_output(
-    raw_stdout: str,
-    file_contents: str,
-    *,
-    output_path: str,
-    context: str,
-    cmd: list[str],
-    language: str = "en",
-) -> None:
-    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
-    assert_site_intake_template_json(
-        file_contents,
-        context=f"{context} out file",
-        cmd=cmd,
-        language=language,
-    )
-
-
-def assert_site_tasks_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"site tasks JSON after {context} is not valid JSON: {error}") from error
-
-    payload = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_SAMPLE_KEYS,
-        label="top-level",
-        context=context,
-        command_label="site tasks JSON",
-    )
-    profile = assert_smoke_json_keys(
-        payload.get("siteProfile"),
-        EXPECTED_SITE_SAMPLE_PROFILE_KEYS,
-        label="siteProfile",
-        context=context,
-        command_label="site tasks JSON",
-    )
-    if profile.get("name") != "Korean SaaS marketing site":
-        raise SystemExit(f"site tasks JSON after {context} profile differs from expected sample workspace")
-
-    tasks = payload.get("refactorTasks")
-    if not isinstance(tasks, list) or len(tasks) != 3:
-        raise SystemExit(f"site tasks JSON after {context} expected three refactor tasks after generation")
-    task_ids = [task.get("id") for task in tasks if isinstance(task, dict)]
-    if task_ids != ["task-homepage-cta", "task-accessibility", "task-content-quality"]:
-        raise SystemExit(f"site tasks JSON after {context} task ids differ from expected generated starter tasks")
-
-    accessibility = assert_smoke_json_keys(
-        tasks[1],
-        EXPECTED_SITE_SAMPLE_TASK_KEYS,
-        label="generated accessibility task",
-        context=context,
-        command_label="site tasks JSON",
-    )
-    if accessibility.get("priority") != "p0" or accessibility.get("impact") != "high":
-        raise SystemExit(f"site tasks JSON after {context} accessibility task priority/impact differs from expected generated task")
-    if "chromeDevtools" not in accessibility.get("recommendedMcp", []):
-        raise SystemExit(f"site tasks JSON after {context} accessibility task should recommend Chrome DevTools")
-    if "target website repo" not in accessibility.get("codexPrompt", ""):
-        raise SystemExit(f"site tasks JSON after {context} generated Codex prompt must preserve target repo boundary")
-
-    content = assert_smoke_json_keys(
-        tasks[2],
-        EXPECTED_SITE_SAMPLE_TASK_KEYS,
-        label="generated content task",
-        context=context,
-        command_label="site tasks JSON",
-    )
-    if content.get("category") != "content-quality" or content.get("priority") != "p1":
-        raise SystemExit(f"site tasks JSON after {context} content task differs from expected generated task")
-
-
-def assert_site_prompt_markdown(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    stripped = raw.lstrip()
-    if stripped.startswith("{") or stripped.startswith("["):
-        raise SystemExit(f"site prompt markdown after {context} looks like JSON output")
-    assert_contains_fragments(
-        raw,
-        (
-            "# Codex implementation prompt",
-            "Site profile:",
-            "Korean SaaS marketing site",
-            "Selected task:",
-            "Task ID: task-homepage-cta",
-            "Clarify homepage CTA hierarchy",
-            "Work in the target website repository, not in this design-ai repository.",
-            "Verify desktop, tablet, and mobile layouts.",
-            "lint/typecheck/build/test",
-        ),
-        context=context,
-        label="site prompt markdown",
-    )
-    forbidden_fragments = (
-        "# Website improvement prompt bundle",
-        "## codex-repo-intake",
-        "## claude-competitor",
-    )
-    for fragment in forbidden_fragments:
-        if fragment in raw:
-            raise SystemExit(f"site prompt markdown after {context} unexpectedly contains bundle fragment: {fragment}")
-
-
-def assert_site_prompt_templates_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"site prompt templates JSON after {context} is not valid JSON: {error}") from error
-
-    payload = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_PROMPT_TEMPLATE_PAYLOAD_KEYS,
-        label="top-level",
-        context=context,
-        command_label="site prompt templates JSON",
-    )
-    if payload.get("count") != 11:
-        raise SystemExit(f"site prompt templates JSON after {context} expected eleven templates")
-
-    templates = payload.get("templates")
-    if not isinstance(templates, list) or len(templates) != 11:
-        raise SystemExit(f"site prompt templates JSON after {context} templates must contain eleven entries")
-    ids = []
-    for template in templates:
-        item = assert_smoke_json_keys(
-            template,
-            EXPECTED_SITE_PROMPT_TEMPLATE_KEYS,
-            label="templates entry",
-            context=context,
-            command_label="site prompt templates JSON",
-        )
-        ids.append(item.get("id"))
-        if not isinstance(item.get("description"), str) or not item["description"]:
-            raise SystemExit(f"site prompt templates JSON after {context} template description is missing")
-        if type(item.get("taskSelectable")) is not bool:
-            raise SystemExit(f"site prompt templates JSON after {context} taskSelectable must be boolean")
-
-    if ids != EXPECTED_SITE_PROMPT_TEMPLATE_IDS:
-        raise SystemExit(f"site prompt templates JSON after {context} template ids changed")
-    implementation = templates[4]
-    if implementation.get("id") != "codex-implementation" or implementation.get("taskSelectable") is not True:
-        raise SystemExit(f"site prompt templates JSON after {context} codex-implementation must remain task selectable")
-    if implementation.get("agent") != "codex":
-        raise SystemExit(f"site prompt templates JSON after {context} codex-implementation agent changed")
-
-
-def assert_site_mcp_check_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"site mcp-check JSON after {context} is not valid JSON: {error}") from error
-
-    payload = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_MCP_CHECK_PAYLOAD_KEYS,
-        label="top-level",
-        context=context,
-        command_label="site mcp-check JSON",
-    )
-    if payload.get("status") != "pass" or payload.get("workspaceStatus") != "pass":
-        raise SystemExit(f"site mcp-check JSON after {context} should pass for the sample workspace")
-
-    site = assert_smoke_json_keys(
-        payload.get("site"),
-        EXPECTED_SITE_MCP_CHECK_SITE_KEYS,
-        label="site",
-        context=context,
-        command_label="site mcp-check JSON",
-    )
-    if site.get("name") != "Korean SaaS marketing site" or site.get("liveUrl") != "https://example.com":
-        raise SystemExit(f"site mcp-check JSON after {context} sample site identity changed")
-
-    counts = assert_smoke_json_keys(
-        payload.get("counts"),
-        EXPECTED_SITE_MCP_CHECK_COUNTS_KEYS,
-        label="counts",
-        context=context,
-        command_label="site mcp-check JSON",
-    )
-    expected_counts = {
-        "total": 10,
-        "required": 3,
-        "optional": 6,
-        "ready": 9,
-        "missing": 0,
-        "unused": 1,
-        "unavailable": 0,
-        "taskGaps": 0,
-    }
-    for key, value in expected_counts.items():
-        if counts.get(key) != value:
-            raise SystemExit(f"site mcp-check JSON after {context} count {key} changed")
-
-    items = payload.get("items")
-    if not isinstance(items, list) or len(items) != 10:
-        raise SystemExit(f"site mcp-check JSON after {context} should include ten MCP items")
-    item_keys = []
-    for item in items:
-        checked = assert_smoke_json_keys(
-            item,
-            EXPECTED_SITE_MCP_CHECK_ITEM_KEYS,
-            label="items entry",
-            context=context,
-            command_label="site mcp-check JSON",
-        )
-        item_keys.append(checked.get("key"))
-        if checked.get("level") != "pass":
-            raise SystemExit(f"site mcp-check JSON after {context} sample item should pass: {checked.get('key')}")
-        if not isinstance(checked.get("evidence"), list) or not isinstance(checked.get("actions"), list):
-            raise SystemExit(f"site mcp-check JSON after {context} item evidence/actions must be arrays")
-
-    if item_keys != [key for key, _label in (
-        ("github", "GitHub"),
-        ("figma", "Figma"),
-        ("browser", "Browser/Playwright"),
-        ("chromeDevtools", "Chrome DevTools"),
-        ("deploy", "Deploy"),
-        ("sentry", "Sentry"),
-        ("database", "Database"),
-        ("cms", "CMS"),
-        ("collaboration", "Collaboration"),
-        ("research", "Research"),
-    )]:
-        raise SystemExit(f"site mcp-check JSON after {context} MCP item order changed")
-
-    if not isinstance(payload.get("taskGaps"), list) or payload["taskGaps"]:
-        raise SystemExit(f"site mcp-check JSON after {context} should not report sample task gaps")
-    if not isinstance(payload.get("workspaceIssues"), list) or payload["workspaceIssues"]:
-        raise SystemExit(f"site mcp-check JSON after {context} should not report sample workspace issues")
-    if not isinstance(payload.get("nextActions"), list):
-        raise SystemExit(f"site mcp-check JSON after {context} nextActions must be an array")
-
-
-def assert_site_mcp_check_probes_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"site mcp-check probes JSON after {context} is not valid JSON: {error}") from error
-
-    payload = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_MCP_CHECK_PROBES_PAYLOAD_KEYS,
-        label="top-level",
-        context=context,
-        command_label="site mcp-check probes JSON",
-    )
-    base_payload = dict(payload)
-    probes = base_payload.pop("probes")
-    commands = base_payload.pop("commands")
-    assert_site_mcp_check_json(json.dumps(base_payload), context=context, cmd=cmd)
-
-    commands = assert_smoke_json_keys(
-        commands,
-        EXPECTED_SITE_MCP_CHECK_PROBE_COMMAND_KEYS,
-        label="commands",
-        context=context,
-        command_label="site mcp-check probes JSON",
-    )
-    if commands.get("mcpCheckProbesHumanOut") != "design-ai site <workspace.json> --mcp-check --probes --out mcp-check-probes.txt":
-        raise SystemExit(f"site mcp-check probes JSON after {context} mcp-check probe human output command changed")
-    if commands.get("mcpCheckProbesJsonOut") != "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json":
-        raise SystemExit(f"site mcp-check probes JSON after {context} mcp-check probe output command changed")
-    if commands.get("mcpPlanProbesJson") != "design-ai site <workspace.json> --mcp-plan --probes --json":
-        raise SystemExit(f"site mcp-check probes JSON after {context} mcp-plan probe JSON command changed")
-    if commands.get("mcpPlanProbesJsonOut") != "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json":
-        raise SystemExit(f"site mcp-check probes JSON after {context} mcp-plan probe output command changed")
-
-    probes = assert_smoke_json_keys(
-        probes,
-        EXPECTED_SITE_MCP_PROBES_KEYS,
-        label="probes",
-        context=context,
-        command_label="site mcp-check probes JSON",
-    )
-    if probes.get("enabled") is not True or probes.get("mode") != "read-only-local":
-        raise SystemExit(f"site mcp-check probes JSON after {context} probe mode changed")
-    if probes.get("externalCalls") is not False:
-        raise SystemExit(f"site mcp-check probes JSON after {context} must remain read-only without external calls")
-    if probes.get("status") != "pass" or probes.get("count") != 4 or probes.get("pass") != 4:
-        raise SystemExit(f"site mcp-check probes JSON after {context} sample probes should pass")
-    if probes.get("warn") != 0 or probes.get("fail") != 0:
-        raise SystemExit(f"site mcp-check probes JSON after {context} sample probes should not warn or fail")
-
-    items = probes.get("items")
-    if not isinstance(items, list) or len(items) != 4:
-        raise SystemExit(f"site mcp-check probes JSON after {context} should include four probe items")
-    expected_ids = [
-        "github-repo-reference",
-        "figma-url-reference",
-        "browser-smoke-target",
-        "deploy-provider-reference",
-    ]
-    checked_ids = []
-    for item in items:
-        checked = assert_smoke_json_keys(
-            item,
-            EXPECTED_SITE_MCP_PROBE_ITEM_KEYS,
-            label="probes item",
-            context=context,
-            command_label="site mcp-check probes JSON",
-        )
-        checked_ids.append(checked.get("id"))
-        if checked.get("level") != "pass" or checked.get("passed") is not True:
-            raise SystemExit(f"site mcp-check probes JSON after {context} sample probe should pass: {checked.get('id')}")
-        if not isinstance(checked.get("evidence"), list) or not checked.get("evidence"):
-            raise SystemExit(f"site mcp-check probes JSON after {context} probe evidence is missing")
-        if not isinstance(checked.get("actions"), list):
-            raise SystemExit(f"site mcp-check probes JSON after {context} probe actions must be an array")
-    if checked_ids != expected_ids:
-        raise SystemExit(f"site mcp-check probes JSON after {context} probe item order changed")
-
-
-def assert_site_mcp_check_probes_human(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-
-    required_fragments = [
-        "Website Improvement MCP readiness: Korean SaaS marketing site",
-        "Status: pass",
-        "Workspace status: pass",
-        "MCP checks:",
-        "- [pass] GitHub (required) -> ready",
-        "Task MCP gaps:\n- none",
-        "Read-only probes:",
-        "Mode: read-only-local; external calls: no; status: pass",
-        "- [pass] GitHub repo reference (required) -> pass",
-        "- [pass] Browser smoke target (required) -> pass",
-        "Probe commands:",
-        "- Save readiness probe report: `design-ai site <workspace.json> --mcp-check --probes --out mcp-check-probes.txt`",
-        "- Save readiness probe JSON: `design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json`",
-        "- Generate probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json`",
-        "- Save probe action plan JSON: `design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json`",
-        "Next actions:\n- none",
-    ]
-    for fragment in required_fragments:
-        if fragment not in raw:
-            raise SystemExit(f"site mcp-check probes human after {context} missing fragment: {fragment}")
-
-    if "--json --json" in raw:
-        raise SystemExit(f"site mcp-check probes human after {context} includes duplicated JSON flags")
-
-
-def assert_site_mcp_check_probes_human_file_output(
-    raw_stdout: str,
-    file_contents: str,
-    *,
-    output_path: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
-    assert_site_mcp_check_probes_human(
-        file_contents,
-        context=f"{context} out file",
-        cmd=cmd,
-    )
-
-
-def assert_site_mcp_check_probes_json_file_output(
-    raw_stdout: str,
-    file_contents: str,
-    *,
-    output_path: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
-    assert_site_mcp_check_probes_json(
-        file_contents,
-        context=f"{context} out file",
-        cmd=cmd,
-    )
-
-
-def assert_site_mcp_plan_markdown(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-    stripped = raw.lstrip()
-    if stripped.startswith("{") or stripped.startswith("["):
-        raise SystemExit(f"site mcp-plan markdown after {context} looks like JSON output")
-
-    assert_contains_fragments(
-        raw,
-        (
-            "# Website improvement MCP action plan: Korean SaaS marketing site",
-            "## Readiness Matrix",
-            "| GitHub | required | ready | pass |",
-            "## Blocking Items",
-            "No blocking readiness issues.",
-            "## Task/MCP Alignment",
-            "task-homepage-cta",
-            "## Execution Sequence",
-            "design-ai site <workspace.json> --mcp-check --strict --json",
-            "does not call external MCPs, mutate the target website repo",
-        ),
-        context=context,
-        label="site mcp-plan markdown",
-    )
-
-
-def assert_site_mcp_plan_probes_markdown(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_site_mcp_plan_markdown(raw, context=context, cmd=cmd)
-
-    assert_contains_fragments(
-        raw,
-        (
-            "## Read-Only Probes",
-            "- Probe status: pass",
-            "- Mode: read-only-local",
-            "- External calls: no",
-            "| Probe | MCP | Level | Result | Evidence | Next Action |",
-            "| GitHub repo reference | github | pass | pass |",
-            "| Figma file reference | figma | pass | pass |",
-            "| Browser smoke target | browser | pass | pass |",
-            "| Deployment provider reference | deploy | pass | pass |",
-        ),
-        context=context,
-        label="site mcp-plan probes markdown",
-    )
-
-
-def assert_site_mcp_plan_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"site mcp-plan JSON after {context} is not valid JSON: {error}") from error
-
-    payload = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_MCP_ACTION_PLAN_PAYLOAD_KEYS,
-        label="top-level",
-        context=context,
-        command_label="site mcp-plan JSON",
-    )
-    if payload.get("kind") != "website-improvement-mcp-action-plan" or payload.get("version") != 1:
-        raise SystemExit(f"site mcp-plan JSON after {context} action plan identity changed")
-    if payload.get("status") != "pass" or payload.get("workspaceStatus") != "pass":
-        raise SystemExit(f"site mcp-plan JSON after {context} should pass for the sample workspace")
-    if payload.get("externalCalls") is not False or payload.get("targetRepoMutation") is not False:
-        raise SystemExit(f"site mcp-plan JSON after {context} must remain local/read-only")
-
-    site = assert_smoke_json_keys(
-        payload.get("site"),
-        EXPECTED_SITE_MCP_CHECK_SITE_KEYS,
-        label="site",
-        context=context,
-        command_label="site mcp-plan JSON",
-    )
-    if site.get("name") != "Korean SaaS marketing site" or site.get("liveUrl") != "https://example.com":
-        raise SystemExit(f"site mcp-plan JSON after {context} sample site identity changed")
-
-    counts = assert_smoke_json_keys(
-        payload.get("counts"),
-        EXPECTED_SITE_MCP_CHECK_COUNTS_KEYS,
-        label="counts",
-        context=context,
-        command_label="site mcp-plan JSON",
-    )
-    if counts.get("ready") != 9 or counts.get("missing") != 0 or counts.get("taskGaps") != 0:
-        raise SystemExit(f"site mcp-plan JSON after {context} readiness counts changed")
-
-    matrix = payload.get("readinessMatrix")
-    if not isinstance(matrix, list) or len(matrix) != 10:
-        raise SystemExit(f"site mcp-plan JSON after {context} should include ten readiness rows")
-    for item in matrix:
-        checked = assert_smoke_json_keys(
-            item,
-            EXPECTED_SITE_MCP_CHECK_ITEM_KEYS,
-            label="readinessMatrix entry",
-            context=context,
-            command_label="site mcp-plan JSON",
-        )
-        if checked.get("level") != "pass":
-            raise SystemExit(f"site mcp-plan JSON after {context} sample readiness row should pass: {checked.get('key')}")
-
-    probes_value = payload.get("probes")
-    if probes_value is not None and not isinstance(probes_value, dict):
-        raise SystemExit(f"site mcp-plan JSON after {context} probes must be null or an object")
-    for key in ("blockingItems", "warnings", "taskGaps", "workspaceIssues", "nextActions"):
-        if not isinstance(payload.get(key), list) or payload[key]:
-            raise SystemExit(f"site mcp-plan JSON after {context} sample {key} should be an empty array")
-
-    tasks = payload.get("taskAlignment")
-    if not isinstance(tasks, list) or not tasks:
-        raise SystemExit(f"site mcp-plan JSON after {context} should include sample task alignment rows")
-    first_task = assert_smoke_json_keys(
-        tasks[0],
-        EXPECTED_SITE_MCP_ACTION_PLAN_TASK_KEYS,
-        label="taskAlignment entry",
-        context=context,
-        command_label="site mcp-plan JSON",
-    )
-    if first_task.get("task") != "task-homepage-cta" or "browser: ready" not in str(first_task.get("readinessState")):
-        raise SystemExit(f"site mcp-plan JSON after {context} top task alignment changed")
-
-    commands = assert_smoke_json_keys(
-        payload.get("commands"),
-        EXPECTED_SITE_MCP_ACTION_PLAN_COMMAND_KEYS,
-        label="commands",
-        context=context,
-        command_label="site mcp-plan JSON",
-    )
-    if commands.get("mcpCheck") != "design-ai site <workspace.json> --mcp-check --strict --json":
-        raise SystemExit(f"site mcp-plan JSON after {context} strict mcp-check command changed")
-    if commands.get("mcpCheckProbesHumanOut") != "design-ai site <workspace.json> --mcp-check --probes --out mcp-check-probes.txt":
-        raise SystemExit(f"site mcp-plan JSON after {context} mcp-check probe human output command changed")
-    if commands.get("mcpCheckProbesJsonOut") != "design-ai site <workspace.json> --mcp-check --probes --json --out mcp-check-probes.json":
-        raise SystemExit(f"site mcp-plan JSON after {context} mcp-check probe output command changed")
-    if commands.get("mcpPlanProbesJsonOut") != "design-ai site <workspace.json> --mcp-plan --probes --json --out mcp-action-plan-probes.json":
-        raise SystemExit(f"site mcp-plan JSON after {context} mcp-plan probe output command changed")
-    if not isinstance(payload.get("executionSequence"), list) or len(payload["executionSequence"]) != 5:
-        raise SystemExit(f"site mcp-plan JSON after {context} execution sequence changed")
-    boundaries = payload.get("boundaries")
-    if not isinstance(boundaries, list) or not any("does not call external MCPs" in item for item in boundaries):
-        raise SystemExit(f"site mcp-plan JSON after {context} boundary guidance changed")
-
-
-def assert_site_mcp_plan_probes_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_site_mcp_plan_json(raw, context=context, cmd=cmd)
-    payload = json.loads(raw)
-    probes = assert_smoke_json_keys(
-        payload.get("probes"),
-        EXPECTED_SITE_MCP_PROBES_KEYS,
-        label="probes",
-        context=context,
-        command_label="site mcp-plan probes JSON",
-    )
-    if probes.get("externalCalls") is not False or probes.get("mode") != "read-only-local":
-        raise SystemExit(f"site mcp-plan probes JSON after {context} probe mode changed")
-    if probes.get("status") != "pass" or probes.get("count") != 4 or probes.get("pass") != 4:
-        raise SystemExit(f"site mcp-plan probes JSON after {context} sample probes should pass")
-    items = probes.get("items")
-    if not isinstance(items, list) or len(items) != 4:
-        raise SystemExit(f"site mcp-plan probes JSON after {context} should include four probe rows")
-    for item in items:
-        checked = assert_smoke_json_keys(
-            item,
-            EXPECTED_SITE_MCP_PROBE_ITEM_KEYS,
-            label="probes item",
-            context=context,
-            command_label="site mcp-plan probes JSON",
-        )
-        if checked.get("level") != "pass" or checked.get("passed") is not True:
-            raise SystemExit(f"site mcp-plan probes JSON after {context} sample probe should pass: {checked.get('id')}")
-
-
-def assert_site_mcp_plan_probes_json_file_output(
-    raw_stdout: str,
-    file_contents: str,
-    *,
-    output_path: str,
-    context: str,
-    cmd: list[str],
-) -> None:
-    assert_output_write_success(raw_stdout, context=context, cmd=cmd, expected_path=output_path)
-    assert_site_mcp_plan_probes_json(
-        file_contents,
-        context=f"{context} out file",
-        cmd=cmd,
-    )
-
-
-def assert_site_workflow_graph_json(raw: str, *, context: str, cmd: list[str]) -> None:
-    assert_no_ansi(raw, cmd)
-
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError as error:
-        raise SystemExit(f"site workflow graph JSON after {context} is not valid JSON: {error}") from error
-
-    payload = assert_smoke_json_keys(
-        payload,
-        EXPECTED_SITE_WORKFLOW_GRAPH_PAYLOAD_KEYS,
-        label="top-level",
-        context=context,
-        command_label="site workflow graph JSON",
-    )
-    if payload.get("version") != 1 or payload.get("kind") != "website-improvement-workflow-graph":
-        raise SystemExit(f"site workflow graph JSON after {context} graph identity changed")
-    if payload.get("status") != "pass" or payload.get("workspaceStatus") != "pass" or payload.get("mcpStatus") != "pass":
-        raise SystemExit(f"site workflow graph JSON after {context} should pass for the sample workspace")
-    if payload.get("externalCalls") is not False:
-        raise SystemExit(f"site workflow graph JSON after {context} must remain read-only without external calls")
-
-    site = assert_smoke_json_keys(
-        payload.get("site"),
-        EXPECTED_SITE_WORKFLOW_GRAPH_SITE_KEYS,
-        label="site",
-        context=context,
-        command_label="site workflow graph JSON",
-    )
-    if site.get("name") != "Korean SaaS marketing site" or site.get("liveUrl") != "https://example.com":
-        raise SystemExit(f"site workflow graph JSON after {context} sample site identity changed")
-
-    summary = assert_smoke_json_keys(
-        payload.get("summary"),
-        EXPECTED_SITE_WORKFLOW_GRAPH_SUMMARY_KEYS,
-        label="summary",
-        context=context,
-        command_label="site workflow graph JSON",
-    )
-    expected_summary = {
-        "status": "pass",
-        "workspaceStatus": "pass",
-        "mcpStatus": "pass",
-        "nodeCount": 38,
-        "edgeCount": 73,
-        "auditCategoryCount": 9,
-        "taskCount": 3,
-        "generatedTaskCount": 2,
-        "requiredMcpCount": 3,
-        "promptTemplateCount": 11,
-    }
-    for key, expected in expected_summary.items():
-        if summary.get(key) != expected:
-            raise SystemExit(f"site workflow graph JSON after {context} summary {key} changed")
-
-    nodes = payload.get("nodes")
-    if not isinstance(nodes, list) or len(nodes) != summary.get("nodeCount"):
-        raise SystemExit(f"site workflow graph JSON after {context} node count changed")
-    node_ids = []
-    for node in nodes:
-        checked = assert_smoke_json_keys(
-            node,
-            EXPECTED_SITE_WORKFLOW_GRAPH_NODE_KEYS,
-            label="nodes entry",
-            context=context,
-            command_label="site workflow graph JSON",
-        )
-        node_ids.append(checked.get("id"))
-        if not isinstance(checked.get("data"), dict):
-            raise SystemExit(f"site workflow graph JSON after {context} node data must be an object")
-
-    for expected_node_id in EXPECTED_SITE_WORKFLOW_GRAPH_NODE_IDS:
-        if expected_node_id not in node_ids:
-            raise SystemExit(f"site workflow graph JSON after {context} missing node {expected_node_id}")
-
-    edges = payload.get("edges")
-    if not isinstance(edges, list) or len(edges) != summary.get("edgeCount"):
-        raise SystemExit(f"site workflow graph JSON after {context} edge count changed")
-    edge_pairs = set()
-    for edge in edges:
-        checked = assert_smoke_json_keys(
-            edge,
-            EXPECTED_SITE_WORKFLOW_GRAPH_EDGE_KEYS,
-            label="edges entry",
-            context=context,
-            command_label="site workflow graph JSON",
-        )
-        edge_pairs.add((checked.get("from"), checked.get("to"), checked.get("type")))
-        if checked.get("from") not in node_ids or checked.get("to") not in node_ids:
-            raise SystemExit(f"site workflow graph JSON after {context} edge references an unknown node")
-
-    required_edges = {
-        ("workspace:intake", "profile:sample-korean-saas", "profile"),
-        ("audit:visual-design", "task:task-homepage-cta", "finding-to-task"),
-        ("task:task-homepage-cta", "prompt:codex-implementation", "implementation-prompt"),
-        ("handoff:bundle", "handoff:target-repo", "handoff"),
-    }
-    for expected_edge in required_edges:
-        if expected_edge not in edge_pairs:
-            raise SystemExit(f"site workflow graph JSON after {context} missing edge {expected_edge}")
-
-    boundaries = payload.get("boundaries")
-    if not isinstance(boundaries, list) or "no-external-mcp-calls" not in boundaries or "no-target-repo-mutation" not in boundaries:
-        raise SystemExit(f"site workflow graph JSON after {context} boundary markers changed")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def assert_doctor_strict_output(raw: str, *, context: str, cmd: list[str]) -> None:
@@ -12872,6 +9702,54 @@ def run_self_test() -> None:
         expected="duplicate topics",
         scope="smoke assertions",
     )
+    missing_image_topic_catalog = json.loads(passing_help_catalog_json())
+    missing_image_topic_catalog["topics"] = [
+        topic for topic in missing_image_topic_catalog["topics"] if topic["topic"] != "image"
+    ]
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(missing_image_topic_catalog), context=context, cmd=help_cmd),
+        expected="missing expected topic(s): image",
+        scope="smoke assertions",
+    )
+    extra_image_metadata_catalog = json.loads(passing_help_catalog_json())
+    image_topic_index = list(EXPECTED_HELP_TOPICS).index("image")
+    extra_image_metadata_catalog["topics"][image_topic_index]["extra"] = "drift"
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(extra_image_metadata_catalog), context=context, cmd=help_cmd),
+        expected="topic entry",
+        scope="smoke assertions",
+    )
+    reordered_image_topic_catalog = json.loads(passing_help_catalog_json())
+    reordered_image_topic_catalog["topics"][image_topic_index], reordered_image_topic_catalog["topics"][image_topic_index - 1] = (
+        reordered_image_topic_catalog["topics"][image_topic_index - 1],
+        reordered_image_topic_catalog["topics"][image_topic_index],
+    )
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(reordered_image_topic_catalog), context=context, cmd=help_cmd),
+        expected="topic order differs",
+        scope="smoke assertions",
+    )
+    drifted_image_usage_catalog = json.loads(passing_help_catalog_json())
+    drifted_image_usage_catalog["topics"][image_topic_index]["usage"] = "design-ai image"
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(drifted_image_usage_catalog), context=context, cmd=help_cmd),
+        expected="usage differs for topic image",
+        scope="smoke assertions",
+    )
+    drifted_image_description_catalog = json.loads(passing_help_catalog_json())
+    drifted_image_description_catalog["topics"][image_topic_index]["description"] = "Image Console"
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(drifted_image_description_catalog), context=context, cmd=help_cmd),
+        expected="description differs for topic image",
+        scope="smoke assertions",
+    )
+    drifted_image_alias_catalog = json.loads(passing_help_catalog_json())
+    drifted_image_alias_catalog["topics"][image_topic_index]["aliases"] = ["img"]
+    expect_self_test_failure(
+        lambda: parse_help_topics(json.dumps(drifted_image_alias_catalog), context=context, cmd=help_cmd),
+        expected="aliases differ for topic image",
+        scope="smoke assertions",
+    )
     help_topic_cmd = ["design-ai", "help", "search"]
     assert_help_topic_output(
         passing_help_topic_output("search"),
@@ -12890,6 +9768,12 @@ def run_self_test() -> None:
         topic="site",
         context=context,
         cmd=["design-ai", "help", "site"],
+    )
+    assert_help_topic_output(
+        passing_help_topic_output("image"),
+        topic="image",
+        context=context,
+        cmd=["design-ai", "help", "image"],
     )
     expect_self_test_failure(
         lambda: assert_help_topic_output(
@@ -12943,6 +9827,32 @@ def run_self_test() -> None:
             topic="site",
             context=context,
             cmd=["design-ai", "help", "site"],
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_help_topic_output(
+            passing_help_topic_output("image").replace(
+                "design-ai image serve [--host 127.0.0.1] [--port 4318]",
+                "design-ai image serve",
+            ),
+            topic="image",
+            context=context,
+            cmd=["design-ai", "help", "image"],
+        ),
+        expected="missing expected content",
+        scope="smoke assertions",
+    )
+    expect_self_test_failure(
+        lambda: assert_help_topic_output(
+            passing_help_topic_output("image").replace(
+                "Starts the local Image Console. Prompt Guide and provider credentials stay in this server process.",
+                "Starts the local Image Console.",
+            ),
+            topic="image",
+            context=context,
+            cmd=["design-ai", "help", "image"],
         ),
         expected="missing expected content",
         scope="smoke assertions",
