@@ -365,6 +365,8 @@ nav:
       - AI learning: docs/AI-LEARNING.md
       - Contributing: docs/CONTRIBUTING.md
       - Roadmap: docs/ROADMAP.md
+      - Roadmap archive: docs/ROADMAP-archive.md
+      - Changelog archive: docs/CHANGELOG-archive.md
       - Dogfood findings: docs/DOGFOOD-FINDINGS.md
       - Source references:
           - Ant Design: docs/reference/ant-design.md
