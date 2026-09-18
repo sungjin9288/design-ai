@@ -220,6 +220,16 @@ from smoke_assertions import (
     site_mcp_probe_embedded_command,
     unknown_option_args,
 )
+from smoke_domains import cli_runner
+from smoke_domains.cli_runner import (
+    run_expected_failure,
+    run_plain,
+    run_plain_with_input,
+)
+
+# Registry smoke keeps the historical no-retry behavior so a published-package
+# failure is reported on its first observation.
+cli_runner.configure(npm_exec_retry=False)
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
@@ -279,94 +289,6 @@ def npm_exec_shell_cmd(package_spec: str, script: str) -> list[str]:
         "-c",
         script,
     ]
-
-
-def run_plain(
-    cmd: list[str],
-    *,
-    cwd: Path | None = None,
-    env: dict[str, str] | None = None,
-) -> subprocess.CompletedProcess[str]:
-    print(f"$ {format_cmd(cmd)}", flush=True)
-    result = subprocess.run(
-        cmd,
-        cwd=cwd,
-        env=env,
-        text=True,
-        capture_output=True,
-    )
-
-    if result.stdout:
-        print(result.stdout, end="")
-    if result.stderr:
-        print(result.stderr, end="", file=sys.stderr)
-
-    if result.returncode != 0:
-        raise SystemExit(f"command failed with exit code {result.returncode}: {format_cmd(cmd)}")
-
-    assert_no_ansi(f"{result.stdout}\n{result.stderr}", cmd)
-    return result
-
-
-def run_plain_with_input(
-    cmd: list[str],
-    *,
-    input_text: str,
-    cwd: Path | None = None,
-    env: dict[str, str] | None = None,
-) -> subprocess.CompletedProcess[str]:
-    print(f"$ {format_cmd(cmd)} < stdin", flush=True)
-    result = subprocess.run(
-        cmd,
-        cwd=cwd,
-        env=env,
-        input=input_text,
-        text=True,
-        capture_output=True,
-    )
-
-    if result.stdout:
-        print(result.stdout, end="")
-    if result.stderr:
-        print(result.stderr, end="", file=sys.stderr)
-
-    if result.returncode != 0:
-        raise SystemExit(f"command failed with exit code {result.returncode}: {format_cmd(cmd)}")
-
-    assert_no_ansi(f"{result.stdout}\n{result.stderr}", cmd)
-    return result
-
-
-def run_expected_failure(
-    cmd: list[str],
-    *,
-    cwd: Path | None = None,
-    env: dict[str, str] | None = None,
-    context: str,
-    assertion=assert_unknown_command_failure,
-) -> subprocess.CompletedProcess[str]:
-    print(f"$ {format_cmd(cmd)}", flush=True)
-    result = subprocess.run(
-        cmd,
-        cwd=cwd,
-        env=env,
-        text=True,
-        capture_output=True,
-    )
-
-    if result.stdout:
-        print(result.stdout, end="")
-    if result.stderr:
-        print(result.stderr, end="", file=sys.stderr)
-
-    assertion(
-        f"{result.stdout}\n{result.stderr}",
-        returncode=result.returncode,
-        context=context,
-        cmd=cmd,
-    )
-
-    return result
 
 
 def assert_unknown_option_smoke(
@@ -4056,6 +3978,7 @@ def smoke_registry_package(package_spec: str, *, retries: int, delay: float) -> 
             cwd=npx_root,
             env=env,
             context="registry smoke npm exec unknown command",
+            assertion=assert_unknown_command_failure,
         )
         run_expected_failure(
             npm_exec_cmd(package_spec, "help", EXPECTED_UNKNOWN_HELP_TOPIC),

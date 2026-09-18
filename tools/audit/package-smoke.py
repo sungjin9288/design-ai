@@ -310,6 +310,18 @@ from smoke_assertions import (
     site_mcp_probe_embedded_command,
     unknown_option_args,
 )
+from smoke_domains import cli_runner
+from smoke_domains.cli_runner import (
+    is_npm_exec_cache_enoent,
+    retry_npm_exec_once,
+    run_expected_failure,
+    run_plain,
+    run_plain_with_input,
+)
+
+# Package smoke drives a packed tarball through npm exec, where a corrupted npm
+# cache surfaces as a transient ENOENT. Retry that once; registry smoke does not.
+cli_runner.configure(npm_exec_retry=True)
 
 
 
@@ -353,45 +365,6 @@ def npm_exec_shell_cmd(tarball: Path, script: str) -> list[str]:
     ]
 
 
-def is_npm_exec_cache_enoent(cmd: list[str], result: subprocess.CompletedProcess[str]) -> bool:
-    if len(cmd) < 2 or cmd[0] != "npm" or cmd[1] != "exec" or result.returncode == 0:
-        return False
-
-    output = f"{result.stdout}\n{result.stderr}"
-    return (
-        "Could not read package.json" in output
-        and "_cacache" in output
-        and "ENOENT" in output
-    )
-
-
-def retry_env_with_fresh_npm_cache(env: dict[str, str] | None) -> dict[str, str]:
-    retry_env = (env or os.environ).copy()
-    npm_cache = retry_env.get("npm_config_cache")
-    if npm_cache:
-        retry_env["npm_config_cache"] = f"{npm_cache}-retry"
-    return retry_env
-
-
-def retry_npm_exec_once(
-    cmd: list[str],
-    *,
-    cwd: Path | None = None,
-    env: dict[str, str] | None = None,
-    input_text: str | None = None,
-) -> subprocess.CompletedProcess[str]:
-    retry_env = retry_env_with_fresh_npm_cache(env)
-    print("npm exec cache ENOENT detected; retrying once with a fresh npm cache", file=sys.stderr, flush=True)
-    return subprocess.run(
-        cmd,
-        cwd=cwd,
-        env=retry_env,
-        input=input_text,
-        text=True,
-        capture_output=True,
-    )
-
-
 def run(
     cmd: list[str],
     *,
@@ -408,80 +381,6 @@ def run(
         capture_output=capture,
         check=True,
     )
-
-
-def run_plain(
-    cmd: list[str],
-    *,
-    cwd: Path | None = None,
-    env: dict[str, str] | None = None,
-) -> subprocess.CompletedProcess[str]:
-    print(f"$ {format_cmd(cmd)}", flush=True)
-    result = subprocess.run(
-        cmd,
-        cwd=cwd,
-        env=env,
-        text=True,
-        capture_output=True,
-    )
-
-    if result.stdout:
-        print(result.stdout, end="")
-    if result.stderr:
-        print(result.stderr, end="", file=sys.stderr)
-
-    if is_npm_exec_cache_enoent(cmd, result):
-        result = retry_npm_exec_once(cmd, cwd=cwd, env=env)
-        if result.stdout:
-            print(result.stdout, end="")
-        if result.stderr:
-            print(result.stderr, end="", file=sys.stderr)
-
-    if result.returncode != 0:
-        raise SystemExit(f"command failed with exit code {result.returncode}: {format_cmd(cmd)}")
-
-    output = f"{result.stdout}\n{result.stderr}"
-    assert_no_ansi(output, cmd)
-
-    return result
-
-
-def run_plain_with_input(
-    cmd: list[str],
-    *,
-    input_text: str,
-    cwd: Path | None = None,
-    env: dict[str, str] | None = None,
-) -> subprocess.CompletedProcess[str]:
-    print(f"$ {format_cmd(cmd)} < stdin", flush=True)
-    result = subprocess.run(
-        cmd,
-        cwd=cwd,
-        env=env,
-        input=input_text,
-        text=True,
-        capture_output=True,
-    )
-
-    if result.stdout:
-        print(result.stdout, end="")
-    if result.stderr:
-        print(result.stderr, end="", file=sys.stderr)
-
-    if is_npm_exec_cache_enoent(cmd, result):
-        result = retry_npm_exec_once(cmd, cwd=cwd, env=env, input_text=input_text)
-        if result.stdout:
-            print(result.stdout, end="")
-        if result.stderr:
-            print(result.stderr, end="", file=sys.stderr)
-
-    if result.returncode != 0:
-        raise SystemExit(f"command failed with exit code {result.returncode}: {format_cmd(cmd)}")
-
-    output = f"{result.stdout}\n{result.stderr}"
-    assert_no_ansi(output, cmd)
-
-    return result
 
 
 def fail_package_smoke(context: str, cmd: list[str], message: str) -> None:
@@ -537,45 +436,6 @@ def assert_design_ai_mcp_protocol_smoke(
         except json.JSONDecodeError as error:
             fail_package_smoke(context, cmd, f"MCP stdout line is not JSON: {error}")
     assert_design_ai_mcp_protocol_responses(responses, context=context, cmd=cmd)
-
-
-def run_expected_failure(
-    cmd: list[str],
-    *,
-    cwd: Path | None = None,
-    env: dict[str, str] | None = None,
-    context: str,
-    assertion=assert_unknown_command_failure,
-) -> subprocess.CompletedProcess[str]:
-    print(f"$ {format_cmd(cmd)}", flush=True)
-    result = subprocess.run(
-        cmd,
-        cwd=cwd,
-        env=env,
-        text=True,
-        capture_output=True,
-    )
-
-    if result.stdout:
-        print(result.stdout, end="")
-    if result.stderr:
-        print(result.stderr, end="", file=sys.stderr)
-
-    if is_npm_exec_cache_enoent(cmd, result):
-        result = retry_npm_exec_once(cmd, cwd=cwd, env=env)
-        if result.stdout:
-            print(result.stdout, end="")
-        if result.stderr:
-            print(result.stderr, end="", file=sys.stderr)
-
-    assertion(
-        f"{result.stdout}\n{result.stderr}",
-        returncode=result.returncode,
-        context=context,
-        cmd=cmd,
-    )
-
-    return result
 
 
 def assert_unknown_option_smoke(
@@ -17327,6 +17187,7 @@ def smoke_tarball(tarball: Path) -> None:
             [str(bin_path), EXPECTED_UNKNOWN_COMMAND],
             env=smoke_env,
             context="package smoke installed bin unknown command",
+            assertion=assert_unknown_command_failure,
         )
         run_expected_failure(
             [str(bin_path), "help", EXPECTED_UNKNOWN_HELP_TOPIC],
@@ -19010,6 +18871,7 @@ def smoke_tarball(tarball: Path) -> None:
             cwd=npx_root,
             env=npx_env,
             context="package smoke npm exec unknown command",
+            assertion=assert_unknown_command_failure,
         )
         run_expected_failure(
             npm_exec_cmd(tarball, "help", EXPECTED_UNKNOWN_HELP_TOPIC),
