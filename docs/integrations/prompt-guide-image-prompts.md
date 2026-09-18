@@ -19,7 +19,7 @@ This page owns the exact current-source measurement so release-facing documents
 do not copy counts that drift as the package changes. The 2026-09-05 local RC
 receipt on macOS 26.6.2, Node 24.18.0, and Python 3.12.12 records 59/59 focused
 Image Console tests with no skips, 891/891 release-preflight Node tests, 8/8
-strict audits, 881 package files, and 0/0 documentation-policy warnings. Packed
+strict audits, 886 package files, and 0/0 documentation-policy warnings. Packed
 installed-bin and one-shot smoke plus `npm run release:check` pass. Packed bytes,
 artifact digest, and wall time belong to the source-repository run receipt rather
 than this packaged page. The earlier 46-pass/4-skip observation was sandbox-

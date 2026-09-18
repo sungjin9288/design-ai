@@ -27,7 +27,12 @@ test("Website Console server artifacts preserve the shared contract", () => {
 });
 
 test("standalone Website Console keeps the same modes and contract headings", () => {
-  const source = readFileSync(new URL("../../docs/website-console/app.js", import.meta.url), "utf8");
+  // The console shell is split across view-model.js and app.js; the artifact
+  // contract belongs to the bundle rather than to one of its files.
+  const source = [
+    readFileSync(new URL("../../docs/website-console/view-model.js", import.meta.url), "utf8"),
+    readFileSync(new URL("../../docs/website-console/app.js", import.meta.url), "utf8"),
+  ].join("\n");
   for (const mode of ARTIFACT_MODES) {
     assert.ok(source.includes(`[\"${mode}\",`));
   }
