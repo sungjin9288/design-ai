@@ -6778,7 +6778,8 @@ def expect_self_test_failure(action: Callable[[], object], *, expected: str, sco
         raise SystemExit(f"self-test failed: expected {scope} failure containing {expected!r}")
 
 
-def run_self_test() -> None:
+def _self_test_doctor_review_and_benchmark():
+    """Smoke assertions self-test: doctor, review, and benchmark assertion fixtures."""
     context = "smoke assertion self-test"
     cmd = ["design-ai", "doctor", "--json"]
     help_cmd = ["design-ai", "help", "--json"]
@@ -7258,6 +7259,11 @@ def run_self_test() -> None:
         expected="ANSI escape",
         scope="smoke assertions",
     )
+    return cmd, context, help_cmd, parse_error_message
+
+
+def _self_test_list_prompt_and_search(context) -> None:
+    """Smoke assertions self-test: list, prompt, and search assertion fixtures."""
     assert_unknown_list_domain_failure(
         passing_unknown_list_domain_output(),
         returncode=1,
@@ -7736,6 +7742,9 @@ def run_self_test() -> None:
         scope="smoke assertions",
     )
 
+
+def _self_test_index_search_and_show(cmd, context, parse_error_message):
+    """Smoke assertions self-test: index, ranked search, and show assertion fixtures."""
     assert_doctor_json_clean(
         passing_doctor_report_json(),
         context=context,
@@ -8212,6 +8221,11 @@ def run_self_test() -> None:
 
     show_cmd = ["design-ai", "show", EXPECTED_CORPUS_SHOW_TARGET, "--context", "0", "--json"]
     assert_show_json_line(passing_show_json(), context=context, cmd=show_cmd)
+    return show_cmd
+
+
+def _self_test_route_examples_and_prompt(context, show_cmd):
+    """Smoke assertions self-test: route, examples, and prompt assertion fixtures."""
     expect_self_test_failure(
         lambda: assert_show_json_line("{", context=context, cmd=show_cmd),
         expected="failed to parse show JSON",
@@ -8692,6 +8706,11 @@ def run_self_test() -> None:
         expected="filesToRead differs",
         scope="smoke assertions",
     )
+    return prompt_cmd
+
+
+def _self_test_pack_audit_and_check(context, prompt_cmd):
+    """Smoke assertions self-test: pack, audit, and check assertion fixtures."""
     prompt_missing_example = json.loads(passing_prompt_json())
     prompt_missing_example["referenceExamples"] = []
     expect_self_test_failure(
@@ -9170,6 +9189,11 @@ def run_self_test() -> None:
     )
     check_warn_status = json.loads(passing_check_examples_json())
     check_warn_status["status"] = "warn"
+    return check_examples_cmd, check_warn_status
+
+
+def _self_test_check_routes_and_examples(check_examples_cmd, check_warn_status, context, help_cmd):
+    """Smoke assertions self-test: check all-routes and examples assertion fixtures."""
     expect_self_test_failure(
         lambda: assert_check_examples_json_component_spec(json.dumps(check_warn_status), context=context, cmd=check_examples_cmd),
         expected="status is not pass",
@@ -9647,6 +9671,11 @@ def run_self_test() -> None:
         scope="smoke assertions",
     )
     missing_topic_catalog = json.loads(passing_help_catalog_json())
+    return missing_topic_catalog
+
+
+def _self_test_help_version_and_workspace(context, help_cmd, missing_topic_catalog):
+    """Smoke assertions self-test: help, version, and workspace assertion fixtures."""
     missing_topic_catalog["topics"] = [
         topic
         for topic in missing_topic_catalog["topics"]
@@ -10085,6 +10114,11 @@ def run_self_test() -> None:
     }
     assert_workspace_json(json.dumps(workspace_usage_payload), context=context, cmd=workspace_cmd)
     workspace_restore_backups_payload = json.loads(passing_workspace_json())
+    return workspace_cmd, workspace_restore_backups_payload
+
+
+def _self_test_site_intake_and_next_actions(context, workspace_cmd, workspace_restore_backups_payload):
+    """Smoke assertions self-test: site intake-template and next-actions assertion fixtures."""
     workspace_restore_backups_payload["learningRestoreBackups"] = {
         "file": "/tmp/learning.json",
         "directory": "/tmp",
@@ -10411,6 +10445,11 @@ def run_self_test() -> None:
         expected="recommended file name changed",
         scope="smoke assertions",
     )
+    return site_cmd, site_next_actions_cmd, site_sample_cmd
+
+
+def _self_test_site_bundle_and_graph(context, site_cmd, site_next_actions_cmd, site_sample_cmd):
+    """Smoke assertions self-test: site bundle, graph, and init assertion fixtures."""
     site_init_cmd = ["design-ai", "site", "--init", "--name", "Company marketing site", "--live-url", "https://example.com"]
     assert_site_init_json(passing_site_init_json(), context=context, cmd=site_init_cmd)
     site_from_intake_cmd = ["design-ai", "site", "--from-intake", "company-website-intake.md", "--json"]
@@ -11140,6 +11179,11 @@ def run_self_test() -> None:
         expected="missing expected content",
         scope="smoke assertions",
     )
+    return site_mcp_plan_probes_json_cmd, site_mcp_plan_probes_json_out_cmd, site_workflow_graph_cmd
+
+
+def _self_test_global_flags_and_failures(context, site_mcp_plan_probes_json_cmd, site_mcp_plan_probes_json_out_cmd, site_workflow_graph_cmd):
+    """Smoke assertions self-test: global flag and failure-path assertion fixtures."""
     stale_site_mcp_plan_probes_out_payload = json.loads(passing_site_mcp_plan_json(probes=True))
     stale_site_mcp_plan_probes_out_payload["probes"]["items"][0]["level"] = "warn"
     expect_self_test_failure(
@@ -11615,6 +11659,11 @@ def run_self_test() -> None:
         expected="installed count is invalid",
         scope="smoke assertions",
     )
+    return status_cmd
+
+
+def _self_test_aliases_and_lint(context, status_cmd) -> None:
+    """Smoke assertions self-test: command alias and lint assertion fixtures."""
     expect_self_test_failure(
         lambda: assert_status_json(
             json.dumps(["context", "sections", "summary"]),
@@ -11995,6 +12044,21 @@ def run_self_test() -> None:
     )
 
     print("Smoke assertions self-test passed")
+
+
+def run_self_test() -> None:
+    cmd, context, help_cmd, parse_error_message = _self_test_doctor_review_and_benchmark()
+    _self_test_list_prompt_and_search(context)
+
+    show_cmd = _self_test_index_search_and_show(cmd, context, parse_error_message)
+    prompt_cmd = _self_test_route_examples_and_prompt(context, show_cmd)
+    check_examples_cmd, check_warn_status = _self_test_pack_audit_and_check(context, prompt_cmd)
+    missing_topic_catalog = _self_test_check_routes_and_examples(check_examples_cmd, check_warn_status, context, help_cmd)
+    workspace_cmd, workspace_restore_backups_payload = _self_test_help_version_and_workspace(context, help_cmd, missing_topic_catalog)
+    site_cmd, site_next_actions_cmd, site_sample_cmd = _self_test_site_intake_and_next_actions(context, workspace_cmd, workspace_restore_backups_payload)
+    site_mcp_plan_probes_json_cmd, site_mcp_plan_probes_json_out_cmd, site_workflow_graph_cmd = _self_test_site_bundle_and_graph(context, site_cmd, site_next_actions_cmd, site_sample_cmd)
+    status_cmd = _self_test_global_flags_and_failures(context, site_mcp_plan_probes_json_cmd, site_mcp_plan_probes_json_out_cmd, site_workflow_graph_cmd)
+    _self_test_aliases_and_lint(context, status_cmd)
 
 
 def main() -> None:
