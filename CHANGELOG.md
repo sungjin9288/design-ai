@@ -116,7 +116,7 @@ in
 ### Verified
 
 - All 8 audits passed for the v5.2.0 release candidate.
-- `npm run release:check` passed with 891/891 Node tests, 883 packaged files,
+- `npm run release:check` passed with 891/891 Node tests, 884 packaged files,
   0/0 documentation-policy warnings, release self-tests, and installed-bin plus
   one-shot `npm exec` smoke against the packed tarball.
 - Image Console browser QA passed at 1440×900 and 390×844 with no horizontal

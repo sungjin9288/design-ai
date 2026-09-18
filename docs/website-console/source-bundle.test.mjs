@@ -19,6 +19,15 @@ import { validateTargetRepoIntake } from "../../cli/lib/target-repo-intake-contr
 
 const CONSOLE_ROOT = path.dirname(fileURLToPath(import.meta.url));
 
+function readConsoleSource() {
+  // The console shell is split across app.js and view-model.js. Assertions about
+  // rendered copy and behavior belong to the bundle, not to one file.
+  return [
+    readFileSync(path.join(CONSOLE_ROOT, "view-model.js"), "utf8"),
+    readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8"),
+  ].join("\n");
+}
+
 function loadApi() {
   const sandbox = {};
   vm.createContext(sandbox);
@@ -188,7 +197,7 @@ test("review-comparison classic script validates the shared full comparison cont
 
 test("Website Console loads, imports, renders, restores, and exports full review comparisons", () => {
   const indexSource = readFileSync(path.join(CONSOLE_ROOT, "index.html"), "utf8");
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
 
   assert.ok(indexSource.indexOf("./source-bundle.js") < indexSource.indexOf("./review-comparison.js"));
   assert.ok(indexSource.indexOf("./review-comparison.js") < indexSource.indexOf("./app.js"));
@@ -685,18 +694,20 @@ test("Website Console loads classic deferred scripts in dependency order", () =>
   const scopeIndex = html.indexOf('<script src="./implementation-scope.js" defer></script>');
   const evidenceIndex = html.indexOf('<script src="./implementation-evidence.js" defer></script>');
   const pilotIndex = html.indexOf('<script src="./pilot-evidence.js" defer></script>');
+  const viewModelIndex = html.indexOf('<script src="./view-model.js" defer></script>');
   const appIndex = html.indexOf('<script src="./app.js" defer></script>');
 
   assert.equal(existsSync(path.join(CONSOLE_ROOT, "source-bundle.js")), true);
+  assert.equal(existsSync(path.join(CONSOLE_ROOT, "view-model.js")), true);
   assert.equal(existsSync(path.join(CONSOLE_ROOT, "implementation-scope.js")), true);
   assert.equal(existsSync(path.join(CONSOLE_ROOT, "implementation-evidence.js")), true);
   assert.equal(existsSync(path.join(CONSOLE_ROOT, "pilot-evidence.js")), true);
   assert.equal(existsSync(path.join(CONSOLE_ROOT, "app.js")), true);
-  assert.ok(contractIndex >= 0 && contractIndex < scopeIndex && scopeIndex < evidenceIndex && evidenceIndex < pilotIndex && pilotIndex < appIndex);
+  assert.ok(contractIndex >= 0 && contractIndex < scopeIndex && scopeIndex < evidenceIndex && evidenceIndex < pilotIndex && pilotIndex < viewModelIndex && viewModelIndex < appIndex);
 });
 
 test("Website Console renders a visible failure for missing or partial contracts", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
 
   for (const sourceBundleApi of [undefined, { normalizeRunbookSourceBundle: function () {} }]) {
     const appRoot = {
@@ -726,14 +737,14 @@ test("Website Console renders a visible failure for missing or partial contracts
 });
 
 test("Website Console uses deterministic fallback task ids", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
 
   assert.match(appSource, /id: String\(item\.id \|\| "task-" \+ \(index \+ 1\)\)/);
   assert.doesNotMatch(appSource, /task-" \+ Date\.now\(\) \+ "-" \+ index/);
 });
 
 test("Website Console imports and labels linked preview readiness without claiming runtime verification", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
 
   assert.match(appSource, /website-improvement-linked-preview/);
   assert.match(appSource, /Import review comparison, pilot evidence, implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
@@ -744,7 +755,7 @@ test("Website Console imports and labels linked preview readiness without claimi
 });
 
 test("Website Console keeps quality and browser contracts separate and preserves raw exports", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
 
   assert.match(appSource, /Canonical quality-report JSON imported\. Original bytes preserved\./);
   assert.match(appSource, /Canonical browser-verification JSON imported as a separate sidecar\./);
@@ -756,7 +767,7 @@ test("Website Console keeps quality and browser contracts separate and preserves
 });
 
 test("Website Console imports the review workflow before direct artifacts and preserves its envelope", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
 
   assert.match(appSource, /design-ai\.website-console\.review-workflow/);
   assert.match(appSource, /var importedReviewWorkflow = normalizeReviewWorkflow\(parsed\);/);
@@ -770,7 +781,7 @@ test("Website Console imports the review workflow before direct artifacts and pr
 });
 
 test("Website Console imports review handoff first and keeps delivery pending", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
 
   assert.match(appSource, /design-ai\.website-console\.review-handoff/);
   assert.match(appSource, /var importedReviewHandoff = normalizeReviewHandoff\(parsed\);/);
@@ -785,7 +796,7 @@ test("Website Console imports review handoff first and keeps delivery pending", 
 });
 
 test("Website Console imports consumer receipt first and preserves exact receipt bytes", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
 
   assert.match(appSource, /design-ai\.website-console\.review-handoff-receipt/);
   assert.match(appSource, /var importedReviewReceipt = normalizeReviewHandoffReceipt\(parsed\);/);
@@ -800,7 +811,7 @@ test("Website Console imports consumer receipt first and preserves exact receipt
 });
 
 test("Website Console imports target intake first and keeps implementation unauthorized", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
 
   assert.match(appSource, /design-ai\.website-console\.target-repo-intake/);
   assert.match(appSource, /var importedTargetRepoIntake = normalizeTargetRepoIntake\(parsed\);/);
@@ -816,7 +827,7 @@ test("Website Console imports target intake first and keeps implementation unaut
 });
 
 test("Website Console imports scope approval before proposal and restores the prior stage", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
 
   const approvalImport = "var importedScopeApproval = normalizeImplementationScopeApproval(parsed);";
   const proposalImport = "var importedScopeProposal = normalizeImplementationScopeProposal(parsed);";
@@ -836,7 +847,7 @@ test("Website Console imports scope approval before proposal and restores the pr
 });
 
 test("Website Console imports implementation evidence before approval and restores the approved stage", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
   const evidenceImport = "var importedImplementationEvidence = normalizeImplementationEvidenceArtifact(parsed);";
   const approvalImport = "var importedScopeApproval = normalizeImplementationScopeApproval(parsed);";
 
@@ -852,7 +863,7 @@ test("Website Console imports implementation evidence before approval and restor
 });
 
 test("Website Console imports pilot evidence before P11 and restores exact implementation evidence", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
   const pilotImport = "var importedPilotEvidence = normalizePilotEvidenceArtifact(parsed);";
   const evidenceImport = "var importedImplementationEvidence = normalizeImplementationEvidenceArtifact(parsed);";
 
@@ -867,7 +878,7 @@ test("Website Console imports pilot evidence before P11 and restores exact imple
 });
 
 test("Website Console imports start JSON without claiming reference inspection or execution", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
 
   assert.match(appSource, /Read-only start JSON imported\. Start tab opened\./);
   assert.match(appSource, /0 inspected by start/);
@@ -878,7 +889,7 @@ test("Website Console imports start JSON without claiming reference inspection o
 });
 
 test("Website Console keeps mobile section navigation compact and keyboard-stable", () => {
-  const appSource = readFileSync(path.join(CONSOLE_ROOT, "app.js"), "utf8");
+  const appSource = readConsoleSource();
   const styles = readFileSync(path.join(CONSOLE_ROOT, "styles.css"), "utf8");
   const responsive = styles.slice(styles.indexOf("@media (max-width: 980px)"));
 

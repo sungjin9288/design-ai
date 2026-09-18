@@ -54,7 +54,7 @@ publication, live provider result, or external participation is claimed.
 ### Verified
 
 - All 8 audits passed for the v5.2.0 release candidate.
-- `npm run release:check` passed with 891/891 Node tests, 883 package files,
+- `npm run release:check` passed with 891/891 Node tests, 884 package files,
   0/0 documentation-policy warnings, release self-tests, and packed installed-bin
   plus one-shot npm smoke.
 - Browser QA passed at desktop and mobile widths with keyboard navigation, visible
