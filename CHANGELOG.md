@@ -100,6 +100,13 @@ in
 
 ### Fixed
 
+- Contain provider stdin failures when an adapter exits before reading input,
+  without terminating the Image Console gateway.
+- Bind editing approval to the compose-time source descriptor, rejecting even
+  coherent image/manifest replacement before creating a job.
+- Consume approval immediately, ignore stale job success/failure responses,
+  and preserve the current source selection during Image Console asset refresh.
+  Keep asset-list failures actionable and hide stale draft metadata after reset.
 - Restored GitHub Pages project paths in multilingual alternate links and mirrored
   the combined sitemap at locale roots. Head alternate links now provide stable
   language-root sitemap discovery while visible language controls retain contextual

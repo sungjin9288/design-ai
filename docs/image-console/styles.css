@@ -18,6 +18,7 @@
 .image-status { margin: 0 0 16px; color: var(--text-muted); }
 .image-error { margin: 0 0 16px; border: 1px solid var(--danger); border-radius: 6px; background: var(--danger-soft); color: var(--danger); padding: 12px; }
 .image-details { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 8px 12px; margin: 0 0 16px; font-size: 13px; }
+.image-details[hidden] { display: none; }
 .image-details dt { color: var(--text-muted); font-weight: 750; }
 .image-details dd { margin: 0; overflow-wrap: anywhere; }
 .approval-row { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: 16px 0; color: var(--text-muted); }

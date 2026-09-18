@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { PROMPT_GUIDE_SOURCE_REPOSITORY, PROMPT_GUIDE_UPSTREAM_COMMIT } from "./image-prompt-contract.mjs";
-import { createImageAssetStore } from "./image-asset-manifest.mjs";
+import { createImageAssetStore, hashImagePrompt } from "./image-asset-manifest.mjs";
 import { createImageWorkflow, ImageDraftError } from "./image-workflow.mjs";
 
 const provenance = { sourceRepository: PROMPT_GUIDE_SOURCE_REPOSITORY, upstreamCommit: PROMPT_GUIDE_UPSTREAM_COMMIT, catalogVersion: "2026.08", overlayVersions: {} };
@@ -77,6 +77,32 @@ test("editing references are revalidated immediately before provider execution",
   let lookups = 0; const store = { root: "/tmp", getReferenceDescriptor: async () => (++lookups === 1 ? { assetId: "source", assetPath: "/tmp/source.png", mediaType: "image/png", byteSize: 1, sha256: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" } : null), list: async () => [], get: async () => null };
   let providerCalls = 0; const flow = createImageWorkflow({ client: fakeClient(), provider: { command: "fake", args: [] }, assetStore: store, executeProvider: async () => { providerCalls += 1; } });
   const draft = await flow.composeDraft({ ...base, taskType: "editing", referenceAssetIds: ["source"] }); await assert.rejects(() => flow.executeDraft(draft.draftId, { approved: true }), ImageDraftError); assert.equal(providerCalls, 0);
+});
+test("editing approval rejects coherently replaced source bytes before consuming a draft or creating a job", async () => {
+  const store = await seededStore(); const counter = { calls: 0 }; let ids = 0;
+  const flow = createImageWorkflow({ client: fakeClient(), assetStore: store, executeProvider: providerStub(counter), idFactory: () => `replacement-${++ids}` });
+  const draft = await flow.composeDraft({ ...base, taskType: "editing", referenceAssetIds: ["source-1"] });
+  const descriptor = await store.getReferenceDescriptor("source-1");
+  const manifestPath = path.join(store.root, "source-1", "manifest.json");
+  const originalManifest = await readFile(manifestPath, "utf8");
+  const replacementBytes = Buffer.concat([pngBytes, Buffer.from("replacement")]);
+  await writeFile(descriptor.assetPath, replacementBytes);
+  await writeFile(manifestPath, JSON.stringify({ ...JSON.parse(originalManifest), byteSize: replacementBytes.length, sha256: hashImagePrompt(replacementBytes) }));
+  assert.ok(await store.getReferenceDescriptor("source-1"));
+  await assert.rejects(() => flow.executeDraft(draft.draftId, { approved: true }), /source assets changed since draft composition/);
+  assert.equal(counter.calls, 0); assert.equal(ids, 1); assert.equal(flow.getDraft(draft.draftId).executable, true);
+  await writeFile(descriptor.assetPath, pngBytes); await writeFile(manifestPath, originalManifest);
+  assert.equal((await flow.executeDraft(draft.draftId, { approved: true })).status, "succeeded");
+  assert.equal(counter.calls, 1);
+});
+test("editing draft retains its descriptor snapshot when an asset store reuses a mutable object", async () => {
+  const descriptor = { assetId: "source", assetPath: "/tmp/source.png", mediaType: "image/png", byteSize: 1, sha256: `sha256:${"a".repeat(64)}` };
+  const counter = { calls: 0 };
+  const flow = createImageWorkflow({ client: fakeClient(), assetStore: { root: "/tmp", getReferenceDescriptor: async () => descriptor }, executeProvider: providerStub(counter) });
+  const draft = await flow.composeDraft({ ...base, taskType: "editing", referenceAssetIds: ["source"] });
+  descriptor.sha256 = `sha256:${"b".repeat(64)}`;
+  await assert.rejects(() => flow.executeDraft(draft.draftId, { approved: true }), /source assets changed since draft composition/);
+  assert.equal(counter.calls, 0); assert.equal(flow.getDraft(draft.draftId).executable, true);
 });
 test("editing fixture injects the stored source only at runtime", async () => {
   const { flow, counter } = await workflow();

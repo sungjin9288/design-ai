@@ -1,5 +1,9 @@
 # 아키텍처
 
+Design AI는 coding agent를 위한 로컬 기반 design-quality layer입니다.
+현재 소스의 검토·승인·증거 흐름과 Image Console을 하나의 구조로 유지합니다.
+구현 완료와 외부 검증·출시 상태는 [완성 계획](product-completion-plan.md)에서 구분합니다.
+
 ## 4 계층 구조
 
 ```
@@ -95,13 +99,16 @@ stability: stable
 
 ```
 skills/<skill-name>/
-├── SKILL.md          # Claude Code 스킬 매니페스트 (frontmatter + 본문)
+├── SKILL.md          # 이식 가능한 discovery metadata와 activation 안내
 ├── PLAYBOOK.md       # 단계별 프로세스 (모든 에이전트가 읽음)
 ├── TEMPLATE.md       # 출력 템플릿 (해당하는 경우)
 └── examples/         # 워크드 예제
 ```
 
-Codex CLI는 `PLAYBOOK.md`를 직접 읽어요. Claude Code는 호출용으로 `SKILL.md`를 쓰지만 두 파일은 같은 내용을 공유해요 — `SKILL.md`는 `PLAYBOOK.md`에 frontmatter 래핑한 것.
+`SKILL.md`는 `PLAYBOOK.md`를 직접 연결하는 얇은 dispatcher입니다.
+본문을 복제하지 않으며, agent는 실행 전에 playbook을 읽습니다.
+추가 template과 reference는 해당 workflow가 요구할 때 읽습니다.
+`npm run skills:check`가 21개 스킬의 metadata, 연결, 구조, 줄 수와 inventory 일치를 검증합니다.
 
 ### 검증 단계 (verification phase)
 
@@ -114,13 +121,66 @@ Codex CLI는 `PLAYBOOK.md`를 직접 읽어요. Claude Code는 호출용으로 `
 
 이게 산출물 품질을 시니어 디자인 리뷰 수준으로 끌어올려요.
 
-## 왜 벡터 임베딩 안 쓰는가
+## 검색과 원본의 분리
 
-검토했지만 이 버전에서는 거부했어요:
+파일 직접 읽기와 lexical search가 기본입니다.
+`cli/lib/search-ranked.mjs`에는 local subprocess provider를 이용한 opt-in embedding rerank가 구현돼 있습니다.
 
-- 큐레이션된 지식은 50K 토큰 이내에 잘 들어가요. 직접 파일 읽기가 벡터 검색보다 빠르고 저렴해요.
-- 마크다운은 grep 가능 / 사람이 감사 가능. 벡터는 안 그래요.
-- 미래: 지식이 100K 토큰을 넘어가면 source-of-truth 계층은 그대로 두고 `tools/index/`에 옵션 임베딩 인덱스를 추가할 수 있어요.
+`cli/lib/embedding-index.mjs`가 파생 sidecar를 관리합니다.
+checkout, learning file, corpus freshness가 일치해야 사용합니다.
+설정 누락·오래된 index·provider 실패 시 안내와 함께 lexical 결과로 돌아갑니다.
+index와 승인된 local learning은 Markdown 원본이나 변경 권한을 대체하지 않습니다.
+자세한 계약은 [AI learning](AI-LEARNING-PHASE2.md)을 참고합니다.
+
+## 제품 전체 실행 구조
+
+공통 domain contract를 유지하고 CLI·SDK·MCP adapter는 전송과 표현만 담당합니다.
+Website Console은 기존 계약을 사용하고, Image Console은 별도의 loopback gateway에서 동작합니다.
+현재 release에는 새 service, database, dependency 또는 public command가 필요하지 않습니다.
+이는 현재 코드를 근거로 한 저장소 설계 결정입니다.
+
+```text
+Brief → Start / design contract → Inspect / review
+      → Handoff / receipt / intake → Scope / approval
+      → Implementation evidence → Pilot / comparison / owner decision
+
+Image Console → Recommend / compose / validate → Draft review / approval
+              → Local provider → Image bytes / manifest
+```
+
+Image manifest와 implementation evidence의 연결은 운영자 handoff입니다.
+자동 API 연결은 구현되어 있지 않습니다.
+생성 lineage만으로 디자인 품질·권리·production 적합성·owner 승인을 증명하지 않습니다.
+
+| 경계 | 현재 코드의 소유자 | 책임 |
+| --- | --- | --- |
+| Public identity | `cli/lib/capability-manifest.json` | 이름과 개수; runtime dispatch와 분리 |
+| Start | `cli/lib/start-operation.mjs` | target을 열거나 변경하지 않는 route·contract 조립 |
+| Quality report | `cli/lib/design-quality-contract.mjs` | schema·evidence·permission·summary 일관성 |
+| Website Console | `docs/website-console/` | UI와 source-bundle 계약 분리 |
+| Image gateway | `cli/lib/image-console-server.mjs` | loopback, same-origin, JSON, server-only secrets |
+| Image workflow | `cli/lib/image-workflow.mjs` | draft 검증·한 번의 승인·실행 순서 |
+| Prompt Guide client | `cli/lib/prompt-guide-client.mjs` | v1·provenance·bounded HTTP 검증 |
+| Image provider | `cli/lib/image-provider.mjs` | 격리된 subprocess·timeout·media 검증 |
+| Image asset store | `cli/lib/image-asset-manifest.mjs` | source descriptor 검증·atomic 저장 |
+
+Knowledge와 review·scope·comparison은 기존 파일 및 digest를 사용합니다.
+Image draft와 job은 메모리에 있어 재시작하면 새 draft와 승인이 필요합니다.
+저장된 image와 manifest는 유지되며 editing 전에 원본 bytes를 다시 검증합니다.
+Local learning은 명시적 승인을 요구하고 자동 학습이나 프로젝트 간 전파를 하지 않습니다.
+
+## 확장과 완료 경계
+
+P17C source extraction, P17D content quality, P17E visual evaluator,
+P17F continuity는 기존 review-to-comparison 흐름을 재사용합니다.
+[P17 계획](P17-SKILL-AND-CORE-HARDENING-PLAN.md)의 진입 조건을 충족한 뒤 구현합니다.
+미확인 evidence는 `unverified`로 유지합니다.
+
+`npm run release:preflight`는 non-publishing 검증을 수행합니다.
+`npm run release:check`는 packed installed-bin 및 one-shot npm smoke를 추가합니다.
+Image Console의 contrast·keyboard·44 px target·responsive 검증과 정확한 측정은
+[통합 가이드](integrations/prompt-guide-image-prompts.md)가 관리합니다.
+Mock, live provider, PR CI, public registry 검증은 별개입니다.
 
 ## 갱신 주기
 

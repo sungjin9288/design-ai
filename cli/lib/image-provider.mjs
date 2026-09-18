@@ -100,6 +100,7 @@ function defaultSpawnRunner({ command, args, input, timeoutMs, env }) {
     });
     child.on("error", (error) => settle(reject, new ImageProviderError(`provider adapter failed to start: ${error.message}`)));
     child.on("close", (status) => settle(resolve, { status, stdout, stderr }));
+    child.stdin.on("error", () => fail("provider adapter could not receive request input"));
     child.stdin.end(input);
   });
 }

@@ -16,21 +16,22 @@ Registry live coverage remains pending future publish. The registry smoke
 self-test mirrors this contract without claiming post-publish coverage.
 
 This page owns the exact current-source measurement so release-facing documents
-do not copy counts that drift as the package changes. The 2026-09-04 local RC
-receipt on macOS 26.6.2, Node 24.18.0, and Python 3.12.12 records 50/50 focused
-Image Console tests with no skips, 882/882 release-preflight Node tests, 8/8
-strict audits, 880 package files, and 0/0 documentation-policy warnings. Packed
+do not copy counts that drift as the package changes. The 2026-09-05 local RC
+receipt on macOS 26.6.2, Node 24.18.0, and Python 3.12.12 records 59/59 focused
+Image Console tests with no skips, 891/891 release-preflight Node tests, 8/8
+strict audits, 881 package files, and 0/0 documentation-policy warnings. Packed
 installed-bin and one-shot smoke plus `npm run release:check` pass. Packed bytes,
 artifact digest, and wall time belong to the source-repository run receipt rather
 than this packaged page. The earlier 46-pass/4-skip observation was sandbox-
 specific and is not the current local result.
 
-Manual browser QA covers the deterministic mock composition path, approval gate,
-expected missing-provider error, desktop and mobile layouts, keyboard navigation,
-focus visibility, reduced motion, and WCAG 2.1 AA contrast. Its source-repository
-receipt is `evidence/image-console/browser-qa.md`. No `PROMPT_GUIDE_*` or
-`IMAGE_PROVIDER_*` configuration was available during this run, so a live Prompt
-Guide call and real provider generation/edit remain unverified. Registry live
+Manual browser QA covers successful deterministic local generation and editing,
+approval consumption, source selection, draft reset, desktop and mobile layouts,
+keyboard navigation, focus visibility, reduced motion, and WCAG 2.1 AA contrast.
+Its current source-repository receipt is `evidence/image-console/completion-qa.md`;
+the earlier missing-provider browser receipt remains in `evidence/image-console/browser-qa.md`.
+No live Prompt Guide endpoint/key or real provider adapter was configured, so a
+live Prompt Guide call and real provider generation/edit remain unverified. Registry live
 coverage remains pending future publish.
 
 ## Architecture and boundaries
@@ -63,34 +64,29 @@ Put values in the server process only; do not expose any of these to the browser
 
 The child process inherits only minimal runtime variables plus explicitly named `IMAGE_PROVIDER_*` configuration; all Prompt Guide and unrelated process credentials are removed. It receives a bounded JSON object with prompt text, constraints, output settings, asset descriptors, and provider options. The command must be an absolute executable path, uses `shell: false`, independently bounds stdout and stderr to 12 MiB, and rejects output whose bytes do not match the declared PNG, JPEG, or WebP media type. An editing descriptor is exactly `{ assetId, assetPath, mediaType, byteSize, sha256 }`; `assetPath` is a verified regular image path inside the configured asset root and the other fields are read from the same manifest and image bytes. The manifest records the approved request's `size` and `quality`; arbitrary adapter response parameters are not persisted.
 
-## Local run: three terminals
+## Local run: one server terminal
 
 Use Node 18+ from this repository. The command starts no external network service in mock mode; its generated assets still require an operator-provided local provider adapter.
 
-Terminal 1 — set an explicit local-only mock configuration:
+Set Prompt Guide and provider configuration in the same shell that starts the
+gateway. Environment exports in a different terminal are not inherited.
+Replace the provider path below with an executable adapter you own; there is
+deliberately no bundled real provider.
 
 ```bash
 cd /absolute/path/to/design-ai
 export PROMPT_GUIDE_MODE=mock
 export PROMPT_GUIDE_TIMEOUT_MS=15000
 export PROMPT_GUIDE_EXPECTED_RESPONSE_VERSION=v1
-```
-
-Terminal 2 — configure the provider adapter you own (there is deliberately no bundled real provider):
-
-```bash
-cd /absolute/path/to/design-ai
 export IMAGE_PROVIDER_COMMAND=/absolute/path/to/local-provider-adapter
 export IMAGE_PROVIDER_ARGS='[]'
 export IMAGE_PROVIDER_TIMEOUT_MS=60000
 ```
 
-Terminal 3 — start the loopback console, then open the printed URL locally:
+Start the gateway from that configured terminal, then open its printed URL:
 
 ```bash
-cd /absolute/path/to/design-ai
-PROMPT_GUIDE_MODE=mock IMAGE_PROVIDER_COMMAND=/absolute/path/to/local-provider-adapter \
-  node cli/bin/design-ai.mjs image serve --host 127.0.0.1 --port 4318
+node cli/bin/design-ai.mjs image serve --host 127.0.0.1 --port 4318
 ```
 
 For live Prompt Guide, replace `PROMPT_GUIDE_MODE=mock` with `live` and supply the server-only URL/key through your process manager. Do not pass those values to the browser or a provider command line.
@@ -126,10 +122,16 @@ The gateway generates one bounded request/correlation ID pair for each flow, pas
 
 1. Choose a stored source asset from the local selector; generation and editing do not share a form.
 2. Specify preserve, modify, remove, add, and must-not-change instructions.
-3. The workflow resolves each source asset before Prompt Guide calls, and resolves it again immediately before provider execution.
+3. The workflow snapshots each source descriptor before Prompt Guide calls and requires the same hash, size, media type, ID, and path immediately before execution.
 4. The provider sees only one bounded reference descriptor (`assetId`, verified `assetPath`, media type, byte size, hash), never storage payload embedded in the prompt text.
 
 An unknown, deleted, malformed, or changed source asset fails before Prompt Guide composition or job/provider mutation. The UI reports a live, actionable error and keeps the execution control disabled.
+
+Even coherent replacement of both image bytes and manifest requires a new draft.
+The UI consumes approval when execution starts and ignores older job responses
+after the form or mode changes. Refreshing assets preserves a still-valid selection.
+An adapter exiting before reading stdin becomes a provider failure, not a gateway
+process crash.
 
 ## Accessibility and responsive behavior
 
@@ -169,7 +171,7 @@ The image store persists an atomic `manifest.json` beside image bytes. It has no
 ## Verification commands
 
 ```bash
-node --test cli/lib/prompt-guide-client.test.mjs cli/lib/image-provider.test.mjs cli/lib/image-workflow.test.mjs cli/lib/image-console-server.test.mjs docs/image-console/contract.test.mjs
+node --test cli/lib/prompt-guide-client.test.mjs cli/lib/image-provider.test.mjs cli/lib/image-workflow.test.mjs cli/lib/image-console-server.test.mjs docs/image-console/*.test.mjs
 npm test
 npm run audit:strict
 npm run package:check
@@ -185,7 +187,7 @@ The current package has no `lint`, `typecheck`, or `build` script; this integrat
 | --- | --- | --- |
 | Server refuses to start | `PROMPT_GUIDE_MODE`, host, timeouts | Use loopback host; mock cannot run in production; set an integer timeout in range. |
 | Live request fails version validation | Prompt Guide response header/body | Update the server-only expected version only after the v1 API contract is reviewed. |
-| Editing selector is empty | `/api/image/assets` and local asset root | Generate/import a valid locally stored asset; do not type a storage path into the prompt. |
+| Editing selector is empty | `/api/image/assets` and local asset root | Generate a valid locally stored asset; do not type a storage path into the prompt. |
 | Provider fails | Adapter exit and non-secret provider configuration | Check the local adapter and allowed media result; never add Prompt Guide variables to its environment. |
 | Prompt Guide rejects request | Gateway error details | Correct the visible request fields; composition is not automatically retried. |
 
@@ -193,4 +195,8 @@ The current package has no `lint`, `typecheck`, or `build` script; this integrat
 
 When Prompt Guide changes, first review its published v1 response contract and pinned provenance. Update the server-only expected version only with matching runtime validator, client, workflow, manifest, fixture, documentation, and regression-test changes; run the commands above before enabling live mode.
 
-Before verified integration, rollback is to stop the local Image Console and discard the unintegrated worker delta through the coordinator's verified recovery path. After verified local sync, use that coordinator's journaled rollback/recovery procedure; do not manually reset, delete assets, or clean another worktree.
+To stop local execution, stop the gateway process. Drafts and jobs are in-memory;
+restart requires a new composition and approval. Persisted images and manifests
+remain under the asset root. Preserve those files and existing evidence. For a
+code rollback, review the exact delta and use an explicitly approved revert;
+do not reset another worktree or remove unrelated assets.

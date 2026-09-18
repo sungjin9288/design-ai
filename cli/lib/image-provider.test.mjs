@@ -28,6 +28,12 @@ test("provider accepts one exact in-root reference descriptor and rejects out-of
 test("provider rejects media bytes that do not match the declared image type", async () => {
   await assert.rejects(() => executeImageProvider({ provider: { command: "/fake", args: [], timeoutMs: 100 }, input, spawnRunner: async () => ({ status: 0, stdout: JSON.stringify({ mediaType: "image/png", dataBase64: Buffer.from("not-an-image").toString("base64"), model: "test-model" }) }) }), /do not match/);
 });
+test("provider adapter early exit rejects its request without an unhandled stdin error", async () => {
+  await assert.rejects(() => executeImageProvider({
+    provider: { command: process.execPath, args: ["-e", "process.exit(1)"], timeoutMs: 3000 },
+    input: { ...input, prompt: "p".repeat(1000000) },
+  }), { name: "ImageProviderError", message: "provider adapter could not receive request input" });
+});
 test("provider boundary names independent stdout and stderr caps and keeps shell disabled", async () => {
   const source = await import("node:fs/promises").then(({ readFile }) => readFile(new URL("./image-provider.mjs", import.meta.url), "utf8"));
   assert.match(source, /stdout exceeds the size limit/); assert.match(source, /stderr exceeds the size limit/); assert.match(source, /shell: false/);

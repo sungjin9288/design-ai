@@ -33,6 +33,7 @@ test("console supplies live status/errors, visible shared focus, 44px targets, a
   assert.match(css, /min-height: 44px/); assert.match(css, /grid-template-columns: 112px minmax\(0, 1fr\)/); assert.match(css, /max-width: 840px/); assert.match(css, /grid-template-columns: 1fr/); assert.match(css, /var\(--accent\)/); assert.match(sharedCss, /:focus-visible[\s\S]*outline: 3px/);
   assert.match(app, /function invalidateDraft/); assert.match(app, /state\.revision \+= 1/); assert.match(app, /revision !== state\.revision/); assert.match(app, /addEventListener\("input", invalidateDraft\)/); assert.match(app, /Compose a new draft before trying again/);
   assert.match(app, /No local source asset is available\. Generate and save an image before starting an edit\./); assert.match(html, /rel="icon" href="data:,"/);
+  assert.match(css, /\.image-details\[hidden\]\s*\{\s*display:\s*none;/);
   assert.doesNotMatch(readFileSync(new URL("./app.js", import.meta.url), "utf8"), /asset\.outputType/);
 });
 test("fixtures retain the exact requested generation and editing payloads", () => {

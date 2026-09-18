@@ -25,7 +25,7 @@ export function createImageWorkflow({ client, provider, assetStore = createImage
 
   async function composeDraft(rawRequest, { requestId, correlationId } = {}) {
     const request = assertPromptRequest(rawRequest);
-    const referenceAssets = await resolveReferences(request);
+    const referenceAssets = (await resolveReferences(request)).map((asset) => Object.freeze({ ...asset }));
     const recommendation = await client.recommend(request, { requestId, correlationId });
     const compiled = await client.compose(request, { requestId, correlationId });
     let lineage;
@@ -76,6 +76,9 @@ export function createImageWorkflow({ client, provider, assetStore = createImage
     if (!draft) throw new ImageDraftError("image draft was not found");
     if (!approved) throw new ImageDraftError("explicit draft approval is required before provider execution");
     const referenceAssets = await resolveReferences(draft.request);
+    if (referenceAssets.length !== draft.referenceAssets.length || referenceAssets.some((asset, index) => Object.keys(asset).some((key) => asset[key] !== draft.referenceAssets[index][key]))) {
+      throw new ImageDraftError("editing source assets changed since draft composition; compose a new draft before approval");
+    }
     approveDraft(draftId);
     draft.consumed = true;
     const request = draft.request;

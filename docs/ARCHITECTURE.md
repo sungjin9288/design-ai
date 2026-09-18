@@ -1,6 +1,11 @@
 # Architecture
 
-## Three layers
+Design AI is a local, source-grounded design-quality layer for coding agents.
+Its current-source runtime includes approval-gated review and Image Console
+workflows. Implementation and publication status remain separate in the
+[completion plan](product-completion-plan.md).
+
+## Four authority layers
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -80,21 +85,29 @@ Each extractor in `tools/extractors/`:
 
 ```
 skills/<skill-name>/
-├── SKILL.md          # Claude Code skill manifest (frontmatter + body)
+├── SKILL.md          # Portable discovery metadata and activation instructions
 ├── PLAYBOOK.md       # Step-by-step process (read by any agent)
 ├── TEMPLATE.md       # Output template, if applicable
 └── examples/         # Worked examples
 ```
 
-Codex CLI reads `PLAYBOOK.md` directly. Claude Code uses `SKILL.md` for invocation, but both files share the same content — `SKILL.md` is `PLAYBOOK.md` with frontmatter wrapping.
+`SKILL.md` is a thin dispatcher linking directly to `PLAYBOOK.md`, not a copy
+of its workflow. Agents read the playbook before executing the skill. Templates,
+knowledge references, and examples load only when the playbook requires them.
+`npm run skills:check` validates metadata, linkage, workflow sections, line
+budgets, and inventory parity across all 21 skills.
 
-## Why not vector embeddings?
+## Retrieval without a second authority
 
-Considered, rejected for this version:
+Direct file reads and lexical search remain the default. Ranked search in
+`cli/lib/search-ranked.mjs` supports opt-in embedding reranking of lexical
+candidates through a configured local subprocess provider.
 
-- Knowledge fits well under 50K tokens once curated. Direct file reads are faster and cheaper than vector retrieval.
-- Markdown is grep-able and human-auditable. Vectors are not.
-- Future: if knowledge grows past ~100K tokens, add an optional embedding index in `tools/index/` without changing the source-of-truth layer.
+`cli/lib/embedding-index.mjs` owns the derived sidecar. Checkout identity,
+learning-file identity, and corpus freshness must match before it is used.
+Missing, stale, or failed embedding retrieval returns lexical results with an
+explicit notice. Neither vectors nor approved local learning replace the
+Markdown corpus or authorize target changes. See [AI learning](AI-LEARNING-PHASE2.md).
 
 ## Refresh cadence
 
@@ -122,6 +135,9 @@ The public product surface and its internal implementation have separate owners:
 | Website Console UI | `docs/website-console/app.js` | DOM, storage, graph, copy, and Markdown rendering |
 | Image Console gateway | `cli/lib/image-console-server.mjs` | Loopback-only, same-origin HTTP boundary; keeps Prompt Guide secrets server-side |
 | Image prompt workflow | `cli/lib/image-workflow.mjs` | Prompt Guide recommend/compose/validate, explicit draft approval, provider ordering, and asset manifest creation |
+| Prompt Guide client | `cli/lib/prompt-guide-client.mjs` | Server-only configuration, v1 response validation, bounded HTTP and pinned provenance |
+| Image provider adapter | `cli/lib/image-provider.mjs` | Bounded JSON subprocess protocol, isolated environment, timeout and media validation |
+| Image asset store | `cli/lib/image-asset-manifest.mjs` | Verified local source descriptors and atomic image/manifest persistence |
 | Image Console UI | `docs/image-console/` | Separate responsive generation/editing forms using Website Console token CSS without changing that console |
 | Python capability audit | `tools/audit/capability_manifest.py` | Package-independent validation of the canonical identity contract |
 
@@ -170,3 +186,57 @@ same artifact before release or publication.
 `design-ai image serve` is intentionally separate from the Website Console, SDK, and MCP. It binds only to a loopback host and serves browser files plus same-origin image routes. The browser has no Prompt Guide key or `Authorization` path; the gateway alone calls the four Prompt Guide endpoints, validates JSON, v1 response version, and pinned provenance, and never keeps a fallback catalog or template body.
 
 Generation and editing first become an in-memory read-only compiled draft. The local provider-neutral subprocess receives one separated JSON input only after explicit approval; a Prompt Guide error, lineage mismatch, invalid draft, or absent editing source creates no job. Generated media and the minimal review manifest are atomically published under the local asset root; the manifest retains prefixed prompt hashes, catalog/template provenance, response version, provider parameters, and edit source IDs but never API secrets or raw provider responses.
+
+## End-to-end product design
+
+The recommended architecture keeps domain contracts shared and transport adapters
+thin. It needs no new service, database, dependency, or public command for the
+current release. This is a repository design decision, not an upstream pattern.
+
+```mermaid
+flowchart TD
+    A["Brief and declared sources"] --> B["Start: route and design contract"]
+    B --> C["Read-only inspection and evidence-backed review"]
+    C --> D["Handoff, receipt and target intake"]
+    D --> E["Scope proposal and explicit approval"]
+    E --> F["Implementation evidence"]
+    F --> G["Pilot, comparison and owner decision"]
+    B --> H["Image Console: recommend, compose, validate"]
+    H --> I["Review draft and approve once"]
+    I --> J["Local provider and image manifest"]
+    J --> F
+```
+
+The image-to-evidence connection is an operator handoff, not an automatic API
+bridge. An image manifest proves generation lineage; it does not prove design
+quality, legal rights, production suitability, or acceptance by a product owner.
+
+| State | Owner and lifetime | Recovery contract |
+| --- | --- | --- |
+| Knowledge and public contracts | Versioned repository files | Review source changes and regenerate only owned derivatives |
+| Retrieval index | Derived local sidecar | Rebuild explicitly; stale results cannot silently pass as fresh |
+| Review, scope, implementation, comparison | Existing file artifacts and digests | Validate exact input lineage; preserve prior receipts |
+| Image drafts and jobs | Gateway process memory | Restart loses draft/job state; compose and approve a new draft |
+| Image bytes and manifest | Configured local asset root | Persist atomically; revalidate source bytes before editing |
+| Local learning | Explicitly approved local profile | No automatic capture, training, or cross-project promotion |
+
+## Extension and acceptance boundaries
+
+P17C source extraction, P17D content quality, P17E visual evaluators, and P17F
+continuity reuse the existing review-to-comparison chain. Their detailed entry
+and exit criteria live in the [P17 plan](P17-SKILL-AND-CORE-HARDENING-PLAN.md).
+They are not implicit v5.2 features. Keep missing evidence `unverified`; do not
+substitute an aggregate score for criterion-level proof.
+
+Every UI delivery retains WCAG 2.1 AA contrast, keyboard and visible-focus
+coverage, 44 px targets, reduced motion, and responsive evidence. The
+[Image Console guide](integrations/prompt-guide-image-prompts.md) owns measured
+contrast ratios and the exact current release receipt. Local mock, live provider,
+PR CI, and public registry verification are distinct acceptance stages.
+
+## Cross-reference
+
+- [Completion plan](product-completion-plan.md) — sequencing and completion gates
+- [Product specialization](PRODUCT-SPECIALIZATION-PLAN.md) — product rationale
+- [Product readiness](PRODUCT-READINESS.md) — implementation and adoption status
+- [Information architecture](../knowledge/patterns/information-architecture.md) — documentation structure

@@ -1,5 +1,10 @@
 # Product readiness
 
+The [product completion plan](product-completion-plan.md) owns the 2026-09-05
+architecture, current-source engineering checklist, and separate live,
+review/merge, publication, distribution, and external-pilot completion gates.
+Its local hardening does not change the published baseline below.
+
 Current status: **v5.1.0 is published.** npm `latest`, GitHub Release, and the
 Homebrew formula identify the same additive P6-P13 release. The public contract
 has 29 MCP tools and 20 SDK exports. Model training is not part of the shipped

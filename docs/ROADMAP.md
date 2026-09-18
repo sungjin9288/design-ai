@@ -16,6 +16,22 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide. Registry live coverage remains pending future publish.
 
+## Phase 802 - Product completion design and Image Console correctness
+
+- [x] Established the [overall completion plan](product-completion-plan.md),
+  domain ownership, state lifetimes, and evidence-gated P17 follow-up sequence.
+- [x] Reconciled EN/KO architecture with thin skill dispatchers and existing
+  opt-in embedding retrieval.
+- [x] Contained provider stdin failures, bound edit approval to the original
+  asset snapshot, and prevented stale job responses from replacing newer UI state.
+- [x] Added regression tests for each reproduced failure.
+- [x] Complete browser generation/edit QA and the full local release gate;
+  the canonical Image Console guide owns the latest measurement.
+
+The baseline PR #62 CI passed at `dc329273ab26ce4ae428f4827fbfeac79eb2461e`.
+This working-tree hardening requires its own verification; no new merge, tag,
+publication, live provider result, or external participation is claimed.
+
 ## Phase 801 - Image Console release integration (v5.2.0)
 
 - [x] Chose a backward-compatible minor release because the Image Console and
@@ -28,7 +44,8 @@ integration guide. Registry live coverage remains pending future publish.
   Image Console receipt after the changelog moves from Unreleased to v5.2.0.
 - [x] Completed local release and browser verification without a Prompt Guide or
   provider-network call.
-- [ ] Pass pull-request CI and merge the exact reviewed release candidate.
+- [x] Pass pull-request CI at `dc329273ab26ce4ae428f4827fbfeac79eb2461e`.
+- [ ] Merge the exact reviewed release candidate after owner approval.
 - [ ] Run a controlled live Prompt Guide and real provider generation/edit check
   when server-only configuration is available.
 - [ ] Create and push the v5.2.0 tag only after merge approval; then verify npm,
@@ -59,7 +76,7 @@ integration guide. Registry live coverage remains pending future publish.
 
 ### What's still ahead
 
-- Pull-request CI, reviewer approval, merge, controlled live integration when
+- Fresh CI for subsequent source changes, reviewer approval, merge, controlled live integration when
   credentials exist, tag workflows, npm/GitHub publication, public registry
   smoke, and post-publish distribution verification.
 

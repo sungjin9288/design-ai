@@ -196,6 +196,7 @@ nav:
   - Distribution: docs/DISTRIBUTION.md
   - Architecture: docs/ARCHITECTURE.md
   - Design Quality:
+      - Product completion plan: docs/product-completion-plan.md
       - Product specialization plan: docs/PRODUCT-SPECIALIZATION-PLAN.md
       - Product specialization benchmarks: docs/BENCHMARKS.md
       - Skill and core hardening plan: docs/P17-SKILL-AND-CORE-HARDENING-PLAN.md

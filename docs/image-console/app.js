@@ -1,7 +1,7 @@
 (function () {
   "use strict";
   var contract = window.DesignAiImageConsoleContract;
-  var state = { draftId: null, composing: false, revision: 0 };
+  var state = { draftId: null, composing: false, revision: 0, assetRevision: 0 };
   var generationTab = document.getElementById("generation-tab");
   var editingTab = document.getElementById("editing-tab");
   var generationPanel = document.getElementById("generation-panel");
@@ -51,17 +51,26 @@
     return payload;
   }
   async function loadAssets() {
+    var assetRevision = ++state.assetRevision;
+    var revision = state.revision;
     try {
       var result = await request("/api/image/assets");
+      if (assetRevision !== state.assetRevision) return;
+      var selected = sourceAsset.value;
       sourceAsset.replaceChildren();
+      if (selected && !result.assets.some(function (asset) { return asset.assetId === selected; }) && !editingPanel.hidden) invalidateDraft();
       var placeholder = document.createElement("option"); placeholder.value = "";
       if (!result.assets.length) { placeholder.textContent = "No local assets are available yet"; sourceAsset.append(placeholder); sourceAsset.disabled = true; return; }
       placeholder.textContent = "Choose a stored asset"; sourceAsset.append(placeholder);
       result.assets.forEach(function (asset) { var option = document.createElement("option"); option.value = asset.assetId; option.textContent = assetLabel(asset); sourceAsset.append(option); });
+      if (result.assets.some(function (asset) { return asset.assetId === selected; })) sourceAsset.value = selected;
       sourceAsset.disabled = false;
     } catch (payload) {
+      if (assetRevision !== state.assetRevision) return;
+      var reportError = !editingPanel.hidden || revision === state.revision;
       sourceAsset.replaceChildren(); var option = document.createElement("option"); option.value = ""; option.textContent = "Local assets could not be loaded"; sourceAsset.append(option); sourceAsset.disabled = true;
-      setError(contract.actionableError(payload));
+      if (!editingPanel.hidden) invalidateDraft();
+      if (reportError) setError(contract.actionableError(payload));
     }
   }
   async function submit(form) {
@@ -101,9 +110,20 @@
   approval.addEventListener("change", function () { execute.disabled = !approval.checked || !state.draftId; });
   execute.addEventListener("click", async function () {
     if (!state.draftId || !approval.checked) return;
+    var draftId = state.draftId;
+    var revision = state.revision;
+    state.draftId = null; approval.checked = false; approval.disabled = true;
     execute.disabled = true; setError(""); status.textContent = "Running one approved local provider job…";
-    try { var job = await request("/api/image/jobs", { draftId: state.draftId, approved: true }); status.textContent = "Image asset " + job.assetId + " was generated as a draft for review."; approval.disabled = true; loadAssets(); }
-    catch (payload) { state.draftId = null; approval.checked = false; approval.disabled = true; execute.disabled = true; status.textContent = "The provider job was not completed. Compose a new draft before trying again."; setError(contract.actionableError(payload)); }
+    try {
+      var job = await request("/api/image/jobs", { draftId: draftId, approved: true });
+      loadAssets();
+      if (revision !== state.revision) return;
+      status.textContent = "Image asset " + job.assetId + " was generated as a draft for review.";
+    } catch (payload) {
+      if (revision !== state.revision) return;
+      status.textContent = "The provider job was not completed. Compose a new draft before trying again.";
+      setError(contract.actionableError(payload));
+    }
   });
   loadAssets();
 }());
