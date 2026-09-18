@@ -213,13 +213,18 @@ PRODUCT_READINESS_RELEASE_POLICY_PRODUCT_READINESS_FULL_GATE_RELEASE_CHECK_TERM_
     ("release self-tests",),
     ("packed-tarball smoke",),
 )
+# Post-publish state. Before v5.2.0 shipped these groups required
+# "unreleased" and "pending future publish"; now that the published registry
+# smoke has passed, the claim that must stay guarded is the opposite one — that
+# a live Prompt Guide call and a real provider run are still unverified.
 IMAGE_CONSOLE_EVIDENCE_TERM_GROUPS = (
     ("Image Console release hardening",),
-    ("current-source", "current source"),
-    ("unreleased", "not published"),
+    ("v5.2.0",),
+    ("published behavior", "public baseline"),
     ("deterministic local mock loopback", "local mock loopback"),
     ("no Prompt Guide/provider-network call", "no Prompt Guide/provider network call"),
-    ("registry live coverage remains pending future publish", "post-publish registry coverage remains pending"),
+    ("published registry smoke passed", "post-publish registry smoke passed"),
+    ("remain unverified", "remains unverified"),
     (
         "docs/integrations/prompt-guide-image-prompts.md",
         "integrations/prompt-guide-image-prompts.md",
@@ -4101,7 +4106,7 @@ def unreleased_changelog_entry(changelog_text: str) -> str:
 
 
 def current_source_roadmap_entry(roadmap_text: str) -> str:
-    match = re.search(r"^## Current-source Image Console release evidence\s*$", roadmap_text, re.MULTILINE)
+    match = re.search(r"^## Image Console release evidence\s*$", roadmap_text, re.MULTILINE)
     if not match:
         return ""
     next_match = re.search(r"^## Phase\b", roadmap_text[match.end():], re.MULTILINE)
@@ -4203,7 +4208,7 @@ def release_metadata_summary(
             )
         )
         errors.extend(audit_count_errors("docs/ROADMAP.md current entry", roadmap_entry, audit_count))
-    errors.extend(image_console_evidence_errors("docs/ROADMAP.md current-source entry", current_source_roadmap_entry(roadmap_text)))
+    errors.extend(image_console_evidence_errors("docs/ROADMAP.md Image Console evidence entry", current_source_roadmap_entry(roadmap_text)))
 
     errors.extend(release_policy_doc_set_errors(release_policy_docs))
     for label, text in release_policy_docs.items():
@@ -4268,7 +4273,7 @@ def run_self_test() -> int:
 
 ## Unreleased
 
-Image Console release hardening is current-source only and unreleased; this is not published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Registry live coverage remains pending future publish. Canonical receipt: docs/integrations/prompt-guide-image-prompts.md.
+Image Console release hardening shipped in v5.2.0 and is published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Published registry smoke passed; a live Prompt Guide call and a real provider generation/edit remain unverified. Canonical receipt: docs/integrations/prompt-guide-image-prompts.md.
 
 ## v1.2.3 — Fixture release (2026-05)
 
@@ -4285,9 +4290,9 @@ Image Console release hardening is current-source only and unreleased; this is n
 """
     roadmap = """# Roadmap
 
-## Current-source Image Console release evidence
+## Image Console release evidence
 
-Image Console release hardening is current-source only and unreleased; this is not published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Registry live coverage remains pending future publish. Canonical receipt: integrations/prompt-guide-image-prompts.md.
+Image Console release hardening shipped in v5.2.0 and is published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Published registry smoke passed; a live Prompt Guide call and a real provider generation/edit remain unverified. Canonical receipt: integrations/prompt-guide-image-prompts.md.
 
 ## Phase 99 — Fixture release (v1.2.3) ✓ shipped
 
@@ -4528,7 +4533,7 @@ machine-readable update plan도 mutating lifecycle command 전에 확인하고,
         "docs/DISTRIBUTION.ko.md": korean_policy_doc,
     }
     product_readiness_doc = """
-Image Console release hardening is current-source only and unreleased; this is not published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Registry live coverage remains pending future publish. Canonical receipt: integrations/prompt-guide-image-prompts.md.
+Image Console release hardening shipped in v5.2.0 and is published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Published registry smoke passed; a live Prompt Guide call and a real provider generation/edit remain unverified. Canonical receipt: integrations/prompt-guide-image-prompts.md.
 
 Product readiness covers Website Console handoff bundle compare through `design-ai site <bundle-dir> --bundle-compare <other-bundle-dir> --strict --json` with bundle digest comparison plus warning-state strict smoke coverage that keeps identical warning bundles at `sameBundle: true` while exiting non-zero under `--strict`. Public registry Website Console coverage includes handoff bundle, bundle-check/compare/handoff/repair including warning-state bundle-compare strict smoke coverage after publish, plus bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata for deterministic-local, no-external-call, and no-target-repo-mutation handoff validation, plus MCP probe count telemetry and package/shared smoke self-test coverage for Website Console MCP probe counts, plus bundled Website Console `mcp-probes.json` saved probe evidence payload instead of the full `site --mcp-check --probes --json` response. Local release confidence says `npm run release:check` now passes after the Website Console bundle `mcp-probes.json` saved-payload guard phases, after the Product Readiness and release-facing policy docs bundle boundary metadata guards for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata plus full `release:self-test` evidence recording, after the release-facing policy docs guard for Website Console bundle boundary metadata full `release:check` evidence, and after the release-facing policy docs Product Readiness release policy full gate evidence guard, covering unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.
 """
@@ -4631,7 +4636,7 @@ Product readiness covers Website Console handoff bundle compare through `design-
         product_readiness_text=product_readiness_doc,
     )
     assert_condition(
-        "docs/ROADMAP.md current-source entry is missing Image Console release evidence"
+        "docs/ROADMAP.md Image Console evidence entry is missing Image Console release evidence"
         in "\n".join(image_roadmap_drift["errors"]),
         "Roadmap Image Console evidence drift should be reported",
     )

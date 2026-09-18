@@ -123,6 +123,7 @@
     "tools/migrations/",
     "tools/preview/",
     "!**/__pycache__/**",
+    "!**/*.preview.html",
     "!**/*.pyc",
     "!docs/**/*.test.mjs",
     "!cli/**/*.test.mjs",

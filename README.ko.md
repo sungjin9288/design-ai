@@ -5,7 +5,7 @@
   <p>Claude Code, Codex, Cursor, Aider에 접근성, 한국 시장 전문성, 사람의 승인 단계, brief부터 구현까지 이어지는 정확한 증빙을 갖춘 디자인 실무 체계를 더하세요.</p>
   <p class="design-ai-home-actions">
     <a class="design-ai-home-action design-ai-home-action--primary" href="https://sungjin9288.github.io/design-ai/ko/docs/QUICKSTART/">5분 안에 시작</a>
-    <a class="design-ai-home-action" href="https://sungjin9288.github.io/design-ai/ko/docs/DISTRIBUTION/">v5.1.0 설치</a>
+    <a class="design-ai-home-action" href="https://sungjin9288.github.io/design-ai/ko/docs/DISTRIBUTION/">v5.2.0 설치</a>
   </p>
   <p class="design-ai-home-proof"><span>전문 스킬 21개</span><span>MCP 도구 29개</span><span>SDK 내보내기 20개</span><span>WCAG AA 기본 적용</span></p>
 </section>
@@ -21,9 +21,10 @@
 
 > **모델이 아니에요. 파인튜닝도 아니에요.** 디자인 전문 지식을 구조화한 코퍼스 + 에이전트가 바로 실행할 수 있는 지시문이에요. 범용 LLM을 이번 세션에서만큼은 시니어 디자이너로 바꿔주는 셈이에요.
 
-**v5.1.0이 공개됐어요.** npm Trusted Publishing, SLSA provenance, GitHub
-Release, Homebrew 설치·테스트, public registry smoke를 확인했어요. 정확한
-증빙은 [`외부 배포 상태`](docs/external-status.md)에서 확인하세요.
+**v5.2.0이 공개됐어요.** npm Trusted Publishing, SLSA provenance, GitHub
+Release, Homebrew formula, 그리고 published package를 대상으로 한 public
+registry smoke를 확인했어요. 정확한 증빙은
+[`외부 배포 상태`](docs/external-status.md)에서 확인하세요.
 
 ## 한눈에 보는 커버리지
 
@@ -99,10 +100,10 @@ editing은 provider-neutral local subprocess를 실행하기 전에 읽기 전�
 [Prompt Guide Image Console](docs/integrations/prompt-guide-image-prompts.md)을
 확인하세요.
 
-Image Console은 현재 소스의 v5.2.0 release candidate에 포함됐지만 아직
-공개되지 않았어요. 공개 기준은 v5.1.0이며, local mock loopback 검증은 Prompt
-Guide/provider-network call을 수행하지 않아요. Registry smoke는 실제 publish
-후 별도로 확인해요.
+Image Console은 현재 공개 기준인 v5.2.0에 포함돼 출시됐고, published
+registry smoke를 통과했어요. 검증된 경로는 deterministic local mock
+loopback이라 Prompt Guide/provider-network call을 수행하지 않아요. 실제 live
+Prompt Guide 호출과 real provider 생성·편집은 아직 미검증이에요.
 
 자세한 내용은 [`docs/DISTRIBUTION.ko.md`](docs/DISTRIBUTION.ko.md)를 확인하세요.
 
@@ -204,7 +205,7 @@ design-ai는 한국 시장을 1순위로 만들어졌고, 글로벌 시장 패�
 
 전체 단계 로그는 [`docs/ROADMAP.md`](docs/ROADMAP.md), 현재 완료 범위는 [`docs/PRODUCT-READINESS.md`](docs/PRODUCT-READINESS.md)에서 확인하세요. **v5.0.0**은 21 skills, 16 public commands, 4 review agents, 17 MCP tools, 10 SDK exports를 제공하는 major-version 기준을 세웠어요. `agentic-design-development` route, read-only `design_ai_site_bundle_handoff`, `design_ai_site_linked_preview`, `design_ai_artifact` tools, SDK `artifact()` adapter, 그리고 근거 기반 웹/앱 인터페이스 완성도 검토를 위한 `design-engineering-review` skill/route를 추가했어요. linked-preview operation은 root project metadata만 읽고, process 실행·URL probe·source scan·target repo 수정 없이 operator가 직접 시작하는 preview loop를 준비해요. 공통 artifact operation은 CLI, SDK, MCP, Website Console에서 `implementation-plan`, `critique-loop`, agent-readable `DESIGN.md` 계약을 같은 형태로 만들어요. dashboard chart knowledge 보강, token extraction clone-only 분리, public contract와 PR 검증 강화도 포함하며, 이전 public `extract-tokens` command 제거를 major version boundary로 명확히 기록했어요.
 
-현재 공개 버전인 **v5.1.0**은 P6-P13 review-to-verified-iteration 흐름과 29 MCP tools, 20 SDK exports를 같은 package identity로 제공해요. 세부 계약과 증빙은 영어 README와 연결된 전문 문서에서 확인할 수 있어요.
+현재 공개 버전인 **v5.2.0**은 P6-P13 review-to-verified-iteration 흐름과 승인형 Image Console을 29 MCP tools, 20 SDK exports와 같은 package identity로 제공해요. 세부 계약과 증빙은 영어 README와 연결된 전문 문서에서 확인할 수 있어요.
 
 현재 미배포 소스는 리뷰부터 파일럿까지 이어진 P6-P12 증빙 사슬 위에 P13 검증 가능한 디자인 반복을 둡니다. CLI `review-compare`, SDK `compareReviews()`, MCP `design_ai_compare_reviews`, Website Console이 같은 대상과 맥락을 가진 두 canonical quality report를 정확한 원문, SHA-256, 바이트 수로 연결합니다. 여덟 개 lens의 변화를 기록하고 finding을 해결, 지속, 추가, 불확실로 나눕니다. candidate에서 finding이 사라져도 해당 lens가 통과하지 않았다면 해결로 꾸미지 않고 불확실로 남깁니다. full artifact와 compact summary 모두 승인 gate와 claim boundary를 보존하며, 외부 채택이나 운영 품질을 주장하지 않습니다. source contract는 29 MCP tools와 20 SDK exports입니다. 자세한 내용은 [`docs/REVIEW-COMPARISON.ko.md`](docs/REVIEW-COMPARISON.ko.md)를 참고하세요.
 

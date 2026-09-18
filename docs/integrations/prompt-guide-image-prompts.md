@@ -2,24 +2,24 @@
 
 `design-ai image serve` runs a loopback-only Image Console for one local operator. Prompt Guide is the sole authority for prompt templates and specialization; the browser only talks to the same-origin Design gateway. The gateway performs recommendation, composition, and validation before one explicitly approved provider subprocess execution.
 
-## Current-source release status
+## Release status
 
-Image Console release hardening is part of the current-source v5.2.0 release
-candidate and remains unreleased; it is not published behavior. The
-deterministic local mock loopback flow covers
+Image Console release hardening shipped in v5.2.0 and is published behavior.
+The deterministic local mock loopback flow covers
 packaged static assets, health, catalog, generation draft validation, rejection
 before approval, and one approved deterministic local provider execution through
 the installed-bin and one-shot packed-tarball paths. It makes no Prompt
 Guide/provider-network call, uses isolated temporary HOME, npm cache, provider,
 and asset roots, reaps child processes, and asserts unchanged repository status.
-Registry live coverage remains pending future publish. The registry smoke
-self-test mirrors this contract without claiming post-publish coverage.
+Published registry smoke passed against `@design-ai/cli@5.2.0` after the
+package propagated; the publish workflow's own post-publish smoke step failed
+because the package had not propagated within its 12 retries.
 
-This page owns the exact current-source measurement so release-facing documents
+This page owns the exact measurement so release-facing documents
 do not copy counts that drift as the package changes. The 2026-09-05 local RC
 receipt on macOS 26.6.2, Node 24.18.0, and Python 3.12.12 records 59/59 focused
 Image Console tests with no skips, 891/891 release-preflight Node tests, 8/8
-strict audits, 886 package files, and 0/0 documentation-policy warnings. Packed
+strict audits, 884 package files, and 0/0 documentation-policy warnings. Packed
 installed-bin and one-shot smoke plus `npm run release:check` pass. Packed bytes,
 artifact digest, and wall time belong to the source-repository run receipt rather
 than this packaged page. The earlier 46-pass/4-skip observation was sandbox-
@@ -31,8 +31,7 @@ keyboard navigation, focus visibility, reduced motion, and WCAG 2.1 AA contrast.
 Its current source-repository receipt is `evidence/image-console/completion-qa.md`;
 the earlier missing-provider browser receipt remains in `evidence/image-console/browser-qa.md`.
 No live Prompt Guide endpoint/key or real provider adapter was configured, so a
-live Prompt Guide call and real provider generation/edit remain unverified. Registry live
-coverage remains pending future publish.
+live Prompt Guide call and a real provider generation/edit remain unverified.
 
 ## Architecture and boundaries
 
