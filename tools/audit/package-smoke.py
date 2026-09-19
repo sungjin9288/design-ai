@@ -2807,217 +2807,728 @@ def assert_site_bundle_handoff_json_smoke(
             ]
         )
     }
+    expected_runbook_summary = {
+        "version": 1,
+        "source": "bundle-handoff",
+        "stageCount": 5,
+        "commandStageCount": 3,
+        "manualStageCount": 2,
+        "requiredStageCount": 4,
+        "optionalStageCount": 1,
+        "readOnlyCommandStageCount": 2,
+        "localOutputCommandStageCount": 1,
+        "externalCallCommandStageCount": 0,
+        "targetRepoMutationCommandStageCount": 0,
+        "effectiveTaskId": expected_effective_task_id,
+        "effectiveStrictTaskCommandKey": f"task.{expected_effective_task_id}.handoff.strict",
+        "stageKeys": expected_stage_keys,
+        "stageLabelByKey": {
+                "verifySourceBundle": "Verify source bundle integrity",
+                "refreshHandoffSnapshot": "Refresh strict handoff JSON snapshot",
+                "writeEffectiveTaskPrompt": "Write effective task handoff prompt",
+                "executeInTargetRepo": "Execute the task in the target website repo",
+                "recordEvidence": "Record implementation evidence",
+            },
+        "stageKindByKey": {
+                "verifySourceBundle": "read-only-gate",
+                "refreshHandoffSnapshot": "read-only-preview",
+                "writeEffectiveTaskPrompt": "local-output",
+                "executeInTargetRepo": "manual-target-repo",
+                "recordEvidence": "manual-reporting",
+            },
+        "stageRequiredByKey": {
+                "verifySourceBundle": True,
+                "refreshHandoffSnapshot": False,
+                "writeEffectiveTaskPrompt": True,
+                "executeInTargetRepo": True,
+                "recordEvidence": True,
+            },
+        "stageRunPolicyByKey": {
+                "verifySourceBundle": "read-only",
+                "refreshHandoffSnapshot": "read-only",
+                "writeEffectiveTaskPrompt": "writes-local-file",
+                "executeInTargetRepo": "manual-target-repo",
+                "recordEvidence": "manual-target-repo",
+            },
+        "stageSafetyLevelByKey": {
+                "verifySourceBundle": "local-read-only",
+                "refreshHandoffSnapshot": "local-read-only",
+                "writeEffectiveTaskPrompt": "local-output-file",
+                "executeInTargetRepo": "operator-controlled-target-repo",
+                "recordEvidence": "operator-controlled-target-repo",
+            },
+        "stageCommandCountByKey": {
+                "verifySourceBundle": 1,
+                "refreshHandoffSnapshot": 1,
+                "writeEffectiveTaskPrompt": 1,
+                "executeInTargetRepo": 0,
+                "recordEvidence": 0,
+            },
+        "stageCommandKeysByKey": {
+                "verifySourceBundle": ["source.bundleCheck.strict"],
+                "refreshHandoffSnapshot": ["source.bundleHandoff.strict"],
+                "writeEffectiveTaskPrompt": [f"task.{expected_effective_task_id}.handoff.strict"],
+                "executeInTargetRepo": [],
+                "recordEvidence": [],
+            },
+        "stageCommandLabelsByKey": {
+                "verifySourceBundle": ["Strict bundle check JSON"],
+                "refreshHandoffSnapshot": ["Strict bundle handoff JSON"],
+                "writeEffectiveTaskPrompt": [f"Strict Task handoff: {expected_effective_task_id}"],
+                "executeInTargetRepo": [],
+                "recordEvidence": [],
+            },
+        "stageCommandRunPoliciesByKey": {
+                "verifySourceBundle": ["read-only"],
+                "refreshHandoffSnapshot": ["read-only"],
+                "writeEffectiveTaskPrompt": ["writes-local-file"],
+                "executeInTargetRepo": [],
+                "recordEvidence": [],
+            },
+        "stageCommandSafetyLevelsByKey": {
+                "verifySourceBundle": ["local-read-only"],
+                "refreshHandoffSnapshot": ["local-read-only"],
+                "writeEffectiveTaskPrompt": ["local-output-file"],
+                "executeInTargetRepo": [],
+                "recordEvidence": [],
+            },
+        "stageActionTypeByKey": {
+                "verifySourceBundle": "run-local-gate",
+                "refreshHandoffSnapshot": "refresh-local-preview",
+                "writeEffectiveTaskPrompt": "write-local-output",
+                "executeInTargetRepo": "manual-target-repo",
+                "recordEvidence": "manual-evidence",
+            },
+        "stageActionLabelByKey": {
+                "verifySourceBundle": "Run strict bundle check",
+                "refreshHandoffSnapshot": "Refresh strict handoff JSON",
+                "writeEffectiveTaskPrompt": "Write selected task prompt",
+                "executeInTargetRepo": "Implement in target repo",
+                "recordEvidence": "Record verification evidence",
+            },
+        "stageActionButtonLabelsByKey": {
+                "verifySourceBundle": "Run Check",
+                "refreshHandoffSnapshot": "Refresh JSON",
+                "writeEffectiveTaskPrompt": "Write Prompt",
+                "executeInTargetRepo": "Open Target Repo",
+                "recordEvidence": "Record Evidence",
+            },
+        "stageActionAffordanceByKey": {
+                "verifySourceBundle": "primary-command-button",
+                "refreshHandoffSnapshot": "secondary-command-button",
+                "writeEffectiveTaskPrompt": "local-output-button",
+                "executeInTargetRepo": "manual-target-repo-step",
+                "recordEvidence": "manual-evidence-step",
+            },
+        "stageActionEnabledByKey": {
+                "verifySourceBundle": True,
+                "refreshHandoffSnapshot": True,
+                "writeEffectiveTaskPrompt": True,
+                "executeInTargetRepo": False,
+                "recordEvidence": False,
+            },
+        "stageActionStatusByKey": {
+                "verifySourceBundle": "ready",
+                "refreshHandoffSnapshot": "optional",
+                "writeEffectiveTaskPrompt": "ready",
+                "executeInTargetRepo": "manual",
+                "recordEvidence": "manual",
+            },
+        "stageActionStatusLabelsByKey": {
+                "verifySourceBundle": "Ready",
+                "refreshHandoffSnapshot": "Optional",
+                "writeEffectiveTaskPrompt": "Ready",
+                "executeInTargetRepo": "Manual",
+                "recordEvidence": "Manual",
+            },
+        "stageActionStatusToneByKey": {
+                "verifySourceBundle": "success",
+                "refreshHandoffSnapshot": "neutral",
+                "writeEffectiveTaskPrompt": "success",
+                "executeInTargetRepo": "info",
+                "recordEvidence": "info",
+            },
+        "stageActionDisabledReasonCodeByKey": {
+                "verifySourceBundle": "",
+                "refreshHandoffSnapshot": "",
+                "writeEffectiveTaskPrompt": "",
+                "executeInTargetRepo": "manual-target-repo-step",
+                "recordEvidence": "manual-evidence-step",
+            },
+        "stageActionPrerequisiteKeysByKey": {
+                "verifySourceBundle": [],
+                "refreshHandoffSnapshot": [],
+                "writeEffectiveTaskPrompt": ["verifySourceBundle"],
+                "executeInTargetRepo": ["verifySourceBundle", "writeEffectiveTaskPrompt"],
+                "recordEvidence": ["executeInTargetRepo"],
+            },
+        "stageActionPrerequisiteCountByKey": {
+                "verifySourceBundle": 0,
+                "refreshHandoffSnapshot": 0,
+                "writeEffectiveTaskPrompt": 1,
+                "executeInTargetRepo": 2,
+                "recordEvidence": 1,
+            },
+        "stageActionHasPrerequisitesByKey": {
+                "verifySourceBundle": False,
+                "refreshHandoffSnapshot": False,
+                "writeEffectiveTaskPrompt": True,
+                "executeInTargetRepo": True,
+                "recordEvidence": True,
+            },
+        "stageActionDependencyReasonCodeByKey": {
+                "verifySourceBundle": "",
+                "refreshHandoffSnapshot": "",
+                "writeEffectiveTaskPrompt": "requires-prerequisite-actions",
+                "executeInTargetRepo": "requires-prerequisite-actions",
+                "recordEvidence": "requires-prerequisite-actions",
+            },
+        "stageActionBlockedStageKeysByKey": {
+                "verifySourceBundle": ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
+                "refreshHandoffSnapshot": [],
+                "writeEffectiveTaskPrompt": ["executeInTargetRepo"],
+                "executeInTargetRepo": ["recordEvidence"],
+                "recordEvidence": [],
+            },
+        "stageActionBlockedStageCountByKey": {
+                "verifySourceBundle": 2,
+                "refreshHandoffSnapshot": 0,
+                "writeEffectiveTaskPrompt": 1,
+                "executeInTargetRepo": 1,
+                "recordEvidence": 0,
+            },
+        "stageActionBlocksStagesByKey": {
+                "verifySourceBundle": True,
+                "refreshHandoffSnapshot": False,
+                "writeEffectiveTaskPrompt": True,
+                "executeInTargetRepo": True,
+                "recordEvidence": False,
+            },
+        "stageActionCompletionCriteriaCountByKey": {
+                "verifySourceBundle": 2,
+                "refreshHandoffSnapshot": 1,
+                "writeEffectiveTaskPrompt": 2,
+                "executeInTargetRepo": 2,
+                "recordEvidence": 1,
+            },
+        "stageActionHasCompletionCriteriaByKey": {
+                "verifySourceBundle": True,
+                "refreshHandoffSnapshot": True,
+                "writeEffectiveTaskPrompt": True,
+                "executeInTargetRepo": True,
+                "recordEvidence": True,
+            },
+        "stageActionEvidenceRequirementCountByKey": {
+                "verifySourceBundle": 2,
+                "refreshHandoffSnapshot": 1,
+                "writeEffectiveTaskPrompt": 2,
+                "executeInTargetRepo": 3,
+                "recordEvidence": 1,
+            },
+        "stageActionRequiresEvidenceByKey": {
+                "verifySourceBundle": True,
+                "refreshHandoffSnapshot": True,
+                "writeEffectiveTaskPrompt": True,
+                "executeInTargetRepo": True,
+                "recordEvidence": True,
+            },
+        "stageActionEvidenceTargetByKey": {
+                "verifySourceBundle": "local-command-output",
+                "refreshHandoffSnapshot": "local-command-output",
+                "writeEffectiveTaskPrompt": "local-output-file",
+                "executeInTargetRepo": "target-repo-working-tree",
+                "recordEvidence": "handoff-evidence-record",
+            },
+        "stageActionEvidenceTargetLabelByKey": {
+                "verifySourceBundle": "Local command output",
+                "refreshHandoffSnapshot": "Local command output",
+                "writeEffectiveTaskPrompt": "Local output file",
+                "executeInTargetRepo": "Target repo working tree",
+                "recordEvidence": "Handoff evidence record",
+            },
+        "stageActionEvidenceCaptureFieldKeysByKey": expected_capture_field_keys,
+        "stageActionEvidenceCaptureFieldInputTypesByKey": expected_capture_field_input_types,
+        "stageActionEvidenceCaptureFieldValueShapesByKey": expected_capture_field_value_shapes,
+        "stageActionEvidenceCaptureFieldAcceptsMultipleByKey": expected_capture_field_accepts_multiple,
+        "stageActionEvidenceCaptureFieldDefaultValuesByKey": expected_capture_field_default_values,
+        "stageActionEvidenceCaptureFieldEmptyValuesByKey": expected_capture_field_empty_values,
+        "stageActionEvidenceCaptureFieldPlaceholdersByKey": expected_capture_field_placeholders,
+        "stageActionEvidenceCaptureFieldRequirementLabelsByKey": expected_capture_field_requirement_labels,
+        "stageActionEvidenceCaptureFieldAriaLabelsByKey": expected_capture_field_aria_labels,
+        "stageActionEvidenceCaptureFieldHelpTextsByKey": expected_capture_field_help_texts,
+        "stageActionEvidenceCaptureFieldSectionKeysByKey": expected_capture_field_section_keys,
+        "stageActionEvidenceCaptureFieldSectionLabelsByKey": expected_capture_field_section_labels,
+        "stageActionEvidenceCaptureSectionKeysByKey": expected_capture_section_keys,
+        "stageActionEvidenceCaptureSectionLabelsByKey": expected_capture_section_labels,
+        "stageActionEvidenceCaptureSectionCountByKey": {
+                "verifySourceBundle": 1,
+                "refreshHandoffSnapshot": 1,
+                "writeEffectiveTaskPrompt": 1,
+                "executeInTargetRepo": 3,
+                "recordEvidence": 2,
+            },
+        "stageActionEvidenceCaptureFieldPayloadNamespacesByKey": expected_capture_field_payload_namespaces,
+        "stageActionEvidenceCaptureFieldPayloadPathsByKey": expected_capture_field_payload_paths,
+        "stageActionEvidenceCapturePayloadNamespacesByKey": expected_capture_payload_namespaces,
+        "stageActionEvidenceCapturePayloadNamespaceCountByKey": {
+                "verifySourceBundle": 1,
+                "refreshHandoffSnapshot": 1,
+                "writeEffectiveTaskPrompt": 1,
+                "executeInTargetRepo": 1,
+                "recordEvidence": 1,
+            },
+        "stageActionEvidenceCapturePayloadTemplateByKey": expected_capture_payload_templates,
+        "stageActionEvidenceCapturePayloadFlatTemplateByKey": expected_capture_payload_flat_templates,
+        "stageActionEvidenceCaptureFieldValidationRulesByKey": expected_capture_field_validation_rules,
+        "stageActionEvidenceCaptureFieldMinLengthsByKey": expected_capture_field_min_lengths,
+        "stageActionRequiredEvidenceCaptureFieldKeysByKey": expected_required_capture_field_keys,
+        "stageActionOptionalEvidenceCaptureFieldKeysByKey": expected_optional_capture_field_keys,
+        "stageActionEvidenceCaptureFieldCountByKey": {
+                "verifySourceBundle": 2,
+                "refreshHandoffSnapshot": 1,
+                "writeEffectiveTaskPrompt": 2,
+                "executeInTargetRepo": 3,
+                "recordEvidence": 2,
+            },
+        "stageActionRequiredEvidenceCaptureFieldCountByKey": {
+                "verifySourceBundle": 2,
+                "refreshHandoffSnapshot": 0,
+                "writeEffectiveTaskPrompt": 2,
+                "executeInTargetRepo": 3,
+                "recordEvidence": 2,
+            },
+        "stageActionOptionalEvidenceCaptureFieldCountByKey": {
+                "verifySourceBundle": 0,
+                "refreshHandoffSnapshot": 1,
+                "writeEffectiveTaskPrompt": 0,
+                "executeInTargetRepo": 0,
+                "recordEvidence": 0,
+            },
+        "stageActionHasEvidenceCaptureFieldsByKey": {
+                "verifySourceBundle": True,
+                "refreshHandoffSnapshot": True,
+                "writeEffectiveTaskPrompt": True,
+                "executeInTargetRepo": True,
+                "recordEvidence": True,
+            },
+        "actionSummary": {
+                "totalActionCount": 5,
+                "commandActionCount": 3,
+                "manualActionCount": 2,
+                "enabledActionCount": 3,
+                "disabledActionCount": 2,
+                "manualDisabledActionCount": 2,
+                "actionWithPrerequisiteCount": 3,
+                "maxActionPrerequisiteCount": 2,
+                "actionWithDependencyReasonCount": 3,
+                "actionBlockingOtherActionCount": 3,
+                "maxActionBlockedStageCount": 2,
+                "actionWithCompletionCriteriaCount": 5,
+                "totalActionCompletionCriteriaCount": 8,
+                "maxActionCompletionCriteriaCount": 2,
+                "actionRequiringEvidenceCount": 5,
+                "totalActionEvidenceRequirementCount": 9,
+                "maxActionEvidenceRequirementCount": 3,
+                "localCommandEvidenceActionCount": 2,
+                "localOutputEvidenceActionCount": 1,
+                "targetRepoEvidenceActionCount": 1,
+                "handoffRecordEvidenceActionCount": 1,
+                "actionWithEvidenceCaptureFieldCount": 5,
+                "actionWithRequiredEvidenceCaptureFieldCount": 4,
+                "actionWithOptionalEvidenceCaptureFieldCount": 1,
+                "totalActionEvidenceCaptureFieldCount": 10,
+                "totalRequiredActionEvidenceCaptureFieldCount": 9,
+                "totalOptionalActionEvidenceCaptureFieldCount": 1,
+                "maxActionEvidenceCaptureFieldCount": 3,
+                "textareaEvidenceCaptureFieldCount": 6,
+                "textEvidenceCaptureFieldCount": 2,
+                "filePathEvidenceCaptureFieldCount": 1,
+                "listEvidenceCaptureFieldCount": 1,
+                "longTextEvidenceCaptureFieldCount": 6,
+                "shortTextEvidenceCaptureFieldCount": 2,
+                "filePathValueEvidenceCaptureFieldCount": 1,
+                "stringListEvidenceCaptureFieldCount": 1,
+                "multiValueEvidenceCaptureFieldCount": 1,
+                "singleValueEvidenceCaptureFieldCount": 9,
+                "emptyStringEvidenceCaptureFieldCount": 9,
+                "emptyListEvidenceCaptureFieldCount": 1,
+                "placeholderEvidenceCaptureFieldCount": 10,
+                "ariaLabelEvidenceCaptureFieldCount": 10,
+                "helpTextEvidenceCaptureFieldCount": 10,
+                "sectionedEvidenceCaptureFieldCount": 10,
+                "uniqueEvidenceCaptureSectionCount": 8,
+                "actionWithMultipleEvidenceCaptureSectionCount": 2,
+                "maxActionEvidenceCaptureSectionCount": 3,
+                "payloadMappedEvidenceCaptureFieldCount": 10,
+                "uniqueEvidenceCapturePayloadNamespaceCount": 5,
+                "actionWithMultipleEvidenceCapturePayloadNamespaceCount": 0,
+                "maxActionEvidenceCapturePayloadNamespaceCount": 1,
+                "actionWithEvidenceCapturePayloadTemplateCount": 5,
+                "evidenceCapturePayloadTemplatePathCount": 10,
+                "maxActionEvidenceCapturePayloadTemplatePathCount": 3,
+                "actionWithEvidenceCapturePayloadBindingCount": 5,
+                "evidenceCapturePayloadBindingCount": 10,
+                "requiredEvidenceCapturePayloadBindingCount": 9,
+                "optionalEvidenceCapturePayloadBindingCount": 1,
+                "multiValueEvidenceCapturePayloadBindingCount": 1,
+                "actionWithEvidenceCaptureValidationSpecCount": 5,
+                "evidenceCaptureValidationSpecCount": 10,
+                "requiredEvidenceCaptureValidationSpecCount": 9,
+                "optionalEvidenceCaptureValidationSpecCount": 1,
+                "errorEvidenceCaptureValidationSpecCount": 9,
+                "infoEvidenceCaptureValidationSpecCount": 1,
+                "multiValueEvidenceCaptureValidationSpecCount": 1,
+                "actionWithEvidenceCaptureInitialValidationStateCount": 5,
+                "evidenceCaptureInitialValidationStateCount": 10,
+                "validInitialEvidenceCaptureStateCount": 1,
+                "invalidInitialEvidenceCaptureStateCount": 9,
+                "blockingInitialEvidenceCaptureStateCount": 9,
+                "optionalEmptyInitialEvidenceCaptureStateCount": 1,
+                "missingRequiredInitialEvidenceCaptureStateCount": 9,
+                "pristineInitialEvidenceCaptureStateCount": 10,
+                "actionWithEvidenceCaptureInitialValidationDisplayMetadataCount": 5,
+                "evidenceCaptureInitialValidationDisplayMetadataCount": 10,
+                "dangerInitialEvidenceCaptureDisplayMetadataCount": 9,
+                "infoInitialEvidenceCaptureDisplayMetadataCount": 1,
+                "blockingInitialEvidenceCaptureDisplayMetadataCount": 9,
+                "nonBlockingInitialEvidenceCaptureDisplayMetadataCount": 1,
+                "actionWithEvidenceCaptureInitialValidationSummaryCount": 5,
+                "blockedInitialEvidenceCaptureSummaryActionCount": 4,
+                "readyInitialEvidenceCaptureSummaryActionCount": 1,
+                "completableInitialEvidenceCaptureSummaryActionCount": 1,
+                "nonCompletableInitialEvidenceCaptureSummaryActionCount": 4,
+                "initialEvidenceCaptureSummaryBlockingFieldCount": 9,
+                "initialEvidenceCaptureSummaryMissingRequiredFieldCount": 9,
+                "initialEvidenceCaptureSummaryOptionalEmptyFieldCount": 1,
+                "actionWithEvidenceCaptureInitialValidationChecklistCount": 5,
+                "evidenceCaptureInitialValidationChecklistItemCount": 10,
+                "checkedInitialEvidenceCaptureChecklistItemCount": 1,
+                "uncheckedInitialEvidenceCaptureChecklistItemCount": 9,
+                "blockingInitialEvidenceCaptureChecklistItemCount": 9,
+                "nonBlockingInitialEvidenceCaptureChecklistItemCount": 1,
+                "requiredInitialEvidenceCaptureChecklistItemCount": 9,
+                "optionalInitialEvidenceCaptureChecklistItemCount": 1,
+                "actionWithEvidenceCaptureInitialValidationChecklistSummaryCount": 5,
+                "blockedInitialEvidenceCaptureChecklistSummaryActionCount": 4,
+                "readyInitialEvidenceCaptureChecklistSummaryActionCount": 1,
+                "completeInitialEvidenceCaptureChecklistSummaryActionCount": 1,
+                "incompleteInitialEvidenceCaptureChecklistSummaryActionCount": 4,
+                "initialEvidenceCaptureChecklistSummaryCheckedItemCount": 1,
+                "initialEvidenceCaptureChecklistSummaryUncheckedItemCount": 9,
+                "initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount": 9,
+                "humanLineCount": 5,
+                "humanLineByKeyCount": 5,
+                "humanLineWithEvidenceProgressCount": 5,
+                "humanLineWithBlockedEvidenceProgressCount": 4,
+                "humanLineWithReadyEvidenceProgressCount": 1,
+                "humanLineDisplayRowCount": 5,
+                "humanLineDisplayRowByKeyCount": 5,
+                "humanLineDisplayRowWithEvidenceProgressCount": 5,
+                "humanLineDisplayRowWithBlockedEvidenceProgressCount": 4,
+                "humanLineDisplayRowWithReadyEvidenceProgressCount": 1,
+                "humanLineDisplayRowReadyActionCount": 2,
+                "humanLineDisplayRowManualActionCount": 2,
+                "validatedEvidenceCaptureFieldCount": 10,
+                "requiredValidatedEvidenceCaptureFieldCount": 9,
+                "optionalValidatedEvidenceCaptureFieldCount": 1,
+                "minEvidenceCaptureFieldLengthTotal": 126,
+                "maxEvidenceCaptureFieldMinLength": 30,
+                "requiredActionCount": 4,
+                "optionalActionCount": 1,
+                "readOnlyActionCount": 2,
+                "localOutputActionCount": 1,
+                "outputFileActionCount": 1,
+                "externalCallActionCount": 0,
+                "targetRepoMutationActionCount": 0,
+                "nextActionKey": "verifySourceBundle",
+                "nextActionType": "run-local-gate",
+                "nextActionLabel": "Run strict bundle check",
+                "nextActionEnabled": True,
+                "nextActionStatus": "ready",
+                "nextActionStatusLabel": "Ready",
+                "nextActionStatusTone": "success",
+                "nextActionDisabledReasonCode": "",
+                "nextActionPrerequisiteKeys": [],
+                "nextActionPrerequisiteLabels": [],
+                "nextActionPrerequisiteCount": 0,
+                "nextActionHasPrerequisites": False,
+                "nextActionDependencyReasonCode": "",
+                "nextActionDependencyReason": "",
+                "nextActionBlockedStageKeys": ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
+                "nextActionBlockedStageLabels": [
+                    "Write effective task handoff prompt",
+                    "Execute the task in the target website repo",
+                ],
+                "nextActionBlockedStageCount": 2,
+                "nextActionBlocksStages": True,
+                "nextActionCompletionCriteria": [
+                    "Strict bundle check status is pass.",
+                    "Checksum and generated-file drift counts are zero.",
+                ],
+                "nextActionCompletionCriteriaCount": 2,
+                "nextActionHasCompletionCriteria": True,
+                "nextActionEvidenceRequirements": [
+                    "Strict bundle-check command output or JSON status.",
+                    "Bundle digest and zero drift counts.",
+                ],
+                "nextActionEvidenceRequirementCount": 2,
+                "nextActionRequiresEvidence": True,
+                "nextActionEvidenceTarget": "local-command-output",
+                "nextActionEvidenceTargetLabel": "Local command output",
+                "nextActionEvidenceCaptureFields": expected_next_capture_fields,
+                "nextActionEvidenceCaptureFieldKeys": ["strictBundleCheckOutput", "bundleDigest"],
+                "nextActionEvidenceCaptureFieldLabels": ["Strict bundle-check output", "Bundle digest"],
+                "nextActionEvidenceCaptureFieldPlaceholders": [
+                    "Paste the strict bundle-check pass output or JSON status.",
+                    "Record the bundle digest or checksum summary.",
+                ],
+                "nextActionEvidenceCaptureFieldRequirementLabels": ["Required", "Required"],
+                "nextActionEvidenceCaptureFieldAriaLabels": [
+                    "Strict bundle-check output evidence (required)",
+                    "Bundle digest evidence (required)",
+                ],
+                "nextActionEvidenceCaptureFieldHelpTexts": [
+                    "Required: paste a passing strict bundle-check result.",
+                    "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+                ],
+                "nextActionEvidenceCaptureFieldSectionKeys": [
+                    "source-bundle-verification",
+                    "source-bundle-verification",
+                ],
+                "nextActionEvidenceCaptureFieldSectionLabels": [
+                    "Source bundle verification",
+                    "Source bundle verification",
+                ],
+                "nextActionEvidenceCaptureSectionKeys": ["source-bundle-verification"],
+                "nextActionEvidenceCaptureSectionLabels": ["Source bundle verification"],
+                "nextActionEvidenceCaptureSectionCount": 1,
+                "nextActionEvidenceCaptureFieldPayloadNamespaces": ["sourceBundle", "sourceBundle"],
+                "nextActionEvidenceCaptureFieldPayloadPaths": [
+                    "sourceBundle.verification.strictBundleCheckOutput",
+                    "sourceBundle.verification.bundleDigest",
+                ],
+                "nextActionEvidenceCapturePayloadNamespaces": ["sourceBundle"],
+                "nextActionEvidenceCapturePayloadNamespaceCount": 1,
+                "nextActionEvidenceCapturePayloadTemplate": expected_capture_payload_templates["verifySourceBundle"],
+                "nextActionEvidenceCapturePayloadFlatTemplate": expected_capture_payload_flat_templates["verifySourceBundle"],
+                "nextActionEvidenceCapturePayloadBindings": expected_next_capture_payload_bindings,
+                "nextActionEvidenceCaptureValidationSpecs": expected_next_capture_validation_specs,
+                "nextActionEvidenceCaptureInitialValidationStates": expected_next_initial_validation_states,
+                "nextActionEvidenceCaptureInitialValidationDisplayMetadata": expected_next_initial_validation_display_metadata,
+                "nextActionEvidenceCaptureInitialValidationChecklist": expected_next_initial_validation_checklist,
+                "nextActionEvidenceCaptureInitialValidationChecklistSummary": expected_next_initial_validation_checklist_summary,
+                "nextActionEvidenceCaptureInitialValidationSummary": expected_next_initial_validation_summary,
+                "nextActionEvidenceCaptureFieldInputTypes": ["textarea", "text"],
+                "nextActionEvidenceCaptureFieldValueShapes": ["long-text", "short-text"],
+                "nextActionEvidenceCaptureFieldAcceptsMultiple": [False, False],
+                "nextActionEvidenceCaptureFieldDefaultValues": ["", ""],
+                "nextActionEvidenceCaptureFieldEmptyValues": ["", ""],
+                "nextActionEvidenceCaptureFieldValidationRules": ["non-empty-text", "checksum-or-digest-text"],
+                "nextActionEvidenceCaptureFieldMinLengths": [20, 8],
+                "nextActionEvidenceCaptureFieldExamples": [
+                    "Status: pass; checksumFailures: 0; generatedFailures: 0",
+                    "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+                ],
+                "nextActionEvidenceCaptureFieldValidationHints": [
+                    "Required: paste a passing strict bundle-check result.",
+                    "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+                ],
+                "nextActionRequiredEvidenceCaptureFieldKeys": ["strictBundleCheckOutput", "bundleDigest"],
+                "nextActionOptionalEvidenceCaptureFieldKeys": [],
+                "nextActionEvidenceCaptureFieldCount": 2,
+                "nextActionRequiredEvidenceCaptureFieldCount": 2,
+                "nextActionOptionalEvidenceCaptureFieldCount": 0,
+                "nextActionHasEvidenceCaptureFields": True,
+                "nextActionRunPolicy": "read-only",
+                "nextActionSafetyLevel": "local-read-only",
+                "firstRequiredCommandStageKey": "verifySourceBundle",
+                "firstLocalOutputStageKey": "writeEffectiveTaskPrompt",
+                "firstManualStageKey": "executeInTargetRepo",
+                "firstRequiredManualStageKey": "executeInTargetRepo",
+                "firstEvidenceStageKey": "recordEvidence",
+                "firstActionWithPrerequisiteKey": "writeEffectiveTaskPrompt",
+                "firstManualActionWithPrerequisiteKey": "executeInTargetRepo",
+                "firstEvidenceActionWithPrerequisiteKey": "recordEvidence",
+                "firstActionWithDependencyReasonKey": "writeEffectiveTaskPrompt",
+                "firstActionBlockingOtherActionKey": "verifySourceBundle",
+                "firstActionWithCompletionCriteriaKey": "verifySourceBundle",
+                "firstManualActionWithCompletionCriteriaKey": "executeInTargetRepo",
+                "firstActionRequiringEvidenceKey": "verifySourceBundle",
+                "firstManualActionRequiringEvidenceKey": "executeInTargetRepo",
+                "firstEvidenceRecordingActionKey": "recordEvidence",
+                "firstTargetRepoEvidenceActionKey": "executeInTargetRepo",
+                "firstLocalOutputEvidenceActionKey": "writeEffectiveTaskPrompt",
+                "firstActionWithEvidenceCaptureFieldKey": "verifySourceBundle",
+                "firstActionWithOptionalEvidenceCaptureFieldKey": "refreshHandoffSnapshot",
+                "firstManualActionWithEvidenceCaptureFieldKey": "executeInTargetRepo",
+                "firstTextareaEvidenceCaptureActionKey": "verifySourceBundle",
+                "firstMultiValueEvidenceCaptureActionKey": "executeInTargetRepo",
+                "firstValidationRuleEvidenceCaptureActionKey": "verifySourceBundle",
+                "requiresTargetRepoWork": True,
+                "requiresEvidenceReturn": True,
+                "externalCalls": False,
+                "targetRepoMutation": False,
+            },
+        "stageHasCommandsByKey": {
+                "verifySourceBundle": True,
+                "refreshHandoffSnapshot": True,
+                "writeEffectiveTaskPrompt": True,
+                "executeInTargetRepo": False,
+                "recordEvidence": False,
+            },
+        "stageManualByKey": {
+                "verifySourceBundle": False,
+                "refreshHandoffSnapshot": False,
+                "writeEffectiveTaskPrompt": False,
+                "executeInTargetRepo": True,
+                "recordEvidence": True,
+            },
+        "stageWritesLocalFileByKey": {
+                "verifySourceBundle": False,
+                "refreshHandoffSnapshot": False,
+                "writeEffectiveTaskPrompt": True,
+                "executeInTargetRepo": False,
+                "recordEvidence": False,
+            },
+        "stageExternalCallsByKey": {
+                "verifySourceBundle": False,
+                "refreshHandoffSnapshot": False,
+                "writeEffectiveTaskPrompt": False,
+                "executeInTargetRepo": False,
+                "recordEvidence": False,
+            },
+        "stageTargetRepoMutationByKey": {
+                "verifySourceBundle": False,
+                "refreshHandoffSnapshot": False,
+                "writeEffectiveTaskPrompt": False,
+                "executeInTargetRepo": False,
+                "recordEvidence": False,
+            },
+        "commandStageKeys": [
+                "verifySourceBundle",
+                "refreshHandoffSnapshot",
+                "writeEffectiveTaskPrompt",
+            ],
+        "manualStageKeys": [
+                "executeInTargetRepo",
+                "recordEvidence",
+            ],
+        "nextStageKey": "verifySourceBundle",
+        "nextStageLabel": "Verify source bundle integrity",
+        "nextStageActionType": "run-local-gate",
+        "nextStageActionLabel": "Run strict bundle check",
+        "nextStageActionInstruction": "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff.",
+        "nextStageActionButtonLabel": "Run Check",
+        "nextStageActionAffordance": "primary-command-button",
+        "nextStageActionStatus": "ready",
+        "nextStageActionStatusLabel": "Ready",
+        "nextStageActionStatusTone": "success",
+        "nextStageActionDisabledReasonCode": "",
+        "nextStageActionDisabledReason": "",
+        "nextStageActionPrerequisiteKeys": [],
+        "nextStageActionPrerequisiteLabels": [],
+        "nextStageActionPrerequisiteCount": 0,
+        "nextStageActionDependencyReasonCode": "",
+        "nextStageActionDependencyReason": "",
+        "nextStageActionBlockedStageKeys": ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
+        "nextStageActionBlockedStageLabels": ["Write effective task handoff prompt", "Execute the task in the target website repo"],
+        "nextStageActionBlockedStageCount": 2,
+        "nextStageActionCompletionCriteria": ["Strict bundle check status is pass.", "Checksum and generated-file drift counts are zero."],
+        "nextStageActionCompletionCriteriaCount": 2,
+        "nextStageActionEvidenceRequirements": ["Strict bundle-check command output or JSON status.", "Bundle digest and zero drift counts."],
+        "nextStageActionEvidenceRequirementCount": 2,
+        "nextStageActionEvidenceTarget": "local-command-output",
+        "nextStageActionEvidenceTargetLabel": "Local command output",
+        "nextStageActionEvidenceCaptureFields": expected_next_capture_fields,
+        "nextStageActionEvidenceCaptureFieldKeys": ["strictBundleCheckOutput", "bundleDigest"],
+        "nextStageActionEvidenceCaptureFieldLabels": ["Strict bundle-check output", "Bundle digest"],
+        "nextStageActionEvidenceCaptureFieldPlaceholders": [
+                "Paste the strict bundle-check pass output or JSON status.",
+                "Record the bundle digest or checksum summary.",
+            ],
+        "nextStageActionEvidenceCaptureFieldRequirementLabels": ["Required", "Required"],
+        "nextStageActionEvidenceCaptureFieldAriaLabels": [
+                "Strict bundle-check output evidence (required)",
+                "Bundle digest evidence (required)",
+            ],
+        "nextStageActionEvidenceCaptureFieldHelpTexts": [
+                "Required: paste a passing strict bundle-check result.",
+                "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+            ],
+        "nextStageActionEvidenceCaptureFieldSectionKeys": ["source-bundle-verification", "source-bundle-verification"],
+        "nextStageActionEvidenceCaptureFieldSectionLabels": ["Source bundle verification", "Source bundle verification"],
+        "nextStageActionEvidenceCaptureSectionKeys": ["source-bundle-verification"],
+        "nextStageActionEvidenceCaptureSectionLabels": ["Source bundle verification"],
+        "nextStageActionEvidenceCaptureSectionCount": 1,
+        "nextStageActionEvidenceCaptureFieldPayloadNamespaces": ["sourceBundle", "sourceBundle"],
+        "nextStageActionEvidenceCaptureFieldPayloadPaths": [
+                "sourceBundle.verification.strictBundleCheckOutput",
+                "sourceBundle.verification.bundleDigest",
+            ],
+        "nextStageActionEvidenceCapturePayloadNamespaces": ["sourceBundle"],
+        "nextStageActionEvidenceCapturePayloadNamespaceCount": 1,
+        "nextStageActionEvidenceCapturePayloadTemplate": expected_capture_payload_templates["verifySourceBundle"],
+        "nextStageActionEvidenceCapturePayloadFlatTemplate": expected_capture_payload_flat_templates["verifySourceBundle"],
+        "nextStageActionEvidenceCapturePayloadBindings": expected_next_capture_payload_bindings,
+        "nextStageActionEvidenceCaptureValidationSpecs": expected_next_capture_validation_specs,
+        "nextStageActionEvidenceCaptureInitialValidationStates": expected_next_initial_validation_states,
+        "nextStageActionEvidenceCaptureInitialValidationDisplayMetadata": expected_next_initial_validation_display_metadata,
+        "nextStageActionEvidenceCaptureInitialValidationChecklist": expected_next_initial_validation_checklist,
+        "nextStageActionEvidenceCaptureInitialValidationChecklistSummary": expected_next_initial_validation_checklist_summary,
+        "nextStageActionEvidenceCaptureInitialValidationSummary": expected_next_initial_validation_summary,
+        "nextStageActionEvidenceCaptureFieldInputTypes": ["textarea", "text"],
+        "nextStageActionEvidenceCaptureFieldValueShapes": ["long-text", "short-text"],
+        "nextStageActionEvidenceCaptureFieldAcceptsMultiple": [False, False],
+        "nextStageActionEvidenceCaptureFieldDefaultValues": ["", ""],
+        "nextStageActionEvidenceCaptureFieldEmptyValues": ["", ""],
+        "nextStageActionEvidenceCaptureFieldValidationRules": ["non-empty-text", "checksum-or-digest-text"],
+        "nextStageActionEvidenceCaptureFieldMinLengths": [20, 8],
+        "nextStageActionEvidenceCaptureFieldExamples": [
+                "Status: pass; checksumFailures: 0; generatedFailures: 0",
+                "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
+            ],
+        "nextStageActionEvidenceCaptureFieldValidationHints": [
+                "Required: paste a passing strict bundle-check result.",
+                "Required: record a digest, checksum, or equivalent bundle integrity summary.",
+            ],
+        "nextStageActionRequiredEvidenceCaptureFieldKeys": ["strictBundleCheckOutput", "bundleDigest"],
+        "nextStageActionOptionalEvidenceCaptureFieldKeys": [],
+        "nextStageActionEvidenceCaptureFieldCount": 2,
+        "nextStageActionRequiredEvidenceCaptureFieldCount": 2,
+        "nextStageActionOptionalEvidenceCaptureFieldCount": 0,
+        "nextStageKind": "read-only-gate",
+        "nextStageRunPolicy": "read-only",
+        "nextStageSafetyLevel": "local-read-only",
+        "nextStageCommandCount": 1,
+        "nextStageCommandLabels": ["Strict bundle check JSON"],
+        "nextStageCommandRunPolicies": ["read-only"],
+        "nextStageCommandSafetyLevels": ["local-read-only"],
+        "nextStageOutputFiles": [],
+        "nextStageCommandKeys": ["source.bundleCheck.strict"],
+        "nextCommandKey": "source.bundleCheck.strict",
+    }
+    for summary_key, summary_expected in expected_runbook_summary.items():
+        summary_actual = operator_runbook.get(summary_key)
+        if summary_actual != summary_expected:
+            raise SystemExit(
+                f"site bundle handoff after {context} operator runbook {summary_key} changed: "
+                f"expected {summary_expected!r}, got {summary_actual!r}"
+            )
     if (
-        operator_runbook.get("version") != 1
-        or operator_runbook.get("source") != "bundle-handoff"
-        or operator_runbook.get("stageCount") != 5
-        or operator_runbook.get("commandStageCount") != 3
-        or operator_runbook.get("manualStageCount") != 2
-        or operator_runbook.get("requiredStageCount") != 4
-        or operator_runbook.get("optionalStageCount") != 1
-        or operator_runbook.get("readOnlyCommandStageCount") != 2
-        or operator_runbook.get("localOutputCommandStageCount") != 1
-        or operator_runbook.get("externalCallCommandStageCount") != 0
-        or operator_runbook.get("targetRepoMutationCommandStageCount") != 0
-        or operator_runbook.get("effectiveTaskId") != expected_effective_task_id
-        or operator_runbook.get("effectiveStrictTaskCommandKey") != f"task.{expected_effective_task_id}.handoff.strict"
-        or operator_runbook.get("stageKeys") != expected_stage_keys
-        or operator_runbook.get("stageLabelByKey") != {
-            "verifySourceBundle": "Verify source bundle integrity",
-            "refreshHandoffSnapshot": "Refresh strict handoff JSON snapshot",
-            "writeEffectiveTaskPrompt": "Write effective task handoff prompt",
-            "executeInTargetRepo": "Execute the task in the target website repo",
-            "recordEvidence": "Record implementation evidence",
-        }
-        or operator_runbook.get("stageKindByKey") != {
-            "verifySourceBundle": "read-only-gate",
-            "refreshHandoffSnapshot": "read-only-preview",
-            "writeEffectiveTaskPrompt": "local-output",
-            "executeInTargetRepo": "manual-target-repo",
-            "recordEvidence": "manual-reporting",
-        }
-        or operator_runbook.get("stageRequiredByKey") != {
-            "verifySourceBundle": True,
-            "refreshHandoffSnapshot": False,
-            "writeEffectiveTaskPrompt": True,
-            "executeInTargetRepo": True,
-            "recordEvidence": True,
-        }
-        or operator_runbook.get("stageRunPolicyByKey") != {
-            "verifySourceBundle": "read-only",
-            "refreshHandoffSnapshot": "read-only",
-            "writeEffectiveTaskPrompt": "writes-local-file",
-            "executeInTargetRepo": "manual-target-repo",
-            "recordEvidence": "manual-target-repo",
-        }
-        or operator_runbook.get("stageSafetyLevelByKey") != {
-            "verifySourceBundle": "local-read-only",
-            "refreshHandoffSnapshot": "local-read-only",
-            "writeEffectiveTaskPrompt": "local-output-file",
-            "executeInTargetRepo": "operator-controlled-target-repo",
-            "recordEvidence": "operator-controlled-target-repo",
-        }
-        or operator_runbook.get("stageCommandCountByKey") != {
-            "verifySourceBundle": 1,
-            "refreshHandoffSnapshot": 1,
-            "writeEffectiveTaskPrompt": 1,
-            "executeInTargetRepo": 0,
-            "recordEvidence": 0,
-        }
-        or operator_runbook.get("stageCommandKeysByKey") != {
-            "verifySourceBundle": ["source.bundleCheck.strict"],
-            "refreshHandoffSnapshot": ["source.bundleHandoff.strict"],
-            "writeEffectiveTaskPrompt": [f"task.{expected_effective_task_id}.handoff.strict"],
-            "executeInTargetRepo": [],
-            "recordEvidence": [],
-        }
-        or operator_runbook.get("stageCommandLabelsByKey") != {
-            "verifySourceBundle": ["Strict bundle check JSON"],
-            "refreshHandoffSnapshot": ["Strict bundle handoff JSON"],
-            "writeEffectiveTaskPrompt": [f"Strict Task handoff: {expected_effective_task_id}"],
-            "executeInTargetRepo": [],
-            "recordEvidence": [],
-        }
-        or operator_runbook.get("stageCommandRunPoliciesByKey") != {
-            "verifySourceBundle": ["read-only"],
-            "refreshHandoffSnapshot": ["read-only"],
-            "writeEffectiveTaskPrompt": ["writes-local-file"],
-            "executeInTargetRepo": [],
-            "recordEvidence": [],
-        }
-        or operator_runbook.get("stageCommandSafetyLevelsByKey") != {
-            "verifySourceBundle": ["local-read-only"],
-            "refreshHandoffSnapshot": ["local-read-only"],
-            "writeEffectiveTaskPrompt": ["local-output-file"],
-            "executeInTargetRepo": [],
-            "recordEvidence": [],
-        }
-        or operator_runbook.get("stageActionTypeByKey") != {
-            "verifySourceBundle": "run-local-gate",
-            "refreshHandoffSnapshot": "refresh-local-preview",
-            "writeEffectiveTaskPrompt": "write-local-output",
-            "executeInTargetRepo": "manual-target-repo",
-            "recordEvidence": "manual-evidence",
-        }
-        or operator_runbook.get("stageActionLabelByKey") != {
-            "verifySourceBundle": "Run strict bundle check",
-            "refreshHandoffSnapshot": "Refresh strict handoff JSON",
-            "writeEffectiveTaskPrompt": "Write selected task prompt",
-            "executeInTargetRepo": "Implement in target repo",
-            "recordEvidence": "Record verification evidence",
-        }
-        or operator_runbook.get("stageActionButtonLabelsByKey") != {
-            "verifySourceBundle": "Run Check",
-            "refreshHandoffSnapshot": "Refresh JSON",
-            "writeEffectiveTaskPrompt": "Write Prompt",
-            "executeInTargetRepo": "Open Target Repo",
-            "recordEvidence": "Record Evidence",
-        }
-        or operator_runbook.get("stageActionAffordanceByKey") != {
-            "verifySourceBundle": "primary-command-button",
-            "refreshHandoffSnapshot": "secondary-command-button",
-            "writeEffectiveTaskPrompt": "local-output-button",
-            "executeInTargetRepo": "manual-target-repo-step",
-            "recordEvidence": "manual-evidence-step",
-        }
-        or operator_runbook.get("stageActionEnabledByKey") != {
-            "verifySourceBundle": True,
-            "refreshHandoffSnapshot": True,
-            "writeEffectiveTaskPrompt": True,
-            "executeInTargetRepo": False,
-            "recordEvidence": False,
-        }
-        or operator_runbook.get("stageActionStatusByKey") != {
-            "verifySourceBundle": "ready",
-            "refreshHandoffSnapshot": "optional",
-            "writeEffectiveTaskPrompt": "ready",
-            "executeInTargetRepo": "manual",
-            "recordEvidence": "manual",
-        }
-        or operator_runbook.get("stageActionStatusLabelsByKey") != {
-            "verifySourceBundle": "Ready",
-            "refreshHandoffSnapshot": "Optional",
-            "writeEffectiveTaskPrompt": "Ready",
-            "executeInTargetRepo": "Manual",
-            "recordEvidence": "Manual",
-        }
-        or operator_runbook.get("stageActionStatusToneByKey") != {
-            "verifySourceBundle": "success",
-            "refreshHandoffSnapshot": "neutral",
-            "writeEffectiveTaskPrompt": "success",
-            "executeInTargetRepo": "info",
-            "recordEvidence": "info",
-        }
-        or operator_runbook.get("stageActionDisabledReasonCodeByKey") != {
-            "verifySourceBundle": "",
-            "refreshHandoffSnapshot": "",
-            "writeEffectiveTaskPrompt": "",
-            "executeInTargetRepo": "manual-target-repo-step",
-            "recordEvidence": "manual-evidence-step",
-        }
-        or not isinstance(operator_runbook.get("stageActionDisabledReasonByKey"), dict)
+        not isinstance(operator_runbook.get("stageActionDisabledReasonByKey"), dict)
         or operator_runbook["stageActionDisabledReasonByKey"].get("executeInTargetRepo")
         != "No local design-ai command is available for this stage; execute the generated prompt inside the target website repo."
         or operator_runbook["stageActionDisabledReasonByKey"].get("recordEvidence")
         != "No local design-ai command is available for this stage; record evidence after target-repo implementation and verification."
-        or operator_runbook.get("stageActionPrerequisiteKeysByKey") != {
-            "verifySourceBundle": [],
-            "refreshHandoffSnapshot": [],
-            "writeEffectiveTaskPrompt": ["verifySourceBundle"],
-            "executeInTargetRepo": ["verifySourceBundle", "writeEffectiveTaskPrompt"],
-            "recordEvidence": ["executeInTargetRepo"],
-        }
-        or operator_runbook.get("stageActionPrerequisiteCountByKey") != {
-            "verifySourceBundle": 0,
-            "refreshHandoffSnapshot": 0,
-            "writeEffectiveTaskPrompt": 1,
-            "executeInTargetRepo": 2,
-            "recordEvidence": 1,
-        }
-        or operator_runbook.get("stageActionHasPrerequisitesByKey") != {
-            "verifySourceBundle": False,
-            "refreshHandoffSnapshot": False,
-            "writeEffectiveTaskPrompt": True,
-            "executeInTargetRepo": True,
-            "recordEvidence": True,
-        }
-        or operator_runbook.get("stageActionDependencyReasonCodeByKey") != {
-            "verifySourceBundle": "",
-            "refreshHandoffSnapshot": "",
-            "writeEffectiveTaskPrompt": "requires-prerequisite-actions",
-            "executeInTargetRepo": "requires-prerequisite-actions",
-            "recordEvidence": "requires-prerequisite-actions",
-        }
         or not isinstance(operator_runbook.get("stageActionDependencyReasonByKey"), dict)
         or operator_runbook["stageActionDependencyReasonByKey"].get("executeInTargetRepo")
         != "Complete Verify source bundle integrity and Write effective task handoff prompt before implementing in the target website repo."
         or not isinstance(operator_runbook.get("stageActionPrerequisiteLabelsByKey"), dict)
         or operator_runbook["stageActionPrerequisiteLabelsByKey"].get("executeInTargetRepo")
         != ["Verify source bundle integrity", "Write effective task handoff prompt"]
-        or operator_runbook.get("stageActionBlockedStageKeysByKey") != {
-            "verifySourceBundle": ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
-            "refreshHandoffSnapshot": [],
-            "writeEffectiveTaskPrompt": ["executeInTargetRepo"],
-            "executeInTargetRepo": ["recordEvidence"],
-            "recordEvidence": [],
-        }
         or not isinstance(operator_runbook.get("stageActionBlockedStageLabelsByKey"), dict)
         or operator_runbook["stageActionBlockedStageLabelsByKey"].get("executeInTargetRepo")
         != ["Record implementation evidence"]
-        or operator_runbook.get("stageActionBlockedStageCountByKey") != {
-            "verifySourceBundle": 2,
-            "refreshHandoffSnapshot": 0,
-            "writeEffectiveTaskPrompt": 1,
-            "executeInTargetRepo": 1,
-            "recordEvidence": 0,
-        }
-        or operator_runbook.get("stageActionBlocksStagesByKey") != {
-            "verifySourceBundle": True,
-            "refreshHandoffSnapshot": False,
-            "writeEffectiveTaskPrompt": True,
-            "executeInTargetRepo": True,
-            "recordEvidence": False,
-        }
         or not isinstance(operator_runbook.get("stageActionCompletionCriteriaByKey"), dict)
         or operator_runbook["stageActionCompletionCriteriaByKey"].get("verifySourceBundle")
         != ["Strict bundle check status is pass.", "Checksum and generated-file drift counts are zero."]
@@ -3026,20 +3537,6 @@ def assert_site_bundle_handoff_json_smoke(
             "Target website repo has scoped implementation changes for the selected task.",
             "Target repo lint/typecheck/build or equivalent verification has been run.",
         ]
-        or operator_runbook.get("stageActionCompletionCriteriaCountByKey") != {
-            "verifySourceBundle": 2,
-            "refreshHandoffSnapshot": 1,
-            "writeEffectiveTaskPrompt": 2,
-            "executeInTargetRepo": 2,
-            "recordEvidence": 1,
-        }
-        or operator_runbook.get("stageActionHasCompletionCriteriaByKey") != {
-            "verifySourceBundle": True,
-            "refreshHandoffSnapshot": True,
-            "writeEffectiveTaskPrompt": True,
-            "executeInTargetRepo": True,
-            "recordEvidence": True,
-        }
         or not isinstance(operator_runbook.get("stageActionEvidenceRequirementsByKey"), dict)
         or operator_runbook["stageActionEvidenceRequirementsByKey"].get("verifySourceBundle")
         != ["Strict bundle-check command output or JSON status.", "Bundle digest and zero drift counts."]
@@ -3049,75 +3546,8 @@ def assert_site_bundle_handoff_json_smoke(
             "Target repo verification command results.",
             "Viewport and accessibility check notes for affected pages.",
         ]
-        or operator_runbook.get("stageActionEvidenceRequirementCountByKey") != {
-            "verifySourceBundle": 2,
-            "refreshHandoffSnapshot": 1,
-            "writeEffectiveTaskPrompt": 2,
-            "executeInTargetRepo": 3,
-            "recordEvidence": 1,
-        }
-        or operator_runbook.get("stageActionRequiresEvidenceByKey") != {
-            "verifySourceBundle": True,
-            "refreshHandoffSnapshot": True,
-            "writeEffectiveTaskPrompt": True,
-            "executeInTargetRepo": True,
-            "recordEvidence": True,
-        }
-        or operator_runbook.get("stageActionEvidenceTargetByKey") != {
-            "verifySourceBundle": "local-command-output",
-            "refreshHandoffSnapshot": "local-command-output",
-            "writeEffectiveTaskPrompt": "local-output-file",
-            "executeInTargetRepo": "target-repo-working-tree",
-            "recordEvidence": "handoff-evidence-record",
-        }
-        or operator_runbook.get("stageActionEvidenceTargetLabelByKey") != {
-            "verifySourceBundle": "Local command output",
-            "refreshHandoffSnapshot": "Local command output",
-            "writeEffectiveTaskPrompt": "Local output file",
-            "executeInTargetRepo": "Target repo working tree",
-            "recordEvidence": "Handoff evidence record",
-        }
-        or operator_runbook.get("stageActionEvidenceCaptureFieldKeysByKey") != expected_capture_field_keys
         or operator_runbook.get("stageActionEvidenceCaptureFieldLabelsByKey", {}).get("verifySourceBundle")
         != ["Strict bundle-check output", "Bundle digest"]
-        or operator_runbook.get("stageActionEvidenceCaptureFieldInputTypesByKey") != expected_capture_field_input_types
-        or operator_runbook.get("stageActionEvidenceCaptureFieldValueShapesByKey") != expected_capture_field_value_shapes
-        or operator_runbook.get("stageActionEvidenceCaptureFieldAcceptsMultipleByKey") != expected_capture_field_accepts_multiple
-        or operator_runbook.get("stageActionEvidenceCaptureFieldDefaultValuesByKey") != expected_capture_field_default_values
-        or operator_runbook.get("stageActionEvidenceCaptureFieldEmptyValuesByKey") != expected_capture_field_empty_values
-        or operator_runbook.get("stageActionEvidenceCaptureFieldPlaceholdersByKey") != expected_capture_field_placeholders
-        or operator_runbook.get("stageActionEvidenceCaptureFieldRequirementLabelsByKey") != expected_capture_field_requirement_labels
-        or operator_runbook.get("stageActionEvidenceCaptureFieldAriaLabelsByKey") != expected_capture_field_aria_labels
-        or operator_runbook.get("stageActionEvidenceCaptureFieldHelpTextsByKey") != expected_capture_field_help_texts
-        or operator_runbook.get("stageActionEvidenceCaptureFieldSectionKeysByKey") != expected_capture_field_section_keys
-        or operator_runbook.get("stageActionEvidenceCaptureFieldSectionLabelsByKey") != expected_capture_field_section_labels
-        or operator_runbook.get("stageActionEvidenceCaptureSectionKeysByKey") != expected_capture_section_keys
-        or operator_runbook.get("stageActionEvidenceCaptureSectionLabelsByKey") != expected_capture_section_labels
-        or operator_runbook.get("stageActionEvidenceCaptureSectionCountByKey") != {
-            "verifySourceBundle": 1,
-            "refreshHandoffSnapshot": 1,
-            "writeEffectiveTaskPrompt": 1,
-            "executeInTargetRepo": 3,
-            "recordEvidence": 2,
-        }
-        or operator_runbook.get("stageActionEvidenceCaptureFieldPayloadNamespacesByKey")
-        != expected_capture_field_payload_namespaces
-        or operator_runbook.get("stageActionEvidenceCaptureFieldPayloadPathsByKey")
-        != expected_capture_field_payload_paths
-        or operator_runbook.get("stageActionEvidenceCapturePayloadNamespacesByKey")
-        != expected_capture_payload_namespaces
-        or operator_runbook.get("stageActionEvidenceCapturePayloadNamespaceCountByKey")
-        != {
-            "verifySourceBundle": 1,
-            "refreshHandoffSnapshot": 1,
-            "writeEffectiveTaskPrompt": 1,
-            "executeInTargetRepo": 1,
-            "recordEvidence": 1,
-        }
-        or operator_runbook.get("stageActionEvidenceCapturePayloadTemplateByKey")
-        != expected_capture_payload_templates
-        or operator_runbook.get("stageActionEvidenceCapturePayloadFlatTemplateByKey")
-        != expected_capture_payload_flat_templates
         or operator_runbook.get("stageActionEvidenceCapturePayloadBindingsByKey", {}).get("verifySourceBundle")
         != expected_next_capture_payload_bindings
         or operator_runbook.get("stageActionEvidenceCapturePayloadBindingsByKey", {})
@@ -3183,8 +3613,6 @@ def assert_site_bundle_handoff_json_smoke(
             "executeInTargetRepo"
         )
         != expected_target_repo_initial_validation_summary
-        or operator_runbook.get("stageActionEvidenceCaptureFieldValidationRulesByKey") != expected_capture_field_validation_rules
-        or operator_runbook.get("stageActionEvidenceCaptureFieldMinLengthsByKey") != expected_capture_field_min_lengths
         or operator_runbook.get("stageActionEvidenceCaptureFieldExamplesByKey", {}).get("verifySourceBundle")
         != [
             "Status: pass; checksumFailures: 0; generatedFailures: 0",
@@ -3195,36 +3623,6 @@ def assert_site_bundle_handoff_json_smoke(
             "Required: paste a passing strict bundle-check result.",
             "Required: record a digest, checksum, or equivalent bundle integrity summary.",
         ]
-        or operator_runbook.get("stageActionRequiredEvidenceCaptureFieldKeysByKey") != expected_required_capture_field_keys
-        or operator_runbook.get("stageActionOptionalEvidenceCaptureFieldKeysByKey") != expected_optional_capture_field_keys
-        or operator_runbook.get("stageActionEvidenceCaptureFieldCountByKey") != {
-            "verifySourceBundle": 2,
-            "refreshHandoffSnapshot": 1,
-            "writeEffectiveTaskPrompt": 2,
-            "executeInTargetRepo": 3,
-            "recordEvidence": 2,
-        }
-        or operator_runbook.get("stageActionRequiredEvidenceCaptureFieldCountByKey") != {
-            "verifySourceBundle": 2,
-            "refreshHandoffSnapshot": 0,
-            "writeEffectiveTaskPrompt": 2,
-            "executeInTargetRepo": 3,
-            "recordEvidence": 2,
-        }
-        or operator_runbook.get("stageActionOptionalEvidenceCaptureFieldCountByKey") != {
-            "verifySourceBundle": 0,
-            "refreshHandoffSnapshot": 1,
-            "writeEffectiveTaskPrompt": 0,
-            "executeInTargetRepo": 0,
-            "recordEvidence": 0,
-        }
-        or operator_runbook.get("stageActionHasEvidenceCaptureFieldsByKey") != {
-            "verifySourceBundle": True,
-            "refreshHandoffSnapshot": True,
-            "writeEffectiveTaskPrompt": True,
-            "executeInTargetRepo": True,
-            "recordEvidence": True,
-        }
         or not isinstance(operator_runbook.get("stageActionEvidenceCaptureFieldsByKey"), dict)
         or operator_runbook["stageActionEvidenceCaptureFieldsByKey"].get("verifySourceBundle") != expected_next_capture_fields
         or operator_runbook["stageActionEvidenceCaptureFieldsByKey"].get("executeInTargetRepo", [{}])[2].get("key")
@@ -3236,436 +3634,18 @@ def assert_site_bundle_handoff_json_smoke(
         != "Write the selected task prompt to a local Markdown file before switching into the target website repo."
         or operator_runbook["stageActionInstructionsByKey"].get("executeInTargetRepo")
         != "Manual: open the generated prompt in the target website repo, inspect architecture, implement the scoped task, and run target-repo verification."
-        or operator_runbook.get("actionSummary") != {
-            "totalActionCount": 5,
-            "commandActionCount": 3,
-            "manualActionCount": 2,
-            "enabledActionCount": 3,
-            "disabledActionCount": 2,
-            "manualDisabledActionCount": 2,
-            "actionWithPrerequisiteCount": 3,
-            "maxActionPrerequisiteCount": 2,
-            "actionWithDependencyReasonCount": 3,
-            "actionBlockingOtherActionCount": 3,
-            "maxActionBlockedStageCount": 2,
-            "actionWithCompletionCriteriaCount": 5,
-            "totalActionCompletionCriteriaCount": 8,
-            "maxActionCompletionCriteriaCount": 2,
-            "actionRequiringEvidenceCount": 5,
-            "totalActionEvidenceRequirementCount": 9,
-            "maxActionEvidenceRequirementCount": 3,
-            "localCommandEvidenceActionCount": 2,
-            "localOutputEvidenceActionCount": 1,
-            "targetRepoEvidenceActionCount": 1,
-            "handoffRecordEvidenceActionCount": 1,
-            "actionWithEvidenceCaptureFieldCount": 5,
-            "actionWithRequiredEvidenceCaptureFieldCount": 4,
-            "actionWithOptionalEvidenceCaptureFieldCount": 1,
-            "totalActionEvidenceCaptureFieldCount": 10,
-            "totalRequiredActionEvidenceCaptureFieldCount": 9,
-            "totalOptionalActionEvidenceCaptureFieldCount": 1,
-            "maxActionEvidenceCaptureFieldCount": 3,
-            "textareaEvidenceCaptureFieldCount": 6,
-            "textEvidenceCaptureFieldCount": 2,
-            "filePathEvidenceCaptureFieldCount": 1,
-            "listEvidenceCaptureFieldCount": 1,
-            "longTextEvidenceCaptureFieldCount": 6,
-            "shortTextEvidenceCaptureFieldCount": 2,
-            "filePathValueEvidenceCaptureFieldCount": 1,
-            "stringListEvidenceCaptureFieldCount": 1,
-            "multiValueEvidenceCaptureFieldCount": 1,
-            "singleValueEvidenceCaptureFieldCount": 9,
-            "emptyStringEvidenceCaptureFieldCount": 9,
-            "emptyListEvidenceCaptureFieldCount": 1,
-            "placeholderEvidenceCaptureFieldCount": 10,
-            "ariaLabelEvidenceCaptureFieldCount": 10,
-            "helpTextEvidenceCaptureFieldCount": 10,
-            "sectionedEvidenceCaptureFieldCount": 10,
-            "uniqueEvidenceCaptureSectionCount": 8,
-            "actionWithMultipleEvidenceCaptureSectionCount": 2,
-            "maxActionEvidenceCaptureSectionCount": 3,
-            "payloadMappedEvidenceCaptureFieldCount": 10,
-            "uniqueEvidenceCapturePayloadNamespaceCount": 5,
-            "actionWithMultipleEvidenceCapturePayloadNamespaceCount": 0,
-            "maxActionEvidenceCapturePayloadNamespaceCount": 1,
-            "actionWithEvidenceCapturePayloadTemplateCount": 5,
-            "evidenceCapturePayloadTemplatePathCount": 10,
-            "maxActionEvidenceCapturePayloadTemplatePathCount": 3,
-            "actionWithEvidenceCapturePayloadBindingCount": 5,
-            "evidenceCapturePayloadBindingCount": 10,
-            "requiredEvidenceCapturePayloadBindingCount": 9,
-            "optionalEvidenceCapturePayloadBindingCount": 1,
-            "multiValueEvidenceCapturePayloadBindingCount": 1,
-            "actionWithEvidenceCaptureValidationSpecCount": 5,
-            "evidenceCaptureValidationSpecCount": 10,
-            "requiredEvidenceCaptureValidationSpecCount": 9,
-            "optionalEvidenceCaptureValidationSpecCount": 1,
-            "errorEvidenceCaptureValidationSpecCount": 9,
-            "infoEvidenceCaptureValidationSpecCount": 1,
-            "multiValueEvidenceCaptureValidationSpecCount": 1,
-            "actionWithEvidenceCaptureInitialValidationStateCount": 5,
-            "evidenceCaptureInitialValidationStateCount": 10,
-            "validInitialEvidenceCaptureStateCount": 1,
-            "invalidInitialEvidenceCaptureStateCount": 9,
-            "blockingInitialEvidenceCaptureStateCount": 9,
-            "optionalEmptyInitialEvidenceCaptureStateCount": 1,
-            "missingRequiredInitialEvidenceCaptureStateCount": 9,
-            "pristineInitialEvidenceCaptureStateCount": 10,
-            "actionWithEvidenceCaptureInitialValidationDisplayMetadataCount": 5,
-            "evidenceCaptureInitialValidationDisplayMetadataCount": 10,
-            "dangerInitialEvidenceCaptureDisplayMetadataCount": 9,
-            "infoInitialEvidenceCaptureDisplayMetadataCount": 1,
-            "blockingInitialEvidenceCaptureDisplayMetadataCount": 9,
-            "nonBlockingInitialEvidenceCaptureDisplayMetadataCount": 1,
-            "actionWithEvidenceCaptureInitialValidationSummaryCount": 5,
-            "blockedInitialEvidenceCaptureSummaryActionCount": 4,
-            "readyInitialEvidenceCaptureSummaryActionCount": 1,
-            "completableInitialEvidenceCaptureSummaryActionCount": 1,
-            "nonCompletableInitialEvidenceCaptureSummaryActionCount": 4,
-            "initialEvidenceCaptureSummaryBlockingFieldCount": 9,
-            "initialEvidenceCaptureSummaryMissingRequiredFieldCount": 9,
-            "initialEvidenceCaptureSummaryOptionalEmptyFieldCount": 1,
-            "actionWithEvidenceCaptureInitialValidationChecklistCount": 5,
-            "evidenceCaptureInitialValidationChecklistItemCount": 10,
-            "checkedInitialEvidenceCaptureChecklistItemCount": 1,
-            "uncheckedInitialEvidenceCaptureChecklistItemCount": 9,
-            "blockingInitialEvidenceCaptureChecklistItemCount": 9,
-            "nonBlockingInitialEvidenceCaptureChecklistItemCount": 1,
-            "requiredInitialEvidenceCaptureChecklistItemCount": 9,
-            "optionalInitialEvidenceCaptureChecklistItemCount": 1,
-            "actionWithEvidenceCaptureInitialValidationChecklistSummaryCount": 5,
-            "blockedInitialEvidenceCaptureChecklistSummaryActionCount": 4,
-            "readyInitialEvidenceCaptureChecklistSummaryActionCount": 1,
-            "completeInitialEvidenceCaptureChecklistSummaryActionCount": 1,
-            "incompleteInitialEvidenceCaptureChecklistSummaryActionCount": 4,
-            "initialEvidenceCaptureChecklistSummaryCheckedItemCount": 1,
-            "initialEvidenceCaptureChecklistSummaryUncheckedItemCount": 9,
-            "initialEvidenceCaptureChecklistSummaryBlockingUncheckedItemCount": 9,
-            "humanLineCount": 5,
-            "humanLineByKeyCount": 5,
-            "humanLineWithEvidenceProgressCount": 5,
-            "humanLineWithBlockedEvidenceProgressCount": 4,
-            "humanLineWithReadyEvidenceProgressCount": 1,
-            "humanLineDisplayRowCount": 5,
-            "humanLineDisplayRowByKeyCount": 5,
-            "humanLineDisplayRowWithEvidenceProgressCount": 5,
-            "humanLineDisplayRowWithBlockedEvidenceProgressCount": 4,
-            "humanLineDisplayRowWithReadyEvidenceProgressCount": 1,
-            "humanLineDisplayRowReadyActionCount": 2,
-            "humanLineDisplayRowManualActionCount": 2,
-            "validatedEvidenceCaptureFieldCount": 10,
-            "requiredValidatedEvidenceCaptureFieldCount": 9,
-            "optionalValidatedEvidenceCaptureFieldCount": 1,
-            "minEvidenceCaptureFieldLengthTotal": 126,
-            "maxEvidenceCaptureFieldMinLength": 30,
-            "requiredActionCount": 4,
-            "optionalActionCount": 1,
-            "readOnlyActionCount": 2,
-            "localOutputActionCount": 1,
-            "outputFileActionCount": 1,
-            "externalCallActionCount": 0,
-            "targetRepoMutationActionCount": 0,
-            "nextActionKey": "verifySourceBundle",
-            "nextActionType": "run-local-gate",
-            "nextActionLabel": "Run strict bundle check",
-            "nextActionEnabled": True,
-            "nextActionStatus": "ready",
-            "nextActionStatusLabel": "Ready",
-            "nextActionStatusTone": "success",
-            "nextActionDisabledReasonCode": "",
-            "nextActionPrerequisiteKeys": [],
-            "nextActionPrerequisiteLabels": [],
-            "nextActionPrerequisiteCount": 0,
-            "nextActionHasPrerequisites": False,
-            "nextActionDependencyReasonCode": "",
-            "nextActionDependencyReason": "",
-            "nextActionBlockedStageKeys": ["writeEffectiveTaskPrompt", "executeInTargetRepo"],
-            "nextActionBlockedStageLabels": [
-                "Write effective task handoff prompt",
-                "Execute the task in the target website repo",
-            ],
-            "nextActionBlockedStageCount": 2,
-            "nextActionBlocksStages": True,
-            "nextActionCompletionCriteria": [
-                "Strict bundle check status is pass.",
-                "Checksum and generated-file drift counts are zero.",
-            ],
-            "nextActionCompletionCriteriaCount": 2,
-            "nextActionHasCompletionCriteria": True,
-            "nextActionEvidenceRequirements": [
-                "Strict bundle-check command output or JSON status.",
-                "Bundle digest and zero drift counts.",
-            ],
-            "nextActionEvidenceRequirementCount": 2,
-            "nextActionRequiresEvidence": True,
-            "nextActionEvidenceTarget": "local-command-output",
-            "nextActionEvidenceTargetLabel": "Local command output",
-            "nextActionEvidenceCaptureFields": expected_next_capture_fields,
-            "nextActionEvidenceCaptureFieldKeys": ["strictBundleCheckOutput", "bundleDigest"],
-            "nextActionEvidenceCaptureFieldLabels": ["Strict bundle-check output", "Bundle digest"],
-            "nextActionEvidenceCaptureFieldPlaceholders": [
-                "Paste the strict bundle-check pass output or JSON status.",
-                "Record the bundle digest or checksum summary.",
-            ],
-            "nextActionEvidenceCaptureFieldRequirementLabels": ["Required", "Required"],
-            "nextActionEvidenceCaptureFieldAriaLabels": [
-                "Strict bundle-check output evidence (required)",
-                "Bundle digest evidence (required)",
-            ],
-            "nextActionEvidenceCaptureFieldHelpTexts": [
-                "Required: paste a passing strict bundle-check result.",
-                "Required: record a digest, checksum, or equivalent bundle integrity summary.",
-            ],
-            "nextActionEvidenceCaptureFieldSectionKeys": [
-                "source-bundle-verification",
-                "source-bundle-verification",
-            ],
-            "nextActionEvidenceCaptureFieldSectionLabels": [
-                "Source bundle verification",
-                "Source bundle verification",
-            ],
-            "nextActionEvidenceCaptureSectionKeys": ["source-bundle-verification"],
-            "nextActionEvidenceCaptureSectionLabels": ["Source bundle verification"],
-            "nextActionEvidenceCaptureSectionCount": 1,
-            "nextActionEvidenceCaptureFieldPayloadNamespaces": ["sourceBundle", "sourceBundle"],
-            "nextActionEvidenceCaptureFieldPayloadPaths": [
-                "sourceBundle.verification.strictBundleCheckOutput",
-                "sourceBundle.verification.bundleDigest",
-            ],
-            "nextActionEvidenceCapturePayloadNamespaces": ["sourceBundle"],
-            "nextActionEvidenceCapturePayloadNamespaceCount": 1,
-            "nextActionEvidenceCapturePayloadTemplate": expected_capture_payload_templates["verifySourceBundle"],
-            "nextActionEvidenceCapturePayloadFlatTemplate": expected_capture_payload_flat_templates["verifySourceBundle"],
-            "nextActionEvidenceCapturePayloadBindings": expected_next_capture_payload_bindings,
-            "nextActionEvidenceCaptureValidationSpecs": expected_next_capture_validation_specs,
-            "nextActionEvidenceCaptureInitialValidationStates": expected_next_initial_validation_states,
-            "nextActionEvidenceCaptureInitialValidationDisplayMetadata": expected_next_initial_validation_display_metadata,
-            "nextActionEvidenceCaptureInitialValidationChecklist": expected_next_initial_validation_checklist,
-            "nextActionEvidenceCaptureInitialValidationChecklistSummary": expected_next_initial_validation_checklist_summary,
-            "nextActionEvidenceCaptureInitialValidationSummary": expected_next_initial_validation_summary,
-            "nextActionEvidenceCaptureFieldInputTypes": ["textarea", "text"],
-            "nextActionEvidenceCaptureFieldValueShapes": ["long-text", "short-text"],
-            "nextActionEvidenceCaptureFieldAcceptsMultiple": [False, False],
-            "nextActionEvidenceCaptureFieldDefaultValues": ["", ""],
-            "nextActionEvidenceCaptureFieldEmptyValues": ["", ""],
-            "nextActionEvidenceCaptureFieldValidationRules": ["non-empty-text", "checksum-or-digest-text"],
-            "nextActionEvidenceCaptureFieldMinLengths": [20, 8],
-            "nextActionEvidenceCaptureFieldExamples": [
-                "Status: pass; checksumFailures: 0; generatedFailures: 0",
-                "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
-            ],
-            "nextActionEvidenceCaptureFieldValidationHints": [
-                "Required: paste a passing strict bundle-check result.",
-                "Required: record a digest, checksum, or equivalent bundle integrity summary.",
-            ],
-            "nextActionRequiredEvidenceCaptureFieldKeys": ["strictBundleCheckOutput", "bundleDigest"],
-            "nextActionOptionalEvidenceCaptureFieldKeys": [],
-            "nextActionEvidenceCaptureFieldCount": 2,
-            "nextActionRequiredEvidenceCaptureFieldCount": 2,
-            "nextActionOptionalEvidenceCaptureFieldCount": 0,
-            "nextActionHasEvidenceCaptureFields": True,
-            "nextActionRunPolicy": "read-only",
-            "nextActionSafetyLevel": "local-read-only",
-            "firstRequiredCommandStageKey": "verifySourceBundle",
-            "firstLocalOutputStageKey": "writeEffectiveTaskPrompt",
-            "firstManualStageKey": "executeInTargetRepo",
-            "firstRequiredManualStageKey": "executeInTargetRepo",
-            "firstEvidenceStageKey": "recordEvidence",
-            "firstActionWithPrerequisiteKey": "writeEffectiveTaskPrompt",
-            "firstManualActionWithPrerequisiteKey": "executeInTargetRepo",
-            "firstEvidenceActionWithPrerequisiteKey": "recordEvidence",
-            "firstActionWithDependencyReasonKey": "writeEffectiveTaskPrompt",
-            "firstActionBlockingOtherActionKey": "verifySourceBundle",
-            "firstActionWithCompletionCriteriaKey": "verifySourceBundle",
-            "firstManualActionWithCompletionCriteriaKey": "executeInTargetRepo",
-            "firstActionRequiringEvidenceKey": "verifySourceBundle",
-            "firstManualActionRequiringEvidenceKey": "executeInTargetRepo",
-            "firstEvidenceRecordingActionKey": "recordEvidence",
-            "firstTargetRepoEvidenceActionKey": "executeInTargetRepo",
-            "firstLocalOutputEvidenceActionKey": "writeEffectiveTaskPrompt",
-            "firstActionWithEvidenceCaptureFieldKey": "verifySourceBundle",
-            "firstActionWithOptionalEvidenceCaptureFieldKey": "refreshHandoffSnapshot",
-            "firstManualActionWithEvidenceCaptureFieldKey": "executeInTargetRepo",
-            "firstTextareaEvidenceCaptureActionKey": "verifySourceBundle",
-            "firstMultiValueEvidenceCaptureActionKey": "executeInTargetRepo",
-            "firstValidationRuleEvidenceCaptureActionKey": "verifySourceBundle",
-            "requiresTargetRepoWork": True,
-            "requiresEvidenceReturn": True,
-            "externalCalls": False,
-            "targetRepoMutation": False,
-        }
-        or operator_runbook.get("stageHasCommandsByKey") != {
-            "verifySourceBundle": True,
-            "refreshHandoffSnapshot": True,
-            "writeEffectiveTaskPrompt": True,
-            "executeInTargetRepo": False,
-            "recordEvidence": False,
-        }
-        or operator_runbook.get("stageManualByKey") != {
-            "verifySourceBundle": False,
-            "refreshHandoffSnapshot": False,
-            "writeEffectiveTaskPrompt": False,
-            "executeInTargetRepo": True,
-            "recordEvidence": True,
-        }
-        or operator_runbook.get("stageWritesLocalFileByKey") != {
-            "verifySourceBundle": False,
-            "refreshHandoffSnapshot": False,
-            "writeEffectiveTaskPrompt": True,
-            "executeInTargetRepo": False,
-            "recordEvidence": False,
-        }
-        or operator_runbook.get("stageExternalCallsByKey") != {
-            "verifySourceBundle": False,
-            "refreshHandoffSnapshot": False,
-            "writeEffectiveTaskPrompt": False,
-            "executeInTargetRepo": False,
-            "recordEvidence": False,
-        }
-        or operator_runbook.get("stageTargetRepoMutationByKey") != {
-            "verifySourceBundle": False,
-            "refreshHandoffSnapshot": False,
-            "writeEffectiveTaskPrompt": False,
-            "executeInTargetRepo": False,
-            "recordEvidence": False,
-        }
-        or operator_runbook.get("commandStageKeys") != [
-            "verifySourceBundle",
-            "refreshHandoffSnapshot",
-            "writeEffectiveTaskPrompt",
-        ]
-        or operator_runbook.get("manualStageKeys") != [
-            "executeInTargetRepo",
-            "recordEvidence",
-        ]
-        or operator_runbook.get("nextStageKey") != "verifySourceBundle"
-        or operator_runbook.get("nextStageLabel") != "Verify source bundle integrity"
-        or operator_runbook.get("nextStageActionType") != "run-local-gate"
-        or operator_runbook.get("nextStageActionLabel") != "Run strict bundle check"
-        or operator_runbook.get("nextStageActionInstruction")
-        != "Run the strict local bundle check and resolve any checksum or generated-file drift before handoff."
-        or operator_runbook.get("nextStageActionButtonLabel") != "Run Check"
-        or operator_runbook.get("nextStageActionAffordance") != "primary-command-button"
         or operator_runbook.get("nextStageActionEnabled") is not True
-        or operator_runbook.get("nextStageActionStatus") != "ready"
-        or operator_runbook.get("nextStageActionStatusLabel") != "Ready"
-        or operator_runbook.get("nextStageActionStatusTone") != "success"
-        or operator_runbook.get("nextStageActionDisabledReasonCode") != ""
-        or operator_runbook.get("nextStageActionDisabledReason") != ""
-        or operator_runbook.get("nextStageActionPrerequisiteKeys") != []
-        or operator_runbook.get("nextStageActionPrerequisiteLabels") != []
-        or operator_runbook.get("nextStageActionPrerequisiteCount") != 0
         or operator_runbook.get("nextStageActionHasPrerequisites") is not False
-        or operator_runbook.get("nextStageActionDependencyReasonCode") != ""
-        or operator_runbook.get("nextStageActionDependencyReason") != ""
-        or operator_runbook.get("nextStageActionBlockedStageKeys") != ["writeEffectiveTaskPrompt", "executeInTargetRepo"]
-        or operator_runbook.get("nextStageActionBlockedStageLabels")
-        != ["Write effective task handoff prompt", "Execute the task in the target website repo"]
-        or operator_runbook.get("nextStageActionBlockedStageCount") != 2
         or operator_runbook.get("nextStageActionBlocksStages") is not True
-        or operator_runbook.get("nextStageActionCompletionCriteria")
-        != ["Strict bundle check status is pass.", "Checksum and generated-file drift counts are zero."]
-        or operator_runbook.get("nextStageActionCompletionCriteriaCount") != 2
         or operator_runbook.get("nextStageActionHasCompletionCriteria") is not True
-        or operator_runbook.get("nextStageActionEvidenceRequirements")
-        != ["Strict bundle-check command output or JSON status.", "Bundle digest and zero drift counts."]
-        or operator_runbook.get("nextStageActionEvidenceRequirementCount") != 2
         or operator_runbook.get("nextStageActionRequiresEvidence") is not True
-        or operator_runbook.get("nextStageActionEvidenceTarget") != "local-command-output"
-        or operator_runbook.get("nextStageActionEvidenceTargetLabel") != "Local command output"
-        or operator_runbook.get("nextStageActionEvidenceCaptureFields") != expected_next_capture_fields
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldKeys") != ["strictBundleCheckOutput", "bundleDigest"]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldLabels") != ["Strict bundle-check output", "Bundle digest"]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldPlaceholders")
-        != [
-            "Paste the strict bundle-check pass output or JSON status.",
-            "Record the bundle digest or checksum summary.",
-        ]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldRequirementLabels") != ["Required", "Required"]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldAriaLabels")
-        != [
-            "Strict bundle-check output evidence (required)",
-            "Bundle digest evidence (required)",
-        ]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldHelpTexts")
-        != [
-            "Required: paste a passing strict bundle-check result.",
-            "Required: record a digest, checksum, or equivalent bundle integrity summary.",
-        ]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldSectionKeys")
-        != ["source-bundle-verification", "source-bundle-verification"]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldSectionLabels")
-        != ["Source bundle verification", "Source bundle verification"]
-        or operator_runbook.get("nextStageActionEvidenceCaptureSectionKeys") != ["source-bundle-verification"]
-        or operator_runbook.get("nextStageActionEvidenceCaptureSectionLabels") != ["Source bundle verification"]
-        or operator_runbook.get("nextStageActionEvidenceCaptureSectionCount") != 1
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldPayloadNamespaces")
-        != ["sourceBundle", "sourceBundle"]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldPayloadPaths")
-        != [
-            "sourceBundle.verification.strictBundleCheckOutput",
-            "sourceBundle.verification.bundleDigest",
-        ]
-        or operator_runbook.get("nextStageActionEvidenceCapturePayloadNamespaces") != ["sourceBundle"]
-        or operator_runbook.get("nextStageActionEvidenceCapturePayloadNamespaceCount") != 1
-        or operator_runbook.get("nextStageActionEvidenceCapturePayloadTemplate")
-        != expected_capture_payload_templates["verifySourceBundle"]
-        or operator_runbook.get("nextStageActionEvidenceCapturePayloadFlatTemplate")
-        != expected_capture_payload_flat_templates["verifySourceBundle"]
-        or operator_runbook.get("nextStageActionEvidenceCapturePayloadBindings")
-        != expected_next_capture_payload_bindings
-        or operator_runbook.get("nextStageActionEvidenceCaptureValidationSpecs")
-        != expected_next_capture_validation_specs
-        or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationStates")
-        != expected_next_initial_validation_states
-        or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationDisplayMetadata")
-        != expected_next_initial_validation_display_metadata
-        or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationChecklist")
-        != expected_next_initial_validation_checklist
-        or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationChecklistSummary")
-        != expected_next_initial_validation_checklist_summary
-        or operator_runbook.get("nextStageActionEvidenceCaptureInitialValidationSummary")
-        != expected_next_initial_validation_summary
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldInputTypes") != ["textarea", "text"]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldValueShapes") != ["long-text", "short-text"]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldAcceptsMultiple") != [False, False]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldDefaultValues") != ["", ""]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldEmptyValues") != ["", ""]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldValidationRules")
-        != ["non-empty-text", "checksum-or-digest-text"]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldMinLengths") != [20, 8]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldExamples")
-        != [
-            "Status: pass; checksumFailures: 0; generatedFailures: 0",
-            "7685113af4744990fadf301b220b4739066e5f6ec2c40857825211e1167241aa",
-        ]
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldValidationHints")
-        != [
-            "Required: paste a passing strict bundle-check result.",
-            "Required: record a digest, checksum, or equivalent bundle integrity summary.",
-        ]
-        or operator_runbook.get("nextStageActionRequiredEvidenceCaptureFieldKeys") != ["strictBundleCheckOutput", "bundleDigest"]
-        or operator_runbook.get("nextStageActionOptionalEvidenceCaptureFieldKeys") != []
-        or operator_runbook.get("nextStageActionEvidenceCaptureFieldCount") != 2
-        or operator_runbook.get("nextStageActionRequiredEvidenceCaptureFieldCount") != 2
-        or operator_runbook.get("nextStageActionOptionalEvidenceCaptureFieldCount") != 0
         or operator_runbook.get("nextStageActionHasEvidenceCaptureFields") is not True
-        or operator_runbook.get("nextStageKind") != "read-only-gate"
         or operator_runbook.get("nextStageRequired") is not True
-        or operator_runbook.get("nextStageRunPolicy") != "read-only"
-        or operator_runbook.get("nextStageSafetyLevel") != "local-read-only"
-        or operator_runbook.get("nextStageCommandCount") != 1
-        or operator_runbook.get("nextStageCommandLabels") != ["Strict bundle check JSON"]
-        or operator_runbook.get("nextStageCommandRunPolicies") != ["read-only"]
-        or operator_runbook.get("nextStageCommandSafetyLevels") != ["local-read-only"]
-        or operator_runbook.get("nextStageOutputFiles") != []
         or operator_runbook.get("nextStageHasCommands") is not True
         or operator_runbook.get("nextStageManual") is not False
         or operator_runbook.get("nextStageWritesLocalFile") is not False
         or operator_runbook.get("nextStageExternalCalls") is not False
         or operator_runbook.get("nextStageTargetRepoMutation") is not False
-        or operator_runbook.get("nextStageCommandKeys") != ["source.bundleCheck.strict"]
-        or operator_runbook.get("nextCommandKey") != "source.bundleCheck.strict"
         or not isinstance(operator_runbook.get("stageByKey"), dict)
         or not isinstance(operator_runbook.get("stageSummaryByKey"), dict)
         or not isinstance(operator_runbook.get("stageCommandStringsByKey"), dict)
@@ -3675,7 +3655,7 @@ def assert_site_bundle_handoff_json_smoke(
         or not isinstance(runbook_stages, list)
         or [stage.get("key") for stage in runbook_stages] != expected_stage_keys
     ):
-        raise SystemExit(f"site bundle handoff after {context} operator runbook summary changed: {operator_runbook!r}")
+        raise SystemExit(f"site bundle handoff after {context} operator runbook shape changed: {operator_runbook!r}")
     verify_stage = runbook_stages[0]
     task_prompt_stage = runbook_stages[2]
     manual_stage = runbook_stages[3]
