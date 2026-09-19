@@ -124,7 +124,7 @@ Merge와 tag 전에는 `.github/workflows/`의 실행 trigger를 다시 확인�
 
 | 우선순위·단계 | 입력과 책임 | 산출물·완료 조건 | 확대 금지 경계 |
 | --- | --- | --- | --- |
-| 1 · P17B 잔여 | 안정된 review/evidence smoke baseline | pilot domain, 이후 install/help/search/route 분리; callable·실제 command sequence·오류 parity | runtime 동작·coverage 축소 없음 |
+| 1 · P17B 잔여 — **완료** | 안정된 review/evidence smoke baseline | pilot·install·help·search·route 도메인과 self-test 단계를 모듈로 분리; callable 15개 유지, 722-command 정규화 시퀀스 해시 불변, 실패 메시지 verbatim | runtime 동작·coverage 축소 없음 |
 | 2 · P17C | 명시한 design-system root와 소비 repo, scope 승인 | verified facts→closed generation contract→project-local skill; path/import/token/asset 전수 검증 | clone-only 시작; 2개 독립 pilot 또는 새 제품 결정 전 CLI/SDK/MCP 승격 없음 |
 | 3 · P17D | 기존 voice·locale·review 계약과 KO/EN fixtures | button/form/error/empty/notification/onboarding/destructive copy lens; 전후 예제와 SR 의미 유지 | 계약·fixtures 전 ninth lens 추가 금지; 단독 command 없음 |
 | 4 · P17E | 승인된 browser adapter·source digest·viewport | visual diff·overflow·brand drift의 version/threshold/artifact/uncertainty 계약 | missing artifact는 `unverified`; 총점으로 누락 은폐 금지 |
