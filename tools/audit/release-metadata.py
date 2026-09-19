@@ -4257,6 +4257,1584 @@ def format_json_summary(summary: dict) -> str:
     return json.dumps(summary, ensure_ascii=False, indent=2)
 
 
+# Each row mutates one release-facing policy document and names the guard that
+# must notice. Extracted verbatim from run_self_test, where the same three
+# statements were repeated once per case across about 4,100 lines.
+RELEASE_POLICY_DOC_DRIFT_CASES = (
+    (
+        'README.md',
+        'english',
+        'npm run ci:local',
+        'npm run release:check',
+        'README.md is missing local CI command phrase',
+        'release policy docs should mention ci:local command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        '`npm run release:check`',
+        'the release command sequence',
+        'README.md is missing release check command phrase',
+        'release policy docs should mention release:check command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        ' The same `npm run release:check` gate preserves Website Console bundle `mcp-probes.json` saved-payload guard phases through package contents, release self-tests, and packed-tarball smoke.',
+        '',
+        'README.md is missing Website Console mcp-probes release-check evidence phrase',
+        'release policy docs should tie release:check to mcp-probes saved-payload guard evidence',
+    ),
+    (
+        'README.md',
+        'english',
+        ' The same `npm run release:check` gate also preserves Website Console bundle boundary metadata guard phases for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata plus full `release:self-test` evidence recording through unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.',
+        '',
+        'README.md is missing Website Console bundle boundary release-check evidence phrase',
+        'release policy docs should tie release:check to bundle boundary metadata guard evidence',
+    ),
+    (
+        'README.md',
+        'english',
+        ' The same `npm run release:check` gate now also preserves the Product Readiness release policy full gate guard for Website Console bundle boundary metadata full `release:check` evidence through unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.',
+        '',
+        'README.md is missing Product Readiness release policy full gate release-check evidence phrase',
+        'release policy docs should tie release:check to Product Readiness full gate evidence',
+    ),
+    (
+        'README.md',
+        'english',
+        ' The same `npm run release:check` gate now also preserves the Product Readiness release policy full gate evidence guard through unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.',
+        '',
+        'README.md is missing Product Readiness release policy full gate evidence guard release-check phrase',
+        'release policy docs should tie release:check to Product Readiness full gate evidence guard',
+    ),
+    (
+        'README.md',
+        'english',
+        ', shared repair guidance smoke helpers',
+        '',
+        'README.md is missing site bundle-repair package smoke phrase',
+        'release policy docs should mention shared repair guidance smoke helpers',
+    ),
+    (
+        'README.md',
+        'english',
+        ', and shared repair report assertion helpers',
+        '',
+        'README.md is missing site bundle-repair package smoke phrase',
+        'release policy docs should mention shared repair report assertion helpers',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus shared MCP probe output-file smoke assertions',
+        '',
+        'README.md is missing site MCP shared output assertion phrase',
+        'release policy docs should mention shared MCP probe output-file smoke assertions',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus embedded MCP check probe next-step commands',
+        '',
+        'README.md is missing site MCP check embedded command phrase',
+        'release policy docs should mention embedded MCP check probe next-step commands',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus executable embedded MCP check probe command smoke coverage',
+        '',
+        'README.md is missing site MCP check executable embedded command smoke phrase',
+        'release policy docs should mention executable embedded MCP check probe command smoke coverage',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus human MCP check probe command guidance and output-file smoke coverage',
+        '',
+        'README.md is missing site MCP check human command guidance smoke phrase',
+        'release policy docs should mention human MCP check probe command guidance and output-file smoke coverage',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus embedded MCP check probe human report output command',
+        '',
+        'README.md is missing site MCP check human output command phrase',
+        'release policy docs should mention embedded MCP check probe human report output command',
+    ),
+    (
+        'README.md',
+        'english',
+        '`npm run package:smoke`',
+        'the package smoke command',
+        'README.md is missing package smoke command phrase',
+        'release policy docs should mention package:smoke command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        'human / JSON `design-ai learn --signals` learning signal registry plus Markdown signal reports via `design-ai learn --signals --report --out learning-signals.md` plus learn signals JSON `--out` file-write confirmations plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation plus `design-ai learn --agent-backlog --report --out agent-backlog.md` focused agent backlog Markdown reports plus agent backlog JSON `--out` file-write confirmations plus `design-ai learn --agent-backlog --strict --json` agent backlog strict gate, focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, Markdown check index section coverage, and check-capture optional-gap semantics in installed-bin and one-shot paths',
+        'human / JSON learning signal registry coverage',
+        'README.md is missing learn signals strict package smoke phrase',
+        'release policy docs should mention learn signals strict package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'Markdown signal reports via `design-ai learn --signals --report --out learning-signals.md` plus ',
+        '',
+        'README.md is missing learn signals Markdown package smoke phrase',
+        'release policy docs should mention learn signals Markdown package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'learn signals JSON `--out` file-write confirmations plus ',
+        '',
+        'README.md is missing learn signals JSON out package smoke phrase',
+        'release policy docs should mention learn signals JSON out package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus `design-ai learn --agent-backlog --strict --json` agent backlog strict gate',
+        '',
+        'README.md is missing learn agent-backlog strict package smoke phrase',
+        'release policy docs should mention learn agent-backlog strict package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai learn --agent-backlog --report --out agent-backlog.md` focused agent backlog Markdown reports plus ',
+        '',
+        'README.md is missing learn agent-backlog Markdown package smoke phrase',
+        'release policy docs should mention learn agent-backlog Markdown package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'agent backlog JSON `--out` file-write confirmations plus ',
+        '',
+        'README.md is missing learn agent-backlog JSON out package smoke phrase',
+        'release policy docs should mention learn agent-backlog JSON out package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        ' focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, Markdown check index section coverage, and check-capture optional-gap semantics',
+        '',
+        'README.md is missing learn agent-backlog readiness package smoke phrase',
+        'release policy docs should mention learn agent-backlog readiness package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        ' That smoke coverage also preserves the optional refresh-only runbook selection reason so no-command agent backlog output treats refresh as status metadata, not an executable handoff command.',
+        '',
+        'README.md is missing learn agent-backlog refresh-only runbook selection phrase',
+        'release policy docs should mention learn agent-backlog refresh-only runbook selection semantics',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifacts, ',
+        '',
+        'README.md is missing learn propose-skills Markdown package smoke phrase',
+        'release policy docs should mention learn propose-skills Markdown package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision joins, ',
+        '',
+        'README.md is missing learn propose-skills review-file package smoke phrase',
+        'release policy docs should mention learn propose-skills review-file package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check --json` read-only review-file readiness checks, ',
+        '',
+        'README.md is missing learn propose-skills review-check package smoke phrase',
+        'release policy docs should mention learn propose-skills review-check package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check --report --out skill-proposal-review-check.md` read-only review-check Markdown reports, ',
+        '',
+        'README.md is missing learn propose-skills review-check Markdown package smoke phrase',
+        'release policy docs should mention learn propose-skills review-check Markdown package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan --json` read-only accepted proposal apply plans, ',
+        '',
+        'README.md is missing learn propose-skills apply-plan package smoke phrase',
+        'release policy docs should mention learn propose-skills apply-plan package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'human apply-plan command contract summaries via `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` with the `Command contract` section, ',
+        '',
+        'README.md is missing learn propose-skills apply-plan human command contract package smoke phrase',
+        'release policy docs should mention learn propose-skills apply-plan human command contract package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan --report --out skill-proposal-apply-plan.md` read-only apply-plan Markdown reports, ',
+        '',
+        'README.md is missing learn propose-skills apply-plan Markdown package smoke phrase',
+        'release policy docs should mention learn propose-skills apply-plan Markdown package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoffs, ',
+        '',
+        'README.md is missing learn propose-skills patch package smoke phrase',
+        'release policy docs should mention learn propose-skills patch package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review templates, ',
+        '',
+        'README.md is missing learn propose-skills review-template package smoke phrase',
+        'release policy docs should mention learn propose-skills review-template package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping, ',
+        '',
+        'README.md is missing learn propose-skills min-evidence package smoke phrase',
+        'release policy docs should mention learn propose-skills min-evidence package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai learn --propose-skills --strict --json` as an expected-failure skill proposal readiness gate',
+        'skill proposal readiness coverage',
+        'README.md is missing learn propose-skills strict package smoke phrase',
+        'release policy docs should mention learn propose-skills strict package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai workspace --strict --json` workspace strict failure/success readiness checks',
+        'workspace readiness coverage',
+        'README.md is missing workspace strict package smoke phrase',
+        'release policy docs should mention workspace strict package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks',
+        'public registry workspace readiness checks',
+        'README.md is missing workspace strict registry smoke phrase',
+        'release policy docs should mention public registry workspace strict smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries',
+        'including public registry workspace eval coverage',
+        'README.md is missing workspace learning-eval registry smoke phrase',
+        'release policy docs should mention public registry workspace learning-eval smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'including public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory',
+        'including public registry workspace restore backup coverage',
+        'README.md is missing workspace restore-backups registry smoke phrase',
+        'release policy docs should mention public registry workspace restore-backups smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai site --intake-template` Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, JSON `--out`, and `--language ko` Korean JSON/Markdown plus Korean Markdown `--out` in installed-bin and one-shot paths,',
+        'Website Console intake template package smoke coverage,',
+        'README.md is missing site intake-template package smoke phrase',
+        'release policy docs should mention Website Console intake template package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai site --from-intake` Website Console from-intake filled Markdown intake import coverage for workspace JSON stdout, stdin workspace JSON stdout, stdin next-actions JSON stdout, stdin next-actions JSON `--out` file output-file persistence, stdin next-actions human `--out` file output-file persistence, stdin workspace JSON `--out` file output-file persistence, workspace JSON `--out` file output-file persistence, from-intake task generation, stdin from-intake task JSON `--out` output-file persistence, from-intake task handoff bundle generation, stdin from-intake task handoff bundle generation, stdin handoff bundle generation, and from-intake handoff bundle generation in installed-bin and one-shot paths,',
+        'Website Console filled intake import coverage,',
+        'README.md is missing site from-intake package smoke phrase',
+        'release policy docs should mention Website Console from-intake package smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'including public registry `design-ai site` Website Console export validation, including public registry `design-ai site --stdin --next-actions --json` next-action operator checklist contract with `mcpProbeCounts` probe count telemetry plus shared smoke assertion self-test coverage for Website Console next-actions MCP probe counts plus public registry `design-ai site --stdin --next-actions --json --out file --force` next-action operator checklist output-file persistence plus public registry `design-ai site --stdin --next-actions --out file --force` next-action human checklist output-file persistence, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage, handoff bundle, bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata for deterministic-local, no-external-call, and no-target-repo-mutation handoff validation, bundle-check/compare/handoff `mcpProbeCounts` probe count telemetry plus package smoke self-test coverage for Website Console bundle MCP probe counts plus bundled Website Console `mcp-probes.json` saved probe evidence payload assertion instead of the full `site --mcp-check --probes --json` response, bundle-repair, refactor task generation, and task-selected prompt generation',
+        'including public registry Website Console coverage',
+        'README.md is missing site registry smoke phrase',
+        'release policy docs should mention public registry Website Console smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'including public registry `design-ai site --stdin --next-actions --json` next-action operator checklist contract with `mcpProbeCounts` probe count telemetry plus shared smoke assertion self-test coverage for Website Console next-actions MCP probe counts plus ',
+        'including ',
+        'README.md is missing site next-actions registry smoke phrase',
+        'release policy docs should mention public registry Website Console next-actions smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        ' with `mcpProbeCounts` probe count telemetry',
+        '',
+        'README.md is missing site next-actions MCP probe counts phrase',
+        'release policy docs should mention Website Console next-actions MCP probe counts',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus shared smoke assertion self-test coverage for Website Console next-actions MCP probe counts',
+        '',
+        'README.md is missing site next-actions MCP probe count self-test phrase',
+        'release policy docs should mention Website Console next-actions MCP probe count smoke self-tests',
+    ),
+    (
+        'README.md',
+        'english',
+        'MCP readiness probes, ',
+        '',
+        'README.md is missing site registry smoke phrase',
+        'release policy docs should mention public registry Website Console MCP probe smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, ',
+        '',
+        'README.md is missing site registry smoke phrase',
+        'release policy docs should mention public registry Website Console MCP readiness probe JSON out-file smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'MCP probe action plan',
+        'MCP probe plan',
+        'README.md is missing site registry smoke phrase',
+        'release policy docs should mention public registry Website Console MCP probe action plan smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage, ',
+        '',
+        'README.md is missing site registry smoke phrase',
+        'release policy docs should mention public registry Website Console MCP probe action plan JSON smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage',
+        'MCP probe action plan JSON',
+        'README.md is missing site registry smoke phrase',
+        'release policy docs should mention public registry Website Console MCP probe action plan JSON out-file smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'MCP readiness probe JSON with `--out` file-write confirmation',
+        'MCP readiness probe JSON',
+        'README.md is missing site mcp-check package smoke phrase',
+        'release policy docs should mention Website Console MCP readiness probe JSON out-file smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'MCP probe action plan',
+        'MCP probe plan',
+        'README.md is missing site mcp-plan package smoke phrase',
+        'release policy docs should mention Website Console MCP probe action plan smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai site --stdin --mcp-plan --probes --json` Website Console MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage',
+        'Website Console MCP probe plan JSON coverage',
+        'README.md is missing site mcp-plan package smoke phrase',
+        'release policy docs should mention Website Console MCP probe action plan JSON smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        ' with `--out` file-write confirmation',
+        '',
+        'README.md is missing site mcp-plan package smoke phrase',
+        'release policy docs should mention Website Console MCP probe action plan JSON out-file smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage',
+        '',
+        'README.md is missing site MCP action plan embedded command phrase',
+        'release policy docs should mention embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage',
+        '',
+        'README.md is missing site MCP action plan human output command parity phrase',
+        'release policy docs should mention MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage',
+        '',
+        'README.md is missing site MCP action plan human output command smoke phrase',
+        'release policy docs should mention MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus MCP action plan emitted check JSON command smoke coverage',
+        '',
+        'README.md is missing site MCP action plan check JSON command smoke phrase',
+        'release policy docs should mention MCP action plan emitted check JSON command smoke coverage',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage',
+        '',
+        'README.md is missing site MCP action plan self-archive command smoke phrase',
+        'release policy docs should mention MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus shared MCP action plan command mapping self-test coverage',
+        '',
+        'README.md is missing site MCP action plan command mapping self-test phrase',
+        'release policy docs should mention shared MCP action plan command mapping self-test coverage',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai site --stdin --graph --json` Website Console workflow graph export',
+        'Website Console graph coverage',
+        'README.md is missing site workflow graph package smoke phrase',
+        'release policy docs should mention Website Console workflow graph smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus packed-tarball and public-registry smoke for warning-state Website Console bundle-compare strict failures where identical warning bundles keep `sameBundle: true` while exiting non-zero under `--strict`',
+        '',
+        'README.md is missing site bundle-compare warning strict smoke phrase',
+        'release policy docs should mention warning-state bundle-compare strict smoke coverage',
+    ),
+    (
+        'README.md',
+        'english',
+        'bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata for deterministic-local, no-external-call, and no-target-repo-mutation handoff validation',
+        'generic bundle boundary coverage',
+        'README.md is missing site bundle boundary metadata phrase',
+        'release policy docs should mention Website Console bundle boundary metadata',
+    ),
+    (
+        'README.md',
+        'english',
+        'bundle-check/compare/handoff `mcpProbeCounts` probe count telemetry',
+        'bundle-check/compare/handoff',
+        'README.md is missing site bundle MCP probe counts phrase',
+        'release policy docs should mention Website Console bundle MCP probe counts',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus package smoke self-test coverage for Website Console bundle MCP probe counts',
+        '',
+        'README.md is missing site bundle MCP probe count self-test phrase',
+        'release policy docs should mention Website Console bundle MCP probe count self-tests',
+    ),
+    (
+        'README.md',
+        'english',
+        ' plus bundled Website Console `mcp-probes.json` saved probe evidence payload assertion instead of the full `site --mcp-check --probes --json` response',
+        '',
+        'README.md is missing site bundle mcp-probes payload assertion phrase',
+        'release policy docs should mention Website Console bundle mcp-probes payload assertion',
+    ),
+    (
+        'README.md',
+        'english',
+        'public `npm exec --package @design-ai/cli@<version>` registry path',
+        'public registry install path',
+        'README.md is missing public registry npm exec smoke phrase',
+        'release policy docs should mention public registry npm exec smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`npm run registry:smoke`',
+        'the registry smoke command',
+        'README.md is missing registry smoke command phrase',
+        'release policy docs should mention registry:smoke command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry JSON `design-ai learn --feedback` output',
+        'public registry learning feedback overview',
+        'README.md is missing registry learn feedback smoke phrase',
+        'release policy docs should mention public registry learn feedback smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'plus public registry learn feedback `--out` file-write confirmation',
+        'plus public registry learning feedback saved artifact',
+        'README.md is missing registry learn feedback smoke phrase',
+        'release policy docs should mention public registry learn feedback --out smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry JSON `design-ai learn --init` preview/apply output',
+        'public registry learning init overview',
+        'README.md is missing registry learn init smoke phrase',
+        'release policy docs should mention public registry learn init smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry JSON `design-ai learn --verify` output',
+        'public registry learning verification overview',
+        'README.md is missing registry learn verify smoke phrase',
+        'release policy docs should mention public registry learn verify smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry learn verify `--out` file-write confirmation',
+        'public registry learning verification saved artifact',
+        'README.md is missing registry learn verify smoke phrase',
+        'release policy docs should mention public registry learn verify --out smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry JSON `design-ai learn --backup` output',
+        'public registry learning backup overview',
+        'README.md is missing registry learn backup smoke phrase',
+        'release policy docs should mention public registry learn backup smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry learn backup `--out` file-write confirmation',
+        'public registry learning backup saved artifact',
+        'README.md is missing registry learn backup smoke phrase',
+        'release policy docs should mention public registry learn backup --out smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry JSON `design-ai learn --restore` preview/apply output',
+        'public registry learning restore overview',
+        'README.md is missing registry learn restore smoke phrase',
+        'release policy docs should mention public registry learn restore smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry `design-ai learn --restore-backups` restore rollback backup inventory coverage',
+        'public registry restore rollback inventory coverage',
+        'README.md is missing registry learn restore-backups smoke phrase',
+        'release policy docs should mention public registry learn restore-backups smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry `design-ai learn --restore-backups --prune` restore rollback backup pruning coverage',
+        'public registry restore rollback cleanup coverage',
+        'README.md is missing registry learn restore-backups prune smoke phrase',
+        'release policy docs should mention public registry learn restore-backups prune smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry JSON `design-ai learn --import` dry-run/apply output',
+        'public registry learning import overview',
+        'README.md is missing registry learn import smoke phrase',
+        'release policy docs should mention public registry learn import smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'plus public registry learn import `--out` file-write confirmation',
+        'plus public registry learning import saved artifact',
+        'README.md is missing registry learn import smoke phrase',
+        'release policy docs should mention public registry learn import --out smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry JSON `design-ai learn --redact` output',
+        'public registry learning redaction overview',
+        'README.md is missing registry learn redact smoke phrase',
+        'release policy docs should mention public registry learn redact smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry human / JSON `design-ai learn --stats` profile summary output',
+        'public registry learning profile overview',
+        'README.md is missing registry learn stats smoke phrase',
+        'release policy docs should mention public registry learn stats smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry learn stats `--out` file-write confirmation',
+        'public registry learning stats saved artifact',
+        'README.md is missing registry learn stats smoke phrase',
+        'release policy docs should mention public registry learn stats --out smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry query-filtered learn list explanation/export JSON output',
+        'public registry learning query overview',
+        'README.md is missing registry learn query explain smoke phrase',
+        'release policy docs should mention public registry learn query explanation/export smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`npm run package:check`',
+        'the package contents command',
+        'README.md is missing package contents command phrase',
+        'release policy docs should mention package:check command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        'package contents check',
+        'package file review',
+        'README.md is missing package contents check phrase',
+        'release policy docs should mention package contents checks',
+    ),
+    (
+        'README.md',
+        'english',
+        '`npm run release:metadata`',
+        'the release metadata command',
+        'README.md is missing release metadata command phrase',
+        'release policy docs should mention release:metadata command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        '`npm run release:metadata` release metadata check',
+        'release manifest review',
+        'README.md is missing release metadata check phrase',
+        'release policy docs should mention release metadata checks',
+    ),
+    (
+        'README.md',
+        'english',
+        'release metadata JSON `product_readiness_checked: true` Product Readiness guard coverage',
+        'release metadata JSON summary',
+        'README.md is missing release metadata Product Readiness JSON phrase',
+        'release policy docs should mention Product Readiness release metadata JSON coverage',
+    ),
+    (
+        'README.md',
+        'english',
+        '`npm test`',
+        'the CLI test command',
+        'README.md is missing CLI unit test command phrase',
+        'release policy docs should mention npm test CLI unit test command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        'CLI unit tests',
+        'CLI checks',
+        'README.md is missing CLI unit test phrase',
+        'release policy docs should mention CLI unit tests',
+    ),
+    (
+        'README.md',
+        'english',
+        '`npm run audit:strict`',
+        'the repository audit command',
+        'README.md is missing repository audit command phrase',
+        'release policy docs should mention audit:strict command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        'all 8 audits',
+        'the audit suite',
+        'README.md is missing repository audit gate phrase',
+        'release policy docs should mention repository audit gate coverage',
+    ),
+    (
+        'README.md',
+        'english',
+        '`git diff --check`',
+        'the whitespace command',
+        'README.md is missing whitespace check command phrase',
+        'release policy docs should mention git diff whitespace check command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        'whitespace checks',
+        'spacing review',
+        'README.md is missing whitespace check phrase',
+        'release policy docs should mention whitespace checks',
+    ),
+    (
+        'README.md',
+        'english',
+        '`npm run release:self-test`',
+        'the assertion fixture command',
+        'README.md is missing release self-test command phrase',
+        'release policy docs should mention release:self-test command guidance',
+    ),
+    (
+        'README.ko.md',
+        'korean',
+        'human `design-ai version`',
+        '`design-ai version`',
+        'README.ko.md is missing human version smoke phrase',
+        'release policy docs should mention human version smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'route JSON output, route catalog output, and route stdin input',
+        'route output',
+        'README.md is missing route JSON catalog stdin smoke phrase',
+        'release policy docs should mention route JSON catalog stdin smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'route JSON output',
+        'route output',
+        'README.md is missing route JSON output phrase',
+        'release policy docs should mention route JSON output smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'route catalog output',
+        'route output',
+        'README.md is missing route catalog output phrase',
+        'release policy docs should mention route catalog output smoke',
+    ),
+    (
+        'README.ko.md',
+        'korean',
+        'route stdin 입력',
+        'route 입력',
+        'README.ko.md is missing route stdin input phrase',
+        'release policy docs should mention route stdin input smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'route eval, prompt eval, and pack eval checkpoint output',
+        'agent eval checkpoint output',
+        'README.md is missing agent eval smoke phrase',
+        'release policy docs should mention route/prompt/pack eval smoke',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        'check examples output, check artifact output, check stdin output, check all-routes output, and check learning capture output',
+        'check output',
+        'docs/DISTRIBUTION.md is missing check command smoke phrase',
+        'release policy docs should mention check command smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'check examples output',
+        'check output',
+        'README.md is missing check examples output phrase',
+        'release policy docs should mention check examples output smoke',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        'check artifact output',
+        'check output',
+        'docs/DISTRIBUTION.md is missing check artifact output phrase',
+        'release policy docs should mention check artifact output smoke',
+    ),
+    (
+        'README.ko.md',
+        'korean',
+        'check stdin 출력',
+        'check 출력',
+        'README.ko.md is missing check stdin output phrase',
+        'release policy docs should mention check stdin output smoke',
+    ),
+    (
+        'docs/RELEASE-CHECKLIST.md',
+        'english',
+        'check all-routes output',
+        'check output',
+        'docs/RELEASE-CHECKLIST.md is missing check all-routes output phrase',
+        'release policy docs should mention check all-routes output smoke',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        'check learning capture output',
+        'check output',
+        'docs/DISTRIBUTION.md is missing check learning capture output phrase',
+        'release policy docs should mention check learning capture output smoke',
+    ),
+    (
+        'README.ko.md',
+        'korean',
+        '`design-ai version --json`',
+        'the JSON version command',
+        'README.ko.md is missing version JSON command phrase',
+        'release policy docs should mention design-ai version --json command guidance',
+    ),
+    (
+        'README.ko.md',
+        'korean',
+        'machine-readable version metadata',
+        'machine-readable version output',
+        'README.ko.md is missing version JSON metadata phrase',
+        'release policy docs should mention version JSON metadata smoke',
+    ),
+    (
+        'README.ko.md',
+        'korean',
+        '`design-ai help`',
+        'the help command',
+        'README.ko.md is missing top-level help command phrase',
+        'release policy docs should mention design-ai help command guidance',
+    ),
+    (
+        'README.ko.md',
+        'korean',
+        'top-level help 출력',
+        'help 출력',
+        'README.ko.md is missing top-level help smoke phrase',
+        'release policy docs should mention top-level help smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai help --json`',
+        'the JSON help command',
+        'README.md is missing help JSON command phrase',
+        'release policy docs should mention design-ai help --json command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        'topic catalog with probe-capable Website Console site help usage output',
+        'JSON help output',
+        'README.md is missing help JSON topic catalog phrase',
+        'release policy docs should mention help JSON topic catalog smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        ' with probe-capable Website Console site help usage',
+        '',
+        'README.md is missing site help usage phrase',
+        'release policy docs should mention probe-capable Website Console site help usage',
+    ),
+    (
+        'README.md',
+        'english',
+        ', shared Website Console site help topic example smoke assertions',
+        '',
+        'README.md is missing site help topic example phrase',
+        'release policy docs should mention shared Website Console site help topic example smoke assertions',
+    ),
+    (
+        'README.md',
+        'english',
+        ' including the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown help example plus from-intake stdin help examples (`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`)',
+        '',
+        'README.md is missing site next-actions help example phrase',
+        'release policy docs should mention Website Console next-actions Markdown help example plus from-intake stdin help examples (`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`)',
+    ),
+    (
+        'README.ko.md',
+        'korean',
+        'functional alias 출력',
+        'alias 출력',
+        'README.ko.md is missing alias smoke phrase',
+        'release policy docs should mention command and functional alias smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'command alias help',
+        'alias help',
+        'README.md is missing command alias smoke phrase',
+        'release policy docs should mention command alias smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'functional alias output',
+        'alias output',
+        'README.md is missing functional alias smoke phrase',
+        'release policy docs should mention functional alias smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'command-specific help topic output',
+        'command help output',
+        'README.md is missing help topic smoke phrase',
+        'release policy docs should mention command-specific help topic smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'all three `list` catalog domains in human and JSON mode',
+        '`list --json` output',
+        'README.md is missing list catalog domains phrase',
+        'release policy docs should mention list catalog domain coverage',
+    ),
+    (
+        'README.ko.md',
+        'korean',
+        'corpus discovery 출력',
+        'corpus discovery',
+        'README.ko.md is missing corpus discovery JSON phrase',
+        'release policy docs should mention corpus discovery JSON smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'route --explain',
+        'route',
+        'README.md is missing show-lines route-explain smoke phrase',
+        'release policy docs should mention show-lines and route-explain smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`show --lines` output',
+        '`show --lines`',
+        'README.md is missing show-lines output phrase',
+        'release policy docs should mention show-lines output smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`route --explain` output',
+        '`route --explain`',
+        'README.md is missing route-explain output phrase',
+        'release policy docs should mention route-explain output smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'unknown command failure, unknown help-topic failure, unknown list-domain failure, and unknown search-dir failure',
+        'unknown failures',
+        'README.md is missing unknown command failure smoke phrase',
+        'release policy docs should mention unknown command/help/list/search-dir failure smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'unknown command failure',
+        'unknown failure',
+        'README.md is missing unknown command-only failure phrase',
+        'release policy docs should mention unknown command failure smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'unknown help-topic failure',
+        'unknown help failure',
+        'README.md is missing unknown help-topic failure phrase',
+        'release policy docs should mention unknown help-topic failure smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'unknown list-domain failure',
+        'unknown list failure',
+        'README.md is missing unknown list-domain failure phrase',
+        'release policy docs should mention unknown list-domain failure smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'unknown search-dir failure',
+        'unknown search failure',
+        'README.md is missing unknown search-dir failure phrase',
+        'release policy docs should mention unknown search-dir failure smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'unknown route-id suggestion, unknown option suggestion, unknown value suggestion, and numeric range failure',
+        'suggestion failures',
+        'README.md is missing suggestion failure smoke phrase',
+        'release policy docs should mention suggestion and numeric range failure smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'unknown route-id suggestion',
+        'unknown route suggestion',
+        'README.md is missing unknown route-id suggestion phrase',
+        'release policy docs should mention unknown route-id suggestion smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'unknown option suggestion',
+        'unknown flag suggestion',
+        'README.md is missing unknown option suggestion phrase',
+        'release policy docs should mention unknown option suggestion smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'unknown value suggestion',
+        'unknown parameter suggestion',
+        'README.md is missing unknown value suggestion phrase',
+        'release policy docs should mention unknown value suggestion smoke',
+    ),
+    (
+        'README.ko.md',
+        'korean',
+        'numeric range failure',
+        'numeric range',
+        'README.ko.md is missing numeric range failure phrase',
+        'release policy docs should mention numeric range failure smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'prompt JSON output, prompt markdown output, prompt from-file output, prompt stdin output, pack JSON output, pack markdown output, pack from-file output, and pack stdin output',
+        'prompt/pack output',
+        'README.md is missing prompt-pack mode smoke phrase',
+        'release policy docs should mention prompt/pack mode smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'prompt JSON output',
+        'prompt output',
+        'README.md is missing prompt JSON output phrase',
+        'release policy docs should mention prompt JSON output smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'prompt markdown output',
+        'prompt output',
+        'README.md is missing prompt markdown output phrase',
+        'release policy docs should mention prompt markdown output smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'prompt from-file output',
+        'prompt file output',
+        'README.md is missing prompt from-file output phrase',
+        'release policy docs should mention prompt from-file output smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'prompt stdin output',
+        'prompt input output',
+        'README.md is missing prompt stdin output phrase',
+        'release policy docs should mention prompt stdin output smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'pack JSON output',
+        'pack output',
+        'README.md is missing pack JSON output phrase',
+        'release policy docs should mention pack JSON output smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'pack markdown output',
+        'pack output',
+        'README.md is missing pack markdown output phrase',
+        'release policy docs should mention pack markdown output smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'pack from-file output',
+        'pack file output',
+        'README.md is missing pack from-file output phrase',
+        'release policy docs should mention pack from-file output smoke',
+    ),
+    (
+        'README.ko.md',
+        'korean',
+        'pack stdin 출력',
+        'pack 입력 출력',
+        'README.ko.md is missing pack stdin output phrase',
+        'release policy docs should mention pack stdin output smoke',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        'file-write confirmations',
+        'write confirmations',
+        'docs/DISTRIBUTION.md is missing prompt-pack output smoke phrase',
+        'release policy docs should mention prompt/pack output-file smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'forced `--out`',
+        'output-file',
+        'README.md is missing prompt-pack forced output-file phrase',
+        'release policy docs should mention prompt/pack forced output-file smoke',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        'file-write confirmations',
+        'write confirmations',
+        'docs/DISTRIBUTION.md is missing prompt-pack file-write confirmation phrase',
+        'release policy docs should mention prompt/pack file-write confirmation smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'human `design-ai install` output plus ',
+        'install output plus ',
+        'README.md is missing human install lifecycle phrase',
+        'release policy docs should mention human install lifecycle smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'human `design-ai install` output',
+        'human install command',
+        'README.md is missing human install output phrase',
+        'release policy docs should mention human install output smoke',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        '`design-ai install --json`',
+        'the JSON install command',
+        'docs/DISTRIBUTION.md is missing install JSON command phrase',
+        'release policy docs should mention design-ai install --json command guidance',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        'machine-readable install lifecycle output',
+        'machine-readable install output',
+        'docs/DISTRIBUTION.md is missing install JSON lifecycle phrase',
+        'release policy docs should mention install JSON lifecycle smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'human `design-ai status` output plus JSON status output',
+        'status output',
+        'README.md is missing human status lifecycle phrase',
+        'release policy docs should mention human status lifecycle smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'human `design-ai status` output',
+        'human status command',
+        'README.md is missing human status output phrase',
+        'release policy docs should mention human status output smoke',
+    ),
+    (
+        'docs/RELEASE-CHECKLIST.md',
+        'english',
+        'human `design-ai uninstall` output plus ',
+        'uninstall output plus ',
+        'docs/RELEASE-CHECKLIST.md is missing human uninstall lifecycle phrase',
+        'release policy docs should mention human uninstall lifecycle smoke',
+    ),
+    (
+        'docs/RELEASE-CHECKLIST.md',
+        'english',
+        'human `design-ai uninstall` output',
+        'human uninstall command',
+        'docs/RELEASE-CHECKLIST.md is missing human uninstall output phrase',
+        'release policy docs should mention human uninstall output smoke',
+    ),
+    (
+        'docs/RELEASE-CHECKLIST.md',
+        'english',
+        '`design-ai uninstall --json`',
+        'the JSON uninstall command',
+        'docs/RELEASE-CHECKLIST.md is missing uninstall JSON command phrase',
+        'release policy docs should mention design-ai uninstall --json command guidance',
+    ),
+    (
+        'docs/RELEASE-CHECKLIST.md',
+        'english',
+        'machine-readable uninstall lifecycle output',
+        'machine-readable uninstall output',
+        'docs/RELEASE-CHECKLIST.md is missing uninstall JSON lifecycle phrase',
+        'release policy docs should mention uninstall JSON lifecycle smoke',
+    ),
+    (
+        'docs/DISTRIBUTION.ko.md',
+        'korean',
+        'audit --strict --quiet',
+        'audit --strict',
+        'docs/DISTRIBUTION.ko.md is missing audit strict-quiet smoke phrase',
+        'release policy docs should mention audit strict-quiet smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'human `design-ai audit --strict --quiet` output',
+        'human audit command',
+        'README.md is missing audit human output phrase',
+        'release policy docs should mention human audit strict-quiet output smoke',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        '`design-ai audit --strict --quiet --json`',
+        'the JSON audit command',
+        'docs/DISTRIBUTION.md is missing audit JSON command phrase',
+        'release policy docs should mention design-ai audit --strict --quiet --json command guidance',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        'machine-readable repository-audit output',
+        'machine-readable audit output',
+        'docs/DISTRIBUTION.md is missing audit JSON repository-audit phrase',
+        'release policy docs should mention audit JSON repository-audit output smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'JSON `design-ai learn --feedback` output',
+        'local preference smoke',
+        'README.md is missing learn feedback smoke phrase',
+        'release policy docs should mention learn feedback smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'plus learn feedback `--out` file-write confirmation',
+        'plus local feedback saved artifact',
+        'README.md is missing learn feedback smoke phrase',
+        'release policy docs should mention learn feedback --out smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'JSON `design-ai learn --backup` output',
+        'local profile export',
+        'README.md is missing learn backup smoke phrase',
+        'release policy docs should mention learn backup smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'JSON `design-ai learn --redact` output',
+        'redacted local profile export',
+        'README.md is missing learn redact smoke phrase',
+        'release policy docs should mention learn redact smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'learn JSON `--out` file-write confirmation and forced overwrite coverage',
+        'learning artifact save behavior',
+        'README.md is missing learn output file smoke phrase',
+        'release policy docs should mention learn output-file smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'JSON `design-ai learn --verify` output',
+        'local learning validation',
+        'README.md is missing learn verify smoke phrase',
+        'release policy docs should mention learn verify smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'learn verify `--out` file-write confirmation',
+        'learning validation saved artifact',
+        'README.md is missing learn verify smoke phrase',
+        'release policy docs should mention learn verify --out smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'JSON `design-ai learn --restore` preview/apply output',
+        'local learning profile replacement',
+        'README.md is missing learn restore smoke phrase',
+        'release policy docs should mention learn restore smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'learn restore `--out` file-write confirmation',
+        'learning restore saved artifact',
+        'README.md is missing learn restore smoke phrase',
+        'release policy docs should mention learn restore --out smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'learn restore `--backup-file` path coverage',
+        'learning restore explicit rollback path coverage',
+        'README.md is missing learn restore rollback backup smoke phrase',
+        'release policy docs should mention learn restore --backup-file smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'JSON `design-ai learn --import` dry-run/apply output',
+        'local learning profile portability',
+        'README.md is missing learn import smoke phrase',
+        'release policy docs should mention learn import smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'plus learn import `--out` file-write confirmation',
+        'plus local learning import saved artifact',
+        'README.md is missing learn import smoke phrase',
+        'release policy docs should mention learn import --out smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'human / JSON `design-ai learn --stats` profile summary output',
+        'local learning profile overview',
+        'README.md is missing learn stats smoke phrase',
+        'release policy docs should mention learn stats smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'learn stats `--out` file-write confirmation',
+        'learning stats saved artifact',
+        'README.md is missing learn stats smoke phrase',
+        'release policy docs should mention learn stats --out smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'query-filtered learn list explanation/export JSON output',
+        'local learning query inspection',
+        'README.md is missing learn query explain smoke phrase',
+        'release policy docs should mention query-filtered learn explanation/export smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'brief-relevant prompt/pack learning selection',
+        'local learning prompt behavior',
+        'README.md is missing learn relevance smoke phrase',
+        'release policy docs should mention prompt/pack learning relevance smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'human / JSON `design-ai learn --audit` cleanup suggestion output',
+        'human learning audit output',
+        'README.md is missing learn audit cleanup smoke phrase',
+        'release policy docs should mention learn audit cleanup suggestion smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'plus learn audit `--out` file-write confirmation',
+        'without audit output artifact wording',
+        'README.md is missing learn audit out smoke phrase',
+        'release policy docs should mention learn audit --out smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'public registry human / JSON `design-ai learn --audit` cleanup suggestion output',
+        'public registry learning cleanup overview',
+        'README.md is missing registry learn audit cleanup smoke phrase',
+        'release policy docs should mention public registry learn audit cleanup smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'plus public registry learn audit `--out` file-write confirmation',
+        'without registry audit output artifact wording',
+        'README.md is missing registry learn audit out smoke phrase',
+        'release policy docs should mention public registry learn audit --out smoke',
+    ),
+    (
+        'docs/RELEASE-CHECKLIST.md',
+        'english',
+        'doctor --strict',
+        'doctor',
+        'docs/RELEASE-CHECKLIST.md is missing doctor strict smoke phrase',
+        'release policy docs should mention doctor strict smoke',
+    ),
+    (
+        'docs/RELEASE-CHECKLIST.md',
+        'english',
+        '`design-ai doctor --strict`',
+        '`doctor --strict`',
+        'docs/RELEASE-CHECKLIST.md is missing doctor strict command phrase',
+        'release policy docs should mention exact design-ai doctor --strict command guidance',
+    ),
+    (
+        'docs/RELEASE-CHECKLIST.md',
+        'english',
+        'human diagnostics',
+        'plain diagnostics',
+        'docs/RELEASE-CHECKLIST.md is missing doctor human diagnostics phrase',
+        'release policy docs should mention doctor human diagnostics guidance',
+    ),
+    (
+        'docs/RELEASE-CHECKLIST.md',
+        'english',
+        'human diagnostics output from `design-ai doctor --strict`',
+        'human diagnostics',
+        'docs/RELEASE-CHECKLIST.md is missing doctor human diagnostics output phrase',
+        'release policy docs should mention doctor human diagnostics output guidance',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        '`design-ai doctor --json`',
+        '`doctor --json`',
+        'docs/DISTRIBUTION.md is missing doctor JSON command phrase',
+        'release policy docs should mention exact design-ai doctor --json command guidance',
+    ),
+    (
+        'docs/RELEASE-CHECKLIST.md',
+        'english',
+        'machine-readable diagnostics output',
+        'JSON diagnostics output',
+        'docs/RELEASE-CHECKLIST.md is missing doctor JSON diagnostics output phrase',
+        'release policy docs should mention doctor JSON diagnostics output guidance',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        '`design-ai status --json`',
+        'the JSON status command',
+        'docs/DISTRIBUTION.md is missing status JSON command phrase',
+        'release policy docs should mention design-ai status --json command guidance',
+    ),
+    (
+        'docs/DISTRIBUTION.md',
+        'english',
+        'machine-readable install-state output',
+        'machine-readable status output',
+        'docs/DISTRIBUTION.md is missing status JSON install-state phrase',
+        'release policy docs should mention status JSON install-state smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        'update --dry-run',
+        'update',
+        'README.md is missing update dry-run lifecycle phrase',
+        'release policy docs should mention update dry-run lifecycle smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai update --dry-run`',
+        '`update --dry-run`',
+        'README.md is missing update dry-run command phrase',
+        'release policy docs should mention exact design-ai update --dry-run command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        'human `design-ai update --dry-run` output',
+        'human update preview',
+        'README.md is missing update dry-run human output phrase',
+        'release policy docs should mention human update dry-run output smoke',
+    ),
+    (
+        'README.md',
+        'english',
+        '`design-ai update --dry-run --json`',
+        '`update --dry-run --json`',
+        'README.md is missing update dry-run JSON command phrase',
+        'release policy docs should mention exact design-ai update --dry-run --json command guidance',
+    ),
+    (
+        'README.md',
+        'english',
+        'machine-readable update plan',
+        'machine-readable update output',
+        'README.md is missing update dry-run plan phrase',
+        'release policy docs should mention machine-readable update plan guidance',
+    ),
+)
+
+
+def assert_release_policy_doc_drift_cases(
+    *,
+    package_json: dict,
+    plugin_json: dict,
+    changelog: str,
+    roadmap: str,
+    release_policy_docs: dict[str, str],
+    policy_sources: dict[str, str],
+) -> None:
+    """Run every RELEASE_POLICY_DOC_DRIFT_CASES row and report the failing guard."""
+    for doc, source, old, new, expected, why in RELEASE_POLICY_DOC_DRIFT_CASES:
+        mutated = policy_sources[source].replace(old, new)
+        if mutated == policy_sources[source]:
+            raise SystemExit(
+                f"release policy drift case did not mutate {doc}: {old!r} is absent from the {source} fixture"
+            )
+        summary = release_metadata_summary(
+            package_json=package_json,
+            plugin_json=plugin_json,
+            changelog_text=changelog,
+            roadmap_text=roadmap,
+            release_policy_docs={**release_policy_docs, doc: mutated},
+            audit_count=8,
+        )
+        assert_condition(expected in "\n".join(summary["errors"]), why)
+
+
 def run_self_test() -> int:
     package_json = {
         "version": "1.2.3",
@@ -4753,141 +6331,13 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "JSON formatter should keep Korean structured errors readable",
     )
 
-    local_ci_command_drift = release_metadata_summary(
+    assert_release_policy_doc_drift_cases(
         package_json=package_json,
         plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace("npm run ci:local", "npm run release:check"),
-        },
-        audit_count=8,
-    )
-    local_ci_command_drift_errors = "\n".join(local_ci_command_drift["errors"])
-    assert_condition(
-        "README.md is missing local CI command phrase" in local_ci_command_drift_errors,
-        "release policy docs should mention ci:local command guidance",
-    )
-
-    release_check_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`npm run release:check`",
-                "the release command sequence",
-            ),
-        },
-        audit_count=8,
-    )
-    release_check_drift_errors = "\n".join(release_check_drift["errors"])
-    assert_condition(
-        "README.md is missing release check command phrase" in release_check_drift_errors,
-        "release policy docs should mention release:check command guidance",
-    )
-
-    mcp_probes_release_check_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " The same `npm run release:check` gate preserves Website Console bundle `mcp-probes.json` saved-payload guard phases through package contents, release self-tests, and packed-tarball smoke.",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    mcp_probes_release_check_drift_errors = "\n".join(
-        mcp_probes_release_check_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing Website Console mcp-probes release-check evidence phrase"
-            in mcp_probes_release_check_drift_errors
-        ),
-        "release policy docs should tie release:check to mcp-probes saved-payload guard evidence",
-    )
-
-    bundle_boundary_release_check_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " The same `npm run release:check` gate also preserves Website Console bundle boundary metadata guard phases for bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata plus full `release:self-test` evidence recording through unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    bundle_boundary_release_check_drift_errors = "\n".join(
-        bundle_boundary_release_check_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing Website Console bundle boundary release-check evidence phrase"
-            in bundle_boundary_release_check_drift_errors
-        ),
-        "release policy docs should tie release:check to bundle boundary metadata guard evidence",
-    )
-
-    product_readiness_policy_full_gate_release_check_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " The same `npm run release:check` gate now also preserves the Product Readiness release policy full gate guard for Website Console bundle boundary metadata full `release:check` evidence through unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    product_readiness_policy_full_gate_release_check_drift_errors = "\n".join(
-        product_readiness_policy_full_gate_release_check_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing Product Readiness release policy full gate release-check evidence phrase"
-            in product_readiness_policy_full_gate_release_check_drift_errors
-        ),
-        "release policy docs should tie release:check to Product Readiness full gate evidence",
-    )
-
-    product_readiness_policy_full_gate_evidence_release_check_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " The same `npm run release:check` gate now also preserves the Product Readiness release policy full gate evidence guard through unit tests, strict audits, whitespace checks, package contents, release metadata, release self-tests, and packed-tarball smoke.",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    product_readiness_policy_full_gate_evidence_release_check_drift_errors = "\n".join(
-        product_readiness_policy_full_gate_evidence_release_check_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing Product Readiness release policy full gate evidence guard release-check phrase"
-            in product_readiness_policy_full_gate_evidence_release_check_drift_errors
-        ),
-        "release policy docs should tie release:check to Product Readiness full gate evidence guard",
+        changelog=changelog,
+        roadmap=roadmap,
+        release_policy_docs=release_policy_docs,
+        policy_sources={"english": english_policy_doc, "korean": korean_policy_doc},
     )
 
     packed_tarball_installed_bin_drift = release_metadata_summary(
@@ -4952,171 +6402,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "release policy docs should mention packed-tarball installed-bin smoke",
     )
 
-    repair_guidance_helper_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                ", shared repair guidance smoke helpers",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    repair_guidance_helper_drift_errors = "\n".join(repair_guidance_helper_drift["errors"])
-    assert_condition(
-        "README.md is missing site bundle-repair package smoke phrase"
-        in repair_guidance_helper_drift_errors,
-        "release policy docs should mention shared repair guidance smoke helpers",
-    )
-
-    repair_report_assertion_helper_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                ", and shared repair report assertion helpers",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    repair_report_assertion_helper_drift_errors = "\n".join(
-        repair_report_assertion_helper_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site bundle-repair package smoke phrase"
-        in repair_report_assertion_helper_drift_errors,
-        "release policy docs should mention shared repair report assertion helpers",
-    )
-
-    mcp_shared_output_assertion_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus shared MCP probe output-file smoke assertions",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    mcp_shared_output_assertion_drift_errors = "\n".join(
-        mcp_shared_output_assertion_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site MCP shared output assertion phrase"
-        in mcp_shared_output_assertion_drift_errors,
-        "release policy docs should mention shared MCP probe output-file smoke assertions",
-    )
-
-    mcp_check_embedded_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus embedded MCP check probe next-step commands",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    mcp_check_embedded_command_drift_errors = "\n".join(
-        mcp_check_embedded_command_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site MCP check embedded command phrase"
-        in mcp_check_embedded_command_drift_errors,
-        "release policy docs should mention embedded MCP check probe next-step commands",
-    )
-
-    mcp_check_executable_embedded_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus executable embedded MCP check probe command smoke coverage",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    mcp_check_executable_embedded_command_drift_errors = "\n".join(
-        mcp_check_executable_embedded_command_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site MCP check executable embedded command smoke phrase"
-            in mcp_check_executable_embedded_command_drift_errors
-        ),
-        "release policy docs should mention executable embedded MCP check probe command smoke coverage",
-    )
-
-    mcp_check_human_command_guidance_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus human MCP check probe command guidance and output-file smoke coverage",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    mcp_check_human_command_guidance_drift_errors = "\n".join(
-        mcp_check_human_command_guidance_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site MCP check human command guidance smoke phrase"
-            in mcp_check_human_command_guidance_drift_errors
-        ),
-        "release policy docs should mention human MCP check probe command guidance and output-file smoke coverage",
-    )
-
-    mcp_check_human_output_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus embedded MCP check probe human report output command",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    mcp_check_human_output_command_drift_errors = "\n".join(
-        mcp_check_human_output_command_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site MCP check human output command phrase"
-            in mcp_check_human_output_command_drift_errors
-        ),
-        "release policy docs should mention embedded MCP check probe human report output command",
-    )
-
     packed_tarball_smoke_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -5152,401 +6437,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "release policy docs should mention packed-tarball smoke",
     )
 
-    package_smoke_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`npm run package:smoke`",
-                "the package smoke command",
-            ),
-        },
-        audit_count=8,
-    )
-    package_smoke_command_drift_errors = "\n".join(package_smoke_command_drift["errors"])
-    assert_condition(
-        "README.md is missing package smoke command phrase" in package_smoke_command_drift_errors,
-        "release policy docs should mention package:smoke command guidance",
-    )
-
-    learn_signals_strict_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "human / JSON `design-ai learn --signals` learning signal registry plus Markdown signal reports via `design-ai learn --signals --report --out learning-signals.md` plus learn signals JSON `--out` file-write confirmations plus `design-ai learn --signals --strict --json` strict gate plus learn signals `--out` file-write confirmation plus `design-ai learn --agent-backlog --report --out agent-backlog.md` focused agent backlog Markdown reports plus agent backlog JSON `--out` file-write confirmations plus `design-ai learn --agent-backlog --strict --json` agent backlog strict gate, focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, Markdown check index section coverage, and check-capture optional-gap semantics in installed-bin and one-shot paths",
-                "human / JSON learning signal registry coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_signals_strict_package_smoke_drift_errors = "\n".join(
-        learn_signals_strict_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn signals strict package smoke phrase"
-            in learn_signals_strict_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn signals strict package smoke",
-    )
-
-    learn_signals_markdown_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "Markdown signal reports via `design-ai learn --signals --report --out learning-signals.md` plus ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_signals_markdown_package_smoke_drift_errors = "\n".join(
-        learn_signals_markdown_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn signals Markdown package smoke phrase"
-            in learn_signals_markdown_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn signals Markdown package smoke",
-    )
-
-    learn_signals_json_out_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "learn signals JSON `--out` file-write confirmations plus ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_signals_json_out_package_smoke_drift_errors = "\n".join(
-        learn_signals_json_out_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn signals JSON out package smoke phrase"
-            in learn_signals_json_out_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn signals JSON out package smoke",
-    )
-
-    learn_agent_backlog_strict_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus `design-ai learn --agent-backlog --strict --json` agent backlog strict gate",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_agent_backlog_strict_package_smoke_drift_errors = "\n".join(
-        learn_agent_backlog_strict_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn agent-backlog strict package smoke phrase"
-            in learn_agent_backlog_strict_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn agent-backlog strict package smoke",
-    )
-
-    learn_agent_backlog_markdown_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai learn --agent-backlog --report --out agent-backlog.md` focused agent backlog Markdown reports plus ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_agent_backlog_markdown_package_smoke_drift_errors = "\n".join(
-        learn_agent_backlog_markdown_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn agent-backlog Markdown package smoke phrase"
-            in learn_agent_backlog_markdown_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn agent-backlog Markdown package smoke",
-    )
-
-    learn_agent_backlog_json_out_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "agent backlog JSON `--out` file-write confirmations plus ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_agent_backlog_json_out_package_smoke_drift_errors = "\n".join(
-        learn_agent_backlog_json_out_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn agent-backlog JSON out package smoke phrase"
-            in learn_agent_backlog_json_out_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn agent-backlog JSON out package smoke",
-    )
-
-    learn_agent_backlog_readiness_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " focused agent backlog readiness summaries, optionalGapDetails JSON field coverage, check index JSON field coverage, Markdown check index section coverage, and check-capture optional-gap semantics",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_agent_backlog_readiness_package_smoke_drift_errors = "\n".join(
-        learn_agent_backlog_readiness_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn agent-backlog readiness package smoke phrase"
-            in learn_agent_backlog_readiness_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn agent-backlog readiness package smoke",
-    )
-
-    learn_agent_backlog_refresh_only_runbook_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " That smoke coverage also preserves the optional refresh-only runbook selection reason so no-command agent backlog output treats refresh as status metadata, not an executable handoff command.",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_agent_backlog_refresh_only_runbook_drift_errors = "\n".join(
-        learn_agent_backlog_refresh_only_runbook_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn agent-backlog refresh-only runbook selection phrase"
-            in learn_agent_backlog_refresh_only_runbook_drift_errors
-        ),
-        "release policy docs should mention learn agent-backlog refresh-only runbook selection semantics",
-    )
-
-    learn_propose_skills_markdown_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai learn --propose-skills --report --out skill-proposals.md` Markdown review artifacts, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_propose_skills_markdown_package_smoke_drift_errors = "\n".join(
-        learn_propose_skills_markdown_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn propose-skills Markdown package smoke phrase"
-            in learn_propose_skills_markdown_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn propose-skills Markdown package smoke",
-    )
-
-    learn_propose_skills_review_file_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai learn --propose-skills --review-file skill-proposals.review.json --json` read-only review decision joins, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_propose_skills_review_file_package_smoke_drift_errors = "\n".join(
-        learn_propose_skills_review_file_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn propose-skills review-file package smoke phrase"
-            in learn_propose_skills_review_file_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn propose-skills review-file package smoke",
-    )
-
-    learn_propose_skills_review_check_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check --json` read-only review-file readiness checks, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_propose_skills_review_check_package_smoke_drift_errors = "\n".join(
-        learn_propose_skills_review_check_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn propose-skills review-check package smoke phrase"
-            in learn_propose_skills_review_check_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn propose-skills review-check package smoke",
-    )
-
-    learn_propose_skills_review_check_markdown_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai learn --propose-skills --review-file skill-proposals.review.json --review-check --report --out skill-proposal-review-check.md` read-only review-check Markdown reports, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_propose_skills_review_check_markdown_package_smoke_drift_errors = "\n".join(
-        learn_propose_skills_review_check_markdown_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn propose-skills review-check Markdown package smoke phrase"
-            in learn_propose_skills_review_check_markdown_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn propose-skills review-check Markdown package smoke",
-    )
-
-    learn_propose_skills_apply_plan_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan --json` read-only accepted proposal apply plans, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_propose_skills_apply_plan_package_smoke_drift_errors = "\n".join(
-        learn_propose_skills_apply_plan_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn propose-skills apply-plan package smoke phrase"
-            in learn_propose_skills_apply_plan_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn propose-skills apply-plan package smoke",
-    )
-
-    learn_propose_skills_apply_plan_human_contract_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "human apply-plan command contract summaries via `design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan` with the `Command contract` section, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_propose_skills_apply_plan_human_contract_package_smoke_drift_errors = "\n".join(
-        learn_propose_skills_apply_plan_human_contract_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn propose-skills apply-plan human command contract package smoke phrase"
-            in learn_propose_skills_apply_plan_human_contract_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn propose-skills apply-plan human command contract package smoke",
-    )
-
-    learn_propose_skills_apply_plan_markdown_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai learn --propose-skills --review-file skill-proposals.review.json --apply-plan --report --out skill-proposal-apply-plan.md` read-only apply-plan Markdown reports, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_propose_skills_apply_plan_markdown_package_smoke_drift_errors = "\n".join(
-        learn_propose_skills_apply_plan_markdown_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn propose-skills apply-plan Markdown package smoke phrase"
-            in learn_propose_skills_apply_plan_markdown_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn propose-skills apply-plan Markdown package smoke",
-    )
-
     learn_propose_skills_json_out_package_smoke_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -5574,131 +6464,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
             in learn_propose_skills_json_out_package_smoke_drift_errors
         ),
         "release policy docs should mention learn propose-skills JSON out package smoke",
-    )
-
-    learn_propose_skills_patch_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai learn --propose-skills --patch --out skill-proposals.patch` unified diff handoffs, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_propose_skills_patch_package_smoke_drift_errors = "\n".join(
-        learn_propose_skills_patch_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn propose-skills patch package smoke phrase"
-            in learn_propose_skills_patch_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn propose-skills patch package smoke",
-    )
-
-    learn_propose_skills_review_template_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai learn --propose-skills --review-template --out skill-proposals.review.json` JSON review templates, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_propose_skills_review_template_package_smoke_drift_errors = "\n".join(
-        learn_propose_skills_review_template_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn propose-skills review-template package smoke phrase"
-            in learn_propose_skills_review_template_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn propose-skills review-template package smoke",
-    )
-
-    learn_propose_skills_min_evidence_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai learn --propose-skills --min-evidence 3 --json` threshold skipping, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_propose_skills_min_evidence_package_smoke_drift_errors = "\n".join(
-        learn_propose_skills_min_evidence_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn propose-skills min-evidence package smoke phrase"
-            in learn_propose_skills_min_evidence_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn propose-skills min-evidence package smoke",
-    )
-
-    learn_propose_skills_strict_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai learn --propose-skills --strict --json` as an expected-failure skill proposal readiness gate",
-                "skill proposal readiness coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_propose_skills_strict_package_smoke_drift_errors = "\n".join(
-        learn_propose_skills_strict_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing learn propose-skills strict package smoke phrase"
-            in learn_propose_skills_strict_package_smoke_drift_errors
-        ),
-        "release policy docs should mention learn propose-skills strict package smoke",
-    )
-
-    workspace_strict_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai workspace --strict --json` workspace strict failure/success readiness checks",
-                "workspace readiness coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    workspace_strict_package_smoke_drift_errors = "\n".join(
-        workspace_strict_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing workspace strict package smoke phrase"
-            in workspace_strict_package_smoke_drift_errors
-        ),
-        "release policy docs should mention workspace strict package smoke",
     )
 
     workspace_learning_eval_package_smoke_drift = release_metadata_summary(
@@ -5761,229 +6526,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "release policy docs should mention workspace restore-backups package smoke",
     )
 
-    workspace_strict_registry_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry `design-ai workspace --strict --json` workspace strict failure/success readiness checks",
-                "public registry workspace readiness checks",
-            ),
-        },
-        audit_count=8,
-    )
-    workspace_strict_registry_smoke_drift_errors = "\n".join(
-        workspace_strict_registry_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing workspace strict registry smoke phrase"
-            in workspace_strict_registry_smoke_drift_errors
-        ),
-        "release policy docs should mention public registry workspace strict smoke",
-    )
-
-    workspace_learning_eval_registry_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "including public registry `design-ai workspace --learning-eval learning-eval.json --strict --json` checkpoint summaries",
-                "including public registry workspace eval coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    workspace_learning_eval_registry_smoke_drift_errors = "\n".join(
-        workspace_learning_eval_registry_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing workspace learning-eval registry smoke phrase"
-            in workspace_learning_eval_registry_smoke_drift_errors
-        ),
-        "release policy docs should mention public registry workspace learning-eval smoke",
-    )
-
-    workspace_restore_backups_registry_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "including public registry `design-ai workspace` workspace restore-backups readiness with restore rollback backup inventory",
-                "including public registry workspace restore backup coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    workspace_restore_backups_registry_smoke_drift_errors = "\n".join(
-        workspace_restore_backups_registry_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing workspace restore-backups registry smoke phrase"
-            in workspace_restore_backups_registry_smoke_drift_errors
-        ),
-        "release policy docs should mention public registry workspace restore-backups smoke",
-    )
-
-    site_intake_template_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai site --intake-template` Website Console intake template coverage for JSON stdout, Markdown stdout, Markdown `--out`, JSON `--out`, and `--language ko` Korean JSON/Markdown plus Korean Markdown `--out` in installed-bin and one-shot paths,",
-                "Website Console intake template package smoke coverage,",
-            ),
-        },
-        audit_count=8,
-    )
-    site_intake_template_package_smoke_drift_errors = "\n".join(
-        site_intake_template_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site intake-template package smoke phrase"
-            in site_intake_template_package_smoke_drift_errors
-        ),
-        "release policy docs should mention Website Console intake template package smoke",
-    )
-
-    site_from_intake_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai site --from-intake` Website Console from-intake filled Markdown intake import coverage for workspace JSON stdout, stdin workspace JSON stdout, stdin next-actions JSON stdout, stdin next-actions JSON `--out` file output-file persistence, stdin next-actions human `--out` file output-file persistence, stdin workspace JSON `--out` file output-file persistence, workspace JSON `--out` file output-file persistence, from-intake task generation, stdin from-intake task JSON `--out` output-file persistence, from-intake task handoff bundle generation, stdin from-intake task handoff bundle generation, stdin handoff bundle generation, and from-intake handoff bundle generation in installed-bin and one-shot paths,",
-                "Website Console filled intake import coverage,",
-            ),
-        },
-        audit_count=8,
-    )
-    site_from_intake_package_smoke_drift_errors = "\n".join(
-        site_from_intake_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site from-intake package smoke phrase"
-            in site_from_intake_package_smoke_drift_errors
-        ),
-        "release policy docs should mention Website Console from-intake package smoke",
-    )
-
-    site_registry_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "including public registry `design-ai site` Website Console export validation, including public registry `design-ai site --stdin --next-actions --json` next-action operator checklist contract with `mcpProbeCounts` probe count telemetry plus shared smoke assertion self-test coverage for Website Console next-actions MCP probe counts plus public registry `design-ai site --stdin --next-actions --json --out file --force` next-action operator checklist output-file persistence plus public registry `design-ai site --stdin --next-actions --out file --force` next-action human checklist output-file persistence, sample workspace coverage, prompt template listing, MCP readiness, MCP readiness probes, MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, MCP action plan, MCP probe action plan, MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage, handoff bundle, bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata for deterministic-local, no-external-call, and no-target-repo-mutation handoff validation, bundle-check/compare/handoff `mcpProbeCounts` probe count telemetry plus package smoke self-test coverage for Website Console bundle MCP probe counts plus bundled Website Console `mcp-probes.json` saved probe evidence payload assertion instead of the full `site --mcp-check --probes --json` response, bundle-repair, refactor task generation, and task-selected prompt generation",
-                "including public registry Website Console coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    site_registry_smoke_drift_errors = "\n".join(site_registry_smoke_drift["errors"])
-    assert_condition(
-        "README.md is missing site registry smoke phrase" in site_registry_smoke_drift_errors,
-        "release policy docs should mention public registry Website Console smoke",
-    )
-
-    site_next_actions_registry_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "including public registry `design-ai site --stdin --next-actions --json` next-action operator checklist contract with `mcpProbeCounts` probe count telemetry plus shared smoke assertion self-test coverage for Website Console next-actions MCP probe counts plus ",
-                "including ",
-            ),
-        },
-        audit_count=8,
-    )
-    site_next_actions_registry_smoke_drift_errors = "\n".join(
-        site_next_actions_registry_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site next-actions registry smoke phrase"
-            in site_next_actions_registry_smoke_drift_errors
-        ),
-        "release policy docs should mention public registry Website Console next-actions smoke",
-    )
-
-    site_next_actions_mcp_probe_counts_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " with `mcpProbeCounts` probe count telemetry",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_next_actions_mcp_probe_counts_drift_errors = "\n".join(
-        site_next_actions_mcp_probe_counts_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site next-actions MCP probe counts phrase"
-            in site_next_actions_mcp_probe_counts_drift_errors
-        ),
-        "release policy docs should mention Website Console next-actions MCP probe counts",
-    )
-
-    site_next_actions_mcp_probe_counts_self_test_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus shared smoke assertion self-test coverage for Website Console next-actions MCP probe counts",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_next_actions_mcp_probe_counts_self_test_drift_errors = "\n".join(
-        site_next_actions_mcp_probe_counts_self_test_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site next-actions MCP probe count self-test phrase"
-            in site_next_actions_mcp_probe_counts_self_test_drift_errors
-        ),
-        (
-            "release policy docs should mention Website Console next-actions "
-            "MCP probe count smoke self-tests"
-        ),
-    )
-
     site_next_actions_output_file_smoke_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -6044,118 +6586,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "release policy docs should mention Website Console next-actions human output-file smoke",
     )
 
-    site_registry_mcp_probe_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "MCP readiness probes, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_registry_mcp_probe_drift_errors = "\n".join(site_registry_mcp_probe_drift["errors"])
-    assert_condition(
-        "README.md is missing site registry smoke phrase" in site_registry_mcp_probe_drift_errors,
-        "release policy docs should mention public registry Website Console MCP probe smoke",
-    )
-
-    site_registry_mcp_probe_json_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "MCP readiness probe JSON with `--out` file-write confirmation plus shared MCP probe output-file smoke assertions plus embedded MCP check probe next-step commands plus executable embedded MCP check probe command smoke coverage plus human MCP check probe command guidance and output-file smoke coverage plus embedded MCP check probe human report output command, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_registry_mcp_probe_json_out_drift_errors = "\n".join(
-        site_registry_mcp_probe_json_out_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site registry smoke phrase"
-        in site_registry_mcp_probe_json_out_drift_errors,
-        "release policy docs should mention public registry Website Console MCP readiness probe JSON out-file smoke",
-    )
-
-    site_registry_mcp_probe_action_plan_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "MCP probe action plan",
-                "MCP probe plan",
-            ),
-        },
-        audit_count=8,
-    )
-    site_registry_mcp_probe_action_plan_drift_errors = "\n".join(
-        site_registry_mcp_probe_action_plan_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site registry smoke phrase"
-        in site_registry_mcp_probe_action_plan_drift_errors,
-        "release policy docs should mention public registry Website Console MCP probe action plan smoke",
-    )
-
-    site_registry_mcp_probe_action_plan_json_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage, ",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_registry_mcp_probe_action_plan_json_drift_errors = "\n".join(
-        site_registry_mcp_probe_action_plan_json_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site registry smoke phrase"
-        in site_registry_mcp_probe_action_plan_json_drift_errors,
-        "release policy docs should mention public registry Website Console MCP probe action plan JSON smoke",
-    )
-
-    site_registry_mcp_probe_action_plan_json_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage",
-                "MCP probe action plan JSON",
-            ),
-        },
-        audit_count=8,
-    )
-    site_registry_mcp_probe_action_plan_json_out_drift_errors = "\n".join(
-        site_registry_mcp_probe_action_plan_json_out_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site registry smoke phrase"
-        in site_registry_mcp_probe_action_plan_json_out_drift_errors,
-        "release policy docs should mention public registry Website Console MCP probe action plan JSON out-file smoke",
-    )
-
     site_mcp_probe_package_smoke_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -6180,271 +6610,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "README.md is missing site mcp-check package smoke phrase"
         in site_mcp_probe_package_smoke_drift_errors,
         "release policy docs should mention Website Console MCP probe smoke",
-    )
-
-    site_mcp_probe_json_out_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "MCP readiness probe JSON with `--out` file-write confirmation",
-                "MCP readiness probe JSON",
-            ),
-        },
-        audit_count=8,
-    )
-    site_mcp_probe_json_out_package_smoke_drift_errors = "\n".join(
-        site_mcp_probe_json_out_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site mcp-check package smoke phrase"
-        in site_mcp_probe_json_out_package_smoke_drift_errors,
-        "release policy docs should mention Website Console MCP readiness probe JSON out-file smoke",
-    )
-
-    site_mcp_plan_probe_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "MCP probe action plan",
-                "MCP probe plan",
-            ),
-        },
-        audit_count=8,
-    )
-    site_mcp_plan_probe_package_smoke_drift_errors = "\n".join(
-        site_mcp_plan_probe_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site mcp-plan package smoke phrase"
-        in site_mcp_plan_probe_package_smoke_drift_errors,
-        "release policy docs should mention Website Console MCP probe action plan smoke",
-    )
-
-    site_mcp_plan_probe_json_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai site --stdin --mcp-plan --probes --json` Website Console MCP probe action plan JSON with `--out` file-write confirmation plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage",
-                "Website Console MCP probe plan JSON coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    site_mcp_plan_probe_json_package_smoke_drift_errors = "\n".join(
-        site_mcp_plan_probe_json_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site mcp-plan package smoke phrase"
-        in site_mcp_plan_probe_json_package_smoke_drift_errors,
-        "release policy docs should mention Website Console MCP probe action plan JSON smoke",
-    )
-
-    site_mcp_plan_probe_json_out_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " with `--out` file-write confirmation",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_mcp_plan_probe_json_out_package_smoke_drift_errors = "\n".join(
-        site_mcp_plan_probe_json_out_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site mcp-plan package smoke phrase"
-        in site_mcp_plan_probe_json_out_package_smoke_drift_errors,
-        "release policy docs should mention Website Console MCP probe action plan JSON out-file smoke",
-    )
-
-    site_mcp_action_plan_embedded_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_mcp_action_plan_embedded_command_drift_errors = "\n".join(
-        site_mcp_action_plan_embedded_command_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site MCP action plan embedded command phrase"
-            in site_mcp_action_plan_embedded_command_drift_errors
-        ),
-        "release policy docs should mention embedded MCP action plan probe output-file commands plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage",
-    )
-
-    site_mcp_action_plan_human_output_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_mcp_action_plan_human_output_command_drift_errors = "\n".join(
-        site_mcp_action_plan_human_output_command_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site MCP action plan human output command parity phrase"
-            in site_mcp_action_plan_human_output_command_drift_errors
-        ),
-        "release policy docs should mention MCP action plan human report output command parity plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage",
-    )
-
-    site_mcp_action_plan_human_output_command_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_mcp_action_plan_human_output_command_smoke_drift_errors = "\n".join(
-        site_mcp_action_plan_human_output_command_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site MCP action plan human output command smoke phrase"
-            in site_mcp_action_plan_human_output_command_smoke_drift_errors
-        ),
-        "release policy docs should mention MCP action plan emitted human report command smoke coverage plus MCP action plan emitted check JSON command smoke coverage plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage",
-    )
-
-    site_mcp_action_plan_check_json_command_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus MCP action plan emitted check JSON command smoke coverage",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_mcp_action_plan_check_json_command_smoke_drift_errors = "\n".join(
-        site_mcp_action_plan_check_json_command_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site MCP action plan check JSON command smoke phrase"
-            in site_mcp_action_plan_check_json_command_smoke_drift_errors
-        ),
-        "release policy docs should mention MCP action plan emitted check JSON command smoke coverage",
-    )
-
-    site_mcp_action_plan_self_archive_command_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_mcp_action_plan_self_archive_command_smoke_drift_errors = "\n".join(
-        site_mcp_action_plan_self_archive_command_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site MCP action plan self-archive command smoke phrase"
-            in site_mcp_action_plan_self_archive_command_smoke_drift_errors
-        ),
-        "release policy docs should mention MCP action plan emitted self-archive command smoke coverage plus shared MCP action plan command mapping self-test coverage",
-    )
-
-    site_mcp_action_plan_command_mapping_self_test_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus shared MCP action plan command mapping self-test coverage",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_mcp_action_plan_command_mapping_self_test_drift_errors = "\n".join(
-        site_mcp_action_plan_command_mapping_self_test_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site MCP action plan command mapping self-test phrase"
-            in site_mcp_action_plan_command_mapping_self_test_drift_errors
-        ),
-        "release policy docs should mention shared MCP action plan command mapping self-test coverage",
-    )
-
-    site_workflow_graph_package_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai site --stdin --graph --json` Website Console workflow graph export",
-                "Website Console graph coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    site_workflow_graph_package_smoke_drift_errors = "\n".join(
-        site_workflow_graph_package_smoke_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site workflow graph package smoke phrase"
-        in site_workflow_graph_package_smoke_drift_errors,
-        "release policy docs should mention Website Console workflow graph smoke",
     )
 
     product_readiness_warning_strict_drift = release_metadata_summary(
@@ -6672,131 +6837,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "product readiness should mention full release:check coverage after release-facing Product Readiness full gate evidence guard",
     )
 
-    site_bundle_compare_warning_strict_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus packed-tarball and public-registry smoke for warning-state Website Console bundle-compare strict failures where identical warning bundles keep `sameBundle: true` while exiting non-zero under `--strict`",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_bundle_compare_warning_strict_smoke_drift_errors = "\n".join(
-        site_bundle_compare_warning_strict_smoke_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site bundle-compare warning strict smoke phrase"
-            in site_bundle_compare_warning_strict_smoke_drift_errors
-        ),
-        "release policy docs should mention warning-state bundle-compare strict smoke coverage",
-    )
-
-    site_bundle_boundary_metadata_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "bundle-check JSON/human and bundle-handoff JSON/prompt boundary metadata for deterministic-local, no-external-call, and no-target-repo-mutation handoff validation",
-                "generic bundle boundary coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    site_bundle_boundary_metadata_drift_errors = "\n".join(
-        site_bundle_boundary_metadata_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site bundle boundary metadata phrase"
-            in site_bundle_boundary_metadata_drift_errors
-        ),
-        "release policy docs should mention Website Console bundle boundary metadata",
-    )
-
-    site_bundle_mcp_probe_counts_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "bundle-check/compare/handoff `mcpProbeCounts` probe count telemetry",
-                "bundle-check/compare/handoff",
-            ),
-        },
-        audit_count=8,
-    )
-    site_bundle_mcp_probe_counts_drift_errors = "\n".join(
-        site_bundle_mcp_probe_counts_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site bundle MCP probe counts phrase"
-            in site_bundle_mcp_probe_counts_drift_errors
-        ),
-        "release policy docs should mention Website Console bundle MCP probe counts",
-    )
-
-    site_bundle_mcp_probe_counts_self_test_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus package smoke self-test coverage for Website Console bundle MCP probe counts",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_bundle_mcp_probe_counts_self_test_drift_errors = "\n".join(
-        site_bundle_mcp_probe_counts_self_test_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site bundle MCP probe count self-test phrase"
-            in site_bundle_mcp_probe_counts_self_test_drift_errors
-        ),
-        "release policy docs should mention Website Console bundle MCP probe count self-tests",
-    )
-
-    site_bundle_mcp_probes_payload_assertion_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " plus bundled Website Console `mcp-probes.json` saved probe evidence payload assertion instead of the full `site --mcp-check --probes --json` response",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_bundle_mcp_probes_payload_assertion_drift_errors = "\n".join(
-        site_bundle_mcp_probes_payload_assertion_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing site bundle mcp-probes payload assertion phrase"
-            in site_bundle_mcp_probes_payload_assertion_drift_errors
-        ),
-        "release policy docs should mention Website Console bundle mcp-probes payload assertion",
-    )
-
     packed_tarball_npm_exec_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -6819,390 +6859,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "README.md is missing packed tarball npm exec smoke phrase"
         in packed_tarball_npm_exec_drift_errors,
         "release policy docs should mention packed-tarball npm exec smoke",
-    )
-
-    public_registry_npm_exec_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public `npm exec --package @design-ai/cli@<version>` registry path",
-                "public registry install path",
-            ),
-        },
-        audit_count=8,
-    )
-    public_registry_npm_exec_drift_errors = "\n".join(public_registry_npm_exec_drift["errors"])
-    assert_condition(
-        "README.md is missing public registry npm exec smoke phrase"
-        in public_registry_npm_exec_drift_errors,
-        "release policy docs should mention public registry npm exec smoke",
-    )
-
-    registry_smoke_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`npm run registry:smoke`",
-                "the registry smoke command",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_smoke_command_drift_errors = "\n".join(registry_smoke_command_drift["errors"])
-    assert_condition(
-        "README.md is missing registry smoke command phrase"
-        in registry_smoke_command_drift_errors,
-        "release policy docs should mention registry:smoke command guidance",
-    )
-
-    registry_learn_feedback_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry JSON `design-ai learn --feedback` output",
-                "public registry learning feedback overview",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_feedback_drift_errors = "\n".join(registry_learn_feedback_drift["errors"])
-    assert_condition(
-        "README.md is missing registry learn feedback smoke phrase"
-        in registry_learn_feedback_drift_errors,
-        "release policy docs should mention public registry learn feedback smoke",
-    )
-    registry_learn_feedback_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "plus public registry learn feedback `--out` file-write confirmation",
-                "plus public registry learning feedback saved artifact",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_feedback_out_drift_errors = "\n".join(
-        registry_learn_feedback_out_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing registry learn feedback smoke phrase"
-        in registry_learn_feedback_out_drift_errors,
-        "release policy docs should mention public registry learn feedback --out smoke",
-    )
-
-    registry_learn_init_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry JSON `design-ai learn --init` preview/apply output",
-                "public registry learning init overview",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_init_drift_errors = "\n".join(registry_learn_init_drift["errors"])
-    assert_condition(
-        "README.md is missing registry learn init smoke phrase"
-        in registry_learn_init_drift_errors,
-        "release policy docs should mention public registry learn init smoke",
-    )
-
-    registry_learn_verify_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry JSON `design-ai learn --verify` output",
-                "public registry learning verification overview",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_verify_drift_errors = "\n".join(registry_learn_verify_drift["errors"])
-    assert_condition(
-        "README.md is missing registry learn verify smoke phrase"
-        in registry_learn_verify_drift_errors,
-        "release policy docs should mention public registry learn verify smoke",
-    )
-    registry_learn_verify_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry learn verify `--out` file-write confirmation",
-                "public registry learning verification saved artifact",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_verify_out_drift_errors = "\n".join(
-        registry_learn_verify_out_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing registry learn verify smoke phrase"
-        in registry_learn_verify_out_drift_errors,
-        "release policy docs should mention public registry learn verify --out smoke",
-    )
-
-    registry_learn_backup_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry JSON `design-ai learn --backup` output",
-                "public registry learning backup overview",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_backup_drift_errors = "\n".join(registry_learn_backup_drift["errors"])
-    assert_condition(
-        "README.md is missing registry learn backup smoke phrase"
-        in registry_learn_backup_drift_errors,
-        "release policy docs should mention public registry learn backup smoke",
-    )
-    registry_learn_backup_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry learn backup `--out` file-write confirmation",
-                "public registry learning backup saved artifact",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_backup_out_drift_errors = "\n".join(
-        registry_learn_backup_out_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing registry learn backup smoke phrase"
-        in registry_learn_backup_out_drift_errors,
-        "release policy docs should mention public registry learn backup --out smoke",
-    )
-
-    registry_learn_restore_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry JSON `design-ai learn --restore` preview/apply output",
-                "public registry learning restore overview",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_restore_drift_errors = "\n".join(registry_learn_restore_drift["errors"])
-    assert_condition(
-        "README.md is missing registry learn restore smoke phrase"
-        in registry_learn_restore_drift_errors,
-        "release policy docs should mention public registry learn restore smoke",
-    )
-
-    registry_learn_restore_backups_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry `design-ai learn --restore-backups` restore rollback backup inventory coverage",
-                "public registry restore rollback inventory coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_restore_backups_drift_errors = "\n".join(registry_learn_restore_backups_drift["errors"])
-    assert_condition(
-        "README.md is missing registry learn restore-backups smoke phrase"
-        in registry_learn_restore_backups_drift_errors,
-        "release policy docs should mention public registry learn restore-backups smoke",
-    )
-
-    registry_learn_restore_backups_prune_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry `design-ai learn --restore-backups --prune` restore rollback backup pruning coverage",
-                "public registry restore rollback cleanup coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_restore_backups_prune_drift_errors = "\n".join(registry_learn_restore_backups_prune_drift["errors"])
-    assert_condition(
-        "README.md is missing registry learn restore-backups prune smoke phrase"
-        in registry_learn_restore_backups_prune_drift_errors,
-        "release policy docs should mention public registry learn restore-backups prune smoke",
-    )
-
-    registry_learn_import_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry JSON `design-ai learn --import` dry-run/apply output",
-                "public registry learning import overview",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_import_drift_errors = "\n".join(registry_learn_import_drift["errors"])
-    assert_condition(
-        "README.md is missing registry learn import smoke phrase"
-        in registry_learn_import_drift_errors,
-        "release policy docs should mention public registry learn import smoke",
-    )
-    registry_learn_import_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "plus public registry learn import `--out` file-write confirmation",
-                "plus public registry learning import saved artifact",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_import_out_drift_errors = "\n".join(
-        registry_learn_import_out_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing registry learn import smoke phrase"
-        in registry_learn_import_out_drift_errors,
-        "release policy docs should mention public registry learn import --out smoke",
-    )
-
-    registry_learn_redact_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry JSON `design-ai learn --redact` output",
-                "public registry learning redaction overview",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_redact_drift_errors = "\n".join(registry_learn_redact_drift["errors"])
-    assert_condition(
-        "README.md is missing registry learn redact smoke phrase"
-        in registry_learn_redact_drift_errors,
-        "release policy docs should mention public registry learn redact smoke",
-    )
-
-    registry_learn_stats_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry human / JSON `design-ai learn --stats` profile summary output",
-                "public registry learning profile overview",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_stats_drift_errors = "\n".join(registry_learn_stats_drift["errors"])
-    assert_condition(
-        "README.md is missing registry learn stats smoke phrase"
-        in registry_learn_stats_drift_errors,
-        "release policy docs should mention public registry learn stats smoke",
-    )
-
-    registry_learn_stats_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry learn stats `--out` file-write confirmation",
-                "public registry learning stats saved artifact",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_stats_out_drift_errors = "\n".join(registry_learn_stats_out_drift["errors"])
-    assert_condition(
-        "README.md is missing registry learn stats smoke phrase"
-        in registry_learn_stats_out_drift_errors,
-        "release policy docs should mention public registry learn stats --out smoke",
-    )
-
-    registry_learn_query_explain_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry query-filtered learn list explanation/export JSON output",
-                "public registry learning query overview",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_query_explain_drift_errors = "\n".join(
-        registry_learn_query_explain_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing registry learn query explain smoke phrase"
-        in registry_learn_query_explain_drift_errors,
-        "release policy docs should mention public registry learn query explanation/export smoke",
     )
 
     registry_learn_relevance_drift = release_metadata_summary(
@@ -7257,259 +6913,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "release policy docs should mention public registry learn eval-template smoke",
     )
 
-    package_contents_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`npm run package:check`",
-                "the package contents command",
-            ),
-        },
-        audit_count=8,
-    )
-    package_contents_command_drift_errors = "\n".join(package_contents_command_drift["errors"])
-    assert_condition(
-        "README.md is missing package contents command phrase"
-        in package_contents_command_drift_errors,
-        "release policy docs should mention package:check command guidance",
-    )
-
-    package_contents_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "package contents check",
-                "package file review",
-            ),
-        },
-        audit_count=8,
-    )
-    package_contents_drift_errors = "\n".join(package_contents_drift["errors"])
-    assert_condition(
-        "README.md is missing package contents check phrase" in package_contents_drift_errors,
-        "release policy docs should mention package contents checks",
-    )
-
-    release_metadata_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`npm run release:metadata`",
-                "the release metadata command",
-            ),
-        },
-        audit_count=8,
-    )
-    release_metadata_command_drift_errors = "\n".join(release_metadata_command_drift["errors"])
-    assert_condition(
-        "README.md is missing release metadata command phrase"
-        in release_metadata_command_drift_errors,
-        "release policy docs should mention release:metadata command guidance",
-    )
-
-    release_metadata_check_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`npm run release:metadata` release metadata check",
-                "release manifest review",
-            ),
-        },
-        audit_count=8,
-    )
-    release_metadata_check_drift_errors = "\n".join(release_metadata_check_drift["errors"])
-    assert_condition(
-        "README.md is missing release metadata check phrase"
-        in release_metadata_check_drift_errors,
-        "release policy docs should mention release metadata checks",
-    )
-
-    release_metadata_product_readiness_json_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "release metadata JSON `product_readiness_checked: true` Product Readiness guard coverage",
-                "release metadata JSON summary",
-            ),
-        },
-        audit_count=8,
-    )
-    release_metadata_product_readiness_json_drift_errors = "\n".join(
-        release_metadata_product_readiness_json_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing release metadata Product Readiness JSON phrase"
-            in release_metadata_product_readiness_json_drift_errors
-        ),
-        "release policy docs should mention Product Readiness release metadata JSON coverage",
-    )
-
-    cli_unit_test_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`npm test`",
-                "the CLI test command",
-            ),
-        },
-        audit_count=8,
-    )
-    cli_unit_test_command_drift_errors = "\n".join(cli_unit_test_command_drift["errors"])
-    assert_condition(
-        "README.md is missing CLI unit test command phrase" in cli_unit_test_command_drift_errors,
-        "release policy docs should mention npm test CLI unit test command guidance",
-    )
-
-    cli_unit_test_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "CLI unit tests",
-                "CLI checks",
-            ),
-        },
-        audit_count=8,
-    )
-    cli_unit_test_drift_errors = "\n".join(cli_unit_test_drift["errors"])
-    assert_condition(
-        "README.md is missing CLI unit test phrase" in cli_unit_test_drift_errors,
-        "release policy docs should mention CLI unit tests",
-    )
-
-    repository_audit_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`npm run audit:strict`",
-                "the repository audit command",
-            ),
-        },
-        audit_count=8,
-    )
-    repository_audit_command_drift_errors = "\n".join(
-        repository_audit_command_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing repository audit command phrase"
-        in repository_audit_command_drift_errors,
-        "release policy docs should mention audit:strict command guidance",
-    )
-
-    repository_audit_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "all 8 audits",
-                "the audit suite",
-            ),
-        },
-        audit_count=8,
-    )
-    repository_audit_drift_errors = "\n".join(repository_audit_drift["errors"])
-    assert_condition(
-        "README.md is missing repository audit gate phrase" in repository_audit_drift_errors,
-        "release policy docs should mention repository audit gate coverage",
-    )
-
-    whitespace_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`git diff --check`",
-                "the whitespace command",
-            ),
-        },
-        audit_count=8,
-    )
-    whitespace_command_drift_errors = "\n".join(whitespace_command_drift["errors"])
-    assert_condition(
-        "README.md is missing whitespace check command phrase"
-        in whitespace_command_drift_errors,
-        "release policy docs should mention git diff whitespace check command guidance",
-    )
-
-    whitespace_check_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "whitespace checks",
-                "spacing review",
-            ),
-        },
-        audit_count=8,
-    )
-    whitespace_check_drift_errors = "\n".join(whitespace_check_drift["errors"])
-    assert_condition(
-        "README.md is missing whitespace check phrase" in whitespace_check_drift_errors,
-        "release policy docs should mention whitespace checks",
-    )
-
-    release_self_test_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`npm run release:self-test`",
-                "the assertion fixture command",
-            ),
-        },
-        audit_count=8,
-    )
-    release_self_test_command_drift_errors = "\n".join(release_self_test_command_drift["errors"])
-    assert_condition(
-        "README.md is missing release self-test command phrase"
-        in release_self_test_command_drift_errors,
-        "release policy docs should mention release:self-test command guidance",
-    )
-
     release_self_test_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -7540,537 +6943,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
     assert_condition(
         "README.md is missing release self-test phrase" in release_self_test_drift_errors,
         "release policy docs should mention release self-tests",
-    )
-
-    human_version_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace("human `design-ai version`", "`design-ai version`"),
-        },
-        audit_count=8,
-    )
-    human_version_drift_errors = "\n".join(human_version_drift["errors"])
-    assert_condition(
-        "README.ko.md is missing human version smoke phrase" in human_version_drift_errors,
-        "release policy docs should mention human version smoke",
-    )
-
-    route_json_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "route JSON output, route catalog output, and route stdin input",
-                "route output",
-            ),
-        },
-        audit_count=8,
-    )
-    route_json_drift_errors = "\n".join(route_json_drift["errors"])
-    assert_condition(
-        "README.md is missing route JSON catalog stdin smoke phrase" in route_json_drift_errors,
-        "release policy docs should mention route JSON catalog stdin smoke",
-    )
-
-    route_json_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace("route JSON output", "route output"),
-        },
-        audit_count=8,
-    )
-    route_json_output_drift_errors = "\n".join(route_json_output_drift["errors"])
-    assert_condition(
-        "README.md is missing route JSON output phrase" in route_json_output_drift_errors,
-        "release policy docs should mention route JSON output smoke",
-    )
-
-    route_catalog_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "route catalog output",
-                "route output",
-            ),
-        },
-        audit_count=8,
-    )
-    route_catalog_output_drift_errors = "\n".join(
-        route_catalog_output_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing route catalog output phrase"
-        in route_catalog_output_drift_errors,
-        "release policy docs should mention route catalog output smoke",
-    )
-
-    route_stdin_input_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace("route stdin 입력", "route 입력"),
-        },
-        audit_count=8,
-    )
-    route_stdin_input_drift_errors = "\n".join(route_stdin_input_drift["errors"])
-    assert_condition(
-        "README.ko.md is missing route stdin input phrase"
-        in route_stdin_input_drift_errors,
-        "release policy docs should mention route stdin input smoke",
-    )
-
-    agent_eval_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "route eval, prompt eval, and pack eval checkpoint output",
-                "agent eval checkpoint output",
-            ),
-        },
-        audit_count=8,
-    )
-    agent_eval_smoke_drift_errors = "\n".join(agent_eval_smoke_drift["errors"])
-    assert_condition(
-        "README.md is missing agent eval smoke phrase" in agent_eval_smoke_drift_errors,
-        "release policy docs should mention route/prompt/pack eval smoke",
-    )
-
-    check_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                (
-                    "check examples output, check artifact output, "
-                    "check stdin output, check all-routes output, "
-                    "and check learning capture output"
-                ),
-                "check output",
-            ),
-        },
-        audit_count=8,
-    )
-    check_command_drift_errors = "\n".join(check_command_drift["errors"])
-    assert_condition(
-        "docs/DISTRIBUTION.md is missing check command smoke phrase" in check_command_drift_errors,
-        "release policy docs should mention check command smoke",
-    )
-
-    check_examples_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "check examples output",
-                "check output",
-            ),
-        },
-        audit_count=8,
-    )
-    check_examples_output_drift_errors = "\n".join(
-        check_examples_output_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing check examples output phrase"
-        in check_examples_output_drift_errors,
-        "release policy docs should mention check examples output smoke",
-    )
-
-    check_artifact_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "check artifact output",
-                "check output",
-            ),
-        },
-        audit_count=8,
-    )
-    check_artifact_output_drift_errors = "\n".join(
-        check_artifact_output_drift["errors"]
-    )
-    assert_condition(
-        (
-            "docs/DISTRIBUTION.md is missing check artifact output phrase"
-            in check_artifact_output_drift_errors
-        ),
-        "release policy docs should mention check artifact output smoke",
-    )
-
-    check_stdin_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace(
-                "check stdin 출력",
-                "check 출력",
-            ),
-        },
-        audit_count=8,
-    )
-    check_stdin_output_drift_errors = "\n".join(check_stdin_output_drift["errors"])
-    assert_condition(
-        "README.ko.md is missing check stdin output phrase"
-        in check_stdin_output_drift_errors,
-        "release policy docs should mention check stdin output smoke",
-    )
-
-    check_all_routes_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
-                "check all-routes output",
-                "check output",
-            ),
-        },
-        audit_count=8,
-    )
-    check_all_routes_output_drift_errors = "\n".join(
-        check_all_routes_output_drift["errors"]
-    )
-    assert_condition(
-        (
-            "docs/RELEASE-CHECKLIST.md is missing check all-routes output phrase"
-            in check_all_routes_output_drift_errors
-        ),
-        "release policy docs should mention check all-routes output smoke",
-    )
-
-    check_learning_capture_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "check learning capture output",
-                "check output",
-            ),
-        },
-        audit_count=8,
-    )
-    check_learning_capture_output_drift_errors = "\n".join(
-        check_learning_capture_output_drift["errors"]
-    )
-    assert_condition(
-        (
-            "docs/DISTRIBUTION.md is missing check learning capture output phrase"
-            in check_learning_capture_output_drift_errors
-        ),
-        "release policy docs should mention check learning capture output smoke",
-    )
-
-    version_json_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace(
-                "`design-ai version --json`",
-                "the JSON version command",
-            ),
-        },
-        audit_count=8,
-    )
-    version_json_command_drift_errors = "\n".join(version_json_command_drift["errors"])
-    assert_condition(
-        "README.ko.md is missing version JSON command phrase"
-        in version_json_command_drift_errors,
-        "release policy docs should mention design-ai version --json command guidance",
-    )
-
-    version_json_metadata_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace(
-                "machine-readable version metadata",
-                "machine-readable version output",
-            ),
-        },
-        audit_count=8,
-    )
-    version_json_metadata_drift_errors = "\n".join(version_json_metadata_drift["errors"])
-    assert_condition(
-        "README.ko.md is missing version JSON metadata phrase"
-        in version_json_metadata_drift_errors,
-        "release policy docs should mention version JSON metadata smoke",
-    )
-
-    top_level_help_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace(
-                "`design-ai help`",
-                "the help command",
-            ),
-        },
-        audit_count=8,
-    )
-    top_level_help_command_drift_errors = "\n".join(
-        top_level_help_command_drift["errors"]
-    )
-    assert_condition(
-        "README.ko.md is missing top-level help command phrase"
-        in top_level_help_command_drift_errors,
-        "release policy docs should mention design-ai help command guidance",
-    )
-
-    top_level_help_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace("top-level help 출력", "help 출력"),
-        },
-        audit_count=8,
-    )
-    top_level_help_drift_errors = "\n".join(top_level_help_drift["errors"])
-    assert_condition(
-        "README.ko.md is missing top-level help smoke phrase" in top_level_help_drift_errors,
-        "release policy docs should mention top-level help smoke",
-    )
-
-    help_json_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai help --json`",
-                "the JSON help command",
-            ),
-        },
-        audit_count=8,
-    )
-    help_json_command_drift_errors = "\n".join(help_json_command_drift["errors"])
-    assert_condition(
-        "README.md is missing help JSON command phrase" in help_json_command_drift_errors,
-        "release policy docs should mention design-ai help --json command guidance",
-    )
-
-    help_json_topic_catalog_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "topic catalog with probe-capable Website Console site help usage output",
-                "JSON help output",
-            ),
-        },
-        audit_count=8,
-    )
-    help_json_topic_catalog_drift_errors = "\n".join(
-        help_json_topic_catalog_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing help JSON topic catalog phrase"
-        in help_json_topic_catalog_drift_errors,
-        "release policy docs should mention help JSON topic catalog smoke",
-    )
-
-    site_help_usage_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " with probe-capable Website Console site help usage",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_help_usage_drift_errors = "\n".join(site_help_usage_drift["errors"])
-    assert_condition(
-        "README.md is missing site help usage phrase" in site_help_usage_drift_errors,
-        "release policy docs should mention probe-capable Website Console site help usage",
-    )
-
-    site_help_topic_example_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                ", shared Website Console site help topic example smoke assertions",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_help_topic_example_drift_errors = "\n".join(
-        site_help_topic_example_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site help topic example phrase"
-        in site_help_topic_example_drift_errors,
-        "release policy docs should mention shared Website Console site help topic example smoke assertions",
-    )
-
-    site_next_actions_help_example_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                " including the `design-ai site website-workspace.json --next-actions --out website-next-actions.md` next-actions Markdown help example plus from-intake stdin help examples (`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`)",
-                "",
-            ),
-        },
-        audit_count=8,
-    )
-    site_next_actions_help_example_drift_errors = "\n".join(
-        site_next_actions_help_example_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing site next-actions help example phrase"
-        in site_next_actions_help_example_drift_errors,
-        "release policy docs should mention Website Console next-actions Markdown help example plus from-intake stdin help examples (`cat company-website-intake.ko.md | design-ai site --from-intake --stdin --out website-workspace.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --next-actions --out website-next-actions.md --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --tasks --out website-workspace.tasks.json --force`, `cat company-website-intake.ko.md | design-ai site --from-intake --stdin --bundle --tasks --out website-handoff-bundle`)",
-    )
-
-    alias_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace("functional alias 출력", "alias 출력"),
-        },
-        audit_count=8,
-    )
-    alias_smoke_drift_errors = "\n".join(alias_smoke_drift["errors"])
-    assert_condition(
-        "README.ko.md is missing alias smoke phrase" in alias_smoke_drift_errors,
-        "release policy docs should mention command and functional alias smoke",
-    )
-
-    command_alias_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "command alias help",
-                "alias help",
-            ),
-        },
-        audit_count=8,
-    )
-    command_alias_smoke_drift_errors = "\n".join(
-        command_alias_smoke_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing command alias smoke phrase"
-        in command_alias_smoke_drift_errors,
-        "release policy docs should mention command alias smoke",
-    )
-
-    functional_alias_smoke_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "functional alias output",
-                "alias output",
-            ),
-        },
-        audit_count=8,
-    )
-    functional_alias_smoke_drift_errors = "\n".join(
-        functional_alias_smoke_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing functional alias smoke phrase"
-        in functional_alias_smoke_drift_errors,
-        "release policy docs should mention functional alias smoke",
-    )
-
-    help_topic_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "command-specific help topic output", "command help output"
-            ),
-        },
-        audit_count=8,
-    )
-    help_topic_drift_errors = "\n".join(help_topic_drift["errors"])
-    assert_condition(
-        "README.md is missing help topic smoke phrase" in help_topic_drift_errors,
-        "release policy docs should mention command-specific help topic smoke",
     )
 
     list_json_drift = release_metadata_summary(
@@ -8112,1102 +6984,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "release policy docs should mention list JSON mode smoke",
     )
 
-    list_catalog_domain_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "all three `list` catalog domains in human and JSON mode",
-                "`list --json` output",
-            ),
-        },
-        audit_count=8,
-    )
-    list_catalog_domain_drift_errors = "\n".join(
-        list_catalog_domain_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing list catalog domains phrase"
-        in list_catalog_domain_drift_errors,
-        "release policy docs should mention list catalog domain coverage",
-    )
-
-    corpus_discovery_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace("corpus discovery 출력", "corpus discovery"),
-        },
-        audit_count=8,
-    )
-    corpus_discovery_drift_errors = "\n".join(corpus_discovery_drift["errors"])
-    assert_condition(
-        "README.ko.md is missing corpus discovery JSON phrase" in corpus_discovery_drift_errors,
-        "release policy docs should mention corpus discovery JSON smoke",
-    )
-
-    explicit_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace("route --explain", "route"),
-        },
-        audit_count=8,
-    )
-    explicit_output_drift_errors = "\n".join(explicit_output_drift["errors"])
-    assert_condition(
-        "README.md is missing show-lines route-explain smoke phrase" in explicit_output_drift_errors,
-        "release policy docs should mention show-lines and route-explain smoke",
-    )
-
-    show_lines_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`show --lines` output",
-                "`show --lines`",
-            ),
-        },
-        audit_count=8,
-    )
-    show_lines_output_drift_errors = "\n".join(show_lines_output_drift["errors"])
-    assert_condition(
-        "README.md is missing show-lines output phrase" in show_lines_output_drift_errors,
-        "release policy docs should mention show-lines output smoke",
-    )
-
-    route_explain_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`route --explain` output",
-                "`route --explain`",
-            ),
-        },
-        audit_count=8,
-    )
-    route_explain_output_drift_errors = "\n".join(route_explain_output_drift["errors"])
-    assert_condition(
-        "README.md is missing route-explain output phrase" in route_explain_output_drift_errors,
-        "release policy docs should mention route-explain output smoke",
-    )
-
-    unknown_command_failure_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                (
-                    "unknown command failure, unknown help-topic failure, "
-                    "unknown list-domain failure, and unknown search-dir failure"
-                ),
-                "unknown failures",
-            ),
-        },
-        audit_count=8,
-    )
-    unknown_command_failure_drift_errors = "\n".join(unknown_command_failure_drift["errors"])
-    assert_condition(
-        "README.md is missing unknown command failure smoke phrase"
-        in unknown_command_failure_drift_errors,
-        "release policy docs should mention unknown command/help/list/search-dir failure smoke",
-    )
-
-    unknown_command_only_failure_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "unknown command failure",
-                "unknown failure",
-            ),
-        },
-        audit_count=8,
-    )
-    unknown_command_only_failure_drift_errors = "\n".join(
-        unknown_command_only_failure_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing unknown command-only failure phrase"
-            in unknown_command_only_failure_drift_errors
-        ),
-        "release policy docs should mention unknown command failure smoke",
-    )
-
-    unknown_help_topic_failure_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "unknown help-topic failure",
-                "unknown help failure",
-            ),
-        },
-        audit_count=8,
-    )
-    unknown_help_topic_failure_drift_errors = "\n".join(
-        unknown_help_topic_failure_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing unknown help-topic failure phrase"
-            in unknown_help_topic_failure_drift_errors
-        ),
-        "release policy docs should mention unknown help-topic failure smoke",
-    )
-
-    unknown_list_domain_failure_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "unknown list-domain failure",
-                "unknown list failure",
-            ),
-        },
-        audit_count=8,
-    )
-    unknown_list_domain_failure_drift_errors = "\n".join(
-        unknown_list_domain_failure_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing unknown list-domain failure phrase"
-            in unknown_list_domain_failure_drift_errors
-        ),
-        "release policy docs should mention unknown list-domain failure smoke",
-    )
-
-    unknown_search_dir_failure_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "unknown search-dir failure",
-                "unknown search failure",
-            ),
-        },
-        audit_count=8,
-    )
-    unknown_search_dir_failure_drift_errors = "\n".join(
-        unknown_search_dir_failure_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing unknown search-dir failure phrase"
-            in unknown_search_dir_failure_drift_errors
-        ),
-        "release policy docs should mention unknown search-dir failure smoke",
-    )
-
-    suggestion_failure_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                (
-                    "unknown route-id suggestion, unknown option suggestion, "
-                    "unknown value suggestion, and numeric range failure"
-                ),
-                "suggestion failures",
-            ),
-        },
-        audit_count=8,
-    )
-    suggestion_failure_drift_errors = "\n".join(suggestion_failure_drift["errors"])
-    assert_condition(
-        "README.md is missing suggestion failure smoke phrase" in suggestion_failure_drift_errors,
-        "release policy docs should mention suggestion and numeric range failure smoke",
-    )
-
-    route_id_suggestion_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "unknown route-id suggestion",
-                "unknown route suggestion",
-            ),
-        },
-        audit_count=8,
-    )
-    route_id_suggestion_drift_errors = "\n".join(route_id_suggestion_drift["errors"])
-    assert_condition(
-        (
-            "README.md is missing unknown route-id suggestion phrase"
-            in route_id_suggestion_drift_errors
-        ),
-        "release policy docs should mention unknown route-id suggestion smoke",
-    )
-
-    option_suggestion_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "unknown option suggestion",
-                "unknown flag suggestion",
-            ),
-        },
-        audit_count=8,
-    )
-    option_suggestion_drift_errors = "\n".join(option_suggestion_drift["errors"])
-    assert_condition(
-        (
-            "README.md is missing unknown option suggestion phrase"
-            in option_suggestion_drift_errors
-        ),
-        "release policy docs should mention unknown option suggestion smoke",
-    )
-
-    value_suggestion_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "unknown value suggestion",
-                "unknown parameter suggestion",
-            ),
-        },
-        audit_count=8,
-    )
-    value_suggestion_drift_errors = "\n".join(value_suggestion_drift["errors"])
-    assert_condition(
-        (
-            "README.md is missing unknown value suggestion phrase"
-            in value_suggestion_drift_errors
-        ),
-        "release policy docs should mention unknown value suggestion smoke",
-    )
-
-    numeric_range_failure_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace("numeric range failure", "numeric range"),
-        },
-        audit_count=8,
-    )
-    numeric_range_failure_drift_errors = "\n".join(numeric_range_failure_drift["errors"])
-    assert_condition(
-        "README.ko.md is missing numeric range failure phrase"
-        in numeric_range_failure_drift_errors,
-        "release policy docs should mention numeric range failure smoke",
-    )
-
-    prompt_pack_mode_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                (
-                    "prompt JSON output, prompt markdown output, prompt from-file output, "
-                    "prompt stdin output, pack JSON output, pack markdown output, "
-                    "pack from-file output, and pack stdin output"
-                ),
-                "prompt/pack output",
-            ),
-        },
-        audit_count=8,
-    )
-    prompt_pack_mode_drift_errors = "\n".join(prompt_pack_mode_drift["errors"])
-    assert_condition(
-        "README.md is missing prompt-pack mode smoke phrase" in prompt_pack_mode_drift_errors,
-        "release policy docs should mention prompt/pack mode smoke",
-    )
-
-    prompt_json_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "prompt JSON output",
-                "prompt output",
-            ),
-        },
-        audit_count=8,
-    )
-    prompt_json_output_drift_errors = "\n".join(prompt_json_output_drift["errors"])
-    assert_condition(
-        "README.md is missing prompt JSON output phrase" in prompt_json_output_drift_errors,
-        "release policy docs should mention prompt JSON output smoke",
-    )
-
-    prompt_markdown_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "prompt markdown output",
-                "prompt output",
-            ),
-        },
-        audit_count=8,
-    )
-    prompt_markdown_output_drift_errors = "\n".join(
-        prompt_markdown_output_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing prompt markdown output phrase"
-            in prompt_markdown_output_drift_errors
-        ),
-        "release policy docs should mention prompt markdown output smoke",
-    )
-
-    prompt_from_file_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "prompt from-file output",
-                "prompt file output",
-            ),
-        },
-        audit_count=8,
-    )
-    prompt_from_file_output_drift_errors = "\n".join(
-        prompt_from_file_output_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing prompt from-file output phrase"
-            in prompt_from_file_output_drift_errors
-        ),
-        "release policy docs should mention prompt from-file output smoke",
-    )
-
-    prompt_stdin_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "prompt stdin output",
-                "prompt input output",
-            ),
-        },
-        audit_count=8,
-    )
-    prompt_stdin_output_drift_errors = "\n".join(prompt_stdin_output_drift["errors"])
-    assert_condition(
-        "README.md is missing prompt stdin output phrase" in prompt_stdin_output_drift_errors,
-        "release policy docs should mention prompt stdin output smoke",
-    )
-
-    pack_json_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "pack JSON output",
-                "pack output",
-            ),
-        },
-        audit_count=8,
-    )
-    pack_json_output_drift_errors = "\n".join(pack_json_output_drift["errors"])
-    assert_condition(
-        "README.md is missing pack JSON output phrase" in pack_json_output_drift_errors,
-        "release policy docs should mention pack JSON output smoke",
-    )
-
-    pack_markdown_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "pack markdown output",
-                "pack output",
-            ),
-        },
-        audit_count=8,
-    )
-    pack_markdown_output_drift_errors = "\n".join(pack_markdown_output_drift["errors"])
-    assert_condition(
-        (
-            "README.md is missing pack markdown output phrase"
-            in pack_markdown_output_drift_errors
-        ),
-        "release policy docs should mention pack markdown output smoke",
-    )
-
-    pack_from_file_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "pack from-file output",
-                "pack file output",
-            ),
-        },
-        audit_count=8,
-    )
-    pack_from_file_output_drift_errors = "\n".join(pack_from_file_output_drift["errors"])
-    assert_condition(
-        (
-            "README.md is missing pack from-file output phrase"
-            in pack_from_file_output_drift_errors
-        ),
-        "release policy docs should mention pack from-file output smoke",
-    )
-
-    pack_stdin_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.ko.md": korean_policy_doc.replace(
-                "pack stdin 출력",
-                "pack 입력 출력",
-            ),
-        },
-        audit_count=8,
-    )
-    pack_stdin_output_drift_errors = "\n".join(pack_stdin_output_drift["errors"])
-    assert_condition(
-        "README.ko.md is missing pack stdin output phrase" in pack_stdin_output_drift_errors,
-        "release policy docs should mention pack stdin output smoke",
-    )
-
-    prompt_pack_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "file-write confirmations", "write confirmations"
-            ),
-        },
-        audit_count=8,
-    )
-    prompt_pack_output_drift_errors = "\n".join(prompt_pack_output_drift["errors"])
-    assert_condition(
-        "docs/DISTRIBUTION.md is missing prompt-pack output smoke phrase"
-        in prompt_pack_output_drift_errors,
-        "release policy docs should mention prompt/pack output-file smoke",
-    )
-
-    prompt_pack_forced_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "forced `--out`",
-                "output-file",
-            ),
-        },
-        audit_count=8,
-    )
-    prompt_pack_forced_output_drift_errors = "\n".join(
-        prompt_pack_forced_output_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing prompt-pack forced output-file phrase"
-            in prompt_pack_forced_output_drift_errors
-        ),
-        "release policy docs should mention prompt/pack forced output-file smoke",
-    )
-
-    prompt_pack_file_write_confirmation_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "file-write confirmations",
-                "write confirmations",
-            ),
-        },
-        audit_count=8,
-    )
-    prompt_pack_file_write_confirmation_drift_errors = "\n".join(
-        prompt_pack_file_write_confirmation_drift["errors"]
-    )
-    assert_condition(
-        (
-            "docs/DISTRIBUTION.md is missing prompt-pack file-write confirmation phrase"
-            in prompt_pack_file_write_confirmation_drift_errors
-        ),
-        "release policy docs should mention prompt/pack file-write confirmation smoke",
-    )
-
-    human_install_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "human `design-ai install` output plus ",
-                "install output plus ",
-            ),
-        },
-        audit_count=8,
-    )
-    human_install_drift_errors = "\n".join(human_install_drift["errors"])
-    assert_condition(
-        "README.md is missing human install lifecycle phrase" in human_install_drift_errors,
-        "release policy docs should mention human install lifecycle smoke",
-    )
-
-    human_install_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "human `design-ai install` output",
-                "human install command",
-            ),
-        },
-        audit_count=8,
-    )
-    human_install_output_drift_errors = "\n".join(
-        human_install_output_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing human install output phrase"
-        in human_install_output_drift_errors,
-        "release policy docs should mention human install output smoke",
-    )
-
-    install_json_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "`design-ai install --json`",
-                "the JSON install command",
-            ),
-        },
-        audit_count=8,
-    )
-    install_json_command_drift_errors = "\n".join(install_json_command_drift["errors"])
-    assert_condition(
-        "docs/DISTRIBUTION.md is missing install JSON command phrase"
-        in install_json_command_drift_errors,
-        "release policy docs should mention design-ai install --json command guidance",
-    )
-
-    install_json_lifecycle_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "machine-readable install lifecycle output",
-                "machine-readable install output",
-            ),
-        },
-        audit_count=8,
-    )
-    install_json_lifecycle_drift_errors = "\n".join(
-        install_json_lifecycle_drift["errors"]
-    )
-    assert_condition(
-        "docs/DISTRIBUTION.md is missing install JSON lifecycle phrase"
-        in install_json_lifecycle_drift_errors,
-        "release policy docs should mention install JSON lifecycle smoke",
-    )
-
-    human_status_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "human `design-ai status` output plus JSON status output",
-                "status output",
-            ),
-        },
-        audit_count=8,
-    )
-    human_status_drift_errors = "\n".join(human_status_drift["errors"])
-    assert_condition(
-        "README.md is missing human status lifecycle phrase" in human_status_drift_errors,
-        "release policy docs should mention human status lifecycle smoke",
-    )
-
-    human_status_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "human `design-ai status` output",
-                "human status command",
-            ),
-        },
-        audit_count=8,
-    )
-    human_status_output_drift_errors = "\n".join(
-        human_status_output_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing human status output phrase"
-        in human_status_output_drift_errors,
-        "release policy docs should mention human status output smoke",
-    )
-
-    human_uninstall_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
-                "human `design-ai uninstall` output plus ",
-                "uninstall output plus ",
-            ),
-        },
-        audit_count=8,
-    )
-    human_uninstall_drift_errors = "\n".join(human_uninstall_drift["errors"])
-    assert_condition(
-        "docs/RELEASE-CHECKLIST.md is missing human uninstall lifecycle phrase"
-        in human_uninstall_drift_errors,
-        "release policy docs should mention human uninstall lifecycle smoke",
-    )
-
-    human_uninstall_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
-                "human `design-ai uninstall` output",
-                "human uninstall command",
-            ),
-        },
-        audit_count=8,
-    )
-    human_uninstall_output_drift_errors = "\n".join(
-        human_uninstall_output_drift["errors"]
-    )
-    assert_condition(
-        (
-            "docs/RELEASE-CHECKLIST.md is missing human uninstall output phrase"
-            in human_uninstall_output_drift_errors
-        ),
-        "release policy docs should mention human uninstall output smoke",
-    )
-
-    uninstall_json_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
-                "`design-ai uninstall --json`",
-                "the JSON uninstall command",
-            ),
-        },
-        audit_count=8,
-    )
-    uninstall_json_command_drift_errors = "\n".join(
-        uninstall_json_command_drift["errors"]
-    )
-    assert_condition(
-        "docs/RELEASE-CHECKLIST.md is missing uninstall JSON command phrase"
-        in uninstall_json_command_drift_errors,
-        "release policy docs should mention design-ai uninstall --json command guidance",
-    )
-
-    uninstall_json_lifecycle_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
-                "machine-readable uninstall lifecycle output",
-                "machine-readable uninstall output",
-            ),
-        },
-        audit_count=8,
-    )
-    uninstall_json_lifecycle_drift_errors = "\n".join(
-        uninstall_json_lifecycle_drift["errors"]
-    )
-    assert_condition(
-        "docs/RELEASE-CHECKLIST.md is missing uninstall JSON lifecycle phrase"
-        in uninstall_json_lifecycle_drift_errors,
-        "release policy docs should mention uninstall JSON lifecycle smoke",
-    )
-
-    audit_strict_quiet_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.ko.md": korean_policy_doc.replace("audit --strict --quiet", "audit --strict"),
-        },
-        audit_count=8,
-    )
-    audit_strict_quiet_drift_errors = "\n".join(audit_strict_quiet_drift["errors"])
-    assert_condition(
-        "docs/DISTRIBUTION.ko.md is missing audit strict-quiet smoke phrase"
-        in audit_strict_quiet_drift_errors,
-        "release policy docs should mention audit strict-quiet smoke",
-    )
-
-    audit_human_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "human `design-ai audit --strict --quiet` output",
-                "human audit command",
-            ),
-        },
-        audit_count=8,
-    )
-    audit_human_output_drift_errors = "\n".join(
-        audit_human_output_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing audit human output phrase"
-        in audit_human_output_drift_errors,
-        "release policy docs should mention human audit strict-quiet output smoke",
-    )
-
-    audit_json_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "`design-ai audit --strict --quiet --json`",
-                "the JSON audit command",
-            ),
-        },
-        audit_count=8,
-    )
-    audit_json_command_drift_errors = "\n".join(audit_json_command_drift["errors"])
-    assert_condition(
-        "docs/DISTRIBUTION.md is missing audit JSON command phrase"
-        in audit_json_command_drift_errors,
-        "release policy docs should mention design-ai audit --strict --quiet --json command guidance",
-    )
-
-    audit_json_repository_audit_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "machine-readable repository-audit output",
-                "machine-readable audit output",
-            ),
-        },
-        audit_count=8,
-    )
-    audit_json_repository_audit_drift_errors = "\n".join(
-        audit_json_repository_audit_drift["errors"]
-    )
-    assert_condition(
-        "docs/DISTRIBUTION.md is missing audit JSON repository-audit phrase"
-        in audit_json_repository_audit_drift_errors,
-        "release policy docs should mention audit JSON repository-audit output smoke",
-    )
-
-    learn_feedback_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "JSON `design-ai learn --feedback` output",
-                "local preference smoke",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_feedback_drift_errors = "\n".join(learn_feedback_drift["errors"])
-    assert_condition(
-        "README.md is missing learn feedback smoke phrase"
-        in learn_feedback_drift_errors,
-        "release policy docs should mention learn feedback smoke",
-    )
-    learn_feedback_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "plus learn feedback `--out` file-write confirmation",
-                "plus local feedback saved artifact",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_feedback_out_drift_errors = "\n".join(learn_feedback_out_drift["errors"])
-    assert_condition(
-        "README.md is missing learn feedback smoke phrase"
-        in learn_feedback_out_drift_errors,
-        "release policy docs should mention learn feedback --out smoke",
-    )
-
-    learn_backup_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "JSON `design-ai learn --backup` output",
-                "local profile export",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_backup_drift_errors = "\n".join(learn_backup_drift["errors"])
-    assert_condition(
-        "README.md is missing learn backup smoke phrase"
-        in learn_backup_drift_errors,
-        "release policy docs should mention learn backup smoke",
-    )
-
-    learn_redact_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "JSON `design-ai learn --redact` output",
-                "redacted local profile export",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_redact_drift_errors = "\n".join(learn_redact_drift["errors"])
-    assert_condition(
-        "README.md is missing learn redact smoke phrase"
-        in learn_redact_drift_errors,
-        "release policy docs should mention learn redact smoke",
-    )
-
-    learn_output_file_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "learn JSON `--out` file-write confirmation and forced overwrite coverage",
-                "learning artifact save behavior",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_output_file_drift_errors = "\n".join(
-        learn_output_file_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing learn output file smoke phrase"
-        in learn_output_file_drift_errors,
-        "release policy docs should mention learn output-file smoke",
-    )
-
-    learn_verify_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "JSON `design-ai learn --verify` output",
-                "local learning validation",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_verify_drift_errors = "\n".join(learn_verify_drift["errors"])
-    assert_condition(
-        "README.md is missing learn verify smoke phrase"
-        in learn_verify_drift_errors,
-        "release policy docs should mention learn verify smoke",
-    )
-
-    learn_verify_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "learn verify `--out` file-write confirmation",
-                "learning validation saved artifact",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_verify_out_drift_errors = "\n".join(learn_verify_out_drift["errors"])
-    assert_condition(
-        "README.md is missing learn verify smoke phrase"
-        in learn_verify_out_drift_errors,
-        "release policy docs should mention learn verify --out smoke",
-    )
-
-    learn_restore_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "JSON `design-ai learn --restore` preview/apply output",
-                "local learning profile replacement",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_restore_drift_errors = "\n".join(learn_restore_drift["errors"])
-    assert_condition(
-        "README.md is missing learn restore smoke phrase"
-        in learn_restore_drift_errors,
-        "release policy docs should mention learn restore smoke",
-    )
-    learn_restore_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "learn restore `--out` file-write confirmation",
-                "learning restore saved artifact",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_restore_out_drift_errors = "\n".join(learn_restore_out_drift["errors"])
-    assert_condition(
-        "README.md is missing learn restore smoke phrase"
-        in learn_restore_out_drift_errors,
-        "release policy docs should mention learn restore --out smoke",
-    )
     learn_restore_rollback_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -9257,27 +7033,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
         in learn_restore_rollback_drift_errors,
         "release policy docs should mention learn restore rollback backup smoke",
     )
-    learn_restore_backup_file_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "learn restore `--backup-file` path coverage",
-                "learning restore explicit rollback path coverage",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_restore_backup_file_drift_errors = "\n".join(learn_restore_backup_file_drift["errors"])
-    assert_condition(
-        "README.md is missing learn restore rollback backup smoke phrase"
-        in learn_restore_backup_file_drift_errors,
-        "release policy docs should mention learn restore --backup-file smoke",
-    )
-
     learn_restore_backups_drift = release_metadata_summary(
         package_json=package_json,
         plugin_json=plugin_json,
@@ -9329,508 +7084,6 @@ Product readiness covers Website Console handoff bundle compare through `design-
         "README.md is missing learn restore-backups prune smoke phrase"
         in learn_restore_backups_prune_drift_errors,
         "release policy docs should mention learn restore-backups prune smoke",
-    )
-
-    learn_import_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "JSON `design-ai learn --import` dry-run/apply output",
-                "local learning profile portability",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_import_drift_errors = "\n".join(learn_import_drift["errors"])
-    assert_condition(
-        "README.md is missing learn import smoke phrase"
-        in learn_import_drift_errors,
-        "release policy docs should mention learn import smoke",
-    )
-    learn_import_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "plus learn import `--out` file-write confirmation",
-                "plus local learning import saved artifact",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_import_out_drift_errors = "\n".join(learn_import_out_drift["errors"])
-    assert_condition(
-        "README.md is missing learn import smoke phrase"
-        in learn_import_out_drift_errors,
-        "release policy docs should mention learn import --out smoke",
-    )
-
-    learn_stats_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "human / JSON `design-ai learn --stats` profile summary output",
-                "local learning profile overview",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_stats_drift_errors = "\n".join(learn_stats_drift["errors"])
-    assert_condition(
-        "README.md is missing learn stats smoke phrase"
-        in learn_stats_drift_errors,
-        "release policy docs should mention learn stats smoke",
-    )
-
-    learn_stats_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "learn stats `--out` file-write confirmation",
-                "learning stats saved artifact",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_stats_out_drift_errors = "\n".join(learn_stats_out_drift["errors"])
-    assert_condition(
-        "README.md is missing learn stats smoke phrase"
-        in learn_stats_out_drift_errors,
-        "release policy docs should mention learn stats --out smoke",
-    )
-
-    learn_query_explain_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "query-filtered learn list explanation/export JSON output",
-                "local learning query inspection",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_query_explain_drift_errors = "\n".join(
-        learn_query_explain_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing learn query explain smoke phrase"
-        in learn_query_explain_drift_errors,
-        "release policy docs should mention query-filtered learn explanation/export smoke",
-    )
-
-    learn_relevance_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "brief-relevant prompt/pack learning selection",
-                "local learning prompt behavior",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_relevance_drift_errors = "\n".join(learn_relevance_drift["errors"])
-    assert_condition(
-        "README.md is missing learn relevance smoke phrase"
-        in learn_relevance_drift_errors,
-        "release policy docs should mention prompt/pack learning relevance smoke",
-    )
-
-    learn_audit_cleanup_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "human / JSON `design-ai learn --audit` cleanup suggestion output",
-                "human learning audit output",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_audit_cleanup_drift_errors = "\n".join(
-        learn_audit_cleanup_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing learn audit cleanup smoke phrase"
-        in learn_audit_cleanup_drift_errors,
-        "release policy docs should mention learn audit cleanup suggestion smoke",
-    )
-
-    learn_audit_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "plus learn audit `--out` file-write confirmation",
-                "without audit output artifact wording",
-            ),
-        },
-        audit_count=8,
-    )
-    learn_audit_out_drift_errors = "\n".join(learn_audit_out_drift["errors"])
-    assert_condition(
-        "README.md is missing learn audit out smoke phrase"
-        in learn_audit_out_drift_errors,
-        "release policy docs should mention learn audit --out smoke",
-    )
-
-    registry_learn_audit_cleanup_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "public registry human / JSON `design-ai learn --audit` cleanup suggestion output",
-                "public registry learning cleanup overview",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_audit_cleanup_drift_errors = "\n".join(
-        registry_learn_audit_cleanup_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing registry learn audit cleanup smoke phrase"
-            in registry_learn_audit_cleanup_drift_errors
-        ),
-        "release policy docs should mention public registry learn audit cleanup smoke",
-    )
-
-    registry_learn_audit_out_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "plus public registry learn audit `--out` file-write confirmation",
-                "without registry audit output artifact wording",
-            ),
-        },
-        audit_count=8,
-    )
-    registry_learn_audit_out_drift_errors = "\n".join(
-        registry_learn_audit_out_drift["errors"]
-    )
-    assert_condition(
-        (
-            "README.md is missing registry learn audit out smoke phrase"
-            in registry_learn_audit_out_drift_errors
-        ),
-        "release policy docs should mention public registry learn audit --out smoke",
-    )
-
-    doctor_strict_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace("doctor --strict", "doctor"),
-        },
-        audit_count=8,
-    )
-    doctor_strict_drift_errors = "\n".join(doctor_strict_drift["errors"])
-    assert_condition(
-        "docs/RELEASE-CHECKLIST.md is missing doctor strict smoke phrase" in doctor_strict_drift_errors,
-        "release policy docs should mention doctor strict smoke",
-    )
-
-    doctor_strict_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
-                "`design-ai doctor --strict`",
-                "`doctor --strict`",
-            ),
-        },
-        audit_count=8,
-    )
-    doctor_strict_command_drift_errors = "\n".join(
-        doctor_strict_command_drift["errors"]
-    )
-    assert_condition(
-        "docs/RELEASE-CHECKLIST.md is missing doctor strict command phrase"
-        in doctor_strict_command_drift_errors,
-        "release policy docs should mention exact design-ai doctor --strict command guidance",
-    )
-
-    doctor_human_diagnostics_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
-                "human diagnostics",
-                "plain diagnostics",
-            ),
-        },
-        audit_count=8,
-    )
-    doctor_human_diagnostics_drift_errors = "\n".join(
-        doctor_human_diagnostics_drift["errors"]
-    )
-    assert_condition(
-        "docs/RELEASE-CHECKLIST.md is missing doctor human diagnostics phrase"
-        in doctor_human_diagnostics_drift_errors,
-        "release policy docs should mention doctor human diagnostics guidance",
-    )
-
-    doctor_human_diagnostics_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
-                "human diagnostics output from `design-ai doctor --strict`",
-                "human diagnostics",
-            ),
-        },
-        audit_count=8,
-    )
-    doctor_human_diagnostics_output_drift_errors = "\n".join(
-        doctor_human_diagnostics_output_drift["errors"]
-    )
-    assert_condition(
-        "docs/RELEASE-CHECKLIST.md is missing doctor human diagnostics output phrase"
-        in doctor_human_diagnostics_output_drift_errors,
-        "release policy docs should mention doctor human diagnostics output guidance",
-    )
-
-    doctor_json_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "`design-ai doctor --json`",
-                "`doctor --json`",
-            ),
-        },
-        audit_count=8,
-    )
-    doctor_json_command_drift_errors = "\n".join(doctor_json_command_drift["errors"])
-    assert_condition(
-        "docs/DISTRIBUTION.md is missing doctor JSON command phrase"
-        in doctor_json_command_drift_errors,
-        "release policy docs should mention exact design-ai doctor --json command guidance",
-    )
-
-    doctor_json_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/RELEASE-CHECKLIST.md": english_policy_doc.replace(
-                "machine-readable diagnostics output",
-                "JSON diagnostics output",
-            ),
-        },
-        audit_count=8,
-    )
-    doctor_json_output_drift_errors = "\n".join(doctor_json_output_drift["errors"])
-    assert_condition(
-        "docs/RELEASE-CHECKLIST.md is missing doctor JSON diagnostics output phrase"
-        in doctor_json_output_drift_errors,
-        "release policy docs should mention doctor JSON diagnostics output guidance",
-    )
-
-    status_json_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "`design-ai status --json`",
-                "the JSON status command",
-            ),
-        },
-        audit_count=8,
-    )
-    status_json_command_drift_errors = "\n".join(status_json_command_drift["errors"])
-    assert_condition(
-        "docs/DISTRIBUTION.md is missing status JSON command phrase"
-        in status_json_command_drift_errors,
-        "release policy docs should mention design-ai status --json command guidance",
-    )
-
-    status_json_install_state_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "docs/DISTRIBUTION.md": english_policy_doc.replace(
-                "machine-readable install-state output",
-                "machine-readable status output",
-            ),
-        },
-        audit_count=8,
-    )
-    status_json_install_state_drift_errors = "\n".join(
-        status_json_install_state_drift["errors"]
-    )
-    assert_condition(
-        "docs/DISTRIBUTION.md is missing status JSON install-state phrase"
-        in status_json_install_state_drift_errors,
-        "release policy docs should mention status JSON install-state smoke",
-    )
-
-    update_dry_run_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace("update --dry-run", "update"),
-        },
-        audit_count=8,
-    )
-    update_dry_run_drift_errors = "\n".join(update_dry_run_drift["errors"])
-    assert_condition(
-        "README.md is missing update dry-run lifecycle phrase" in update_dry_run_drift_errors,
-        "release policy docs should mention update dry-run lifecycle smoke",
-    )
-
-    update_dry_run_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai update --dry-run`",
-                "`update --dry-run`",
-            ),
-        },
-        audit_count=8,
-    )
-    update_dry_run_command_drift_errors = "\n".join(
-        update_dry_run_command_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing update dry-run command phrase"
-        in update_dry_run_command_drift_errors,
-        "release policy docs should mention exact design-ai update --dry-run command guidance",
-    )
-
-    update_dry_run_human_output_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "human `design-ai update --dry-run` output",
-                "human update preview",
-            ),
-        },
-        audit_count=8,
-    )
-    update_dry_run_human_output_drift_errors = "\n".join(
-        update_dry_run_human_output_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing update dry-run human output phrase"
-        in update_dry_run_human_output_drift_errors,
-        "release policy docs should mention human update dry-run output smoke",
-    )
-
-    update_dry_run_json_command_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "`design-ai update --dry-run --json`",
-                "`update --dry-run --json`",
-            ),
-        },
-        audit_count=8,
-    )
-    update_dry_run_json_command_drift_errors = "\n".join(
-        update_dry_run_json_command_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing update dry-run JSON command phrase"
-        in update_dry_run_json_command_drift_errors,
-        "release policy docs should mention exact design-ai update --dry-run --json command guidance",
-    )
-
-    update_dry_run_plan_drift = release_metadata_summary(
-        package_json=package_json,
-        plugin_json=plugin_json,
-        changelog_text=changelog,
-        roadmap_text=roadmap,
-        release_policy_docs={
-            **release_policy_docs,
-            "README.md": english_policy_doc.replace(
-                "machine-readable update plan",
-                "machine-readable update output",
-            ),
-        },
-        audit_count=8,
-    )
-    update_dry_run_plan_drift_errors = "\n".join(
-        update_dry_run_plan_drift["errors"]
-    )
-    assert_condition(
-        "README.md is missing update dry-run plan phrase"
-        in update_dry_run_plan_drift_errors,
-        "release policy docs should mention machine-readable update plan guidance",
     )
 
     missing_docs = dict(release_policy_docs)
