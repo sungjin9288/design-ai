@@ -17,6 +17,46 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 803 - Audit harness decomposition and P17B completion (v5.2.0 post-release)
+
+- [x] Published v5.2.0 to npm with SLSA provenance and a GitHub Release, then
+  verified the published package with `npm run registry:smoke` after the
+  publish workflow's own post-publish smoke failed on registry propagation
+  timing; widened that retry window from 113 seconds to ten minutes.
+- [x] Verified the Homebrew formula against the published tag with `brew style`,
+  a temporary-tap source install, and `brew test`.
+- [x] Shared the three smoke subprocess runners and 58 byte-identical CLI
+  assertions between package and registry smoke, leaving 18 look-alike
+  assertions in place because the same dependency name resolves to a different
+  module per executable.
+- [x] Split the smoke self-test monoliths into named phases: package-smoke
+  `run_self_test` 7,244 to 828 lines, `smoke_assertions` 5,217 to 732,
+  `registry-smoke` 2,496 to 496 and `smoke_registry_package` 1,143 to 431.
+- [x] Replaced the 869-line 223-operand runbook condition with a table that
+  names the failing field, and the 193 repeated release-policy drift cases with
+  a data table verified by assertion-multiset comparison, a dead-row guard, and
+  a mutation test.
+- [x] Completed P17B: pilot, install, help, search, and route domains extracted,
+  and the 17 self-test phases moved into six themed modules. `package-smoke.py`
+  19,336 to 11,702 lines with the 722-command packed sequence hash unchanged.
+- [x] Extracted the Website Console view model from `app.js` (3,851 to 2,514
+  lines) and archived the roadmap and changelog ledgers.
+
+### Verified
+
+- `npm run release:check` exit 0 at every commit: 891/891 Node tests, 8/8 strict
+  audits, 0/0 documentation-policy warnings, and packed installed-bin plus
+  one-shot npm tarball smoke. The package-content count rose from the 884 files
+  published as v5.2.0 to 893, which is the nine new `smoke_domains` modules;
+  `tools/audit/` ships with the package.
+- The packed smoke command sequence is byte-identical across the decomposition:
+  722 commands, normalized SHA-256
+  `4be88619c31932dc1cadc27595f3748d0a109b66af5a24991c30ba3092ab87df`.
+- `npm run registry:smoke` passed against the published `@design-ai/cli@5.2.0`.
+
+A live Prompt Guide call, a real provider generation/edit, and external pilot
+participation remain unverified and are not claimed here.
+
 ## Phase 802 - Product completion design and Image Console correctness
 
 - [x] Established the [overall completion plan](product-completion-plan.md),

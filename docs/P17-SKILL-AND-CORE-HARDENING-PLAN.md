@@ -128,7 +128,11 @@ Current verification evidence:
 
 ### P17B - Smoke harness modularization
 
-Status: P17B.3 is the sealed baseline at `695721ba102d3d2f2c2bd0224e862fb0d0198b70`.
+Status: complete. P17B.3 was the sealed baseline at
+`695721ba102d3d2f2c2bd0224e862fb0d0198b70`; the remaining pilot, install,
+help, search, and route domains were extracted afterwards, together with the
+self-test phases, leaving `package-smoke.py` at 11,702 lines with an unchanged
+722-command packed sequence.
 P17B.4 extracts only the review contracts, and P17B.5 extracts only the P11
 implementation-evidence smoke contract. Both passed the release evidence gate
 without a public product contract change.
