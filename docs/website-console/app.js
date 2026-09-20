@@ -17,38 +17,49 @@
   var REVIEW_COMPARISON_KEY = "design-ai.website-console.review-comparison";
   var BROWSER_VERIFICATION_KEY = "design-ai.website-console.browser-verification";
 
-  var sourceBundleApi = window.DesignAiWebsiteConsoleSourceBundle;
-  var sourceBundleFunctionNames = [
-    "normalizeStartPlan",
-    "extractStartPlanPayload",
-    "buildStartPlanJson",
-    "normalizeRunbookSourceBundle",
-    "extractSourceBundleProvenancePayload",
-    "extractSourceBundleRevalidationGatePayload",
-    "sourceBundleNeedsRevalidation",
-    "buildSourceBundleRevalidationGate",
-    "buildSourceBundleJson",
-    "buildSourceBundleRevalidationGateJson",
-    "normalizeQualityReport",
-    "normalizeReviewWorkflow",
-    "normalizeReviewHandoff",
-    "normalizeReviewHandoffReceipt",
-    "normalizeTargetRepoIntake",
-    "targetRepoIntakeMatchesReceipt",
-    "normalizeBrowserVerification",
-    "buildImportedArtifactJson",
-  ];
-  var sourceBundleReady = sourceBundleApi && sourceBundleFunctionNames.every(function (name) {
-    return typeof sourceBundleApi[name] === "function";
-  });
-  if (!sourceBundleReady) {
+  var CONSOLE_UNAVAILABLE_HTML = '<main id="main" class="loading-shell" tabindex="-1"><h1>Website Console unavailable</h1><p>Required local scripts did not load. Reload after updating the complete Website Console bundle.</p></main>';
+
+  // Every sibling module is gated the same way: it must exist and expose the
+  // functions this console calls. A partial bundle paints the failure into #app
+  // before throwing, so the page never silently renders an empty shell.
+  function requireConsoleModule(globalName, requiredFunctions, failureMessage) {
+    var api = window[globalName];
+    var ready = api && requiredFunctions.every(function (name) {
+      return typeof api[name] === "function";
+    });
+    if (ready) return api;
     var failedApp = document.getElementById("app");
     if (failedApp) {
       failedApp.setAttribute("data-status", "error");
-      failedApp.innerHTML = '<main id="main" class="loading-shell" tabindex="-1"><h1>Website Console unavailable</h1><p>Required local scripts did not load. Reload after updating the complete Website Console bundle.</p></main>';
+      failedApp.innerHTML = CONSOLE_UNAVAILABLE_HTML;
     }
-    throw new Error("Website Console source-bundle contract failed to load all required functions.");
+    throw new Error(failureMessage);
   }
+
+  var sourceBundleApi = requireConsoleModule(
+    "DesignAiWebsiteConsoleSourceBundle",
+    [
+      "normalizeStartPlan",
+      "extractStartPlanPayload",
+      "buildStartPlanJson",
+      "normalizeRunbookSourceBundle",
+      "extractSourceBundleProvenancePayload",
+      "extractSourceBundleRevalidationGatePayload",
+      "sourceBundleNeedsRevalidation",
+      "buildSourceBundleRevalidationGate",
+      "buildSourceBundleJson",
+      "buildSourceBundleRevalidationGateJson",
+      "normalizeQualityReport",
+      "normalizeReviewWorkflow",
+      "normalizeReviewHandoff",
+      "normalizeReviewHandoffReceipt",
+      "normalizeTargetRepoIntake",
+      "targetRepoIntakeMatchesReceipt",
+      "normalizeBrowserVerification",
+      "buildImportedArtifactJson",
+    ],
+    "Website Console source-bundle contract failed to load all required functions.",
+  );
   var normalizeStartPlan = sourceBundleApi.normalizeStartPlan;
   var extractStartPlanPayload = sourceBundleApi.extractStartPlanPayload;
   var buildStartPlanJson = sourceBundleApi.buildStartPlanJson;
@@ -67,59 +78,36 @@
   var targetRepoIntakeMatchesReceipt = sourceBundleApi.targetRepoIntakeMatchesReceipt;
   var normalizeBrowserVerification = sourceBundleApi.normalizeBrowserVerification;
   var buildImportedArtifactJson = sourceBundleApi.buildImportedArtifactJson;
-  var reviewComparisonApi = window.DesignAiWebsiteConsoleReviewComparison;
-  if (!reviewComparisonApi || typeof reviewComparisonApi.normalizeReviewComparison !== "function") {
-    var failedComparisonApp = document.getElementById("app");
-    if (failedComparisonApp) {
-      failedComparisonApp.setAttribute("data-status", "error");
-      failedComparisonApp.innerHTML = '<main id="main" class="loading-shell" tabindex="-1"><h1>Website Console unavailable</h1><p>Required local scripts did not load. Reload after updating the complete Website Console bundle.</p></main>';
-    }
-    throw new Error("Website Console review-comparison contract failed to load.");
-  }
+  var reviewComparisonApi = requireConsoleModule(
+    "DesignAiWebsiteConsoleReviewComparison",
+    ["normalizeReviewComparison"],
+    "Website Console review-comparison contract failed to load.",
+  );
   var normalizeReviewComparisonArtifact = reviewComparisonApi.normalizeReviewComparison;
-  var implementationScopeApi = window.DesignAiWebsiteConsoleImplementationScope;
-  if (!implementationScopeApi
-    || typeof implementationScopeApi.normalizeImplementationScopeProposal !== "function"
-    || typeof implementationScopeApi.normalizeImplementationScopeApproval !== "function") {
-    var failedScopeApp = document.getElementById("app");
-    if (failedScopeApp) {
-      failedScopeApp.setAttribute("data-status", "error");
-      failedScopeApp.innerHTML = '<main id="main" class="loading-shell" tabindex="-1"><h1>Website Console unavailable</h1><p>Required local scripts did not load. Reload after updating the complete Website Console bundle.</p></main>';
-    }
-    throw new Error("Website Console implementation-scope contract failed to load.");
-  }
+  var implementationScopeApi = requireConsoleModule(
+    "DesignAiWebsiteConsoleImplementationScope",
+    ["normalizeImplementationScopeProposal", "normalizeImplementationScopeApproval"],
+    "Website Console implementation-scope contract failed to load.",
+  );
   var normalizeImplementationScopeProposal = implementationScopeApi.normalizeImplementationScopeProposal;
   var normalizeImplementationScopeApproval = implementationScopeApi.normalizeImplementationScopeApproval;
-  var implementationEvidenceApi = window.DesignAiWebsiteConsoleImplementationEvidence;
-  if (!implementationEvidenceApi
-    || typeof implementationEvidenceApi.normalizeImplementationEvidence !== "function") {
-    var failedEvidenceApp = document.getElementById("app");
-    if (failedEvidenceApp) {
-      failedEvidenceApp.setAttribute("data-status", "error");
-      failedEvidenceApp.innerHTML = '<main id="main" class="loading-shell" tabindex="-1"><h1>Website Console unavailable</h1><p>Required local scripts did not load. Reload after updating the complete Website Console bundle.</p></main>';
-    }
-    throw new Error("Website Console implementation-evidence contract failed to load.");
-  }
+  var implementationEvidenceApi = requireConsoleModule(
+    "DesignAiWebsiteConsoleImplementationEvidence",
+    ["normalizeImplementationEvidence"],
+    "Website Console implementation-evidence contract failed to load.",
+  );
   var normalizeImplementationEvidenceArtifact = implementationEvidenceApi.normalizeImplementationEvidence;
-  var pilotEvidenceApi = window.DesignAiWebsiteConsolePilotEvidence;
-  if (!pilotEvidenceApi || typeof pilotEvidenceApi.normalizePilotEvidence !== "function") {
-    var failedPilotApp = document.getElementById("app");
-    if (failedPilotApp) {
-      failedPilotApp.setAttribute("data-status", "error");
-      failedPilotApp.innerHTML = '<main id="main" class="loading-shell" tabindex="-1"><h1>Website Console unavailable</h1><p>Required local scripts did not load. Reload after updating the complete Website Console bundle.</p></main>';
-    }
-    throw new Error("Website Console pilot-evidence contract failed to load.");
-  }
+  var pilotEvidenceApi = requireConsoleModule(
+    "DesignAiWebsiteConsolePilotEvidence",
+    ["normalizePilotEvidence"],
+    "Website Console pilot-evidence contract failed to load.",
+  );
   var normalizePilotEvidenceArtifact = pilotEvidenceApi.normalizePilotEvidence;
-  var viewModelApi = window.DesignAiWebsiteConsoleViewModel;
-  if (!viewModelApi || typeof viewModelApi.createDefaultWorkspace !== "function") {
-    var failedViewModelApp = document.getElementById("app");
-    if (failedViewModelApp) {
-      failedViewModelApp.setAttribute("data-status", "error");
-      failedViewModelApp.innerHTML = '<main id="main" class="loading-shell" tabindex="-1"><h1>Website Console unavailable</h1><p>Required local scripts did not load. Reload after updating the complete Website Console bundle.</p></main>';
-    }
-    throw new Error("Website Console view-model contract failed to load.");
-  }
+  var viewModelApi = requireConsoleModule(
+    "DesignAiWebsiteConsoleViewModel",
+    ["createDefaultWorkspace"],
+    "Website Console view-model contract failed to load.",
+  );
   var auditCategories = viewModelApi.auditCategories;
   var badge = viewModelApi.badge;
   var boundaryItem = viewModelApi.boundaryItem;

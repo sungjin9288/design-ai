@@ -154,6 +154,49 @@ export const LEARN_SUBCOMMANDS = Object.freeze([
   "verify",
 ]);
 
+// Flags that only set a boolean field. Exact matches, so their order among themselves never mattered.
+const LEARN_BOOLEAN_FLAGS = Object.freeze({
+  "--json": "json",
+  "--prune": "prune",
+  "--report": "report",
+  "--apply-plan": "applyPlan",
+  "--patch": "patch",
+  "--review-check": "reviewCheck",
+  "--review-template": "reviewTemplate",
+  "--fix": "fix",
+  "--dry-run": "dryRun",
+  "--strict": "strict",
+  "--explain": "explain",
+  "--yes": "yes",
+});
+
+// Flags that only select the action. setAction still enforces the one-action rule.
+const LEARN_ACTION_FLAGS = Object.freeze({
+  "--init": "init",
+  "--remember": "remember",
+  "--feedback": "feedback",
+  "--recall": "recall",
+  "--list": "list",
+  "--export": "export",
+  "--import": "import",
+  "--backup": "backup",
+  "--verify": "verify",
+  "--diff": "diff",
+  "--restore": "restore",
+  "--restore-backups": "restore-backups",
+  "--redact": "redact",
+  "--audit": "audit",
+  "--stats": "stats",
+  "--usage": "usage",
+  "--signals": "signals",
+  "--agent-backlog": "agent-backlog",
+  "--propose-skills": "propose-skills",
+  "--eval": "eval",
+  "--eval-template": "eval-template",
+  "--curate": "curate",
+  "--clear": "clear",
+});
+
 export function parseLearnArgs(rawArgs) {
   const args = rawArgs.length > 0 && LEARN_SUBCOMMANDS.includes(rawArgs[0])
     ? [`--${rawArgs[0]}`, ...rawArgs.slice(1)]
@@ -199,77 +242,15 @@ export function parseLearnArgs(rawArgs) {
 
     if (arg === "-h" || arg === "--help") {
       out.help = true;
-    } else if (arg === "--json") {
-      out.json = true;
-    } else if (arg === "--init") {
-      setAction(out, "init");
-    } else if (arg === "--remember") {
-      setAction(out, "remember");
-    } else if (arg === "--feedback") {
-      setAction(out, "feedback");
-    } else if (arg === "--recall") {
-      setAction(out, "recall");
-    } else if (arg === "--list") {
-      setAction(out, "list");
-    } else if (arg === "--export") {
-      setAction(out, "export");
-    } else if (arg === "--import") {
-      setAction(out, "import");
-    } else if (arg === "--backup") {
-      setAction(out, "backup");
-    } else if (arg === "--verify") {
-      setAction(out, "verify");
-    } else if (arg === "--diff") {
-      setAction(out, "diff");
-    } else if (arg === "--restore") {
-      setAction(out, "restore");
-    } else if (arg === "--restore-backups") {
-      setAction(out, "restore-backups");
-    } else if (arg === "--prune") {
-      out.prune = true;
-    } else if (arg === "--redact") {
-      setAction(out, "redact");
-    } else if (arg === "--audit") {
-      setAction(out, "audit");
-    } else if (arg === "--stats") {
-      setAction(out, "stats");
-    } else if (arg === "--usage") {
-      setAction(out, "usage");
-    } else if (arg === "--signals") {
-      setAction(out, "signals");
-    } else if (arg === "--agent-backlog") {
-      setAction(out, "agent-backlog");
-    } else if (arg === "--propose-skills") {
-      setAction(out, "propose-skills");
-    } else if (arg === "--eval") {
-      setAction(out, "eval");
-    } else if (arg === "--eval-template") {
-      setAction(out, "eval-template");
-    } else if (arg === "--curate") {
-      setAction(out, "curate");
-    } else if (arg === "--report") {
-      out.report = true;
-    } else if (arg === "--apply-plan") {
-      out.applyPlan = true;
-    } else if (arg === "--patch") {
-      out.patch = true;
-    } else if (arg === "--review-check") {
-      out.reviewCheck = true;
-    } else if (arg === "--review-template") {
-      out.reviewTemplate = true;
-    } else if (arg === "--fix") {
-      out.fix = true;
-    } else if (arg === "--dry-run") {
-      out.dryRun = true;
-    } else if (arg === "--strict") {
-      out.strict = true;
+    } else if (Object.prototype.hasOwnProperty.call(LEARN_BOOLEAN_FLAGS, arg)) {
+      out[LEARN_BOOLEAN_FLAGS[arg]] = true;
+    } else if (Object.prototype.hasOwnProperty.call(LEARN_ACTION_FLAGS, arg)) {
+      setAction(out, LEARN_ACTION_FLAGS[arg]);
     } else if (arg === "--query") {
       const query = args[i + 1];
       if (!query || query.startsWith("--")) throw new Error("--query expects search text");
       out.query = String(query).trim();
       i += 1;
-    } else if (arg === "--explain") {
-      out.explain = true;
     } else if (arg === "--outcome") {
       const outcome = args[i + 1];
       if (!outcome || outcome.startsWith("--")) throw new Error("--outcome expects keep, improve, or avoid");
@@ -282,10 +263,6 @@ export function parseLearnArgs(rawArgs) {
       if (!target || target.startsWith("--")) throw new Error("--forget expects an entry id or list number");
       out.forgetTarget = target;
       i += 1;
-    } else if (arg === "--clear") {
-      setAction(out, "clear");
-    } else if (arg === "--yes") {
-      out.yes = true;
     } else if (arg === "--category") {
       const category = args[i + 1];
       if (!category || category.startsWith("--")) throw new Error("--category expects a category");

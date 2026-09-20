@@ -66,6 +66,31 @@ function readOptionValue(args, index, flag) {
   return value;
 }
 
+// Flags that only set a boolean field. Exact matches, so their order among
+// themselves never mattered; the value-consuming flags below keep theirs.
+const SITE_BOOLEAN_FLAGS = Object.freeze({
+  "--json": "json",
+  "--stdin": "stdin",
+  "--init": "init",
+  "--intake-template": "intakeTemplate",
+  "--sample": "sample",
+  "--tasks": "tasks",
+  "--bundle": "bundle",
+  "--bundle-check": "bundleCheck",
+  "--bundle-handoff": "bundleHandoff",
+  "--bundle-repair": "bundleRepair",
+  "--next-actions": "nextActions",
+  "--prompt-list": "promptList",
+  "--mcp-check": "mcpCheck",
+  "--mcp-plan": "mcpPlan",
+  "--linked-preview": "linkedPreview",
+  "--graph": "graph",
+  "--probes": "probes",
+  "--strict": "strict",
+  "--report": "report",
+  "--prompts": "prompts",
+});
+
 export function parseSiteArgs(args) {
   const out = {
     target: "",
@@ -123,12 +148,8 @@ export function parseSiteArgs(args) {
 
     if (arg === "-h" || arg === "--help") {
       out.help = true;
-    } else if (arg === "--json") {
-      out.json = true;
-    } else if (arg === "--stdin") {
-      out.stdin = true;
-    } else if (arg === "--init") {
-      out.init = true;
+    } else if (Object.prototype.hasOwnProperty.call(SITE_BOOLEAN_FLAGS, arg)) {
+      out[SITE_BOOLEAN_FLAGS[arg]] = true;
     } else if (arg === "--name") {
       out.initProfile.name = readOptionValue(args, i, "--name");
       i += 1;
@@ -199,16 +220,6 @@ export function parseSiteArgs(args) {
       out.language = value;
       out.languageProvided = true;
       i += 1;
-    } else if (arg === "--intake-template") {
-      out.intakeTemplate = true;
-    } else if (arg === "--sample") {
-      out.sample = true;
-    } else if (arg === "--tasks") {
-      out.tasks = true;
-    } else if (arg === "--bundle") {
-      out.bundle = true;
-    } else if (arg === "--bundle-check") {
-      out.bundleCheck = true;
     } else if (arg === "--bundle-compare") {
       const value = args[i + 1];
       if (!value || value.startsWith("--")) {
@@ -216,24 +227,6 @@ export function parseSiteArgs(args) {
       }
       out.bundleCompareTarget = value;
       i += 1;
-    } else if (arg === "--bundle-handoff") {
-      out.bundleHandoff = true;
-    } else if (arg === "--bundle-repair") {
-      out.bundleRepair = true;
-    } else if (arg === "--next-actions") {
-      out.nextActions = true;
-    } else if (arg === "--prompt-list") {
-      out.promptList = true;
-    } else if (arg === "--mcp-check") {
-      out.mcpCheck = true;
-    } else if (arg === "--mcp-plan") {
-      out.mcpPlan = true;
-    } else if (arg === "--linked-preview") {
-      out.linkedPreview = true;
-    } else if (arg === "--graph") {
-      out.graph = true;
-    } else if (arg === "--probes") {
-      out.probes = true;
     } else if (arg === "--prompt") {
       const value = args[i + 1];
       if (!value || value.startsWith("--")) {
@@ -251,12 +244,6 @@ export function parseSiteArgs(args) {
       }
       out.taskSelector = value;
       i += 1;
-    } else if (arg === "--strict") {
-      out.strict = true;
-    } else if (arg === "--report") {
-      out.report = true;
-    } else if (arg === "--prompts") {
-      out.prompts = true;
     } else if (arg === "--yes") {
       out.yes = true;
     } else if (parseOutputFlags(args, out)) {
