@@ -416,6 +416,39 @@ design contract, approved scope, implementation evidence, comparison, owner
 decision, and successor snapshot. Restore remains read-only until separately
 approved.
 
+Status: the snapshot contract and its build, verify, and chain-inspection
+functions are implemented as an internal library.
+[Project continuity](PROJECT-CONTINUITY.md) describes them. No CLI, SDK, MCP, or
+Website Console surface calls them yet.
+
+Current P17F evidence:
+
+- `design-ai-project-snapshot` v1 stores only reference, byte digest, size,
+  kind, and schema version for the review workflow, scope approval,
+  implementation evidence, review comparison, and pilot evidence. It never
+  embeds artifact bodies. Its boundary is fixed: no history database, read-only
+  restore, no automatic learning, and no target writes.
+- Building a snapshot validates each artifact with its own contract and checks
+  the links between them. A broken link rejects the snapshot. The comparison
+  candidate stays explicitly `unverified`, because no existing contract binds it
+  to the implementation. The set of links and the stage are derived from which
+  artifacts are present.
+- Owner decisions are self-declared. They cannot postdate the snapshot or accept
+  blocked evidence. A successor must follow a decided snapshot in the same
+  project, be recorded later, and keep the same repository. Chain inspection
+  re-checks every edge and returns a read-only restore plan only for a clean
+  linear chain.
+- An independent review of the first version found 12 issues, and all are
+  addressed. They included:
+  - blocked or foreign pilot evidence that could be accepted;
+  - chain inspection that skipped the successor rules;
+  - links and identity fields that the contract did not constrain;
+  - verification that threw errors instead of reporting drift;
+  - verification that did not state which declared fields it cannot prove.
+- `cli/lib/project-snapshot.test.mjs` builds a real chain against a temporary Git
+  checkout and adds 9 tests to `npm test`. Sixteen sabotage runs each made the
+  suite fail.
+
 ## Selection rule for new public capability
 
 Choose at most one public capability at a time. Rank candidates by:

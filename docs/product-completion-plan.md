@@ -35,7 +35,7 @@ last_updated: 2026-09-28
 | P17C | clone-only compiler와 fixture·mutation suite 구현 | 실제 design-system root·소비 repo 1건의 scope 승인 후 첫 적용 증빙 |
 | P17D | 계약·KO/EN fixture·검증기와 ux-audit·website-improvement lens 구현 | quality report schema의 9번째 lens 승격(공개 계약 변경, 별도 변경) |
 | P17E | 평가 결과 계약과 결정적 참조 평가기 4종(내부 library) 구현 | 실제 adapter가 layout·style artifact를 내보내는 run 1건과 공개 capability 선택 결정 |
-| P17F | 설계된 후속 개발 | 진입 조건 충족 후 별도 구현 |
+| P17F | 스냅샷 계약과 build·verify·chain 검사(내부 library) 구현 | 실제 프로젝트 1건의 연속 스냅샷 기록과 공개 capability 선택 결정 |
 
 ## 설계 결정
 
@@ -136,7 +136,7 @@ Merge와 tag 전에는 `.github/workflows/`의 실행 trigger를 다시 확인�
 | 2 · P17C — **1단계 완료** | 명시한 design-system root와 소비 repo, scope 승인 | verified facts→closed generation contract→project-local skill; path/import/token/asset 전수 검증. `tools/ds_skill/`와 20개 fixture·mutation case 구현 | clone-only 시작; 2개 독립 pilot 또는 새 제품 결정 전 CLI/SDK/MCP 승격 없음 |
 | 3 · P17D — **계약·fixture 완료** | 기존 voice·locale·review 계약과 KO/EN fixtures | button/form/error/empty/notification/onboarding/destructive copy lens; 전후 예제와 SR 의미 유지 | 계약·fixtures 전 ninth lens 추가 금지; 단독 command 없음 |
 | 4 · P17E — **계약·참조 평가기 완료** | 승인된 browser adapter·source digest·viewport | visual diff·overflow·brand drift의 version/threshold/artifact/uncertainty 계약 | missing artifact는 `unverified`; 총점으로 누락 은폐 금지 |
-| 5 · P17F | 기존 review·scope·implementation·comparison | digest와 owner decision을 잇는 successor snapshot | 새 history DB·자동 restore·자동 학습 없음 |
+| 5 · P17F — **계약·library 완료** | 기존 review·scope·implementation·comparison | digest와 owner decision을 잇는 successor snapshot | 새 history DB·자동 restore·자동 학습 없음 |
 
 Image 결과 gallery·preview·download는 별도 요구와 fixture를 확보한 뒤 계획합니다.
 asset byte serving의 path·media·same-origin 계약과 접근성 검증이 선행되어야 합니다.
