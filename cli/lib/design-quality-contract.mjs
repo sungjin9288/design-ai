@@ -17,6 +17,18 @@ export const DESIGN_QUALITY_SCHEMA = readSchema();
 export const DESIGN_QUALITY_LENSES = Object.freeze([
   ...DESIGN_QUALITY_SCHEMA.$defs.lensId.enum,
 ]);
+// schemaVersion 1 carries the eight interaction-craft lenses; version 2 adds
+// interface-copy. Both stay valid so stored v1 evidence keeps verifying.
+export const DESIGN_QUALITY_SCHEMA_VERSION = 2;
+export const DESIGN_QUALITY_LENSES_BY_VERSION = Object.freeze({
+  1: Object.freeze(DESIGN_QUALITY_LENSES.filter((lens) => lens !== "interface-copy")),
+  2: DESIGN_QUALITY_LENSES,
+});
+
+export function designQualityLensesFor(schemaVersion) {
+  if (schemaVersion !== 1 && schemaVersion !== 2) throw new Error("quality report schemaVersion must be 1 or 2");
+  return DESIGN_QUALITY_LENSES_BY_VERSION[schemaVersion];
+}
 export const DESIGN_QUALITY_STATUSES = Object.freeze([
   ...DESIGN_QUALITY_SCHEMA.$defs.qualityStatus.enum,
 ]);
@@ -91,7 +103,7 @@ function validateEvidenceArray(items, field) {
   items.forEach((item, index) => validateEvidence(item, `${field}[${index}]`));
 }
 
-function expectedSummaryStatus(lenses) {
+export function expectedSummaryStatus(lenses) {
   const statuses = new Set(lenses.map((lens) => lens.status));
   if (statuses.has("fail")) return "fail";
   if (statuses.has("warning")) return "warning";
@@ -163,9 +175,7 @@ export function validateDesignQualityReport(report) {
   if (report.kind !== "design-ai-quality-report") {
     throw new Error("quality report kind must be design-ai-quality-report");
   }
-  if (report.schemaVersion !== 1) {
-    throw new Error("quality report schemaVersion must be 1");
-  }
+  const versionLenses = designQualityLensesFor(report.schemaVersion);
   if (!isNormalizedUtcDateTime(report.generatedAt)) {
     throw new Error("quality report generatedAt must be a normalized UTC date-time string");
   }
@@ -211,21 +221,21 @@ export function validateDesignQualityReport(report) {
   validateEvidenceArray(report.sources, "quality report sources");
 
   assertDenseArray(report.lenses, "quality report lenses");
-  if (report.lenses.length !== DESIGN_QUALITY_LENSES.length) {
-    throw new Error(`quality report lenses must contain exactly ${DESIGN_QUALITY_LENSES.length} entries`);
+  if (report.lenses.length !== versionLenses.length) {
+    throw new Error(`quality report lenses must contain exactly ${versionLenses.length} entries for schemaVersion ${report.schemaVersion}`);
   }
   const seenLenses = new Set();
   report.lenses.forEach((lens, index) => {
     const field = `quality report lenses[${index}]`;
     assertExactKeys(lens, ["id", "status", "summary", "evidence"], field);
-    assertEnum(lens.id, new Set(DESIGN_QUALITY_LENSES), `${field}.id`);
+    assertEnum(lens.id, new Set(versionLenses), `${field}.id`);
     assertEnum(lens.status, new Set(DESIGN_QUALITY_STATUSES), `${field}.status`);
     assertNonEmptyString(lens.summary, `${field}.summary`);
     validateEvidenceArray(lens.evidence, `${field}.evidence`);
     if (seenLenses.has(lens.id)) throw new Error(`quality report lens is duplicated: ${lens.id}`);
     seenLenses.add(lens.id);
   });
-  for (const lensId of DESIGN_QUALITY_LENSES) {
+  for (const lensId of versionLenses) {
     if (!seenLenses.has(lensId)) throw new Error(`quality report lens is missing: ${lensId}`);
   }
 
@@ -241,7 +251,7 @@ export function validateDesignQualityReport(report) {
     for (const key of ["id", "title", "location", "before", "after", "why"]) {
       assertNonEmptyString(finding[key], `${field}.${key}`);
     }
-    assertEnum(finding.lens, new Set(DESIGN_QUALITY_LENSES), `${field}.lens`);
+    assertEnum(finding.lens, new Set(versionLenses), `${field}.lens`);
     assertEnum(finding.severity, FINDING_SEVERITIES, `${field}.severity`);
     assertEnum(finding.status, FINDING_STATUSES, `${field}.status`);
     validateEvidenceArray(finding.evidence, `${field}.evidence`);

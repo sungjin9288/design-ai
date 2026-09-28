@@ -3998,6 +3998,11 @@ def assert_pilot_evidence_json(
         raise SystemExit(f"pilot evidence after {context} expanded its claim or mutation boundary")
 
 
+def benchmark_contract_version(kind: object) -> int:
+    """Quality reports are produced at schemaVersion 2 (interface-copy lens); other contracts stay at 1."""
+    return 2 if kind == "design-ai-quality-report" else 1
+
+
 def assert_specialization_benchmark_json(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
     try:
@@ -4178,7 +4183,7 @@ def assert_specialization_benchmark_json(raw: str, *, context: str, cmd: list[st
                 isinstance(contract, dict)
                 and contract.get("valid") is True
                 and contract.get("error") is None
-                and contract.get("schemaVersion") == 1
+                and contract.get("schemaVersion") == benchmark_contract_version(contract.get("kind"))
                 and re.fullmatch(r"[a-f0-9]{64}", str(contract.get("sha256", "")))
             ):
                 raise SystemExit(f"benchmark JSON after {context} contains invalid contract evidence")
@@ -4217,7 +4222,7 @@ def assert_specialization_benchmark_json(raw: str, *, context: str, cmd: list[st
                     and isinstance(artifact, dict)
                     and isinstance(received, dict)
                     and isinstance(artifact.get("kind"), str)
-                    and artifact.get("schemaVersion") == 1
+                    and artifact.get("schemaVersion") == benchmark_contract_version(artifact.get("kind"))
                     and re.fullmatch(r"[a-f0-9]{64}", str(artifact.get("sha256", "")))
                     and artifact.get("sha256") == received.get("sha256")
                     and received.get("consumerValidation") == "pass"
@@ -5015,7 +5020,7 @@ def passing_specialization_benchmark_json() -> str:
                 {
                     "sender": "planning-agent",
                     "recipient": "implementation-review-agent",
-                    "artifact": {"kind": kind, "schemaVersion": 1, "sha256": "d" * 64},
+                    "artifact": {"kind": kind, "schemaVersion": benchmark_contract_version(kind), "sha256": "d" * 64},
                     "received": {"sha256": "d" * 64, "consumerValidation": "pass"},
                     "valid": True,
                 }
@@ -5038,7 +5043,7 @@ def passing_specialization_benchmark_json() -> str:
             },
             "status": "pass",
             "contracts": [
-                {"kind": kind, "schemaVersion": 1, "sha256": "e" * 64, "valid": True, "error": None}
+                {"kind": kind, "schemaVersion": benchmark_contract_version(kind), "sha256": "e" * 64, "valid": True, "error": None}
                 for kind in definition["contracts"]
             ],
             "findingComparison": comparison,

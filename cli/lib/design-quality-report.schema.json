@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://design-ai.dev/contracts/design-quality-report.v1.schema.json",
   "title": "Design AI quality report",
+  "$comment": "schemaVersion 1 reports carry the eight interaction-craft lenses. schemaVersion 2 adds the interface-copy lens. Validators accept both so stored v1 evidence keeps verifying; new reports are version 2.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -19,7 +20,7 @@
   ],
   "properties": {
     "kind": { "const": "design-ai-quality-report" },
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "enum": [1, 2] },
     "generatedAt": {
       "type": "string",
       "format": "date-time",
@@ -36,7 +37,7 @@
     "lenses": {
       "type": "array",
       "minItems": 8,
-      "maxItems": 8,
+      "maxItems": 9,
       "items": { "$ref": "#/$defs/lens" },
       "allOf": [
         { "contains": { "properties": { "id": { "const": "purpose-frequency" } } }, "minContains": 1, "maxContains": 1 },
@@ -56,6 +57,21 @@
     "summary": { "$ref": "#/$defs/summary" },
     "approval": { "$ref": "#/$defs/approval" }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "schemaVersion": { "const": 1 } } },
+      "then": {
+        "properties": {
+          "lenses": { "maxItems": 8, "not": { "contains": { "properties": { "id": { "const": "interface-copy" } } } } },
+          "findings": { "items": { "properties": { "lens": { "not": { "const": "interface-copy" } } } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "schemaVersion": { "const": 2 } } },
+      "then": { "properties": { "lenses": { "minItems": 9, "contains": { "properties": { "id": { "const": "interface-copy" } } }, "minContains": 1, "maxContains": 1 } } }
+    }
+  ],
   "$defs": {
     "nonEmptyString": {
       "type": "string",
@@ -74,7 +90,8 @@
         "timing-cohesion",
         "performance",
         "accessibility",
-        "responsive-resilience"
+        "responsive-resilience",
+        "interface-copy"
       ]
     },
     "subject": {

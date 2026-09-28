@@ -16,7 +16,7 @@ REGISTER_CASES = {
     "입금됩니다.": "hapsyo", "해지하시겠습니까?": "hapsyo", "입력하시오": "hapsyo", "합시다.": "hapsyo",
     "업로드 중입니다…": "hapsyo", "잘못된 입력입니다 (E12)": "hapsyo",
     "저장했다.": "banmal", "사진을 올렸다": "banmal", "사진을 올렸어.": "banmal", "완료됐어!": "banmal",
-    "사용할 수 있음": "eumseum",
+    "사용할 수 있음": "eumseum", "승인 작업함": None, "받은 편지함": None, "다음 모임": None, "저장 완료됨": "eumseum",
 }
 
 

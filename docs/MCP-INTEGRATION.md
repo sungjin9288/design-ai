@@ -47,7 +47,7 @@ mutations, or external actions.
 `design_ai_inspect_html` maps to CLI `design-ai inspect` and SDK `inspectHtml()`.
 MCP and SDK receive HTML source text plus a display reference; they do not read a
 target path. The operation confirms only supported static markup evidence and
-returns all eight quality lenses. Interaction, motion, performance, keyboard,
+returns every quality lens: the eight interaction-craft lenses and `interface-copy`. Interaction, motion, performance, keyboard,
 accessibility-tree, and rendered responsive behavior remain `unverified` until an
 approved runtime supplies evidence.
 If the serialized report exceeds the MCP response limit, the tool returns a valid

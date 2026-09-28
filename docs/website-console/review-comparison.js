@@ -46,6 +46,8 @@
   }
 
   function comparable(baseline, candidate) {
+    // Reports from different schema versions carry different lens sets and cannot be compared.
+    if (baseline.schemaVersion !== candidate.schemaVersion) return false;
     if (!same(baseline.subject, candidate.subject) || !same(baseline.context, candidate.context)) return false;
     var baselineLenses = {};
     baseline.findings.forEach(function (finding) {
@@ -219,7 +221,7 @@
     var summary = expectedSummary(status, findings);
 
     if (!same(value.context, expectedContext)
-      || !Array.isArray(value.lensTransitions) || value.lensTransitions.length !== 8
+      || !Array.isArray(value.lensTransitions) || value.lensTransitions.length !== baseline.value.lenses.length
       || value.lensTransitions.some(function (transition) {
         return !exactKeys(transition, ["id", "before", "after", "change"])
           || lensChanges.indexOf(transition.change) === -1;

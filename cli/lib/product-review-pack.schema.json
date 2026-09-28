@@ -90,7 +90,8 @@
             "timing-cohesion",
             "performance",
             "accessibility",
-            "responsive-resilience"
+            "responsive-resilience",
+            "interface-copy"
           ]
         },
         "mode": { "enum": ["static-html", "browser-required", "scenario-required"] },

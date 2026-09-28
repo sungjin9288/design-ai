@@ -17,6 +17,47 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 808 - Interface copy as the ninth quality-report lens (v5.2.0 post-release)
+
+- [x] Promoted the P17D interface copy lens into the design-quality report.
+  Quality report schemaVersion 2 adds `interface-copy` after the eight
+  interaction-craft lenses. `inspect`, `review`, the SDK, and MCP now emit
+  version 2.
+- [x] Kept version 1 valid in the CLI contract, Website Console, and smoke
+  assertions, so stored reports and the handoffs, receipts, comparisons, pilot
+  evidence, and snapshots that embed them keep verifying. A review comparison
+  requires both reports to share a schema version and refuses a mixed pair
+  instead of failing on a missing lens.
+- [x] Added static interface-copy checks for generic control labels, visible
+  labels missing from `aria-label` (WCAG 2.5.3), and mixed Korean registers.
+  Clean copy stays `unverified`; a p1 finding fails the lens and p2 or p3
+  findings warn.
+- [x] Narrowed the 음슴체 rule in both register classifiers after the specialization
+  benchmark flagged the noun 작업함 as a sentence ending.
+- [x] Addressed all 12 issues from an independent review. Among them:
+  - the benchmark smoke still required schemaVersion 1;
+  - label-in-name required a prefix where WCAG 2.5.3 requires containment;
+  - HTML entities were not decoded before comparing;
+  - Korean status cells, headlines, quotes, and footers produced false register
+    findings;
+  - a copy-targeted product-pack criterion could crash the inspector;
+  - string schema versions were accepted.
+
+  Eleven sabotage runs against the new rules each made the tests fail.
+- [ ] Release the public contract change as the next minor version with a
+  CHANGELOG entry and a registry smoke against the published package.
+
+### Verified
+
+- All 14 stored quality reports and the artifacts that embed them under
+  `evidence/` and `examples/benchmarks/` validate with the new contract.
+- `npm test`, the eight strict audits, skill contracts, the interface copy
+  contract, release metadata, and the review, smoke, package, and registry
+  self-tests pass. The full release gate result is recorded in the pull request.
+
+A live provider call, external pilot participation, and published-package
+registry smoke of version 2 output remain unverified and are not claimed here.
+
 ## Phase 807 - P17F project continuity snapshots (v5.2.0 post-release)
 
 - [x] Added the `design-ai-project-snapshot` v1 contract. It is a small index of

@@ -53,8 +53,13 @@ The uncertain state prevents a missing static signal from being presented as a
 fix. For example, removing an accessible-name warning is not verified improvement
 if the accessibility lens still lacks the evidence needed to pass.
 
-Each of the eight lenses also records one transition: `unchanged`, `improved`,
+Each lens of the shared schema version also records one transition: `unchanged`, `improved`,
 `regressed`, `evidence-gained`, or `evidence-lost`.
+
+Both reports must share a quality report schema version. A stored version 1
+report has eight lenses and a new version 2 report adds `interface-copy`, so the
+comparison refuses a mixed pair. Re-run the baseline review to compare it with a
+new one.
 
 ## Read the overall status
 

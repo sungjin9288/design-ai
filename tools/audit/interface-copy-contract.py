@@ -47,7 +47,8 @@ NOUNS_ENDING_IN_YO = ("필요", "중요", "주요", "수요", "개요", "요요"
 BANMAL_ENDINGS = ("했다", "었다", "았다", "한다", "는다", "된다", "있다", "없다", "했어", "었어", "았어",
                   "렸어", "났어", "됐어", "졌어", "왔어", "갔어", "봤어", "겠어", "할게", "볼게", "줄게",
                   "해 봐", "해 줘", "거야", "할래", "하자", "했니", "이야")
-EUMSEUM_ENDINGS = ("음", "함", "됨", "임")
+# Only forms that cannot end a noun: 작업함, 보관함, and 모임 are common UI nouns.
+EUMSEUM_ENDINGS = ("있음", "없음", "했음", "였음", "었음", "았음", "됐음", "됨")
 
 
 def table_rows(text: str, heading: str) -> list[list[str]]:

@@ -49,9 +49,13 @@ test("associated, nested, and ARIA labels satisfy the supported static naming ch
 </html>`;
   const report = inspectHtml(source, OPTIONS);
 
-  assert.equal(report.summary.confirmedFindings, 0);
+  // The browser default "Submit" names the control for accessibility, but it is a
+  // generic label, so the interface-copy lens warns about it.
+  const copy = report.findings.filter((finding) => finding.lens === "interface-copy");
+  assert.deepEqual(copy.map((finding) => finding.id), ["interface-copy-generic-label-10-3"]);
+  assert.equal(report.summary.confirmedFindings, 1);
   assert.equal(report.summary.unverifiedFindings, 1);
-  assert.equal(report.summary.status, "unverified");
+  assert.equal(report.summary.status, "warning");
   assert.equal(report.findings.some((finding) => finding.lens === "accessibility" && finding.status === "confirmed"), false);
   assert.equal(report.lenses.find((lens) => lens.id === "accessibility").status, "unverified");
 });
@@ -168,7 +172,7 @@ test("document language, image alt, and mobile viewport defects keep concrete lo
 });
 
 test("desktop-only and fragment reviews do not invent a missing mobile document contract", () => {
-  const fragment = `<div><input aria-label="Search"><button>Submit</button></div>`;
+  const fragment = `<div><input aria-label="Search"><button>Search</button></div>`;
   const report = inspectHtml(fragment, {
     ...OPTIONS,
     sourceRef: "component-fragment.html",

@@ -237,7 +237,8 @@ export type DesignQualityLensId =
   | "timing-cohesion"
   | "performance"
   | "accessibility"
-  | "responsive-resilience";
+  | "responsive-resilience"
+  | "interface-copy";
 
 export interface DesignQualityEvidence {
   kind: "brief" | "code" | "runtime" | "screenshot" | "accessibility" | "manual" | "design-contract";
@@ -287,7 +288,8 @@ export interface ReviewHtmlOptions extends InspectHtmlOptions {
 
 export interface DesignQualityReport {
   kind: "design-ai-quality-report";
-  schemaVersion: 1;
+  /** 1 = the eight interaction-craft lenses (stored reports); 2 = adds "interface-copy" (new reports). */
+  schemaVersion: 1 | 2;
   generatedAt: string;
   subject: { name: string; type: "artifact" | "component" | "flow" | "page" | "application"; source: string };
   context: { brief: string; routeId: "design-engineering-review"; locale: string; viewports: string[] };
@@ -410,7 +412,7 @@ export interface CompactReviewComparisonSource {
   sha256: string;
   bytes: number;
   kind: "design-ai-quality-report";
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   reportStatus: DesignQualityStatus;
 }
 
