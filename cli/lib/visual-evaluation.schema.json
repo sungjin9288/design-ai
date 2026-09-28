@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://design-ai.dev/contracts/visual-evaluation.v1.schema.json",
+  "title": "Design AI visual evaluation",
+  "$comment": "Per-evaluator threshold keys and input roles, measurement-derived pass/fail, required artifacts for pass/fail, the derived summary, and the ban on score fields are enforced by validateVisualEvaluation().",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "schemaVersion", "evaluatorVersion", "source", "requestSha256", "tool", "evaluations", "summary"],
+  "properties": {
+    "kind": { "const": "design-ai-visual-evaluation" },
+    "schemaVersion": { "const": 1 },
+    "evaluatorVersion": { "$ref": "#/$defs/text" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "sha256"],
+      "properties": {
+        "kind": { "$ref": "#/$defs/text" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "requestSha256": { "$ref": "#/$defs/sha256" },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "$ref": "#/$defs/text" },
+        "version": { "$ref": "#/$defs/text" }
+      }
+    },
+    "evaluations": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/evaluation" }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pass", "fail", "unverified", "status"],
+      "properties": {
+        "pass": { "type": "integer", "minimum": 0 },
+        "fail": { "type": "integer", "minimum": 0 },
+        "unverified": { "type": "integer", "minimum": 0 },
+        "status": { "$ref": "#/$defs/status" }
+      }
+    }
+  },
+  "$defs": {
+    "text": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "status": { "enum": ["pass", "fail", "unverified"] },
+    "viewport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "width", "height"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9-]*$" },
+        "width": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "height": { "type": "integer", "minimum": 1, "maximum": 10000 }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "path", "sha256", "bytes"],
+      "properties": {
+        "role": { "enum": ["baseline", "reference", "candidate", "layout", "styles", "tokens"] },
+        "path": { "$ref": "#/$defs/text" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "evaluator", "viewport", "threshold", "status", "measurement", "artifacts", "uncertainty", "reasons"],
+      "properties": {
+        "id": { "$ref": "#/$defs/text" },
+        "evaluator": { "enum": ["screenshot-regression", "visual-diff", "responsive-overflow", "brand-token-drift"] },
+        "viewport": { "$ref": "#/$defs/viewport" },
+        "threshold": { "type": "object" },
+        "status": { "$ref": "#/$defs/status" },
+        "measurement": { "type": ["object", "null"] },
+        "artifacts": { "type": "array", "items": { "$ref": "#/$defs/artifact" } },
+        "uncertainty": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } },
+        "reasons": { "type": "array", "items": { "$ref": "#/$defs/text" } }
+      }
+    }
+  }
+}

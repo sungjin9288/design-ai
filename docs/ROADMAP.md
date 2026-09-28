@@ -17,6 +17,35 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 806 - P17E visual evaluator contract and reference evaluators (v5.2.0 post-release)
+
+- [x] Added the `design-ai-visual-evaluation` v1 contract and schema. Every
+  evaluation records the evaluator version, capture tool, viewport, source digest,
+  threshold, artifact digests, and uncertainty. Missing or invalid evidence stays
+  `unverified`, and a pass must follow from the recorded measurement. No
+  aggregate score exists.
+- [x] Added deterministic, zero-dependency reference evaluators for screenshot
+  regression, visual diff, responsive overflow, and brand-token drift. They read
+  only regular files inside one evidence directory, with a bounded PNG codec and
+  CIE76 color distance.
+- [x] Addressed all 12 issues from an independent review, including forged
+  measurements, single-pixel changes hidden by rounding, unbounded PNG
+  decompression, and colors that could not be evaluated.
+- [ ] Run the evaluators against artifacts from a real approved adapter that
+  also emits layout and computed-style files.
+- [ ] Decide whether to promote them to a CLI, SDK, or MCP capability under the
+  P17 selection rule.
+
+### Verified
+
+- 14 new Node tests pass inside `npm test`. Fifteen sabotage runs each made the
+  suite fail. The full release gate result is recorded in the pull request.
+- No CLI, SDK, MCP, Website Console, browser-verification sidecar, or version
+  change. The package `exports` map still exposes only `./sdk`.
+
+Real adapter artifacts, external pilot participation, and a live provider call
+remain unverified and are not claimed here.
+
 ## Phase 805 - P17D interface copy lens contract and fixtures (v5.2.0 post-release)
 
 - [x] Added the interface copy contract in `knowledge/patterns/interface-copy.md`.

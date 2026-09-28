@@ -32,7 +32,9 @@ live Prompt Guide call and a real provider generation/edit remain unverified.
 P17C now has a clone-only design-system skill compiler with a fixture and mutation
 suite; it is maintainer tooling, not a public CLI, SDK, or MCP capability.
 P17D adds an interface copy lens contract with Korean and English fixtures to
-UX and website review; it is not yet a quality-report lens.** CLI `design-ai start`,
+UX and website review; it is not yet a quality-report lens. P17E adds a
+visual-evaluation contract with four deterministic reference evaluators as an
+internal library; no command or SDK export calls it yet.** CLI `design-ai start`,
 SDK `start()`, MCP `design_ai_start`, and Website Console share one canonical
 read-only start payload. CLI `design-ai inspect`, SDK `inspectHtml()`, and MCP
 `design_ai_inspect_html` share the canonical quality report. The inspector confirms
