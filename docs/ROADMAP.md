@@ -17,6 +17,34 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 807 - P17F project continuity snapshots (v5.2.0 post-release)
+
+- [x] Added the `design-ai-project-snapshot` v1 contract. It is a small index of
+  exact artifact byte digests, derived cross-artifact links and stage, one
+  self-declared owner decision, and a predecessor digest. It embeds no artifact
+  bodies and keeps no history database.
+- [x] Added `buildProjectSnapshot`, `verifyProjectSnapshot`, and
+  `inspectProjectSnapshotChain`. Broken links reject a snapshot, and drift is
+  reported rather than thrown. A clean linear chain yields a read-only restore
+  plan.
+- [x] Addressed all 12 issues from an independent review, including acceptance
+  of blocked or foreign pilot evidence, unchecked successor rules during chain
+  inspection, and unconstrained links and identity fields.
+- [ ] Record consecutive snapshots for one real project.
+- [ ] Decide whether to promote snapshots to a CLI, SDK, or MCP capability under
+  the P17 selection rule.
+
+### Verified
+
+- 9 new Node tests pass inside `npm test` against a real review-to-pilot chain
+  in a temporary Git checkout. Sixteen sabotage runs each made the suite fail.
+  The full release gate result is recorded in the pull request.
+- No CLI, SDK, MCP, Website Console, existing artifact contract, or version
+  change.
+
+A real project's snapshot history, external pilot participation, and a live
+provider call remain unverified and are not claimed here.
+
 ## Phase 806 - P17E visual evaluator contract and reference evaluators (v5.2.0 post-release)
 
 - [x] Added the `design-ai-visual-evaluation` v1 contract and schema. Every
