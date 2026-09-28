@@ -30,7 +30,9 @@ v5.2.0 and is published behavior. The deterministic local mock loopback flow mak
 no Prompt Guide/provider-network call; published registry smoke passed, while a
 live Prompt Guide call and a real provider generation/edit remain unverified.
 P17C now has a clone-only design-system skill compiler with a fixture and mutation
-suite; it is maintainer tooling, not a public CLI, SDK, or MCP capability.** CLI `design-ai start`,
+suite; it is maintainer tooling, not a public CLI, SDK, or MCP capability.
+P17D adds an interface copy lens contract with Korean and English fixtures to
+UX and website review; it is not yet a quality-report lens.** CLI `design-ai start`,
 SDK `start()`, MCP `design_ai_start`, and Website Console share one canonical
 read-only start payload. CLI `design-ai inspect`, SDK `inspectHtml()`, and MCP
 `design_ai_inspect_html` share the canonical quality report. The inspector confirms

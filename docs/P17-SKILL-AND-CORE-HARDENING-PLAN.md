@@ -322,6 +322,16 @@ Current P17C evidence:
 
 ### P17D - Interface content quality
 
+Status: the contract, fixtures, and knowledge-backed lens are implemented.
+[`knowledge/patterns/interface-copy.md`](../knowledge/patterns/interface-copy.md)
+defines eight criteria and seven surfaces.
+[`interface-copy-fixtures.json`](../knowledge/patterns/interface-copy-fixtures.json)
+holds a Korean and an English before/after case for every surface.
+`ux-audit` and `website-improvement` apply the lens. Promotion to a ninth lens in
+the design-quality report schema is the remaining step. It changes a public
+contract, so it needs its own change across the schema, SDK, MCP, Website
+Console, comparison, and smoke contracts.
+
 Add content as a ninth review concern only after a contract and fixtures exist.
 It must cover purpose, clarity, concision, conversational fit, error recovery,
 accessibility, localization, and Korean honorific consistency. It starts as a
@@ -333,6 +343,32 @@ Exit criteria:
   confirmation each have before/after fixtures.
 - Korean and English fixtures preserve product voice and screen-reader meaning.
 - No readability score becomes a substitute for user goal or evidence.
+
+Current P17D evidence:
+
+- `npm run content:check` validates 14 fixtures, which carry 38 findings across
+  seven surfaces in Korean and English, and every criterion is used. It reads
+  criteria, surfaces, required parts, primary controls, and conveyed-fact roles
+  from the contract tables, so the rules have a single owner.
+- Each finding names a part, quotes its evidence from that part of `before`, and
+  puts its fix in the same part of `after`. The flagged string must be gone. The
+  accessible name must start with a non-generic visible label. A destructive
+  confirmation must repeat a title word. Every conveyed fact, such as the object,
+  the consequence, or that input is kept, must survive into `after` and into
+  live-region announcements. The Korean and English pair must convey the same
+  roles with the same numbers.
+- Korean `after` copy must hold one register, checked clause by clause, and must
+  not contain stray English. A Korean honorific finding must quote a sentence
+  whose register differs from the product register.
+- Any score, readability, or grade field is rejected. `npm run content:self-test`
+  runs 20 register-classifier cases and rejects 30 named mutations of the real
+  contract and fixtures, and both commands run inside `release:self-test`.
+- An independent review of the first version found 12 issues and all are
+  addressed. They included a register classifier that missed contracted and
+  parenthesised endings, surface rules that were only documented, a
+  wrong-sentence quote, empty evidence passing, and the contract and fixture
+  finding formats disagreeing.
+- No CLI, SDK, MCP, Website Console runtime, report-schema, or version change.
 
 ### P17E - Objective visual and brand evaluators
 

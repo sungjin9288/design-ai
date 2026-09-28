@@ -13,7 +13,7 @@
 <div class="design-ai-home-badges">
   <a href="https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml"><img alt="감사 통과" src="https://img.shields.io/badge/audit-passing-brightgreen"></a>
   <a href="https://sungjin9288.github.io/design-ai/ko/"><img alt="문서 사이트 공개" src="https://img.shields.io/badge/docs-live-indigo"></a>
-  <a href="https://github.com/sungjin9288/design-ai/blob/main/knowledge/PRINCIPLES.md"><img alt="지식 파일 97개" src="https://img.shields.io/badge/knowledge-97-blue"></a>
+  <a href="https://github.com/sungjin9288/design-ai/blob/main/knowledge/PRINCIPLES.md"><img alt="지식 파일 98개" src="https://img.shields.io/badge/knowledge-98-blue"></a>
   <a href="https://github.com/sungjin9288/design-ai/tree/main/examples"><img alt="예제 226개" src="https://img.shields.io/badge/examples-226-blue"></a>
 </div>
 
@@ -136,7 +136,7 @@ design-ai/
 │
 ├── refs/                    # Sparse-clone된 업스트림 소스 (gitignored)
 │
-├── knowledge/               # 97개 손으로 쓴 + 추출된 지식 파일
+├── knowledge/               # 98개 손으로 쓴 + 추출된 지식 파일
 │   ├── design-tokens/       # W3C DTCG, OKLCH, HCT
 │   ├── components/          # Ant + MUI + shadcn 합성
 │   ├── patterns/            # 인증, 가격, 랜딩 히어로, 브랜드, 이메일 등

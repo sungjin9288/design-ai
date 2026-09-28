@@ -1,0 +1,316 @@
+{
+  "schema": "design-ai.interface-copy-fixtures/v2",
+  "contract": "knowledge/patterns/interface-copy.md",
+  "fixtures": [
+    {
+      "id": "button-save-draft-ko",
+      "pair": "button-save-draft",
+      "surface": "button",
+      "locale": "ko",
+      "register": "haeyo",
+      "userGoal": "글을 발행하지 않고 지금까지 쓴 내용을 보관한다.",
+      "mustConvey": [{"role": "action", "text": "임시 저장"}],
+      "before": {"strings": {"label": "확인"}, "accessibleName": "버튼"},
+      "after": {"strings": {"label": "임시 저장"}, "accessibleName": "임시 저장"},
+      "findings": [
+        {"criterion": "purpose", "part": "label", "severity": "p1", "evidence": "확인", "why": "누르면 발행되는지 저장되는지 예측할 수 없습니다.", "fix": "임시 저장", "verification": "레이블만 읽고 결과를 말할 수 있는지 다시 읽어 확인한다."},
+        {"criterion": "accessibility", "part": "accessibleName", "severity": "p1", "evidence": "버튼", "why": "스크린리더가 '버튼'만 읽어 보이는 레이블과 이름이 다릅니다.", "fix": "임시 저장", "verification": "스크린리더로 '임시 저장, 버튼'이 읽히는지 확인한다."}
+      ]
+    },
+    {
+      "id": "button-save-draft-en",
+      "pair": "button-save-draft",
+      "surface": "button",
+      "locale": "en",
+      "register": "en-plain",
+      "userGoal": "Keep the text written so far without publishing it.",
+      "mustConvey": [{"role": "action", "text": "Save draft"}],
+      "before": {"strings": {"label": "OK"}, "accessibleName": "button"},
+      "after": {"strings": {"label": "Save draft"}, "accessibleName": "Save draft"},
+      "findings": [
+        {"criterion": "purpose", "part": "label", "severity": "p1", "evidence": "OK", "why": "The user cannot tell whether this publishes or saves.", "fix": "Save draft", "verification": "Re-read the label alone and state what it does."},
+        {"criterion": "accessibility", "part": "accessibleName", "severity": "p1", "evidence": "button", "why": "A screen reader announces only 'button', so the name does not match the visible label.", "fix": "Save draft", "verification": "Screen-reader pass announces 'Save draft, button'."}
+      ]
+    },
+    {
+      "id": "form-mobile-number-ko",
+      "pair": "form-mobile-number",
+      "surface": "form",
+      "locale": "ko",
+      "register": "haeyo",
+      "userGoal": "본인 확인 문자를 받을 휴대폰 번호를 한 번에 올바르게 입력한다.",
+      "mustConvey": [{"role": "object", "text": "휴대폰 번호"}, {"role": "format", "text": "10~11자리"}],
+      "before": {
+        "strings": {"label": "번호", "helper": "형식에 맞게 입력하세요", "error": "잘못된 입력입니다"},
+        "accessibleName": "번호"
+      },
+      "after": {
+        "strings": {"label": "휴대폰 번호", "helper": "숫자만 입력해 주세요. 예: 01012345678", "error": "휴대폰 번호는 숫자 10~11자리로 입력해 주세요."},
+        "accessibleName": "휴대폰 번호"
+      },
+      "findings": [
+        {"criterion": "clarity", "part": "label", "severity": "p2", "evidence": "번호", "why": "어떤 번호인지 알 수 없어 계좌번호나 회원번호를 입력할 수 있습니다.", "fix": "휴대폰 번호", "verification": "레이블만 보고 입력할 번호를 특정할 수 있는지 확인한다."},
+        {"criterion": "error-recovery", "part": "error", "severity": "p1", "evidence": "잘못된 입력입니다", "why": "무엇이 틀렸고 어떻게 고치는지 말하지 않습니다.", "fix": "휴대폰 번호는 숫자 10~11자리로 입력해 주세요.", "verification": "오류 문구만 읽고 올바른 형식으로 다시 입력할 수 있는지 확인한다."},
+        {"criterion": "korean-honorific-consistency", "part": "error", "severity": "p2", "evidence": "잘못된 입력입니다", "why": "해요체 제품에서 오류만 합쇼체로 바뀝니다.", "fix": "휴대폰 번호는 숫자 10~11자리로 입력해 주세요.", "verification": "필드의 모든 문장이 해요체로 끝나는지 확인한다."}
+      ]
+    },
+    {
+      "id": "form-mobile-number-en",
+      "pair": "form-mobile-number",
+      "surface": "form",
+      "locale": "en",
+      "register": "en-plain",
+      "userGoal": "Enter the mobile number that receives the verification text, correctly the first time.",
+      "mustConvey": [{"role": "object", "text": "Mobile number"}, {"role": "format", "text": "10 or 11 digits"}],
+      "before": {
+        "strings": {"label": "Number", "helper": "Enter a valid value", "error": "Invalid input"},
+        "accessibleName": "Number"
+      },
+      "after": {
+        "strings": {"label": "Mobile number", "helper": "Digits only, for example 01012345678", "error": "Enter a mobile number with 10 or 11 digits."},
+        "accessibleName": "Mobile number"
+      },
+      "findings": [
+        {"criterion": "clarity", "part": "label", "severity": "p2", "evidence": "Number", "why": "The user cannot tell which number is wanted.", "fix": "Mobile number", "verification": "Re-read the label alone and name the expected number."},
+        {"criterion": "error-recovery", "part": "error", "severity": "p1", "evidence": "Invalid input", "why": "It does not say what is wrong or how to fix it.", "fix": "Enter a mobile number with 10 or 11 digits.", "verification": "Re-enter a valid number using only the error text."},
+        {"criterion": "clarity", "part": "helper", "severity": "p3", "evidence": "Enter a valid value", "why": "The helper repeats the requirement without describing the format.", "fix": "Digits only, for example 01012345678", "verification": "Re-read the helper and confirm it shows the format."}
+      ]
+    },
+    {
+      "id": "error-payment-network-ko",
+      "pair": "error-payment-network",
+      "surface": "error",
+      "locale": "ko",
+      "register": "haeyo",
+      "userGoal": "결제가 실패한 이유를 알고 입력한 정보를 잃지 않고 다시 결제한다.",
+      "mustConvey": [
+        {"role": "object", "text": "결제"},
+        {"role": "input-kept", "text": "카드 정보는 그대로"},
+        {"role": "action", "text": "다시 결제하기"}
+      ],
+      "before": {
+        "strings": {"title": "Error 502", "body": "요청을 처리하지 못했습니다. 관리자에게 문의하세요.", "action": "확인"},
+        "accessibleName": "확인"
+      },
+      "after": {
+        "strings": {"title": "결제를 완료하지 못했어요", "body": "네트워크 연결이 잠시 끊겼어요. 입력한 카드 정보는 그대로 있어요.", "action": "다시 결제하기"},
+        "accessibleName": "다시 결제하기"
+      },
+      "findings": [
+        {"criterion": "clarity", "part": "title", "severity": "p1", "evidence": "Error 502", "why": "내부 코드만 보여 사용자는 결제가 됐는지 알 수 없습니다.", "fix": "결제를 완료하지 못했어요", "verification": "제목만 읽고 결제가 되지 않았다는 사실을 말할 수 있는지 확인한다."},
+        {"criterion": "error-recovery", "part": "action", "severity": "p0", "evidence": "확인", "why": "닫는 것 외에 할 수 있는 일이 없어 결제를 포기하게 됩니다.", "fix": "다시 결제하기", "verification": "버튼을 눌러 입력한 카드 정보로 결제가 다시 시도되는지 확인한다."},
+        {"criterion": "korean-honorific-consistency", "part": "body", "severity": "p2", "evidence": "요청을 처리하지 못했습니다.", "why": "해요체 제품에서 이 문장만 합쇼체입니다.", "fix": "네트워크 연결이 잠시 끊겼어요.", "verification": "대화상자의 모든 문장이 해요체로 끝나는지 확인한다."}
+      ]
+    },
+    {
+      "id": "error-payment-network-en",
+      "pair": "error-payment-network",
+      "surface": "error",
+      "locale": "en",
+      "register": "en-plain",
+      "userGoal": "Learn why the payment failed and retry it without losing what was entered.",
+      "mustConvey": [
+        {"role": "object", "text": "Payment"},
+        {"role": "input-kept", "text": "card details are still filled in"},
+        {"role": "action", "text": "Try payment again"}
+      ],
+      "before": {
+        "strings": {"title": "Error 502", "body": "Request failed. Contact your administrator.", "action": "OK"},
+        "accessibleName": "OK"
+      },
+      "after": {
+        "strings": {"title": "Payment didn't go through", "body": "The network connection dropped for a moment. Your card details are still filled in.", "action": "Try payment again"},
+        "accessibleName": "Try payment again"
+      },
+      "findings": [
+        {"criterion": "clarity", "part": "title", "severity": "p1", "evidence": "Error 502", "why": "An internal code does not tell the user whether they were charged.", "fix": "Payment didn't go through", "verification": "Re-read the title alone and state whether the payment happened."},
+        {"criterion": "error-recovery", "part": "action", "severity": "p0", "evidence": "OK", "why": "The only action closes the message, so the user abandons the payment.", "fix": "Try payment again", "verification": "Activate the button and confirm the payment retries with the entered card."},
+        {"criterion": "conversational-fit", "part": "body", "severity": "p2", "evidence": "Contact your administrator.", "why": "A consumer has no administrator; the line reads as a dead end.", "fix": "Your card details are still filled in.", "verification": "Re-read the body and confirm it offers a way forward without blame."}
+      ]
+    },
+    {
+      "id": "empty-saved-items-ko",
+      "pair": "empty-saved-items",
+      "surface": "empty-state",
+      "locale": "ko",
+      "register": "haeyo",
+      "userGoal": "찜 목록이 왜 비었는지 알고 채우는 방법을 찾는다.",
+      "mustConvey": [{"role": "object", "text": "찜한 상품"}, {"role": "action", "text": "상품 둘러보기"}],
+      "before": {
+        "strings": {"title": "데이터 없음", "body": "표시할 항목이 존재하지 않습니다.", "action": "새로고침"},
+        "accessibleName": "새로고침"
+      },
+      "after": {
+        "strings": {"title": "아직 찜한 상품이 없어요", "body": "마음에 드는 상품의 하트를 누르면 여기에 모아 볼 수 있어요.", "action": "상품 둘러보기"},
+        "accessibleName": "상품 둘러보기"
+      },
+      "findings": [
+        {"criterion": "clarity", "part": "title", "severity": "p2", "evidence": "데이터 없음", "why": "시스템 용어라 오류인지 처음 상태인지 구분되지 않습니다.", "fix": "아직 찜한 상품이 없어요", "verification": "제목만 읽고 목록이 비어 있는 이유를 말할 수 있는지 확인한다."},
+        {"criterion": "conversational-fit", "part": "body", "severity": "p3", "evidence": "표시할 항목이 존재하지 않습니다.", "why": "쇼핑 앱의 첫 방문 순간에 딱딱한 시스템 문장입니다.", "fix": "마음에 드는 상품의 하트를 누르면 여기에 모아 볼 수 있어요.", "verification": "본문이 목록을 채우는 방법을 알려 주는지 다시 읽는다."},
+        {"criterion": "purpose", "part": "action", "severity": "p1", "evidence": "새로고침", "why": "새로고침해도 목록은 채워지지 않습니다.", "fix": "상품 둘러보기", "verification": "버튼이 상품 목록으로 이동하는지 확인한다."}
+      ]
+    },
+    {
+      "id": "empty-saved-items-en",
+      "pair": "empty-saved-items",
+      "surface": "empty-state",
+      "locale": "en",
+      "register": "en-plain",
+      "userGoal": "Understand why the saved list is empty and how to fill it.",
+      "mustConvey": [{"role": "object", "text": "saved items"}, {"role": "action", "text": "Browse products"}],
+      "before": {
+        "strings": {"title": "No data", "body": "There are no items to display.", "action": "Refresh"},
+        "accessibleName": "Refresh"
+      },
+      "after": {
+        "strings": {"title": "No saved items yet", "body": "Select the heart on any product to keep it here.", "action": "Browse products"},
+        "accessibleName": "Browse products"
+      },
+      "findings": [
+        {"criterion": "clarity", "part": "title", "severity": "p2", "evidence": "No data", "why": "System wording does not say whether this is an error or a first visit.", "fix": "No saved items yet", "verification": "Re-read the title alone and state why the list is empty."},
+        {"criterion": "purpose", "part": "action", "severity": "p1", "evidence": "Refresh", "why": "Refreshing never fills the list.", "fix": "Browse products", "verification": "Activate the button and confirm it opens the product list."}
+      ]
+    },
+    {
+      "id": "notification-photos-uploaded-ko",
+      "pair": "notification-photos-uploaded",
+      "surface": "notification",
+      "locale": "ko",
+      "register": "haeyo",
+      "userGoal": "업로드가 끝났는지와 어디에 올라갔는지 확인한다.",
+      "mustConvey": [{"role": "object", "text": "사진 3장"}, {"role": "result", "text": "앨범에 올렸어요"}],
+      "before": {
+        "strings": {"message": "성공적으로 처리되었습니다!!", "announcement": "알림"},
+        "accessibleName": ""
+      },
+      "after": {
+        "strings": {"message": "사진 3장을 앨범에 올렸어요.", "announcement": "사진 3장을 앨범에 올렸어요."},
+        "accessibleName": ""
+      },
+      "findings": [
+        {"criterion": "clarity", "part": "message", "severity": "p2", "evidence": "성공적으로 처리되었습니다!!", "why": "무엇이 어디에 처리됐는지 말하지 않습니다.", "fix": "사진 3장을 앨범에 올렸어요.", "verification": "알림만 읽고 무엇이 어디에 올라갔는지 말할 수 있는지 확인한다."},
+        {"criterion": "accessibility", "part": "announcement", "severity": "p1", "evidence": "알림", "why": "스크린리더 사용자는 결과를 듣지 못하고 '알림'만 듣습니다.", "fix": "사진 3장을 앨범에 올렸어요.", "verification": "스크린리더가 live region에서 같은 문장을 읽는지 확인한다."}
+      ]
+    },
+    {
+      "id": "notification-photos-uploaded-en",
+      "pair": "notification-photos-uploaded",
+      "surface": "notification",
+      "locale": "en",
+      "register": "en-plain",
+      "userGoal": "Confirm the upload finished and where the photos went.",
+      "mustConvey": [{"role": "object", "text": "3 photos"}, {"role": "result", "text": "added to Album"}],
+      "before": {
+        "strings": {"message": "Success!! 3 photo(s) processed", "announcement": "Alert"},
+        "accessibleName": ""
+      },
+      "after": {
+        "strings": {"message": "3 photos added to Album.", "announcement": "3 photos added to Album."},
+        "accessibleName": ""
+      },
+      "findings": [
+        {"criterion": "localization", "part": "message", "severity": "p3", "evidence": "photo(s)", "why": "A parenthesised plural is concatenation that cannot localize.", "fix": "3 photos added to Album.", "verification": "Check the message with counts of 1 and 3 in each locale."},
+        {"criterion": "accessibility", "part": "announcement", "severity": "p1", "evidence": "Alert", "why": "Screen-reader users hear 'Alert' instead of the result.", "fix": "3 photos added to Album.", "verification": "Screen-reader pass reads the same sentence from the live region."}
+      ]
+    },
+    {
+      "id": "onboarding-team-invite-ko",
+      "pair": "onboarding-team-invite",
+      "surface": "onboarding",
+      "locale": "ko",
+      "register": "haeyo",
+      "userGoal": "처음 만든 워크스페이스에서 함께 쓸 팀원을 초대한다.",
+      "mustConvey": [{"role": "action", "text": "팀원 초대하기"}, {"role": "skip", "text": "나중에 하기"}],
+      "before": {
+        "strings": {"title": "Welcome to Workspace!", "body": "팀원을 초대하면 협업 기능을 사용할 수 있음", "action": "Next", "secondary": "건너뛰기"},
+        "accessibleName": "Next"
+      },
+      "after": {
+        "strings": {"title": "팀원을 초대해 보세요", "body": "함께 쓸 사람을 초대하면 문서를 같이 편집할 수 있어요.", "action": "팀원 초대하기", "secondary": "나중에 하기"},
+        "accessibleName": "팀원 초대하기"
+      },
+      "findings": [
+        {"criterion": "localization", "part": "title", "severity": "p2", "evidence": "Welcome to Workspace!", "why": "한국어 화면에 번역되지 않은 영어 제목이 남아 있습니다.", "fix": "팀원을 초대해 보세요", "verification": "한국어 화면에 브랜드 이름 외 영어 문구가 없는지 확인한다."},
+        {"criterion": "purpose", "part": "action", "severity": "p1", "evidence": "Next", "why": "다음에 무엇이 일어나는지 알 수 없습니다.", "fix": "팀원 초대하기", "verification": "버튼만 읽고 다음 단계를 말할 수 있는지 확인한다."},
+        {"criterion": "localization", "part": "action", "severity": "p2", "evidence": "Next", "why": "한국어 화면의 주 버튼이 영어로 남아 있습니다.", "fix": "팀원 초대하기", "verification": "한국어 화면의 모든 버튼이 한국어인지 확인한다."},
+        {"criterion": "korean-honorific-consistency", "part": "body", "severity": "p3", "evidence": "팀원을 초대하면 협업 기능을 사용할 수 있음", "why": "해요체 제품에서 본문만 음슴체로 끝납니다.", "fix": "함께 쓸 사람을 초대하면 문서를 같이 편집할 수 있어요.", "verification": "화면의 모든 문장이 해요체로 끝나는지 확인한다."}
+      ]
+    },
+    {
+      "id": "onboarding-team-invite-en",
+      "pair": "onboarding-team-invite",
+      "surface": "onboarding",
+      "locale": "en",
+      "register": "en-plain",
+      "userGoal": "Invite the people who will share a newly created workspace.",
+      "mustConvey": [{"role": "action", "text": "Invite teammates"}, {"role": "skip", "text": "Do this later"}],
+      "before": {
+        "strings": {"title": "Welcome to Workspace! We're so excited to have you on board with us today", "body": "Inviting teammates unlocks collaboration features.", "action": "Next", "secondary": "Skip"},
+        "accessibleName": "Next"
+      },
+      "after": {
+        "strings": {"title": "Invite your team", "body": "Invite people to edit documents with you.", "action": "Invite teammates", "secondary": "Do this later"},
+        "accessibleName": "Invite teammates"
+      },
+      "findings": [
+        {"criterion": "concision", "part": "title", "severity": "p3", "evidence": "Welcome to Workspace! We're so excited to have you on board with us today", "why": "Two lines of greeting delay the one step that matters.", "fix": "Invite your team", "verification": "Re-read the title and confirm the first words name the step."},
+        {"criterion": "purpose", "part": "action", "severity": "p1", "evidence": "Next", "why": "The user cannot predict the next step.", "fix": "Invite teammates", "verification": "Re-read the button alone and state the next step."}
+      ]
+    },
+    {
+      "id": "destructive-close-savings-ko",
+      "pair": "destructive-close-savings",
+      "surface": "destructive-confirmation",
+      "locale": "ko",
+      "register": "hapsyo",
+      "userGoal": "적금을 해지하면 받지 못하는 것을 정확히 알고 해지 여부를 결정한다.",
+      "mustConvey": [
+        {"role": "object", "text": "적금 계좌"},
+        {"role": "amount", "text": "12,400원"},
+        {"role": "consequence", "text": "되돌릴 수 없습니다"},
+        {"role": "action", "text": "계좌 해지"}
+      ],
+      "before": {
+        "strings": {"title": "정말 진행하시겠어요?", "body": "이 작업은 되돌릴 수 없습니다.", "confirm": "확인", "cancel": "취소"},
+        "accessibleName": "확인"
+      },
+      "after": {
+        "strings": {"title": "적금 계좌를 해지하시겠습니까?", "body": "지금 해지하면 만기 이자 12,400원을 받지 못하며 되돌릴 수 없습니다. 원금은 연결 계좌로 입금됩니다.", "confirm": "계좌 해지", "cancel": "해지하지 않기"},
+        "accessibleName": "계좌 해지"
+      },
+      "findings": [
+        {"criterion": "purpose", "part": "title", "severity": "p0", "evidence": "정말 진행하시겠어요?", "why": "무엇을 진행하는지 말하지 않아 실수로 해지할 수 있습니다.", "fix": "적금 계좌를 해지하시겠습니까?", "verification": "제목만 읽고 무엇을 해지하는지 말할 수 있는지 확인한다."},
+        {"criterion": "clarity", "part": "body", "severity": "p1", "evidence": "이 작업은 되돌릴 수 없습니다.", "why": "받지 못하는 금액을 말하지 않아 결과를 판단할 수 없습니다.", "fix": "지금 해지하면 만기 이자 12,400원을 받지 못하며 되돌릴 수 없습니다.", "verification": "본문의 금액이 실제 상품 계산과 일치하는지 확인한다."},
+        {"criterion": "purpose", "part": "confirm", "severity": "p1", "evidence": "확인", "why": "확인 버튼은 해지라는 결과를 말하지 않습니다.", "fix": "계좌 해지", "verification": "스크린리더로 버튼만 들어도 해지라는 결과를 알 수 있는지 확인한다."},
+        {"criterion": "korean-honorific-consistency", "part": "title", "severity": "p2", "evidence": "정말 진행하시겠어요?", "why": "합쇼체 금융 상품에서 제목만 해요체입니다.", "fix": "적금 계좌를 해지하시겠습니까?", "verification": "대화상자의 모든 문장이 합쇼체로 끝나는지 확인한다."}
+      ]
+    },
+    {
+      "id": "destructive-close-savings-en",
+      "pair": "destructive-close-savings",
+      "surface": "destructive-confirmation",
+      "locale": "en",
+      "register": "en-plain",
+      "userGoal": "Know exactly what closing the savings account gives up before deciding.",
+      "mustConvey": [
+        {"role": "object", "text": "savings account"},
+        {"role": "amount", "text": "₩12,400"},
+        {"role": "consequence", "text": "can't be undone"},
+        {"role": "action", "text": "Close account"}
+      ],
+      "before": {
+        "strings": {"title": "Are you sure?", "body": "This action cannot be undone.", "confirm": "Yes", "cancel": "No"},
+        "accessibleName": "Yes"
+      },
+      "after": {
+        "strings": {"title": "Close your savings account?", "body": "If you close it now, you won't receive ₩12,400 in maturity interest, and this can't be undone. Your principal goes to your linked account.", "confirm": "Close account", "cancel": "Keep account"},
+        "accessibleName": "Close account"
+      },
+      "findings": [
+        {"criterion": "purpose", "part": "title", "severity": "p0", "evidence": "Are you sure?", "why": "It never names what is being confirmed.", "fix": "Close your savings account?", "verification": "Re-read the title alone and name the account being closed."},
+        {"criterion": "clarity", "part": "body", "severity": "p1", "evidence": "This action cannot be undone.", "why": "It hides the amount the user gives up.", "fix": "If you close it now, you won't receive ₩12,400 in maturity interest, and this can't be undone.", "verification": "Confirm the amount matches the product's own calculation."},
+        {"criterion": "purpose", "part": "confirm", "severity": "p1", "evidence": "Yes", "why": "Heard alone by a screen reader, 'Yes' does not say what happens.", "fix": "Close account", "verification": "Screen-reader pass on the button alone conveys the account closure."}
+      ]
+    }
+  ]
+}

@@ -41,7 +41,7 @@ Evaluate each category and record findings:
 | Technical Quality | Component structure, style duplication, dead code, dependency risk |
 | Interaction Craft | Purpose/frequency, response, spatial continuity, interruptibility, timing/cohesion, performance, accessibility, and responsive resilience |
 | Runtime Issues | Console errors, network errors, hydration issues, broken assets |
-| Content Quality | Copy clarity, IA, proof, trust, CTA language |
+| Content Quality | Copy clarity, IA, proof, trust, CTA language; interface copy through the eight [interface-copy](../../knowledge/patterns/interface-copy.md) criteria |
 
 Use the relevant design-ai knowledge files when making judgments:
 
@@ -55,6 +55,12 @@ Use the relevant design-ai knowledge files when making judgments:
 - [`knowledge/patterns/report-design.md`](../../knowledge/patterns/report-design.md)
 - [`knowledge/patterns/agentic-design-workflows.md`](../../knowledge/patterns/agentic-design-workflows.md)
 - [`knowledge/patterns/interface-craft.md`](../../knowledge/patterns/interface-craft.md)
+- [`knowledge/patterns/interface-copy.md`](../../knowledge/patterns/interface-copy.md)
+
+For Content Quality findings on buttons, forms, errors, empty states,
+notifications, onboarding, or destructive confirmations, quote the current
+string, name one interface-copy criterion, and write the replacement string into
+the refactor task. A readability score is never the evidence for a task.
 
 ### 2.5. Mine References Without Copying Them
 
@@ -140,6 +146,7 @@ Use [`TEMPLATE.md`](TEMPLATE.md) for the final report or planning artifact.
 - [`knowledge/PRINCIPLES.md`](../../knowledge/PRINCIPLES.md) — cross-domain design rules
 - [`knowledge/patterns/agentic-design-workflows.md`](../../knowledge/patterns/agentic-design-workflows.md) — artifact and approval boundaries
 - [`knowledge/patterns/interface-craft.md`](../../knowledge/patterns/interface-craft.md) — runtime interaction review lenses
+- [`knowledge/patterns/interface-copy.md`](../../knowledge/patterns/interface-copy.md) — interface copy criteria and surface rules
 - [`knowledge/patterns/ux-guidelines.md`](../../knowledge/patterns/ux-guidelines.md) — product usability checks
 - [`knowledge/a11y/contrast.md`](../../knowledge/a11y/contrast.md) — contrast evidence
 - [`knowledge/a11y/keyboard-and-focus.md`](../../knowledge/a11y/keyboard-and-focus.md) — keyboard and focus evidence
@@ -148,6 +155,7 @@ Use [`TEMPLATE.md`](TEMPLATE.md) for the final report or planning artifact.
 
 - [ ] Site Profile includes a target repo reference, pages, user flows, viewports, platform notes, and a live URL when a preview or deployed site exists.
 - [ ] Audit categories cover visual, UX, responsive, accessibility, performance, SEO, technical, runtime, and content quality.
+- [ ] Interface copy findings quote the current string, name one interface-copy criterion, and carry the replacement string.
 - [ ] Implemented interactive surfaces include all eight craft lenses, each with runtime/code evidence or an explicit `unverified` state.
 - [ ] Interaction proof covers keyboard/focus, screen reader, contrast, reduced motion, coarse pointer, and desktop/tablet/mobile behavior.
 - [ ] MCP readiness uses only `required`, `optional`, `unused`, or `unavailable`.

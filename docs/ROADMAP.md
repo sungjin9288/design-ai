@@ -17,6 +17,40 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 805 - P17D interface copy lens contract and fixtures (v5.2.0 post-release)
+
+- [x] Added the interface copy contract in `knowledge/patterns/interface-copy.md`.
+  It defines eight criteria: purpose, clarity, concision, conversational fit,
+  error recovery, accessibility, localization, and Korean honorific consistency.
+  It also defines seven surfaces with required parts and a primary control, a
+  finding format, and a rule that no readability score stands in for the user
+  goal or evidence.
+- [x] Added 14 Korean and English before/after fixtures, one aligned pair per
+  surface, and `tools/audit/interface-copy-contract.py`, which validates them
+  against the contract tables. `npm run content:check` and
+  `npm run content:self-test` run inside `release:self-test`.
+- [x] Applied the lens in the `ux-audit` and `website-improvement` playbooks
+  as a knowledge-backed review step, not a new command.
+- [x] Addressed all 12 issues from an independent review. Surface rules, typed
+  conveyed facts, part-bound findings, clause-level Korean register checks, and
+  English-fragment detection are now mechanical rather than only documented.
+- [ ] Promote the lens to a ninth design-quality report lens across the schema,
+  SDK, MCP, Website Console, comparison, and smoke contracts, in a separate
+  public-contract change.
+
+### Verified
+
+- `npm run content:check` passes 14 fixtures and 38 findings. The self-test
+  passes 20 register cases and rejects 30 named mutations. Six sabotage runs
+  against the validator each made the suite fail. Skill contracts, the eight strict audits, and
+  the release metadata guard pass. The full release gate result is recorded in
+  the pull request.
+- No CLI, SDK, MCP, Website Console runtime, quality-report schema, or version
+  change.
+
+Real product copy reviewed with this lens, external pilot participation, and a
+live provider call remain unverified and are not claimed here.
+
 ## Phase 804 - P17C design-system skill compiler and status truth alignment (v5.2.0 post-release)
 
 - [x] Added the clone-only P17C compiler in `tools/ds_skill/`. It runs five

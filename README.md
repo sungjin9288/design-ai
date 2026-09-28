@@ -13,7 +13,7 @@
 <div class="design-ai-home-badges">
   <a href="https://github.com/sungjin9288/design-ai/actions/workflows/audit.yml"><img alt="Audit passing" src="https://img.shields.io/badge/audit-passing-brightgreen"></a>
   <a href="https://sungjin9288.github.io/design-ai/"><img alt="Documentation live" src="https://img.shields.io/badge/docs-live-indigo"></a>
-  <a href="https://github.com/sungjin9288/design-ai/blob/main/knowledge/PRINCIPLES.md"><img alt="97 knowledge files" src="https://img.shields.io/badge/knowledge-97-blue"></a>
+  <a href="https://github.com/sungjin9288/design-ai/blob/main/knowledge/PRINCIPLES.md"><img alt="98 knowledge files" src="https://img.shields.io/badge/knowledge-98-blue"></a>
   <a href="https://github.com/sungjin9288/design-ai/tree/main/examples"><img alt="226 examples" src="https://img.shields.io/badge/examples-226-blue"></a>
 </div>
 
@@ -131,7 +131,7 @@ design-ai/
 │
 ├── refs/                    # Sparse-cloned upstream sources (gitignored)
 │
-├── knowledge/               # 96 hand-written + extracted knowledge files
+├── knowledge/               # 98 hand-written + extracted knowledge files
 │   ├── design-tokens/       # Token systems (W3C DTCG, OKLCH, HCT)
 │   ├── components/          # Component synthesis (Ant + MUI + shadcn)
 │   ├── patterns/            # Auth, pricing, landing hero, brand, email, ...

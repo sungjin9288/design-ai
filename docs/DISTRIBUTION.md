@@ -184,7 +184,7 @@ The `files` field in `package.json` is the allowlist (preferred over `.npmignore
 ├── LICENSE
 ├── README.md
 ├── .claude-plugin/      # Plugin manifest
-├── knowledge/           # 96 Markdown knowledge files
+├── knowledge/           # 98 Markdown knowledge files
 ├── examples/            # 227 Markdown example files
 ├── skills/              # 20 skill PLAYBOOKs + SKILL.md manifests
 ├── agents/              # 4 sub-agent definitions

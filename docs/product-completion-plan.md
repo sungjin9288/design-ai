@@ -33,7 +33,8 @@ last_updated: 2026-09-28
 | Distribution | v5.2.0 npm·GitHub Release·Homebrew 게시 완료 | 다음 release도 exact reviewed commit에 대한 승인·publish·registry 증거 |
 | External pilot | 모집·동의·운영 계약 준비 | 실제 참여와 독립 owner 결과; synthetic 증거 대체 금지 |
 | P17C | clone-only compiler와 fixture·mutation suite 구현 | 실제 design-system root·소비 repo 1건의 scope 승인 후 첫 적용 증빙 |
-| P17D–F | 설계된 후속 개발 | 각 진입 조건 충족 후 별도 구현 |
+| P17D | 계약·KO/EN fixture·검증기와 ux-audit·website-improvement lens 구현 | quality report schema의 9번째 lens 승격(공개 계약 변경, 별도 변경) |
+| P17E–F | 설계된 후속 개발 | 각 진입 조건 충족 후 별도 구현 |
 
 ## 설계 결정
 
@@ -132,7 +133,7 @@ Merge와 tag 전에는 `.github/workflows/`의 실행 trigger를 다시 확인�
 | --- | --- | --- | --- |
 | 1 · P17B 잔여 — **완료** | 안정된 review/evidence smoke baseline | pilot·install·help·search·route 도메인과 self-test 단계를 모듈로 분리; callable 15개 유지, 722-command 정규화 시퀀스 해시 불변, 실패 메시지 verbatim | runtime 동작·coverage 축소 없음 |
 | 2 · P17C — **1단계 완료** | 명시한 design-system root와 소비 repo, scope 승인 | verified facts→closed generation contract→project-local skill; path/import/token/asset 전수 검증. `tools/ds_skill/`와 20개 fixture·mutation case 구현 | clone-only 시작; 2개 독립 pilot 또는 새 제품 결정 전 CLI/SDK/MCP 승격 없음 |
-| 3 · P17D | 기존 voice·locale·review 계약과 KO/EN fixtures | button/form/error/empty/notification/onboarding/destructive copy lens; 전후 예제와 SR 의미 유지 | 계약·fixtures 전 ninth lens 추가 금지; 단독 command 없음 |
+| 3 · P17D — **계약·fixture 완료** | 기존 voice·locale·review 계약과 KO/EN fixtures | button/form/error/empty/notification/onboarding/destructive copy lens; 전후 예제와 SR 의미 유지 | 계약·fixtures 전 ninth lens 추가 금지; 단독 command 없음 |
 | 4 · P17E | 승인된 browser adapter·source digest·viewport | visual diff·overflow·brand drift의 version/threshold/artifact/uncertainty 계약 | missing artifact는 `unverified`; 총점으로 누락 은폐 금지 |
 | 5 · P17F | 기존 review·scope·implementation·comparison | digest와 owner decision을 잇는 successor snapshot | 새 history DB·자동 restore·자동 학습 없음 |
 
