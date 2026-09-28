@@ -5,10 +5,12 @@ architecture, current-source engineering checklist, and separate live,
 review/merge, publication, distribution, and external-pilot completion gates.
 Its local hardening does not change the published baseline below.
 
-Current status: **v5.2.0 is published.** npm `latest`, GitHub Release, and the
-Homebrew formula identify the same additive Image Console release, which builds on
-the P6-P13 contracts first published in v5.1.0. The public contract has 29 MCP
-tools and 20 SDK exports. Model training is not part of the shipped product.
+Current status: **v5.3.0 is published.** npm `latest` and the GitHub Release
+identify v5.3.0, and the Homebrew formula targets its tag. It adds the ninth
+`interface-copy` quality lens (quality report schemaVersion 2) and the P17
+foundations on top of the v5.2.0 Image Console and the P6-P13 contracts. The
+public contract has 29 MCP tools and 20 SDK exports. Model training is not part
+of the shipped product.
 
 Current source status: **P14 public distribution, the internal documentation
 homepage pilot, deployed Pages QA, and the three-slot external pilot launch
@@ -34,7 +36,7 @@ suite; it is maintainer tooling, not a public CLI, SDK, or MCP capability.
 P17D adds an interface copy lens contract with Korean and English fixtures to
 UX and website review. In current source it is also the ninth quality-report
 lens: new reports are schemaVersion 2, and stored version 1 reports stay valid.
-This is the v5.3.0 release candidate, not yet published behavior. P17E adds a
+This shipped in v5.3.0. P17E adds a
 visual-evaluation contract with four deterministic reference evaluators as an
 internal library; no command or SDK export calls it yet. P17F adds project
 continuity snapshots over existing artifacts, with read-only chain inspection,
@@ -184,14 +186,14 @@ These are valid future product ideas, but they are different from the current ar
 
 Distribution blockers are closed. Only adoption and future-scope decisions remain:
 
-- v5.2.0 distribution: complete — npm `latest`, GitHub Release, and the Homebrew
-  formula identify `v5.2.0`; the package has SLSA provenance and public registry
-  smoke passed. v5.1.0 remains the previous published baseline.
-- Real-CI verification: complete — for v5.2.0, main Audit run `35318202087` and
-  GitHub Release run `35324226056` passed on 2026-09-18. npm Trusted Publishing run
-  `35324226089` published the package but failed its post-publish smoke on registry
-  propagation timing; `npm run registry:smoke` then passed against the published
-  package. [External status](external-status.md) owns the full receipt.
+- v5.3.0 distribution: complete for npm `latest` and the GitHub Release, with
+  SLSA provenance and a passing public registry smoke in publish run
+  `36386562069`. The Homebrew formula targets `v5.3.0` and passes `brew style`;
+  its install test is pending. v5.2.0 remains the previous published baseline.
+- Real-CI verification: complete. For v5.3.0, main Audit run `36386421008`,
+  GitHub Release run `36386562080`, and npm Trusted Publishing run `36386562069`
+  passed on 2026-09-28. The publish run's own post-publish registry smoke passed.
+  [External status](external-status.md) owns the full receipt.
 - External launch: package distribution is complete across npm, GitHub Release, Homebrew, VS Code Marketplace `sungjin.design-ai-vscode@0.4.1`, and GitHub Pages; the public announcement itself remains a maintainer decision.
 - Reference-link policy: decided — `refs/` source links moved behind generated reference pages. `tools/extractors/reference_pages.py` emits `docs/reference/{ant-design,mui,shadcn-ui,awesome-design-md}.md`, and corpus pages (`knowledge/components/INDEX.md`, `knowledge/patterns/brand-references.md`, `examples/*.md`) link to those pages instead of the gitignored `refs/` mirror. Plain-text `refs/` provenance mentions (frontmatter `source:`/`sources:`, link text) stay as-is, and the MkDocs refs-only warning baseline in `tools/audit/local-ci.py` is now 0.
 

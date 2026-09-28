@@ -5,7 +5,7 @@
   <p>Give Claude Code, Codex, Cursor, or Aider a structured design practice with accessibility, Korean-market depth, human approval gates, and exact evidence from brief to implementation.</p>
   <p class="design-ai-home-actions">
     <a class="design-ai-home-action design-ai-home-action--primary" href="https://sungjin9288.github.io/design-ai/docs/QUICKSTART/">Start in 5 minutes</a>
-    <a class="design-ai-home-action" href="https://sungjin9288.github.io/design-ai/docs/DISTRIBUTION/">Install v5.2.0</a>
+    <a class="design-ai-home-action" href="https://sungjin9288.github.io/design-ai/docs/DISTRIBUTION/">Install v5.3.0</a>
   </p>
   <p class="design-ai-home-proof"><span>21 expert skills</span><span>29 MCP tools</span><span>20 SDK exports</span><span>WCAG AA by default</span></p>
 </section>
@@ -21,10 +21,12 @@
 
 > **Not a model. Not a fine-tune.** A structured corpus of design expertise + agent-ready instructions that turn a general-purpose LLM into an expert.
 
-**v5.2.0 is public.** npm Trusted Publishing, SLSA provenance, GitHub Release,
-Homebrew formula, and public registry smoke are verified against the published
-package. See the [`external publication status`](docs/external-status.md) for
-exact evidence.
+**v5.3.0 is public.** npm Trusted Publishing, SLSA provenance, GitHub Release,
+and public registry smoke are verified against the published package, and the
+Homebrew formula targets the v5.3.0 tag. See the
+[`external publication status`](docs/external-status.md) for exact evidence.
+v5.3.0 moves quality reports to schemaVersion 2 with a ninth `interface-copy`
+lens; stored version 1 reports stay valid.
 
 ## Coverage at a glance
 
@@ -95,7 +97,7 @@ CLI commands include `design-ai start <brief|--from-file file|--stdin> ...`, the
 
 `design-ai image serve` starts a loopback-only, approval-gated image workflow. Prompt Guide credentials remain server-side; generation or editing creates a read-only validated draft before the configured provider-neutral local subprocess can run. See [Prompt Guide Image Console](docs/integrations/prompt-guide-image-prompts.md) for the server-only environment contract and synthetic fixtures.
 
-Image Console release hardening shipped in v5.2.0, the current public baseline.
+Image Console release hardening shipped in v5.2.0 and is unchanged in v5.3.0.
 Its published registry smoke passed. The verified flow is the deterministic local
 mock loopback, which makes no Prompt Guide/provider-network call; a live Prompt
 Guide call and a real provider generation/edit remain unverified.

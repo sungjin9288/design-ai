@@ -27,11 +27,17 @@ integration guide.
 - [x] Converted the post-v5.2.0 work into one release entry: P17C through P17F,
   the ninth lens, and the status-document corrections. The entry calls out the
   schemaVersion change for consumers.
-- [ ] Pass pull-request CI for the exact release candidate.
-- [ ] Merge the reviewed candidate after owner approval.
-- [ ] Create and push the v5.3.0 tag only after merge approval. Then verify npm,
-  the GitHub Release, public registry smoke against version 2 output, docs, and
-  the Homebrew formula.
+- [x] Passed pull-request CI for the exact release candidate.
+- [x] Merged the reviewed candidate after owner approval:
+  [sungjin9288/design-ai#76](https://github.com/sungjin9288/design-ai/pull/76).
+- [x] Created and pushed the annotated v5.3.0 tag on `a9567eb` after approval.
+  npm `latest` is 5.3.0 with SLSA provenance, the GitHub Release is public, and
+  the publish run's post-publish registry smoke passed. See the
+  [external status](external-status.md).
+- [x] Retargeted the Homebrew formula to the v5.3.0 tag tarball. `ruby -c` and
+  `brew style` pass.
+- [ ] Run the temporary-tap `--build-from-source` install and `brew test` for
+  v5.3.0.
 
 ### Verified
 
@@ -55,8 +61,7 @@ integration guide.
 
 ### What's still ahead
 
-- Pull-request CI, owner approval, merge, tag, npm and GitHub publication, and
-  public registry smoke of version 2 output.
+- The Homebrew install test for v5.3.0.
 - Real-project runs for P17C, P17E, and P17F, a live Prompt Guide and provider
   check, and external pilot participation.
 
@@ -87,8 +92,8 @@ integration guide.
   - string schema versions were accepted.
 
   Eleven sabotage runs against the new rules each made the tests fail.
-- [ ] Release the public contract change as the next minor version with a
-  CHANGELOG entry and a registry smoke against the published package.
+- [x] Released the public contract change as v5.3.0 with a CHANGELOG entry
+  and a registry smoke against the published package.
 
 ### Verified
 
