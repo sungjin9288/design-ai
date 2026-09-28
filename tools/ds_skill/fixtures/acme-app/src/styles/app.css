@@ -1,0 +1,6 @@
+.checkout {
+  color: var(--acme-color-primary);
+  border-radius: var(--acme-radius-md);
+  background: var(--acme-color-brand);
+  padding: var(--app-local-gap);
+}

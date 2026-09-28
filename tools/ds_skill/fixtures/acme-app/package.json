@@ -1,0 +1,5 @@
+{
+  "name": "acme-app",
+  "private": true,
+  "dependencies": { "@acme/ds": "^2.3.0" }
+}

@@ -274,6 +274,12 @@ Exit criteria:
 
 ### P17C - Source-grounded design-system skill compiler
 
+Status: the first slice is implemented as clone-only tooling in
+`tools/ds_skill/`, documented in `tools/ds_skill/README.md`. It covers all six steps below
+against a synthetic fixture pair. It is excluded from the npm package and adds no
+public surface. Applying it to a real design system is the next step. That run
+needs an explicit design-system root, a consuming repository, and scope approval.
+
 1. Accept one explicit design-system root and optional consuming repository.
 2. Persist scope decisions before reading source.
 3. Extract verified token, component, icon, import, variant, and usage facts.
@@ -288,6 +294,31 @@ Boundary:
   without the existing scope approval chain.
 - Promotion to CLI/SDK/MCP requires two independent completed pilot records or a
   new explicit product decision that replaces that evidence rule.
+
+Current P17C evidence:
+
+- `scope` persists the declared roots, entry, and fact directories before any
+  source file is read. The self-test proves this by making a component file
+  unreadable during `scope`.
+- `facts`, `contract`, `generate`, and `verify` bind to each other by SHA-256
+  digest. A changed scope, edited contract, or edited fact breaks the chain.
+- The generated skill passes the same `skill-contracts.py` gate as the 21 shipped
+  skills. `verify` closes the chain from source to skill. It re-extracts the
+  source and requires byte-identical facts and usage. It rebuilds the contract,
+  checks fact anchors and provenance, and requires every generated file to equal
+  a fresh render of the contract. That render check still fails when someone
+  rewrites the provenance hash.
+- An independent review found ten defects in the first version, and all ten are
+  fixed with regression cases. The defects included a tampered skill name that
+  could delete a directory, a verify that never re-read the source, gaps in the
+  line-scanning vocabulary check, comment and string text parsed as exports,
+  and unescaped consumer text.
+- `npm run ds-skill:self-test` runs 20 fixture and mutation cases inside
+  `release:self-test`. Twelve targeted sabotage runs each made the suite fail.
+  They disabled each verify check, removed code masking, CSS comment handling,
+  output containment, label escaping, or JSON key lines, allowed root escape,
+  and dropped the token prefix.
+- No CLI, SDK, MCP, Website Console, package-content, or version change was made.
 
 ### P17D - Interface content quality
 

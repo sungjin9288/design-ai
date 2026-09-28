@@ -5,10 +5,10 @@ architecture, current-source engineering checklist, and separate live,
 review/merge, publication, distribution, and external-pilot completion gates.
 Its local hardening does not change the published baseline below.
 
-Current status: **v5.1.0 is published.** npm `latest`, GitHub Release, and the
-Homebrew formula identify the same additive P6-P13 release. The public contract
-has 29 MCP tools and 20 SDK exports. Model training is not part of the shipped
-product.
+Current status: **v5.2.0 is published.** npm `latest`, GitHub Release, and the
+Homebrew formula identify the same additive Image Console release, which builds on
+the P6-P13 contracts first published in v5.1.0. The public contract has 29 MCP
+tools and 20 SDK exports. Model training is not part of the shipped product.
 
 Current source status: **P14 public distribution, the internal documentation
 homepage pilot, deployed Pages QA, and the three-slot external pilot launch
@@ -23,11 +23,14 @@ and inventory parity of all 21 skills, while removing guessed MCP operations and
 dated operational claims from durable playbooks. P17B.2-P17B.5 now separate
 Website Console, learning, review, and P11 implementation-evidence smoke
 responsibilities behind direct imports while retaining the stable entry points,
-exact command coverage, fixtures, outputs, and failure contracts. This is
-current-source internal hardening, not published v5.1.0 behavior. Image Console
-release hardening is part of the current-source v5.2.0 release candidate and
-remains unreleased; this is not published behavior. The deterministic local mock
-loopback flow makes no Prompt Guide/provider-network call. Registry live coverage remains pending future publish.** CLI `design-ai start`,
+exact command coverage, fixtures, outputs, and failure contracts. P17A and
+P17B.2-P17B.5 shipped in v5.2.0; the rest of P17B finished after that release as
+internal smoke-harness hardening. Image Console release hardening shipped in
+v5.2.0 and is published behavior. The deterministic local mock loopback flow makes
+no Prompt Guide/provider-network call; published registry smoke passed, while a
+live Prompt Guide call and a real provider generation/edit remain unverified.
+P17C now has a clone-only design-system skill compiler with a fixture and mutation
+suite; it is maintainer tooling, not a public CLI, SDK, or MCP capability.** CLI `design-ai start`,
 SDK `start()`, MCP `design_ai_start`, and Website Console share one canonical
 read-only start payload. CLI `design-ai inspect`, SDK `inspectHtml()`, and MCP
 `design_ai_inspect_html` share the canonical quality report. The inspector confirms
@@ -36,16 +39,15 @@ CLI `design-ai review`, SDK `reviewHtml()`, MCP `design_ai_review_html`, and Web
 Console now compose those two contracts into one linked review session with exact
 source identity, ordered stages, and a pending human decision.
 
-### Current-source Image Console release candidate
+### Image Console (v5.2.0)
 
-The current-source Image Console is the local v5.2.0 release candidate. Its canonical
-test, audit, package, documentation, packed-smoke, browser-QA, and external-
-verification receipt is maintained in the
+The Image Console shipped in v5.2.0. Its canonical test, audit, package,
+documentation, packed-smoke, browser-QA, and external-verification receipt is
+maintained in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
-integration guide. The deterministic local mock loopback is verified, while a
-live Prompt Guide call, real provider generation/edit, registry smoke, tag, and
-publish remain separate gates. None is represented as published
-v5.1.0 behavior.
+integration guide. The deterministic local mock loopback is verified and published
+registry smoke passed. A live Prompt Guide call and a real provider
+generation/edit remain unverified and are not represented as shipped proof.
 
 CLI `design-ai review-handoff`, SDK `reviewHandoff()`, MCP
 `design_ai_review_handoff`, and Website Console preserve that session as a
@@ -130,7 +132,7 @@ This document separates shipped product scope from future product ideas so the r
 | AI chat / conversational design consulting | Complete for v5.0.0 | `conversational-ui-designer`, `/conversational`, and conversational knowledge cover voice, chatbot, and AI chat UX | Keep Korean platform conventions current |
 | Local AI learning preferences | Complete for v5.0.0 | `design-ai learn`, preview-first `learn --init` starter profile bootstrap, explicit `learn --feedback` keep/improve/avoid guidance with JSON `--out` artifact persistence, explicit `check --learn --yes` capture for local QA warning/failure results, full `learn --backup --json` export, redacted `learn --redact --json` sharing export from local profile / `--from-file` / `--stdin`, safe `--out` file output with `--force` overwrite control for JSON artifacts and export Markdown, non-mutating `learn --verify`, read-only `learn --diff` profile comparison against portable JSON, preview-first `learn --restore` full-profile replacement from portable backups with automatic rollback backup and optional `--backup-file` path, read-only `learn --restore-backups` sibling rollback backup inventory, preview-first `learn --restore-backups --prune --keep N` cleanup that deletes only older rollback backup files after `--yes`, confirmed `learn --import`, query-filtered `learn --list --explain` / `learn --export` without recency fallback, brief-relevant filtered `prompt --with-learning` / `pack --with-learning` with selection scoring metadata, local `learning.usage.json` sidecar events that store selected ids and short brief hashes, read-only `learn --usage` reports for sidecar activity, read-only `learn --signals --report --out learning-signals.md` Markdown signal handoff artifacts, focused read-only `learn --agent-backlog --report --out agent-backlog.md` agent backlog artifacts, preview-only `learn --propose-skills` reports for repeated check-capture skill deltas with `--report --out skill-proposals.md` Markdown review artifacts, read-only `--review-file` decision joins, read-only `--apply-plan` accepted proposal manual apply plans, `--review-template --out skill-proposals.review.json` JSON decision scaffolds, and `--patch --out skill-proposals.patch` unified diff handoffs, `learn --eval-template` runnable checkpoint generation from the active profile, read-only `learn --eval` checkpoint reports for deterministic learning selection QA with `--strict` failure gating, confirmed `learn --forget`/`--clear`, non-mutating `learn --audit` cleanup suggestions / `learn --stats`, safe `learn --audit --fix --dry-run` previews plus confirmed `--fix --yes` cleanup, archive-first `learn --curate` preview/apply with sibling `*.archive.json` preservation, `learn --curate --report --out` Markdown review artifacts, workspace report next actions for saving those artifacts before cleanup, and usage-aware profile-mismatch/stale/unused review hints, and learned-context audit summaries provide explicit local preference memory | Keep privacy boundaries clear as learning scope expands |
 | AI model training | Not shipped scope | README states fine-tuning is outside shipped scope | Define a separate product phase if embeddings or fine-tuning becomes a goal |
-| External launch | v5.1.0 distribution complete; adoption evidence pending | v5.1.0 is public across npm and GitHub Release, the Homebrew formula targets the same tag and passed install/test verification, and GitHub Pages plus the VS Code extension remain public | Collect consented adoption evidence before making external outcome claims |
+| External launch | v5.2.0 distribution complete; adoption evidence pending | v5.2.0 is public across npm and GitHub Release, the Homebrew formula targets the same tag and passed `brew style`, temporary-tap source install, and `brew test` verification, and GitHub Pages plus the VS Code extension 0.4.1 remain public | Collect consented adoption evidence before making external outcome claims |
 
 ## What is complete
 
@@ -149,7 +151,7 @@ The shipped product is a model-agnostic design intelligence layer for AI coding 
 - Install, update, status-check, and uninstall through the packaged CLI.
 - Pass the release gate without relying on manual inspection.
 
-In published v5.1.0, the manifest, commands, skills, agents, examples, and release smoke suite cover the workflows summarized above. Detailed release evidence remains in the release and smoke artifacts.
+In published v5.2.0, the manifest, commands, skills, agents, examples, and release smoke suite cover the workflows summarized above. Detailed release evidence remains in the release and smoke artifacts.
 
 The release gate retains warning-state Website Console bundle-compare strict smoke coverage. See [`RELEASE-GATES.md`](RELEASE-GATES.md) for the full command and evidence matrix.
 
@@ -163,7 +165,9 @@ Not shipped:
 
 - Fine-tuning a model.
 - Training a private model on user artifacts.
-- Embedding index generation for semantic retrieval.
+- A bundled embedding model or default semantic retrieval. v4.57.0 added only an
+  opt-in rerank of lexical results through a locally configured provider; see
+  [AI learning](AI-LEARNING-PHASE2.md).
 - Background feedback loops that learn from accepted/rejected design recommendations without an explicit CLI command.
 
 These are valid future product ideas, but they are different from the current architecture. The current architecture is deterministic corpus routing, prompt packing, quality checking, scoped local preference injection, and release-smoked CLI distribution.
@@ -172,12 +176,14 @@ These are valid future product ideas, but they are different from the current ar
 
 Distribution blockers are closed. Only adoption and future-scope decisions remain:
 
-- v5.1.0 distribution: complete — npm `latest`, GitHub Release, and the Homebrew
-  formula identify `v5.1.0`; the package has SLSA provenance and public registry
-  smoke passed.
-- Real-CI verification: complete — PR #48, main Audit run `29485559867`, Docs run
-  `29485559848`, npm Trusted Publishing run `29485715200`, and GitHub Release run
-  `29485715193` passed on 2026-07-16.
+- v5.2.0 distribution: complete — npm `latest`, GitHub Release, and the Homebrew
+  formula identify `v5.2.0`; the package has SLSA provenance and public registry
+  smoke passed. v5.1.0 remains the previous published baseline.
+- Real-CI verification: complete — for v5.2.0, main Audit run `35318202087` and
+  GitHub Release run `35324226056` passed on 2026-09-18. npm Trusted Publishing run
+  `35324226089` published the package but failed its post-publish smoke on registry
+  propagation timing; `npm run registry:smoke` then passed against the published
+  package. [External status](external-status.md) owns the full receipt.
 - External launch: package distribution is complete across npm, GitHub Release, Homebrew, VS Code Marketplace `sungjin.design-ai-vscode@0.4.1`, and GitHub Pages; the public announcement itself remains a maintainer decision.
 - Reference-link policy: decided — `refs/` source links moved behind generated reference pages. `tools/extractors/reference_pages.py` emits `docs/reference/{ant-design,mui,shadcn-ui,awesome-design-md}.md`, and corpus pages (`knowledge/components/INDEX.md`, `knowledge/patterns/brand-references.md`, `examples/*.md`) link to those pages instead of the gitignored `refs/` mirror. Plain-text `refs/` provenance mentions (frontmatter `source:`/`sources:`, link text) stay as-is, and the MkDocs refs-only warning baseline in `tools/audit/local-ci.py` is now 0.
 

@@ -1,0 +1,12 @@
+/* Acme core tokens. --acme-color-legacy: #000; is a comment, not a token. */
+:root {
+  --acme-color-primary: #1a56db;
+  --acme-color-danger: #c81e1e;
+  --acme-color-surface: #ffffff;
+  --acme-radius-md: 8px;
+  --acme-bg-pattern: url(https://cdn.acme.test/pattern.svg);
+  --acme-z-modal: 1000;
+  --acme-font-body: "Pretendard", system-ui, sans-serif;
+  --acme-font-mono: var(--system-mono, monospace);
+  --acme-focus-ring: 0 0 0 2px var(--acme-color-primary);
+}

@@ -1,0 +1,8 @@
+{
+  "name": "@acme/ds",
+  "version": "2.3.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens.css": "./src/tokens/tokens.css"
+  }
+}
