@@ -34,7 +34,7 @@ suite; it is maintainer tooling, not a public CLI, SDK, or MCP capability.
 P17D adds an interface copy lens contract with Korean and English fixtures to
 UX and website review. In current source it is also the ninth quality-report
 lens: new reports are schemaVersion 2, and stored version 1 reports stay valid.
-This is not yet published behavior. P17E adds a
+This is the v5.3.0 release candidate, not yet published behavior. P17E adds a
 visual-evaluation contract with four deterministic reference evaluators as an
 internal library; no command or SDK export calls it yet. P17F adds project
 continuity snapshots over existing artifacts, with read-only chain inspection,

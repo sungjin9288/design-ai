@@ -2,6 +2,100 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v5.3.0 — Interface copy lens and P17 foundations (2026-09)
+
+Quality reports gain a ninth lens, `interface-copy`, and move to schemaVersion 2.
+Version 1 reports stay valid everywhere they are read. This release also adds
+the P17 foundations for design-system skills, visual evaluation, and project
+continuity as contracts and internal libraries, without new commands.
+Image Console release hardening shipped in v5.2.0 and is published behavior and
+is unchanged here.
+The deterministic local mock loopback flow makes no Prompt Guide/provider-network call.
+Published registry smoke passed for v5.2.0, while a
+live Prompt Guide call and a real provider generation/edit remain unverified.
+Canonical receipt: [`docs/integrations/prompt-guide-image-prompts.md`](docs/integrations/prompt-guide-image-prompts.md).
+
+### Changed
+
+- **Quality reports are now schemaVersion 2.** These all emit reports with nine
+  lenses, the eight interaction-craft lenses plus `interface-copy`:
+  - CLI `design-ai inspect` and `design-ai review`;
+  - SDK `inspectHtml()` and `reviewHtml()`;
+  - MCP `design_ai_inspect_html` and `design_ai_review_html`.
+
+  Validators, the Website Console, handoffs, receipts, pilot evidence, and
+  project snapshots still accept stored version 1 reports. **If you check
+  `schemaVersion === 1`, accept `2` as well.** The SDK types now declare
+  `schemaVersion: 1 | 2` and include `"interface-copy"` in `DesignQualityLensId`.
+- A review comparison now requires both reports to share a schema version. A
+  mixed version 1 and version 2 pair is refused with an instruction to re-run the
+  baseline review, where it previously failed on the missing lens.
+- `docs/PRODUCT-READINESS.md` and the completion plan again describe the
+  published release accurately. Before this change they still called v5.1.0
+  current and the Image Console unreleased, and they said no embedding retrieval
+  ships, although v4.57.0 added an opt-in local rerank.
+
+### Added
+
+- **The `interface-copy` quality lens.** It confirms three kinds of defect from
+  static HTML:
+  - control labels that name no result, such as `OK`, `확인`, or `Submit`;
+  - ARIA names that do not contain the visible label (WCAG 2.5.3);
+  - Korean copy that mixes registers.
+
+  Clean copy stays `unverified`. A p1 finding fails the lens, and p2 or p3
+  findings make it a warning.
+- The interface copy contract in `knowledge/patterns/interface-copy.md`. It
+  defines 8 criteria and 7 surfaces and carries 14 Korean and English
+  before/after fixtures. `npm run content:check` and `content:self-test`
+  validate the fixtures against the contract. The `ux-audit` and
+  `website-improvement` skills apply the lens.
+- P17C: a clone-only design-system skill compiler (`tools/ds_skill/`, not
+  packaged). It compiles one design system into a project-local Agent Skill from
+  verified source facts, and it runs a 20-case fixture and mutation suite.
+- P17E: a `design-ai-visual-evaluation` v1 contract with deterministic reference
+  evaluators for screenshot regression, visual diff, responsive overflow, and
+  brand-token drift. It ships as an internal library behind the browser adapter
+  boundary.
+- P17F: a `design-ai-project-snapshot` v1 contract that links existing review,
+  scope, implementation, comparison, and pilot artifacts by digest, with a
+  read-only chain inspection. It ships as an internal library.
+
+### Fixed
+
+- The Korean register classifier no longer reads UI nouns such as 작업함, 보관함,
+  or 모임 as sentence endings.
+
+### Verified
+
+- All 8 audits passed for the v5.3.0 release candidate.
+- `npm run release:check` passed with 924/924 Node tests, 907 packaged files in
+  the local pack, 0/0 documentation-policy warnings, release self-tests, and
+  installed-bin plus one-shot `npm exec` smoke against the packed tarball.
+- All 14 stored version 1 artifacts under `evidence/` and `examples/benchmarks/`
+  still validate. These are quality reports, workflows, handoffs, receipts,
+  comparisons, and pilot evidence.
+- Each P17 addition passed an independent review, and every issue it found was
+  fixed with a regression test. The new rules were also checked with targeted
+  sabotage runs.
+- Registry smoke of the version 2 output, a live Prompt Guide call, and real
+  provider execution remain unverified until their separate gates run.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 5.2.0 → 5.3.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+
+- Reviews catch interface copy defects in the same canonical report as
+  interaction craft, including in Korean, without claiming that clean copy passes.
+- Stored evidence chains keep verifying across the schema change, and mixed
+  comparisons fail with a clear next step.
+- Maintainers can build source-grounded design-system skills, evaluate visual
+  artifacts, and keep project history as digests. They can decide later whether
+  each becomes a public command.
+
 ## v5.2.0 — Image Console and release reliability (2026-09)
 
 Image Console release hardening shipped in v5.2.0 and is published behavior. The deterministic local mock loopback flow makes no Prompt Guide/provider-network call. Published registry smoke passed; a live Prompt Guide call and a real provider generation/edit remain unverified. Canonical receipt: [`docs/integrations/prompt-guide-image-prompts.md`](docs/integrations/prompt-guide-image-prompts.md).
