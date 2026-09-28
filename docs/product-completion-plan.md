@@ -3,7 +3,7 @@ title: Design AI 제품 완성 계획
 description: 전체 architecture, v5.2 engineering completion, 외부 출시 게이트와 후속 capability의 실행 기준입니다.
 type: explanation
 audience: product owner and maintainers
-last_updated: 2026-09-05
+last_updated: 2026-09-28
 ---
 
 # Design AI 제품 완성 계획
@@ -14,9 +14,9 @@ last_updated: 2026-09-05
 
 ## 목표와 기준선
 
-2026-09-05 기준 작업 기준선은 `dc329273ab26ce4ae428f4827fbfeac79eb2461e`입니다.
-`codex/image-console-v5.2.0`의 [Draft PR #62](https://github.com/sungjin9288/design-ai/pull/62)는 열려 있습니다.
-기준선의 필수 CI 4개는 성공했고, 수정 후 working tree는 별도 검증 대상입니다.
+2026-09-05 기준 작업 기준선은 `dc329273ab26ce4ae428f4827fbfeac79eb2461e`였습니다.
+[PR #62](https://github.com/sungjin9288/design-ai/pull/62)는 merge되었고, v5.2.0은 2026-09-18에 게시되었습니다.
+게시 증빙은 [External status](external-status.md)가 관리합니다.
 기준선 CI를 이후 변경의 CI 결과로 간주하지 않습니다.
 
 등록한 Goal의 완료 범위는 전체 설계·계획, 현재 기능 결함 수정, regression test,
@@ -30,9 +30,10 @@ last_updated: 2026-09-05
 | Start→review→approval→evidence→comparison | 기존 파일 기반 golden journey 구현 | 변경된 패키지의 실제 실행 smoke 통과 |
 | Website Console | 기존 contract와 evidence UI 구현 | 기존 browser/contract coverage 회귀 없음 |
 | Image Console | 생성·편집·승인·local asset 저장 구현 | 오류 격리·원본 binding·비동기 UI 및 생성→편집 검증 |
-| Distribution | v5.1 published baseline, v5.2 candidate | exact reviewed commit에 대한 승인·publish·registry 증거 |
+| Distribution | v5.2.0 npm·GitHub Release·Homebrew 게시 완료 | 다음 release도 exact reviewed commit에 대한 승인·publish·registry 증거 |
 | External pilot | 모집·동의·운영 계약 준비 | 실제 참여와 독립 owner 결과; synthetic 증거 대체 금지 |
-| P17C–F | 설계된 후속 개발 | 각 진입 조건 충족 후 별도 구현 |
+| P17C | clone-only compiler와 fixture·mutation suite 구현 | 실제 design-system root·소비 repo 1건의 scope 승인 후 첫 적용 증빙 |
+| P17D–F | 설계된 후속 개발 | 각 진입 조건 충족 후 별도 구현 |
 
 ## 설계 결정
 
@@ -112,6 +113,11 @@ G3 완료는 로컬 engineering completion입니다. 아래 항목까지 완료�
 | R4 Distribution | 실제 publish 완료 | public registry smoke, docs, Homebrew 상태와 version 일치 | 채널별 불일치 명시 및 복구 검토 |
 | R5 Product validation | 실제 지원자와 별도 동의 | 독립 owner별 pilot·comparison·feedback | 모집 상태 유지; 내부 smoke를 adoption으로 표기 금지 |
 
+현재 상태는 다음과 같습니다. R2–R4는 v5.2.0에서 완료되었습니다(2026-09-18, [External status](external-status.md)).
+R3의 진입 조건에는 R1이 있었지만, 실제 게시는 R1 없이 진행되었습니다.
+그래서 게시 문서는 live Prompt Guide 호출과 실제 provider 생성·편집을 unverified로 명시합니다.
+R1과 R5는 여전히 열려 있습니다.
+
 Merge와 tag 전에는 `.github/workflows/`의 실행 trigger를 다시 확인합니다.
 이 계획 자체는 commit·push·merge·publish 또는 외부 연락 승인이 아닙니다.
 운영 장애 시 먼저 local gateway를 중단합니다. 저장 asset과 기존 audit history는 보존합니다.
@@ -125,7 +131,7 @@ Merge와 tag 전에는 `.github/workflows/`의 실행 trigger를 다시 확인�
 | 우선순위·단계 | 입력과 책임 | 산출물·완료 조건 | 확대 금지 경계 |
 | --- | --- | --- | --- |
 | 1 · P17B 잔여 — **완료** | 안정된 review/evidence smoke baseline | pilot·install·help·search·route 도메인과 self-test 단계를 모듈로 분리; callable 15개 유지, 722-command 정규화 시퀀스 해시 불변, 실패 메시지 verbatim | runtime 동작·coverage 축소 없음 |
-| 2 · P17C | 명시한 design-system root와 소비 repo, scope 승인 | verified facts→closed generation contract→project-local skill; path/import/token/asset 전수 검증 | clone-only 시작; 2개 독립 pilot 또는 새 제품 결정 전 CLI/SDK/MCP 승격 없음 |
+| 2 · P17C — **1단계 완료** | 명시한 design-system root와 소비 repo, scope 승인 | verified facts→closed generation contract→project-local skill; path/import/token/asset 전수 검증. `tools/ds_skill/`와 20개 fixture·mutation case 구현 | clone-only 시작; 2개 독립 pilot 또는 새 제품 결정 전 CLI/SDK/MCP 승격 없음 |
 | 3 · P17D | 기존 voice·locale·review 계약과 KO/EN fixtures | button/form/error/empty/notification/onboarding/destructive copy lens; 전후 예제와 SR 의미 유지 | 계약·fixtures 전 ninth lens 추가 금지; 단독 command 없음 |
 | 4 · P17E | 승인된 browser adapter·source digest·viewport | visual diff·overflow·brand drift의 version/threshold/artifact/uncertainty 계약 | missing artifact는 `unverified`; 총점으로 누락 은폐 금지 |
 | 5 · P17F | 기존 review·scope·implementation·comparison | digest와 owner decision을 잇는 successor snapshot | 새 history DB·자동 restore·자동 학습 없음 |

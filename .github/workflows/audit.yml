@@ -53,6 +53,7 @@ jobs:
           python3 -m py_compile tools/audit/*.py
           python3 -m py_compile tools/migrations/*.py
           python3 -m py_compile tools/preview/*.py
+          python3 -m py_compile tools/ds_skill/*.py
 
       - name: Validate external pilot intake and operations
         run: |

@@ -17,6 +17,41 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 804 - P17C design-system skill compiler and status truth alignment (v5.2.0 post-release)
+
+- [x] Added the clone-only P17C compiler in `tools/ds_skill/`. It runs five
+  digest-bound stages: scope, facts, contract, generate, and verify. Scope is
+  persisted before any source is read. The generated project-local skill uses
+  only verified components, props, tokens, and icons, each with its source line.
+- [x] `verify` runs six checks: digest chain, source re-extraction, fact
+  anchors, provenance, rendered-from-contract, and the repository Agent Skills
+  contract. Source must reproduce the facts, and every generated file must equal
+  a fresh render of the contract, independent of provenance hashes.
+- [x] Fixed all ten defects from an independent review of the first version,
+  each with a regression case. They included directory deletion through a
+  tampered skill name, missing source re-reads, vocabulary-scan gaps, comment and
+  string text parsed as exports, and unescaped consumer text.
+- [x] Added a synthetic design-system and consumer fixture pair with 20 fixture
+  and mutation cases, wired as `npm run ds-skill:self-test` into
+  `release:self-test`, local CI Python compilation, and the CI compile step.
+  Twelve sabotage runs against the checks and readers each made the suite fail.
+- [x] Corrected status documents that still described v5.1.0 as current or the
+  Image Console as unreleased, and the stale claim that no embedding retrieval
+  ships (v4.57.0 added an opt-in local rerank).
+- [ ] Apply the compiler to one real design system and consuming repository
+  after the owner declares both roots and approves the scope.
+
+### Verified
+
+- `npm run ds-skill:self-test` passes 20 cases; `npm run release:metadata`
+  passes. The full release gate result is recorded in the pull request.
+- No CLI, SDK, MCP, Website Console, package-content, or version change: the
+  compiler lives outside the npm `files` allowlist.
+
+A real design-system run, a live Prompt Guide call, a real provider
+generation/edit, and external pilot participation remain unverified and are not
+claimed here.
+
 ## Phase 803 - Audit harness decomposition and P17B completion (v5.2.0 post-release)
 
 - [x] Published v5.2.0 to npm with SLSA provenance and a GitHub Release, then

@@ -23,7 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 KNOWLEDGE_WARN_LINES = 150_000
 KNOWLEDGE_MAX_LINES = 200_000
-PYTHON_COMPILE_DIRS = ("tools/extractors", "tools/audit", "tools/migrations", "tools/preview")
+PYTHON_COMPILE_DIRS = ("tools/extractors", "tools/audit", "tools/migrations", "tools/preview", "tools/ds_skill")
 LINE_BUDGET_DIRS = ("knowledge", "examples", "docs")
 DOCS_WORKFLOW = ROOT / ".github" / "workflows" / "docs.yml"
 AUDIT_WORKFLOW = ROOT / ".github" / "workflows" / "audit.yml"
