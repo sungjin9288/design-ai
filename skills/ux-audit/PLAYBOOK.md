@@ -54,6 +54,15 @@ For every text element:
 - Is the back/escape path obvious?
 - Reading load: can the user accomplish the goal without reading more than ~50 words?
 
+### 5.5. Run the interface copy lens
+
+When the artifact has visible copy, apply [`knowledge/patterns/interface-copy.md`](../../knowledge/patterns/interface-copy.md). Walk its surface row for each button, form, error, empty state, notification, onboarding step, or destructive confirmation. Then check its eight criteria.
+
+- Quote the exact current string as evidence, name one criterion ID, and give the replacement string.
+- Record the product register (해요체 or 합쇼체) before flagging `korean-honorific-consistency`.
+- If you cannot read a control's accessible name or a live-region announcement, mark copy accessibility findings `unverified`.
+- Do not report a readability score as a finding or a grade.
+
 ### 6. Check the platform conventions
 
 | Platform | Watch for |
@@ -135,6 +144,7 @@ A structured report:
 - [`knowledge/patterns/list-and-feed.md`](../../knowledge/patterns/list-and-feed.md) — when auditing feeds/lists
 - [`knowledge/patterns/mobile-navigation.md`](../../knowledge/patterns/mobile-navigation.md) — when auditing mobile nav
 - [`knowledge/patterns/interface-craft.md`](../../knowledge/patterns/interface-craft.md) — when auditing implemented interaction quality
+- [`knowledge/patterns/interface-copy.md`](../../knowledge/patterns/interface-copy.md) — when the artifact has interface copy; worked cases in [`interface-copy-fixtures.json`](../../knowledge/patterns/interface-copy-fixtures.json)
 - [`knowledge/i18n/korean-product-conventions.md`](../../knowledge/i18n/korean-product-conventions.md) — Korean apps
 
 ## Verification phase (run before declaring done)
@@ -149,6 +159,7 @@ A structured report:
 - [ ] Are duplicate issues merged (not listed in both a11y and UX)?
 - [ ] If implemented interaction craft is in scope, did I provide runtime/code evidence or mark it unverified?
 - [ ] If interaction craft was escalated, is the eight-lens scorecard complete and does every craft finding include Before / After / Why / Verification?
+- [ ] If copy was in scope, does every copy finding quote the current string, name one interface-copy criterion, and give the replacement?
 
 ## Done when
 
