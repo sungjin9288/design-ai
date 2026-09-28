@@ -53,8 +53,13 @@ design-ai review-compare baseline-quality-report.json \
 접근 가능한 이름 경고가 사라져도 접근성 lens가 통과할 근거가 없다면 개선이
 확정되지 않습니다.
 
-여덟 개 lens는 각각 `unchanged`, `improved`, `regressed`, `evidence-gained`,
-`evidence-lost` 가운데 하나의 변화를 기록합니다.
+공유하는 schema version의 lens는 각각 `unchanged`, `improved`, `regressed`,
+`evidence-gained`, `evidence-lost` 가운데 하나의 변화를 기록합니다.
+
+두 report는 같은 quality report schema version이어야 합니다. 저장된 version 1
+report는 lens가 여덟 개이고, 새 version 2 report는 `interface-copy`를 더합니다.
+따라서 버전이 섞인 쌍은 비교하지 않습니다. 새 리뷰와 비교하려면 baseline 리뷰를
+다시 실행합니다.
 
 ## 전체 상태 읽기
 

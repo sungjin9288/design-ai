@@ -326,10 +326,16 @@
     return clone(value);
   }
 
-  var QUALITY_LENSES = [
+  // schemaVersion 1 reports carry the eight interaction-craft lenses; version 2
+  // adds interface-copy. Both stay valid so stored v1 evidence keeps importing.
+  var QUALITY_CRAFT_LENSES = [
     "purpose-frequency", "response", "spatial-continuity", "interruptibility",
     "timing-cohesion", "performance", "accessibility", "responsive-resilience",
   ];
+  var QUALITY_LENSES_BY_VERSION = {
+    1: QUALITY_CRAFT_LENSES,
+    2: QUALITY_CRAFT_LENSES.concat(["interface-copy"]),
+  };
   var QUALITY_STATUSES = ["pass", "warning", "fail", "unverified"];
   var EVIDENCE_KINDS = ["brief", "code", "runtime", "screenshot", "accessibility", "manual", "design-contract"];
   var BROWSER_CHECKS = [
@@ -382,7 +388,8 @@
       "kind", "schemaVersion", "generatedAt", "subject", "context", "boundary",
       "sources", "lenses", "findings", "summary", "approval",
     ])) return null;
-    if (value.kind !== "design-ai-quality-report" || value.schemaVersion !== 1) return null;
+    if (value.kind !== "design-ai-quality-report" || (value.schemaVersion !== 1 && value.schemaVersion !== 2)) return null;
+    var QUALITY_LENSES = QUALITY_LENSES_BY_VERSION[value.schemaVersion];
     if (!isTimestamp(value.generatedAt)) return null;
     if (!exactKeys(value.subject, ["name", "type", "source"])
       || !hasText(value.subject.name)

@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
 
-import { validateDesignQualityReport } from "./design-quality-contract.mjs";
+import { designQualityLensesFor, validateDesignQualityReport } from "./design-quality-contract.mjs";
 import { validateSourceArtifact } from "./implementation-scope-contract.mjs";
 
 const COMPARISON_STATUSES = new Set(["improved", "unchanged", "attention-required", "regressed"]);
@@ -30,6 +30,9 @@ function lensChange(before, after) {
 }
 
 export function assertComparableReports(baseline, candidate) {
+  if (baseline.schemaVersion !== candidate.schemaVersion) {
+    throw new Error(`review comparison reports must share a schemaVersion (baseline ${baseline.schemaVersion}, candidate ${candidate.schemaVersion}); re-run the baseline review so both carry the same lenses`);
+  }
   if (!isDeepStrictEqual(baseline.subject, candidate.subject)) {
     throw new Error("review comparison reports must describe the same subject");
   }
@@ -150,8 +153,11 @@ export function expectedComparisonSummary(status, findings) {
   };
 }
 
-function validateLensTransitions(transitions) {
-  if (!Array.isArray(transitions) || transitions.length !== 8) throw new Error("review comparison lensTransitions must contain eight lenses");
+function validateLensTransitions(transitions, schemaVersion) {
+  const lensCount = designQualityLensesFor(schemaVersion).length;
+  if (!Array.isArray(transitions) || transitions.length !== lensCount) {
+    throw new Error(`review comparison lensTransitions must contain ${lensCount} lenses for schemaVersion ${schemaVersion}`);
+  }
   transitions.forEach((transition, index) => {
     const field = `review comparison lensTransitions[${index}]`;
     exactKeys(transition, ["id", "before", "after", "change"], field);
@@ -190,7 +196,7 @@ export function validateReviewComparison(comparison) {
   };
   if (!isDeepStrictEqual(comparison.context, expectedContext)) throw new Error("review comparison context drifted from the baseline report");
 
-  validateLensTransitions(comparison.lensTransitions);
+  validateLensTransitions(comparison.lensTransitions, comparison.baseline.value.schemaVersion);
   validateFindingChanges(comparison.findings);
   const transitions = expectedLensTransitions(comparison.baseline.value, comparison.candidate.value);
   const findings = expectedFindingChanges(comparison.baseline.value, comparison.candidate.value);

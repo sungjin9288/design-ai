@@ -1,4 +1,9 @@
-import { validateDesignQualityReport } from "./design-quality-contract.mjs";
+import {
+  DESIGN_QUALITY_SCHEMA_VERSION,
+  expectedSummaryStatus,
+  validateDesignQualityReport,
+} from "./design-quality-contract.mjs";
+import { inspectInterfaceCopy } from "./interface-copy-inspector.mjs";
 import { inspectProductReviewPack } from "./product-review-inspector.mjs";
 import { loadProductReviewPack } from "./product-review-pack.mjs";
 
@@ -205,6 +210,7 @@ function parseHtmlElements(source) {
       referenceText: "",
       accessibleText: "",
       labelAncestor: stack.findLast((ancestor) => ancestor.name === "label") || null,
+      ancestorNames: stack.map((ancestor) => ancestor.name),
       inForeignContent: tag.name === "math"
         || tag.name === "svg"
         || Boolean(parentElement?.inForeignContent && !parentUsesHtmlChildren),
@@ -449,16 +455,21 @@ export function inspectHtml(source, options = {}) {
       elementsById,
     }));
   }
+  const copy = inspectInterfaceCopy({ sourceRef, elements, elementsById, locale, documentLanguage: htmlElement?.attributes.lang });
+  findings.push(...copy.findings);
   findings.push(runtimeFinding(sourceRef));
 
   const accessibilityFindings = findings.filter((finding) => finding.lens === "accessibility" && finding.status === "confirmed");
   const responsiveFindings = findings.filter((finding) => finding.lens === "responsive-resilience" && finding.status === "confirmed");
+  // Product-pack criteria may also target interface-copy, so the lens reads every confirmed copy finding.
+  const copyFindings = findings.filter((finding) => finding.lens === "interface-copy" && finding.status === "confirmed");
+  const copyBlocking = copyFindings.some((finding) => ["p0", "p1"].includes(finding.severity));
   const confirmedFindings = findings.filter((finding) => finding.status === "confirmed").length;
   const unverifiedFindings = findings.filter((finding) => finding.status === "unverified").length;
 
   const report = {
     kind: "design-ai-quality-report",
-    schemaVersion: 1,
+    schemaVersion: DESIGN_QUALITY_SCHEMA_VERSION,
     generatedAt,
     subject: { name, type: "page", source: sourceRef },
     context: { brief, routeId: "design-engineering-review", locale, viewports },
@@ -510,10 +521,20 @@ export function inspectHtml(source, options = {}) {
             ? "No viewport meta declaration was found for declared mobile coverage."
             : "No mobile viewport contract was inferred from this source and context.",
       ),
+      lens(
+        "interface-copy",
+        copyFindings.length === 0 ? "unverified" : copyBlocking ? "fail" : "warning",
+        copyFindings.length > 0
+          ? `${copyFindings.length} supported static interface-copy defect(s) were confirmed.`
+          : "Static copy checks found no defect, but whether the copy serves the user goal remains unverified.",
+        sourceRef,
+        `Checked ${copy.controlsChecked} control label(s) for generic wording and label-in-name`
+          + (copy.koreanChecked ? ", and Korean sentences for one register." : "; Korean register did not apply."),
+      ),
     ],
     findings,
     summary: {
-      status: accessibilityFindings.length > 0 ? "fail" : responsiveFindings.length > 0 ? "warning" : "unverified",
+      status: "unverified",
       confirmedFindings,
       unverifiedFindings,
       blockingFindings: 0,
@@ -531,5 +552,6 @@ export function inspectHtml(source, options = {}) {
     },
   };
 
+  report.summary.status = expectedSummaryStatus(report.lenses);
   return validateDesignQualityReport(report);
 }

@@ -5,7 +5,9 @@ import { test } from "node:test";
 
 import {
   DESIGN_QUALITY_LENSES,
+  DESIGN_QUALITY_LENSES_BY_VERSION,
   DESIGN_QUALITY_SCHEMA,
+  DESIGN_QUALITY_SCHEMA_VERSION,
   DESIGN_QUALITY_SCHEMA_PATH,
   DESIGN_QUALITY_STATUSES,
   readDesignQualityReport,
@@ -38,7 +40,12 @@ test("design quality schema keeps the evidence-first status and lens contract", 
     "performance",
     "accessibility",
     "responsive-resilience",
+    "interface-copy",
   ]);
+  assert.equal(DESIGN_QUALITY_SCHEMA_VERSION, 2);
+  assert.deepEqual(DESIGN_QUALITY_LENSES_BY_VERSION[1], DESIGN_QUALITY_LENSES.slice(0, 8));
+  assert.deepEqual(DESIGN_QUALITY_LENSES_BY_VERSION[2], DESIGN_QUALITY_LENSES);
+  assert.deepEqual(DESIGN_QUALITY_SCHEMA.properties.schemaVersion.enum, [1, 2]);
   assert.equal(DESIGN_QUALITY_SCHEMA.properties.kind.const, "design-ai-quality-report");
   assert.equal(path.relative(PACKAGE_ROOT, DESIGN_QUALITY_SCHEMA_PATH).startsWith(".."), false);
 });
@@ -82,7 +89,7 @@ test("quality reports reject unsupported mutation boundaries", () => {
   );
 });
 
-test("quality reports require evidence and all eight lenses", () => {
+test("quality reports require evidence and every lens of their schema version", () => {
   const missingEvidence = structuredClone(fixture);
   missingEvidence.findings[0].evidence = [];
   assert.throws(
@@ -94,8 +101,30 @@ test("quality reports require evidence and all eight lenses", () => {
   missingLens.lenses.pop();
   assert.throws(
     () => validateDesignQualityReport(missingLens),
-    /lenses must contain exactly 8 entries/,
+    /lenses must contain exactly 8 entries for schemaVersion 1/,
   );
+});
+
+test("stored v1 reports stay valid while v2 requires the interface-copy lens", () => {
+  const copyLens = { id: "interface-copy", status: "unverified", summary: "Copy was not reviewed.",
+    evidence: [{ kind: "code", reference: "source.html", observation: "Static copy checks ran." }] };
+  const v1WithCopy = structuredClone(fixture);
+  v1WithCopy.lenses.push(copyLens);
+  assert.throws(() => validateDesignQualityReport(v1WithCopy), /exactly 8 entries for schemaVersion 1/);
+
+  const v2WithoutCopy = { ...structuredClone(fixture), schemaVersion: 2 };
+  assert.throws(() => validateDesignQualityReport(v2WithoutCopy), /exactly 9 entries for schemaVersion 2/);
+
+  const v2 = { ...structuredClone(fixture), schemaVersion: 2 };
+  v2.lenses.push(copyLens);
+  assert.equal(validateDesignQualityReport(v2).schemaVersion, 2);
+
+  const v1CopyFinding = structuredClone(fixture);
+  v1CopyFinding.findings[0].lens = "interface-copy";
+  assert.throws(() => validateDesignQualityReport(v1CopyFinding), /findings\[0\]\.lens/);
+
+  const v3 = { ...structuredClone(v2), schemaVersion: 3 };
+  assert.throws(() => validateDesignQualityReport(v3), /schemaVersion must be 1 or 2/);
 });
 
 test("quality report summaries are derived from findings and lens status", () => {

@@ -327,10 +327,10 @@ Status: the contract, fixtures, and knowledge-backed lens are implemented.
 defines eight criteria and seven surfaces.
 [`interface-copy-fixtures.json`](../knowledge/patterns/interface-copy-fixtures.json)
 holds a Korean and an English before/after case for every surface.
-`ux-audit` and `website-improvement` apply the lens. Promotion to a ninth lens in
-the design-quality report schema is the remaining step. It changes a public
-contract, so it needs its own change across the schema, SDK, MCP, Website
-Console, comparison, and smoke contracts.
+`ux-audit` and `website-improvement` apply the lens. The lens is now also the
+ninth lens of the design-quality report. Quality report schemaVersion 2 carries it,
+and version 1 reports stay valid so stored evidence keeps verifying. See the
+[quality contract](DESIGN-QUALITY-CONTRACT.md#schema-versions).
 
 Add content as a ninth review concern only after a contract and fixtures exist.
 It must cover purpose, clarity, concision, conversational fit, error recovery,

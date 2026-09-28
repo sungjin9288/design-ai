@@ -59,7 +59,7 @@ def assert_review_workflow_json(
         and plan["route"].get("id") == "design-review"
         and isinstance(report, dict)
         and report.get("kind") == "design-ai-quality-report"
-        and report.get("schemaVersion") == 1
+        and report.get("schemaVersion") in (1, 2)
         and isinstance(report.get("context"), dict)
         and report["context"].get("routeId") == "design-engineering-review"
     ):

@@ -17,7 +17,7 @@ Every report records:
 - the subject and review context;
 - the read, write, and approval boundary;
 - the sources that were actually inspected;
-- one result for each of the eight quality lenses;
+- one result for each quality lens of its schema version;
 - actionable findings with evidence and verification steps;
 - a derived summary; and
 - actions that require approval.
@@ -40,8 +40,52 @@ evidence bundles compare dates without locale or timezone ambiguity.
 | `performance` | Does the experience remain responsive under realistic content and work? |
 | `accessibility` | Can keyboard, screen-reader, low-vision, and motor users complete the task? |
 | `responsive-resilience` | Does the interface survive narrow, wide, zoomed, and localized layouts? |
+| `interface-copy` | Do labels, messages, and errors say what happens and what to do, in one voice, with accessible names that match? |
 
-All eight lenses are required. A lens may be `unverified`, but it cannot be omitted.
+The first eight are the interaction-craft lenses. `interface-copy` applies the
+[interface copy contract](../knowledge/patterns/interface-copy.md). Every lens of
+the report's schema version is required. A lens may be `unverified`, but it
+cannot be omitted.
+
+## Schema versions
+
+| `schemaVersion` | Lenses | Produced by |
+|---|---|---|
+| `1` | The eight interaction-craft lenses | Releases up to v5.2.0; stored evidence |
+| `2` | The eight craft lenses plus `interface-copy` | Current `inspect`, `review`, SDK, and MCP output |
+
+Validators accept both versions, so stored v1 reports, and the handoffs, receipts,
+comparisons, pilot evidence, and snapshots that embed them, keep verifying.
+A version 1 report cannot carry an `interface-copy` lens or finding. A review
+comparison requires both reports to share a schema version. To compare a stored v1
+baseline with a new review, re-run the baseline review so both carry the same
+lenses.
+
+The static inspector confirms three interface-copy defects from HTML alone:
+
+- a control label that names no result, such as `OK`, `확인`, `Submit`, or a
+  `Click here` link;
+- an ARIA name (`aria-labelledby` or `aria-label`) that does not contain the
+  visible label, compared by letters and digits after decoding entities
+  (WCAG 2.5.3);
+- Korean copy that mixes 해요체, 합쇼체, 반말, or 음슴체 sentences.
+
+A p1 finding fails the lens, and p2 or p3 findings make it a warning. With no
+finding, the lens stays `unverified`, because static HTML cannot show whether
+the copy serves the user's goal.
+
+These checks are deliberately narrow:
+
+- Link text such as `다음` or `더보기` is conventional in pagination and lists, so
+  links are flagged only when they name nothing at all.
+- A button labelled `Next`, `OK`, or `확인` is still flagged as p2, even inside a
+  confirm or alert dialog. The contract prefers a label that names the result,
+  and the reviewer can accept the warning when the dialog already says it.
+- Register sampling skips headings and text inside `blockquote`, `q`, `footer`,
+  `small`, and `cite`, where another register is normal.
+- Table cells and list items count only as full sentences that end in
+  punctuation, and so does 음슴체. Status labels such as `재고 있음` therefore do
+  not count.
 
 ## Status model
 

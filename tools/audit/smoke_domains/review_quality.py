@@ -7,6 +7,21 @@ from pathlib import Path
 
 from .assertion_helpers import assert_no_ansi, assert_smoke_json_keys
 
+# Quality report v1 (published through v5.2.0) carries the eight interaction-craft
+# lenses; v2 adds interface-copy. Registry smoke checks the published version, so
+# both inventories are accepted, but each must match its own version exactly.
+QUALITY_CRAFT_LENSES = [
+    "purpose-frequency",
+    "response",
+    "spatial-continuity",
+    "interruptibility",
+    "timing-cohesion",
+    "performance",
+    "accessibility",
+    "responsive-resilience",
+]
+QUALITY_LENSES_BY_VERSION = {1: QUALITY_CRAFT_LENSES, 2: [*QUALITY_CRAFT_LENSES, "interface-copy"]}
+
 
 def assert_inspect_json(raw: str, *, context: str, cmd: list[str]) -> None:
     assert_no_ansi(raw, cmd)
@@ -22,7 +37,7 @@ def assert_inspect_json(raw: str, *, context: str, cmd: list[str]) -> None:
         context=context,
         command_label="inspect JSON",
     )
-    if payload.get("kind") != "design-ai-quality-report" or payload.get("schemaVersion") != 1:
+    if payload.get("kind") != "design-ai-quality-report" or payload.get("schemaVersion") not in QUALITY_LENSES_BY_VERSION:
         raise SystemExit(f"inspect JSON after {context} kind or schema version changed")
 
     boundary = payload.get("boundary")
@@ -54,16 +69,7 @@ def assert_inspect_json(raw: str, *, context: str, cmd: list[str]) -> None:
     ):
         raise SystemExit(f"inspect JSON after {context} findings changed")
 
-    expected_lenses = [
-        "purpose-frequency",
-        "response",
-        "spatial-continuity",
-        "interruptibility",
-        "timing-cohesion",
-        "performance",
-        "accessibility",
-        "responsive-resilience",
-    ]
+    expected_lenses = QUALITY_LENSES_BY_VERSION[payload.get("schemaVersion")]
     lenses = payload.get("lenses")
     lens_ids = [item.get("id") for item in lenses] if isinstance(lenses, list) else []
     if lens_ids != expected_lenses:

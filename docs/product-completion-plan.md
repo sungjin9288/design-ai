@@ -33,7 +33,7 @@ last_updated: 2026-09-28
 | Distribution | v5.2.0 npm·GitHub Release·Homebrew 게시 완료 | 다음 release도 exact reviewed commit에 대한 승인·publish·registry 증거 |
 | External pilot | 모집·동의·운영 계약 준비 | 실제 참여와 독립 owner 결과; synthetic 증거 대체 금지 |
 | P17C | clone-only compiler와 fixture·mutation suite 구현 | 실제 design-system root·소비 repo 1건의 scope 승인 후 첫 적용 증빙 |
-| P17D | 계약·KO/EN fixture·검증기와 ux-audit·website-improvement lens 구현 | quality report schema의 9번째 lens 승격(공개 계약 변경, 별도 변경) |
+| P17D | 계약·fixture·검증기, skill lens, quality report 9번째 lens(schemaVersion 2) 구현 | 공개 계약 변경을 담은 다음 minor release |
 | P17E | 평가 결과 계약과 결정적 참조 평가기 4종(내부 library) 구현 | 실제 adapter가 layout·style artifact를 내보내는 run 1건과 공개 capability 선택 결정 |
 | P17F | 스냅샷 계약과 build·verify·chain 검사(내부 library) 구현 | 실제 프로젝트 1건의 연속 스냅샷 기록과 공개 capability 선택 결정 |
 
