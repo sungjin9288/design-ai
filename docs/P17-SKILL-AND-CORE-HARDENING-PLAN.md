@@ -377,6 +377,37 @@ brand-token drift, and visual diff. Each evaluator must record tool version,
 viewport, source digest, threshold, artifacts, and uncertainty. A missing or
 invalid artifact remains `unverified`.
 
+Status: the contract and four deterministic reference evaluators are
+implemented as an internal library. [Visual evaluators](VISUAL-EVALUATORS.md)
+describes them. They read artifacts that an approved browser adapter left in an
+evidence directory. They write nothing, start no browser, and add no CLI, SDK,
+MCP, or Website Console surface.
+
+Current P17E evidence:
+
+- `design-ai-visual-evaluation` v1 records the evaluator version, capture tool,
+  viewport, source digest, request digest, threshold, artifact SHA-256 and size,
+  uncertainty, and reasons for every evaluation.
+- `validateVisualEvaluation()` rejects the following:
+  - a pass or fail that does not follow from its own measurement and threshold;
+  - a measurement whose fields disagree;
+  - a pass or fail without every input artifact;
+  - an unverified result that carries a measurement;
+  - a missing uncertainty statement;
+  - a summary that is not derived from the statuses;
+  - any `score`, `grade`, or `rating` field.
+- The zero-dependency PNG codec decodes all five row filters. It caps
+  decompressed output at the size the header declares and refuses critical
+  chunks it cannot interpret.
+- An independent review found 12 issues in the first version, and all are
+  addressed. Among them, forged measurements could pass, rounding hid single-pixel
+  changes on large captures, PNG output was not capped, unparsable and
+  translucent colors could not block a pass, and color parsing was lenient.
+- `cli/lib/visual-evaluators.test.mjs` adds 14 tests to `npm test`. Fifteen
+  sabotage runs across the evaluators and contract each made the suite fail.
+  One further mutation to the symbolic-link check produced identical behavior,
+  so no test can tell the two apart.
+
 ### P17F - Project continuity
 
 Build project snapshots from existing review and comparison artifacts rather than
