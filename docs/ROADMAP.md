@@ -17,6 +17,49 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 809 - Interface copy lens and P17 foundations release candidate (v5.3.0)
+
+- [x] Chose a minor release. Quality reports move to schemaVersion 2 with the
+  `interface-copy` lens, but every reader still accepts version 1. The SDK
+  types only widen, and no command, SDK export, or MCP tool is added or
+  removed.
+- [x] Aligned the package and Claude plugin manifests at v5.3.0.
+- [x] Converted the post-v5.2.0 work into one release entry: P17C through P17F,
+  the ninth lens, and the status-document corrections. The entry calls out the
+  schemaVersion change for consumers.
+- [ ] Pass pull-request CI for the exact release candidate.
+- [ ] Merge the reviewed candidate after owner approval.
+- [ ] Create and push the v5.3.0 tag only after merge approval. Then verify npm,
+  the GitHub Release, public registry smoke against version 2 output, docs, and
+  the Homebrew formula.
+
+### Verified
+
+- All 8 audits passed for the v5.3.0 release candidate.
+- `npm run release:check` passed with 924/924 Node tests, 907 packaged files in
+  the local pack, 0/0 documentation-policy warnings, release self-tests, and
+  installed-bin plus one-shot npm smoke.
+- All 14 stored version 1 artifacts still validate with the version 2 contract.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 5.2.0 → 5.3.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+
+- One canonical review now covers interface copy alongside interaction craft,
+  without breaking stored evidence.
+- The P17 contracts and libraries can be applied to real projects and later
+  promoted to public commands one at a time.
+
+### What's still ahead
+
+- Pull-request CI, owner approval, merge, tag, npm and GitHub publication, and
+  public registry smoke of version 2 output.
+- Real-project runs for P17C, P17E, and P17F, a live Prompt Guide and provider
+  check, and external pilot participation.
+
 ## Phase 808 - Interface copy as the ninth quality-report lens (v5.2.0 post-release)
 
 - [x] Promoted the P17D interface copy lens into the design-quality report.
