@@ -547,8 +547,8 @@
       "</ul>",
       "<div class=\"sidebar-actions\">",
       "<button type=\"button\" class=\"button button--primary\" data-action=\"export-workspace\">Export JSON</button>",
-      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import review comparison, pilot evidence, implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON\">Import JSON</button>",
-      "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\">",
+      "<button type=\"button\" class=\"button\" data-action=\"import-click\" aria-label=\"Import JSON: review comparison, pilot evidence, implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview\">Import JSON</button>",
+      "<input class=\"sr-only\" type=\"file\" accept=\"application/json,.json\" id=\"import-file\" data-action=\"import-file\" tabindex=\"-1\" aria-label=\"Import JSON file\">",
       "<button type=\"button\" class=\"button button--danger\" data-action=\"reset-sample\">Reset sample</button>",
       appState.message ? "<p class=\"field\"><small>" + escapeHtml(appState.message) + "</small></p>" : "",
       "</div>",
@@ -841,9 +841,9 @@
         return [
           "<tr>",
           "<td><strong>" + escapeHtml(category.label) + "</strong><br><small>" + escapeHtml(category.description) + "</small></td>",
-          "<td><select data-audit-status=\"" + escapeAttr(category.id) + "\">" + optionList(statusOptions, row.status) + "</select><br><br>" + badge(row.status) + "</td>",
-          "<td><textarea data-audit-notes=\"" + escapeAttr(category.id) + "\">" + escapeHtml(row.notes) + "</textarea></td>",
-          "<td><textarea data-audit-findings=\"" + escapeAttr(category.id) + "\">" + escapeHtml(linesToText(row.findings)) + "</textarea><small>One finding per line.</small></td>",
+          "<td><select data-audit-status=\"" + escapeAttr(category.id) + "\" aria-label=\"" + escapeAttr(category.label + " status") + "\">" + optionList(statusOptions, row.status) + "</select><br><br>" + badge(row.status) + "</td>",
+          "<td><textarea data-audit-notes=\"" + escapeAttr(category.id) + "\" aria-label=\"" + escapeAttr(category.label + " notes") + "\">" + escapeHtml(row.notes) + "</textarea></td>",
+          "<td><textarea data-audit-findings=\"" + escapeAttr(category.id) + "\" aria-label=\"" + escapeAttr(category.label + " findings, one per line") + "\">" + escapeHtml(linesToText(row.findings)) + "</textarea><small>One finding per line.</small></td>",
           "</tr>",
         ].join("");
       }).join(""),
@@ -873,7 +873,7 @@
           "<tr>",
           "<td><strong>" + escapeHtml(label) + "</strong></td>",
           "<td>" + escapeHtml(description) + "</td>",
-          "<td><select data-mcp=\"" + escapeAttr(key) + "\">" + optionList(mcpStatusOptions, status) + "</select><br><br>" + badge(status) + "</td>",
+          "<td><select data-mcp=\"" + escapeAttr(key) + "\" aria-label=\"" + escapeAttr(label + " status") + "\">" + optionList(mcpStatusOptions, status) + "</select><br><br>" + badge(status) + "</td>",
           "<td>" + escapeHtml(mcpAdvice(key, status)) + "</td>",
           "</tr>",
         ].join("");

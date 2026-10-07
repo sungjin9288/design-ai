@@ -17,6 +17,37 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 810 - Dogfood the interface-copy and accessibility lenses on the Website Console (v5.3.0 post-release)
+
+- [x] Ran `design-ai inspect` on the rendered DOM of all nine Website Console
+  sections, captured from a local preview. The static `index.html` is only a
+  shell, and the Image Console's static markup had no confirmed findings.
+- [x] Fixed every confirmed defect the lenses found in design-ai's own UI:
+  - interface-copy p1: the Import JSON button's `aria-label` did not contain
+    its visible label (WCAG 2.5.3). It now starts with `Import JSON:`.
+  - accessibility p1: the visually hidden file input was unnamed but still in
+    the tab order. It is now named and removed from the tab order, and the
+    Import JSON button still opens it.
+  - accessibility p1: 27 Audit Checklist controls and 10 MCP Readiness status
+    selects sat in table cells without names. Each now carries its row label,
+    such as `Visual Design status`.
+- [x] Re-inspected all nine sections after the fix: no confirmed findings
+  remain. Checked in the browser that status changes and import still work,
+  with no console errors.
+- [x] Added a Console regression test. Reverting any of the three fixes makes it
+  fail.
+
+### Verified
+
+- All nine rendered sections report zero confirmed findings after the fix. The
+  `interface-copy` and `accessibility` lenses stay `unverified`, because static
+  inspection never passes them.
+- The Website Console source tests pass 28/28. The full release gate result is
+  recorded in the pull request.
+
+This is internal dogfooding of design-ai's own UI. External product copy reviewed
+with the lens remains unverified and is not claimed here.
+
 ## Phase 809 - Interface copy lens and P17 foundations release candidate (v5.3.0)
 
 - [x] Chose a minor release. Quality reports move to schemaVersion 2 with the
