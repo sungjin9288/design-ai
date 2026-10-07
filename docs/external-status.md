@@ -9,9 +9,9 @@
 Actions run `36386562069` published it through npm Trusted Publishing with SLSA
 provenance. The same run's post-publish registry smoke passed this time. The
 ten-minute retry window added after v5.2.0 covered registry propagation. GitHub
-Release `v5.3.0` is public. The Homebrew formula targets the new tag and passes
-`ruby -c` and `brew style`. A temporary-tap install and `brew test` have not
-been run for v5.3.0 yet.
+Release `v5.3.0` is public. The Homebrew formula targets the new tag. It passes
+`brew style`, a temporary-tap source install, and `brew test`, with Node-gated
+assertions checked by hand as described below.
 
 The release exposes 21 skills, 16 public commands, 4 review agents, 29 MCP
 tools, and 20 SDK exports. Quality reports are now schemaVersion 2, with the
@@ -25,15 +25,16 @@ tools, and 20 SDK exports. Quality reports are now schemaVersion 2, with the
 | npm registry | `@design-ai/cli@5.3.0` | Published as `latest` at `2026-09-28T06:47:38.417Z`. SLSA provenance is present. 907 files, 11,842,897 bytes unpacked, integrity `sha512-mjGRX5v8LmbndWmEp7WlhKN5hClzF4B7ogrEeZ8JGtrBVYtrMbsL5MbuCQGlDmyfEO4qK5K9zTEuxZBkFjFNvQ==`. | Publish run `36386562069`; npm attestation predicate `https://slsa.dev/provenance/v1`; attestation endpoint `https://registry.npmjs.org/-/npm/v1/attestations/@design-ai%2fcli@5.3.0` |
 | Public registry smoke | `@design-ai/cli@5.3.0` | Passed twice: in the publish workflow's post-publish step, and in a separate local `npm run registry:smoke` against the published package. Both reported `Registry smoke passed: @design-ai/cli@5.3.0`. | Publish run `36386562069`, step "Smoke-test published npm package"; local run on 2026-09-28 |
 | GitHub Release | `v5.3.0` | Published, not a draft or prerelease, at `2026-09-28T06:41:56Z`. The tag is annotated on commit `a9567ebc6f656142cb2a9092122c21865aaa13c2`. Asset `design-ai-cli-5.3.0.tgz` is 2,763,760 bytes. | Release run `36386562080`; [release page](https://github.com/sungjin9288/design-ai/releases/tag/v5.3.0) |
-| Homebrew tap | `Formula/design-ai.rb` | Formula targets `v5.3.0` with source SHA-256 `97e0714da953d8238c2f94b3f53b795ee1c47e932f5bc914a07215afb4b77e8b`, the same across two downloads. `ruby -c` reports `Syntax OK`, and `brew style` reports no offenses. A temporary-tap `--build-from-source` install and `brew test` have not been run for this version. | `Formula/design-ai.rb`; local checks on 2026-09-28 |
+| Homebrew tap | `Formula/design-ai.rb` | Formula targets `v5.3.0` with source SHA-256 `97e0714da953d8238c2f94b3f53b795ee1c47e932f5bc914a07215afb4b77e8b`, the same across two downloads. `ruby -c` reports `Syntax OK`, and `brew style` reports no offenses. A temporary-tap `--build-from-source --without-node` install and `brew test` both exited 0. Homebrew had no `node`, so the formula skipped linking the `design-ai` CLI and `brew test` skipped its Node-gated `help` and `version` assertions. Running the installed `libexec/cli/bin/design-ai.mjs` with the system Node reported CLI and corpus `5.3.0`, and `inspect` emitted a schemaVersion 2 report with 9 lenses. The plugin manifest lists 21 skills, 16 commands, and 4 agents. The temporary tap and install were removed afterwards, and `brew missing` reports no gaps. | `Formula/design-ai.rb`; local temporary-tap verification on 2026-10-07 |
 | GitHub Pages | `https://sungjin9288.github.io/design-ai/` | Public docs return HTTP 200, and the Docs workflow passed on the release commit. | Docs run `36386421062`; [public docs](https://sungjin9288.github.io/design-ai/) |
 | VS Code Marketplace | `sungjin.design-ai-vscode` | The published version remains `0.4.1`; no extension release was part of v5.3.0. | `evidence/cli-logs/vscode-marketplace-status.log`; `evidence/cli-logs/vscode-publish-workflow-status.log` |
 | MCP server | `@design-ai/cli@5.3.0` / local clone | Public registry smoke validates the `design-ai-mcp` entrypoint and the 29-tool contract. Exactly three tools keep opt-in local learning-write behavior. | Publish run `36386562069` registry smoke |
 
 ## Interpretation
 
-- v5.3.0 is distributed through npm and GitHub Release. The Homebrew formula
-  points at it, but its install test is still pending.
+- v5.3.0 distribution is complete across npm, GitHub Release, and the Homebrew
+  formula. Re-run the Node-gated `brew test` assertions on a machine that has
+  Homebrew `node` to cover the linked CLI path.
 - npm publication uses OIDC Trusted Publishing, not a long-lived repository
   token.
 - The default quality report output changed from schemaVersion 1 to 2. Readers

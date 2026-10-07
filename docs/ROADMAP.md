@@ -36,8 +36,10 @@ integration guide.
   [external status](external-status.md).
 - [x] Retargeted the Homebrew formula to the v5.3.0 tag tarball. `ruby -c` and
   `brew style` pass.
-- [ ] Run the temporary-tap `--build-from-source` install and `brew test` for
-  v5.3.0.
+- [x] Ran the temporary-tap `--build-from-source --without-node` install and
+  `brew test` for v5.3.0; both exited 0. Without Homebrew `node`, the
+  Node-gated assertions were covered by running the installed CLI with the
+  system Node, which reported 5.3.0.
 
 ### Verified
 
@@ -61,7 +63,6 @@ integration guide.
 
 ### What's still ahead
 
-- The Homebrew install test for v5.3.0.
 - Real-project runs for P17C, P17E, and P17F, a live Prompt Guide and provider
   check, and external pilot participation.
 

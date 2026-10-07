@@ -188,8 +188,8 @@ Distribution blockers are closed. Only adoption and future-scope decisions remai
 
 - v5.3.0 distribution: complete for npm `latest` and the GitHub Release, with
   SLSA provenance and a passing public registry smoke in publish run
-  `36386562069`. The Homebrew formula targets `v5.3.0` and passes `brew style`;
-  its install test is pending. v5.2.0 remains the previous published baseline.
+  `36386562069`. The Homebrew formula targets `v5.3.0` and passes `brew style`,
+  a temporary-tap source install, and `brew test`. v5.2.0 remains the previous published baseline.
 - Real-CI verification: complete. For v5.3.0, main Audit run `36386421008`,
   GitHub Release run `36386562080`, and npm Trusted Publishing run `36386562069`
   passed on 2026-09-28. The publish run's own post-publish registry smoke passed.
