@@ -78,8 +78,10 @@ Canonical receipt: [`docs/integrations/prompt-guide-image-prompts.md`](docs/inte
 - Each P17 addition passed an independent review, and every issue it found was
   fixed with a regression test. The new rules were also checked with targeted
   sabotage runs.
-- Registry smoke of the version 2 output, a live Prompt Guide call, and real
-  provider execution remain unverified until their separate gates run.
+- Published as npm `latest` with SLSA provenance in publish run `36386562069`.
+  That run's post-publish registry smoke passed against `@design-ai/cli@5.3.0`,
+  including the version 2 quality report output. A live Prompt Guide call and
+  real provider execution remain unverified.
 
 ### Versions
 

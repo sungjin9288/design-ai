@@ -9,14 +9,14 @@
 #
 # Submitting to homebrew-core requires a stable release with downloadable
 # tarballs and a maintained URL. This formula targets the GitHub release
-# tarball pattern: https://github.com/sungjin9288/design-ai/archive/refs/tags/v5.2.0.tar.gz
+# tarball pattern: https://github.com/sungjin9288/design-ai/archive/refs/tags/v5.3.0.tar.gz
 
 class DesignAi < Formula
   desc "Agent-ready product design toolkit for AI coding agents"
   homepage "https://github.com/sungjin9288/design-ai"
-  url "https://github.com/sungjin9288/design-ai/archive/refs/tags/v5.2.0.tar.gz"
-  version "5.2.0"
-  sha256 "216ed71227c4f7b7e317702594ae45af2f1e8cf62795b80aefda92e21453dce2"
+  url "https://github.com/sungjin9288/design-ai/archive/refs/tags/v5.3.0.tar.gz"
+  version "5.3.0"
+  sha256 "97e0714da953d8238c2f94b3f53b795ee1c47e932f5bc914a07215afb4b77e8b"
   license "MIT"
 
   # Node is required for the npm CLI; the install.sh wrapper still works without it.
@@ -87,7 +87,7 @@ class DesignAi < Formula
     # Test CLI help (only if Node is available)
     if formula_any_version_installed?("node")
       assert_match "design-ai", shell_output("#{bin}/design-ai help")
-      assert_match "5.2.0", shell_output("#{bin}/design-ai version")
+      assert_match "5.3.0", shell_output("#{bin}/design-ai version")
     end
   end
 end
