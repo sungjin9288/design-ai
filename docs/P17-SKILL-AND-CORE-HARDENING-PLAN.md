@@ -256,10 +256,9 @@ Current P17B.5 evidence:
   package 5.1.0, SDK smoke bytes, the 4387-byte registry Website Console fixture,
   and the P16 program digest remain unchanged.
 
-Next domains remain separate and unverified:
-
-1. Extract pilot contracts only after review and evidence remain stable.
-2. Extract install/help/search/route lifecycle contracts last.
+The two domains this slice left for later were extracted in Phase 803, as the
+status above records: the pilot contracts after review and evidence held stable,
+and the install, help, search, and route lifecycle contracts last.
 
 Exit criteria:
 
