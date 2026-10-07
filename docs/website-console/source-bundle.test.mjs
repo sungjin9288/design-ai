@@ -747,7 +747,7 @@ test("Website Console imports and labels linked preview readiness without claimi
   const appSource = readConsoleSource();
 
   assert.match(appSource, /website-improvement-linked-preview/);
-  assert.match(appSource, /Import review comparison, pilot evidence, implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview JSON/);
+  assert.match(appSource, /Import JSON: review comparison, pilot evidence, implementation evidence, scope approval, scope proposal, target intake, review receipt, handoff, workflow, quality, browser, start, workspace, runbook, or preview/);
   assert.match(appSource, /No process started by design-ai/);
   assert.match(appSource, /A configured URL is not browser verification/);
   assert.match(appSource, /Linked preview readiness JSON imported\. Report tab opened\./);
@@ -901,4 +901,16 @@ test("Website Console keeps mobile section navigation compact and keyboard-stabl
   assert.match(styles, /outline: 3px solid var\(--accent\);/);
   assert.match(appSource, /activeButton\.focus\(\{ preventScroll: true \}\)/);
   assert.match(appSource, /activeButton\.scrollIntoView\(\{ block: "nearest", inline: "nearest" \}\)/);
+});
+
+test("Website Console names its table controls and import controls for assistive technology", () => {
+  const appSource = readConsoleSource();
+
+  // Found by running the interface-copy and accessibility lenses on the rendered Console.
+  assert.match(appSource, /aria-label=\\"Import JSON: review comparison/, "the accessible name starts with the visible label");
+  assert.match(appSource, /id=\\"import-file\\" data-action=\\"import-file\\" tabindex=\\"-1\\" aria-label=\\"Import JSON file\\"/);
+  for (const suffix of ["status", "notes", "findings, one per line"]) {
+    assert.ok(appSource.includes(`escapeAttr(category.label + " ${suffix}")`), `audit ${suffix} controls are named by their row`);
+  }
+  assert.ok(appSource.includes('escapeAttr(label + " status")'), "MCP status controls are named by their row");
 });
