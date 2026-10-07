@@ -11,7 +11,7 @@ function element(id = "") {
     value: "", checked: false, disabled: false, hidden: false, textContent: "", children: [],
     dataset: { mode: id === "editing-panel" ? "editing" : "generation" },
     addEventListener(type, handler) { handlers.set(type, handler); },
-    dispatch(type) { return handlers.get(type)?.({ preventDefault() {}, currentTarget: this }); },
+    dispatch(type, extra = {}) { return handlers.get(type)?.({ preventDefault() {}, currentTarget: this, ...extra }); },
     reportValidity() { return true; },
     setAttribute() {}, focus() {},
     replaceChildren() { this.children = []; this.value = ""; },
@@ -140,4 +140,38 @@ test("asset refresh failure invalidates an active edit and keeps its actionable 
   assert.equal(ui.get("draft-approval").disabled, true);
   assert.equal(ui.get("error").hidden, false);
   assert.equal(ui.get("error").textContent, "Local asset listing failed");
+});
+
+test("missing required fields keep a named, persistent error and mark only the empty fields", async () => {
+  const ui = await consoleHarness();
+  const attributes = new Map();
+  const field = (name, caption, valid) => ({
+    name, disabled: false, checkValidity: () => valid,
+    closest: () => ({ querySelector: () => ({ textContent: `  ${caption}  ` }) }),
+    setAttribute: (key, value) => attributes.set(`${name}:${key}`, value),
+  });
+  const form = ui.get("generation-panel");
+  form.querySelectorAll = () => [field("intent", "Purpose", false), field("domain", "Domain", true), field("outputType", "Output type", false)];
+  let nativeReport = 0;
+  form.reportValidity = () => { nativeReport += 1; return false; };
+  form.dispatch("submit");
+  await flush();
+  assert.equal(nativeReport, 1, "the native bubble and focus move still run");
+  assert.equal(ui.pending.filter((request) => request.url === "/api/image/compose").length, 0, "no draft request is sent");
+  assert.equal(ui.get("error").hidden, false);
+  assert.equal(ui.get("error").textContent, "Fill in Purpose, Output type to compose the draft.");
+  assert.deepEqual([...attributes.keys()].sort(), ["intent:aria-invalid", "outputType:aria-invalid"]);
+
+  let removed = null;
+  form.dispatch("input", { target: { removeAttribute: (key) => { removed = key; } } });
+  assert.equal(removed, "aria-invalid", "typing into a flagged field clears its invalid state");
+});
+
+test("a completed job names the saved asset and the next step", async () => {
+  const ui = await consoleHarness();
+  await ui.compose("first");
+  const execution = ui.execute();
+  ui.respond("/api/image/jobs", { assetId: "result-1" });
+  await execution;
+  assert.equal(ui.get("status").textContent, "Image generated and saved as draft asset result-1. Select it under Edit an asset to refine it.");
 });

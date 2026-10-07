@@ -17,6 +17,41 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 811 - Dogfood the lenses on the running Image Console (v5.3.0 post-release)
+
+- [x] Ran the Image Console gateway locally with mock Prompt Guide, a
+  deterministic local provider adapter, and a scratchpad `HOME`. No network call
+  was made, and no asset was written to the user's home directory. The full flow
+  was exercised: compose, approve, generate, and the edit tab with a stored
+  asset.
+- [x] Inspected the initial page and the rendered draft-validated, generated,
+  and edit-with-asset states. None had a confirmed finding: every control
+  already had a label, and the live status and error regions were in place.
+- [x] Applied the interface copy contract by review where static inspection
+  stops, and fixed the two gaps it found:
+  - error recovery: a missing required field produced only the transient native
+    validation bubble. The error region now lists the missing fields by label
+    (for example `Fill in Purpose, Stored source asset to compose the draft.`),
+    marks them `aria-invalid`, and clears the mark as the user types. Native
+    validation and focus movement are kept.
+  - purpose and clarity: the completion status showed only a UUID. It now says
+    the image was saved as a draft asset and that it can be selected under
+    Edit an asset.
+- [x] Added behavioral tests in the Image Console harness. Reverting any of the
+  three new pieces of logic makes them fail. Checked in the browser that a
+  composed draft clears the error, with no application console errors.
+
+### Verified
+
+- Image Console tests pass 14/14. The full release gate result is recorded in
+  the pull request.
+- The page's Content Security Policy (`connect-src 'self'`) blocked an attempt
+  to post page snapshots to another local port. The rendered states were
+  collected without weakening it.
+
+This is internal dogfooding. A live Prompt Guide call and real provider
+generation/edit remain unverified.
+
 ## Phase 810 - Dogfood the interface-copy and accessibility lenses on the Website Console (v5.3.0 post-release)
 
 - [x] Ran `design-ai inspect` on the rendered DOM of all nine Website Console

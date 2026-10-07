@@ -31,7 +31,9 @@ test("console supplies live status/errors, visible shared focus, 44px targets, a
   const html = readFileSync(new URL("./index.html", import.meta.url), "utf8"); const app = readFileSync(new URL("./app.js", import.meta.url), "utf8"); const css = readFileSync(new URL("./styles.css", import.meta.url), "utf8"); const sharedCss = readFileSync(new URL("../website-console/styles.css", import.meta.url), "utf8");
   assert.match(html, /role="status" aria-live="polite"/); assert.match(html, /role="alert" aria-live="assertive"/); assert.match(html, /readonly aria-readonly="true"/); assert.match(html, /name="referenceAssetId"/);
   assert.match(css, /min-height: 44px/); assert.match(css, /grid-template-columns: 112px minmax\(0, 1fr\)/); assert.match(css, /max-width: 840px/); assert.match(css, /grid-template-columns: 1fr/); assert.match(css, /var\(--accent\)/); assert.match(sharedCss, /:focus-visible[\s\S]*outline: 3px/);
-  assert.match(app, /function invalidateDraft/); assert.match(app, /state\.revision \+= 1/); assert.match(app, /revision !== state\.revision/); assert.match(app, /addEventListener\("input", invalidateDraft\)/); assert.match(app, /Compose a new draft before trying again/);
+  assert.match(app, /function invalidateDraft/); assert.match(app, /state\.revision \+= 1/); assert.match(app, /revision !== state\.revision/); assert.match(app, /addEventListener\("input", function \(event\) \{ clearInvalid\(event\); invalidateDraft\(\); \}\)/);
+  assert.match(app, /field\.setAttribute\("aria-invalid", "true"\)/); assert.match(app, /setError\("Fill in " \+ invalid\.map\(fieldName\)\.join\(", "\) \+ " to compose the draft\."\)/);
+  assert.match(app, /Select it under Edit an asset to refine it\./); assert.match(app, /Compose a new draft before trying again/);
   assert.match(app, /No local source asset is available\. Generate and save an image before starting an edit\./); assert.match(html, /rel="icon" href="data:,"/);
   assert.match(css, /\.image-details\[hidden\]\s*\{\s*display:\s*none;/);
   assert.doesNotMatch(readFileSync(new URL("./app.js", import.meta.url), "utf8"), /asset\.outputType/);

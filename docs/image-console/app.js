@@ -17,6 +17,20 @@
   function values(form) { return Object.fromEntries(new FormData(form).entries()); }
   function setError(message) { errorBox.hidden = !message; errorBox.textContent = message || ""; }
   function resetDraft() { state.draftId = null; approval.checked = false; approval.disabled = true; execute.disabled = true; details.hidden = true; prompt.value = ""; setError(""); }
+  // Required fields that are still empty, named by their visible label so the error stays readable after
+  // the native validation bubble disappears.
+  function invalidFields(form) {
+    if (typeof form.querySelectorAll !== "function") return [];
+    return Array.prototype.filter.call(form.querySelectorAll("[required]"), function (field) { return !field.disabled && !field.checkValidity(); });
+  }
+  function fieldName(field) {
+    var label = typeof field.closest === "function" ? field.closest("label") : null;
+    var caption = label && label.querySelector("span");
+    return (caption ? caption.textContent : field.name).replace(/\s+/g, " ").trim();
+  }
+  function clearInvalid(event) {
+    if (event && event.target && typeof event.target.removeAttribute === "function") event.target.removeAttribute("aria-invalid");
+  }
   function invalidateDraft() { var active = state.draftId || state.composing; state.revision += 1; state.composing = false; if (!active) return; resetDraft(); status.textContent = "The form changed. Compose and validate a new draft before approval."; }
   function setMode(mode, focus) {
     var generation = mode === "generation";
@@ -79,6 +93,14 @@
       setError("No local source asset is available. Generate and save an image before starting an edit.");
       return;
     }
+    var invalid = invalidFields(form);
+    if (invalid.length) {
+      invalid.forEach(function (field) { field.setAttribute("aria-invalid", "true"); });
+      form.reportValidity();
+      status.textContent = "Draft was not created; no provider job was started.";
+      setError("Fill in " + invalid.map(fieldName).join(", ") + " to compose the draft.");
+      return;
+    }
     if (!form.reportValidity()) return;
     var revision = state.revision + 1; state.revision = revision; state.composing = true; resetDraft(); status.textContent = "Composing and validating the Prompt Guide draft…";
     try {
@@ -106,7 +128,10 @@
   tabs.forEach(function (tab) { tab.addEventListener("keydown", onTabKeydown); });
   generationPanel.addEventListener("submit", function (event) { event.preventDefault(); submit(generationPanel); });
   editingPanel.addEventListener("submit", function (event) { event.preventDefault(); submit(editingPanel); });
-  [generationPanel, editingPanel].forEach(function (form) { form.addEventListener("input", invalidateDraft); form.addEventListener("change", invalidateDraft); });
+  [generationPanel, editingPanel].forEach(function (form) {
+    form.addEventListener("input", function (event) { clearInvalid(event); invalidateDraft(); });
+    form.addEventListener("change", function (event) { clearInvalid(event); invalidateDraft(); });
+  });
   approval.addEventListener("change", function () { execute.disabled = !approval.checked || !state.draftId; });
   execute.addEventListener("click", async function () {
     if (!state.draftId || !approval.checked) return;
@@ -118,7 +143,7 @@
       var job = await request("/api/image/jobs", { draftId: draftId, approved: true });
       loadAssets();
       if (revision !== state.revision) return;
-      status.textContent = "Image asset " + job.assetId + " was generated as a draft for review.";
+      status.textContent = "Image generated and saved as draft asset " + job.assetId + ". Select it under Edit an asset to refine it.";
     } catch (payload) {
       if (revision !== state.revision) return;
       status.textContent = "The provider job was not completed. Compose a new draft before trying again.";
