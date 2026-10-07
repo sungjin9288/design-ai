@@ -293,25 +293,31 @@ test("browser verification waits for a timed-out adapter process to terminate", 
   const pidFile = path.join(workspace.root, "adapter.pid");
   const adapter = writeAdapter(workspace.root, String.raw`
 const { spawn } = await import("node:child_process");
+const { renameSync, writeFileSync } = await import("node:fs");
 const descendant = spawn(process.execPath, [
   "-e",
   "process.on('SIGTERM', () => {}); setInterval(() => {}, 1000);",
 ], { stdio: "ignore" });
-await import("node:fs").then(({ writeFileSync }) => writeFileSync(
-  process.argv[2],
-  JSON.stringify({ leader: process.pid, descendant: descendant.pid }),
-));
+writeFileSync(process.argv[2] + ".tmp", JSON.stringify({ leader: process.pid, descendant: descendant.pid }));
+renameSync(process.argv[2] + ".tmp", process.argv[2]);
 let input = "";
 for await (const chunk of process.stdin) input += chunk;
 process.on("SIGTERM", () => {});
 setInterval(() => {}, 1_000);`);
-  const options = deterministicOptions(workspace, adapter);
-  options.adapterArgs = [pidFile];
-  options.timeoutMs = 1_000;
-  options.terminationGraceMs = 100;
   try {
-    const { report } = await runBrowserVerification(options);
-    assert.equal(report.summary.status, "unverified");
+    // The timeout races the adapter's own Node startup. On a loaded machine the
+    // runner can stop the adapter before it records its pids, so only that case
+    // retries with a longer timeout; the termination assertions never retry.
+    for (let timeoutMs = 1_000; !existsSync(pidFile); timeoutMs *= 2) {
+      assert.ok(timeoutMs <= 16_000, "adapter never recorded its pids before the timeout");
+      rmSync(workspace.evidenceRoot, { recursive: true, force: true });
+      const options = deterministicOptions(workspace, adapter);
+      options.adapterArgs = [pidFile];
+      options.timeoutMs = timeoutMs;
+      options.terminationGraceMs = 100;
+      const { report } = await runBrowserVerification(options);
+      assert.equal(report.summary.status, "unverified");
+    }
     if (process.platform !== "win32") {
       const pids = JSON.parse(readFileSync(pidFile, "utf8"));
       assert.throws(() => process.kill(pids.leader, 0), /ESRCH/);
