@@ -17,6 +17,46 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 815 - Review comparison v2 and dogfooding fixes release candidate (v5.4.0)
+
+- [x] Chose a minor release. Review comparisons move to schemaVersion 2, which
+  changes the default output of `review-compare`, `compareReviews()`, and
+  `design_ai_compare_reviews`, but stored v1 comparisons still validate. The
+  SDK types only widen, and no command, SDK export, or MCP tool is added or
+  removed.
+- [x] Aligned the package and Claude plugin manifests at v5.4.0.
+- [x] Converted the post-v5.3.0 work into one release entry: comparison v2,
+  the comparison mismatch message, and the Website Console and Image Console
+  dogfooding fixes. The entry calls out the comparison schema change and the
+  older-reader rejection for consumers.
+
+### Verified
+
+- All 8 audits passed for the v5.4.0 release candidate.
+- `npm run release:check` passed with 932/932 Node tests, 907 packaged files in
+  the local pack, 0/0 documentation-policy warnings, release self-tests, and
+  installed-bin plus one-shot npm smoke.
+- All 14 stored version 1 artifacts still validate, including both stored
+  review comparisons.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 5.3.0 → 5.4.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+
+- A fix reviewed with static evidence reads `attention-required` with a
+  runtime-evidence next step, so the comparison can gate a release without
+  calling the fix a regression.
+
+### What's still ahead
+
+- Owner approval to merge, tag, and publish v5.4.0, then the published registry
+  smoke, the Homebrew formula retarget, and the external status update.
+- Real-project runs for P17C and P17E, a live Prompt Guide and provider check,
+  and external pilot participation.
+
 ## Phase 814 - Website Console comparison validator parity (v5.3.0 post-release)
 
 - [x] The Console's comparison validator now accepts exactly what the Node

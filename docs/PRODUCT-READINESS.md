@@ -94,9 +94,13 @@ external adoption, production quality, or business outcomes.
 CLI `review-compare`, SDK `compareReviews()`, MCP
 `design_ai_compare_reviews`, and Website Console then compare two exact canonical
 quality reports for the same subject and context. They preserve source references,
-bytes, SHA-256 identities, all eight lens transitions, and resolved, persistent,
+bytes, SHA-256 identities, every lens transition, and resolved, persistent,
 introduced, or uncertain finding decisions. A missing finding is not promoted to
-resolved unless its candidate lens passes. The comparison remains read-only and
+resolved unless its candidate lens passes. In the v5.4.0 release candidate, not
+yet published behavior, comparisons are schemaVersion 2: a lens that failed or
+warned and lacks evidence afterwards is `unconfirmed` and reads
+`attention-required` instead of `regressed`, while stored v1 comparisons keep
+validating. The comparison remains read-only and
 keeps target mutation, commit, push, deployment, external writes, production
 quality, and adoption outside its claim boundary.
 The separate CLI-only `design-ai verify-browser` runner can collect that runtime
