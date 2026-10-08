@@ -17,6 +17,46 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 812 - First P17F application: the review-to-snapshot chain on design-ai's own fix (v5.3.0 post-release)
+
+- [x] Ran the full chain with the shipped CLI against an isolated clone of this
+  repository at `e8c90f0`, the commit before the Website Console fix in #78:
+  review, handoff, receipt, intake, scope proposal, owner-approved scope,
+  implementation, implementation evidence, comparison, and two project
+  snapshots. Nothing was pushed, and this checkout was not touched.
+- [x] The baseline review of the rendered Audit Checklist reproduced the Phase
+  810 findings: 28 accessibility p1 and 1 interface-copy p1. The fix was applied
+  as #78's exact diff, and the candidate was re-rendered from the clone's source
+  and matched the stored capture by digest.
+- [x] Built a two-snapshot chain: a `scoped` snapshot with the owner's accepted
+  scope decision, followed by an `implemented` snapshot whose decision stays
+  `pending`. Both verify against the artifact bytes, the chain is linear, and a
+  read-only restore plan is produced. Changing one byte of an artifact, or
+  removing one, reports drift.
+- [x] Fixed one defect the run exposed: a comparison rejected for a different
+  subject or context did not say which field differed. The error now names
+  each differing field, such as `subject.source`.
+
+### Found, not yet fixed
+
+- Comparison counts `fail -> unverified` as `evidence-lost`, the same as
+  `pass -> unverified`, so the overall status is `regressed`. Removing all 29
+  confirmed p1 defects therefore read as `regressed` with 29 `uncertain`
+  findings. The `accessibility` and `interface-copy` lenses never pass
+  statically, so every fix to them reads this way. Changing the derivation would
+  invalidate stored v1 comparisons, which project snapshots re-validate. It
+  needs a comparison schema version 2.
+
+### Verified
+
+- `node --test cli/lib/review-comparison.test.mjs` passes 8/8. Making the
+  field naming report no field makes it fail.
+- Implementation evidence stays `attention-required`, because responsive layout
+  and screen reader output were not observed.
+
+This is internal dogfooding on design-ai's own repository. It is not an
+independent pilot and does not count toward P17 promotion evidence.
+
 ## Phase 811 - Dogfood the lenses on the running Image Console (v5.3.0 post-release)
 
 - [x] Ran the Image Console gateway locally with mock Prompt Guide, a
