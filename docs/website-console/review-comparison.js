@@ -21,8 +21,23 @@
     return typeof value === "string" && value.trim().length > 0;
   }
 
+  // Matches the Node contract's isDeepStrictEqual for JSON values: object key order
+  // does not matter, array order does. Tagged arrays of sorted entries keep the
+  // encoding unambiguous without building objects from untrusted keys.
+  function canonical(value) {
+    if (Array.isArray(value)) return ["array", value.map(canonical)];
+    if (!object(value)) return value;
+    return ["object", Object.keys(value).sort().map(function (key) { return [key, canonical(value[key])]; })];
+  }
+
   function same(left, right) {
-    return JSON.stringify(left) === JSON.stringify(right);
+    return JSON.stringify(canonical(left)) === JSON.stringify(canonical(right));
+  }
+
+  // Finding and lens ids are arbitrary strings, so lookups must not reach
+  // Object.prototype names such as "constructor" or "__proto__".
+  function lookup() {
+    return Object.create(null);
   }
 
   function clone(value) {
@@ -52,7 +67,7 @@
     // Reports from different schema versions carry different lens sets and cannot be compared.
     if (baseline.schemaVersion !== candidate.schemaVersion) return false;
     if (!same(baseline.subject, candidate.subject) || !same(baseline.context, candidate.context)) return false;
-    var baselineLenses = {};
+    var baselineLenses = lookup();
     baseline.findings.forEach(function (finding) {
       baselineLenses[finding.id] = finding.lens;
     });
@@ -104,9 +119,9 @@
   }
 
   function expectedFindingChanges(baseline, candidate) {
-    var beforeById = {};
-    var afterById = {};
-    var afterLensById = {};
+    var beforeById = lookup();
+    var afterById = lookup();
+    var afterLensById = lookup();
     baseline.findings.forEach(function (finding) { beforeById[finding.id] = finding; });
     candidate.findings.forEach(function (finding) { afterById[finding.id] = finding; });
     candidate.lenses.forEach(function (lens) { afterLensById[lens.id] = lens.status; });
