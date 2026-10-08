@@ -9,6 +9,7 @@ import {
   expectedComparisonSummary,
   expectedFindingChanges,
   expectedLensTransitions,
+  REVIEW_COMPARISON_SCHEMA_VERSION,
   validateReviewComparison,
 } from "./review-comparison-contract.mjs";
 import { unknownOptionMessage } from "./suggest.mjs";
@@ -32,7 +33,7 @@ export function compareReviewReports(baselineSource, candidateSource, options = 
   const status = expectedComparisonStatus(lensTransitions, findings);
   return validateReviewComparison({
     kind: "design-ai-review-comparison",
-    schemaVersion: 1,
+    schemaVersion: REVIEW_COMPARISON_SCHEMA_VERSION,
     status,
     baseline: sourceArtifact(baselineSource, baselineValue, options.baselineRef || "baseline-quality-report.json"),
     candidate: sourceArtifact(candidateSource, candidateValue, options.candidateRef || "candidate-quality-report.json"),
@@ -45,7 +46,7 @@ export function compareReviewReports(baselineSource, candidateSource, options = 
     },
     lensTransitions,
     findings,
-    summary: expectedComparisonSummary(status, findings),
+    summary: expectedComparisonSummary(status, findings, lensTransitions),
     approval: {
       status: "pending",
       requiredBefore: ["target repository mutation", "commit", "push", "deployment", "external writes"],

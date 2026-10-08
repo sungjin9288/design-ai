@@ -127,10 +127,13 @@ remains false. See [Canonical review workflow](REVIEW-WORKFLOW.md).
 
 ### `compareReviews(baselineSource, candidateSource, opts)`
 
-Compare two exact `design-ai-quality-report` v1 strings for the same subject,
-brief, route, locale, and viewport set. The result classifies finding changes as
-`resolved`, `persistent`, `introduced`, or `uncertain` and records every lens
-transition without reducing the review to one opaque score.
+Compare two exact `design-ai-quality-report` strings of the same schema version
+for the same subject, brief, route, locale, and viewport set. The result is a
+`design-ai-review-comparison` v2. It classifies finding changes as `resolved`,
+`persistent`, `introduced`, or `uncertain` and records every lens transition
+without reducing the review to one opaque score. A lens that failed or warned
+before and lacks evidence after is `unconfirmed`, not `evidence-lost`; see
+[Verified design iteration](REVIEW-COMPARISON.md).
 
 ```js
 compareReviews(baselineSource: string, candidateSource: string, opts: {

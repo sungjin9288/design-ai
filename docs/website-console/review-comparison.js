@@ -3,7 +3,10 @@
 
   var shared = global.DesignAiWebsiteConsoleSourceBundle;
   var comparisonStatuses = ["improved", "unchanged", "attention-required", "regressed"];
-  var lensChanges = ["unchanged", "improved", "regressed", "evidence-gained", "evidence-lost"];
+  // Mirrors cli/lib/review-comparison-contract.mjs: v2 adds `unconfirmed` for a lens
+  // that failed or warned before and lacks evidence after; v1 keeps `evidence-lost`.
+  var v1LensChanges = ["unchanged", "improved", "regressed", "evidence-gained", "evidence-lost"];
+  var lensChanges = { 1: v1LensChanges, 2: v1LensChanges.concat(["unconfirmed"]) };
 
   function object(value) {
     return value && typeof value === "object" && !Array.isArray(value);
@@ -58,22 +61,22 @@
     });
   }
 
-  function lensChange(before, after) {
+  function lensChange(before, after, version) {
     if (before === after) return "unchanged";
     if (before === "unverified") return "evidence-gained";
-    if (after === "unverified") return "evidence-lost";
+    if (after === "unverified") return version >= 2 && before !== "pass" ? "unconfirmed" : "evidence-lost";
     var rank = { pass: 0, warning: 1, fail: 2 };
     return rank[after] < rank[before] ? "improved" : "regressed";
   }
 
-  function expectedLensTransitions(baseline, candidate) {
+  function expectedLensTransitions(baseline, candidate, version) {
     return baseline.lenses.map(function (beforeLens) {
       var afterLens = candidate.lenses.find(function (lens) { return lens.id === beforeLens.id; });
       return {
         id: beforeLens.id,
         before: beforeLens.status,
         after: afterLens.status,
-        change: lensChange(beforeLens.status, afterLens.status),
+        change: lensChange(beforeLens.status, afterLens.status, version),
       };
     });
   }
@@ -149,16 +152,21 @@
       return transition.change === "regressed" || transition.change === "evidence-lost";
     }) || findings.introduced.some(function (finding) { return finding.afterStatus === "confirmed"; });
     if (hasRegression) return "regressed";
-    if (findings.persistent.length || findings.introduced.length || findings.uncertain.length) {
+    var unconfirmed = transitions.some(function (transition) { return transition.change === "unconfirmed"; });
+    if (unconfirmed || findings.persistent.length || findings.introduced.length || findings.uncertain.length) {
       return "attention-required";
     }
     return findings.resolved.length ? "improved" : "unchanged";
   }
 
-  function expectedSummary(status, findings) {
+  function expectedSummary(status, findings, transitions) {
+    var onlyUnconfirmed = !findings.persistent.length && !findings.introduced.length && !findings.uncertain.length
+      && transitions.some(function (transition) { return transition.change === "unconfirmed"; });
     var nextAction = status === "regressed"
       ? "Review introduced findings and regressed or evidence-lost lenses before release approval."
-      : status === "attention-required"
+      : status === "attention-required" && onlyUnconfirmed
+        ? "Collect runtime evidence for unconfirmed lenses before treating the change as resolved."
+        : status === "attention-required"
         ? "Resolve persistent and introduced findings, or collect evidence for uncertain findings."
         : status === "improved"
           ? "Preserve this comparison with implementation evidence; broader production claims remain separate."
@@ -201,7 +209,7 @@
         "lensTransitions", "findings", "summary", "approval", "boundary",
       ])
       || value.kind !== "design-ai-review-comparison"
-      || value.schemaVersion !== 1
+      || (value.schemaVersion !== 1 && value.schemaVersion !== 2)
       || comparisonStatuses.indexOf(value.status) === -1) return null;
 
     var baseline = sourceArtifact(value.baseline);
@@ -215,16 +223,16 @@
       locale: baseline.value.context.locale,
       viewports: baseline.value.context.viewports,
     };
-    var transitions = expectedLensTransitions(baseline.value, candidate.value);
+    var transitions = expectedLensTransitions(baseline.value, candidate.value, value.schemaVersion);
     var findings = expectedFindingChanges(baseline.value, candidate.value);
     var status = expectedStatus(transitions, findings);
-    var summary = expectedSummary(status, findings);
+    var summary = expectedSummary(status, findings, transitions);
 
     if (!same(value.context, expectedContext)
       || !Array.isArray(value.lensTransitions) || value.lensTransitions.length !== baseline.value.lenses.length
       || value.lensTransitions.some(function (transition) {
         return !exactKeys(transition, ["id", "before", "after", "change"])
-          || lensChanges.indexOf(transition.change) === -1;
+          || lensChanges[value.schemaVersion].indexOf(transition.change) === -1;
       })
       || !exactKeys(value.findings, ["resolved", "persistent", "introduced", "uncertain"])
       || !["resolved", "persistent", "introduced", "uncertain"].every(function (key) {

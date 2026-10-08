@@ -92,9 +92,11 @@ def assert_review_comparison_json(
         raise SystemExit(f"failed to parse review comparison JSON after {context}") from error
 
     expected_kind = "design-ai-review-comparison-summary" if compact else "design-ai-review-comparison"
+    # Full comparisons are v2; the compact summary keeps its own v1 shape.
+    expected_version = 1 if compact else 2
     if (
         comparison.get("kind") != expected_kind
-        or comparison.get("schemaVersion") != 1
+        or comparison.get("schemaVersion") != expected_version
         or comparison.get("status") != "attention-required"
     ):
         raise SystemExit(f"review comparison JSON after {context} changed identity or status")
@@ -145,6 +147,7 @@ def assert_review_comparison_json(
         if (
             representation.get("mode") != "compact"
             or representation.get("fullArtifactKind") != "design-ai-review-comparison"
+            or representation.get("fullArtifactSchemaVersion") != 2
             or representation.get("omittedFields") != [
                 "baseline.source", "baseline.value", "candidate.source", "candidate.value",
             ]

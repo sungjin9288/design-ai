@@ -315,7 +315,12 @@ export interface DesignQualityReport {
 }
 
 export type ReviewComparisonStatus = "improved" | "unchanged" | "attention-required" | "regressed";
-export type ReviewComparisonLensChange = "unchanged" | "improved" | "regressed" | "evidence-gained" | "evidence-lost";
+/**
+ * `unconfirmed` appears only in schemaVersion 2 comparisons: the lens failed or warned
+ * before and lacks evidence after. Version 1 labeled that case `evidence-lost`.
+ */
+export type ReviewComparisonLensChange =
+  | "unchanged" | "improved" | "regressed" | "evidence-gained" | "evidence-lost" | "unconfirmed";
 
 export interface ReviewComparisonOptions {
   baselineRef: string;
@@ -368,7 +373,8 @@ export interface ReviewComparisonFindingChanges {
 
 export interface ReviewComparison {
   kind: "design-ai-review-comparison";
-  schemaVersion: 1;
+  /** New comparisons are version 2; stored version 1 comparisons still validate. */
+  schemaVersion: 1 | 2;
   status: ReviewComparisonStatus;
   baseline: ReviewComparisonSource<DesignQualityReport>;
   candidate: ReviewComparisonSource<DesignQualityReport>;
@@ -416,13 +422,14 @@ export interface CompactReviewComparisonSource {
   reportStatus: DesignQualityStatus;
 }
 
-export interface ReviewComparisonSummary extends Omit<ReviewComparison, "kind" | "baseline" | "candidate"> {
+export interface ReviewComparisonSummary extends Omit<ReviewComparison, "kind" | "schemaVersion" | "baseline" | "candidate"> {
   kind: "design-ai-review-comparison-summary";
+  schemaVersion: 1;
   sources: { baseline: CompactReviewComparisonSource; candidate: CompactReviewComparisonSource };
   representation: {
     mode: "compact";
     fullArtifactKind: "design-ai-review-comparison";
-    fullArtifactSchemaVersion: 1;
+    fullArtifactSchemaVersion: 1 | 2;
     omittedFields: string[];
   };
 }

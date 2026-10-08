@@ -23,7 +23,7 @@ REVIEW_MODULES = (
     "review_intake.py",
     "review_scope.py",
 )
-REVIEW_CONTRACT_AST_SHA256 = "977451926a0fc45a5f732a975794a0ac75f7367cc88db1cbf3a3b044216f032e"
+REVIEW_CONTRACT_AST_SHA256 = "62591f93a811c08e5687b1f969a5244cbe95fe713ff34abe3789a745aaefec43"
 
 
 def canonical_ast(value: object) -> object:

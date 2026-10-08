@@ -4,7 +4,13 @@ import { designQualityLensesFor, validateDesignQualityReport } from "./design-qu
 import { validateSourceArtifact } from "./implementation-scope-contract.mjs";
 
 const COMPARISON_STATUSES = new Set(["improved", "unchanged", "attention-required", "regressed"]);
-const LENS_CHANGES = new Set(["unchanged", "improved", "regressed", "evidence-gained", "evidence-lost"]);
+// Version 2 adds `unconfirmed`: a lens that failed or warned before and lacks
+// evidence after. Version 1 counted that as `evidence-lost`, so a fix to a lens
+// that never passes statically read as a regression. Stored v1 comparisons keep
+// their original derivation.
+export const REVIEW_COMPARISON_SCHEMA_VERSION = 2;
+const V1_LENS_CHANGES = ["unchanged", "improved", "regressed", "evidence-gained", "evidence-lost"];
+const LENS_CHANGES = { 1: new Set(V1_LENS_CHANGES), 2: new Set([...V1_LENS_CHANGES, "unconfirmed"]) };
 
 function exactKeys(value, keys, field) {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(`${field} must be an object`);
@@ -21,10 +27,10 @@ function count(value, field) {
   if (!Number.isInteger(value) || value < 0) throw new Error(`${field} must be a non-negative integer`);
 }
 
-function lensChange(before, after) {
+function lensChange(before, after, version) {
   if (before === after) return "unchanged";
   if (before === "unverified") return "evidence-gained";
-  if (after === "unverified") return "evidence-lost";
+  if (after === "unverified") return version >= 2 && before !== "pass" ? "unconfirmed" : "evidence-lost";
   const rank = { pass: 0, warning: 1, fail: 2 };
   return rank[after] < rank[before] ? "improved" : "regressed";
 }
@@ -59,14 +65,14 @@ export function assertComparableReports(baseline, candidate) {
   }
 }
 
-export function expectedLensTransitions(baseline, candidate) {
+export function expectedLensTransitions(baseline, candidate, version = REVIEW_COMPARISON_SCHEMA_VERSION) {
   return baseline.lenses.map((beforeLens) => {
     const afterLens = candidate.lenses.find((lens) => lens.id === beforeLens.id);
     return {
       id: beforeLens.id,
       before: beforeLens.status,
       after: afterLens.status,
-      change: lensChange(beforeLens.status, afterLens.status),
+      change: lensChange(beforeLens.status, afterLens.status, version),
     };
   });
 }
@@ -142,14 +148,22 @@ export function expectedComparisonStatus(lensTransitions, findings) {
   const hasRegression = lensTransitions.some(({ change }) => change === "regressed" || change === "evidence-lost")
     || findings.introduced.some(({ afterStatus }) => afterStatus === "confirmed");
   if (hasRegression) return "regressed";
-  if (findings.persistent.length || findings.introduced.length || findings.uncertain.length) return "attention-required";
+  const unconfirmed = lensTransitions.some(({ change }) => change === "unconfirmed");
+  if (unconfirmed || findings.persistent.length || findings.introduced.length || findings.uncertain.length) {
+    return "attention-required";
+  }
   return findings.resolved.length ? "improved" : "unchanged";
 }
 
-export function expectedComparisonSummary(status, findings) {
+export function expectedComparisonSummary(status, findings, lensTransitions = []) {
+  // Only v2 produces `unconfirmed`, so v1 summaries keep their original text.
+  const onlyUnconfirmed = !findings.persistent.length && !findings.introduced.length && !findings.uncertain.length
+    && lensTransitions.some(({ change }) => change === "unconfirmed");
   const nextAction = status === "regressed"
     ? "Review introduced findings and regressed or evidence-lost lenses before release approval."
-    : status === "attention-required"
+    : status === "attention-required" && onlyUnconfirmed
+      ? "Collect runtime evidence for unconfirmed lenses before treating the change as resolved."
+      : status === "attention-required"
       ? "Resolve persistent and introduced findings, or collect evidence for uncertain findings."
       : status === "improved"
         ? "Preserve this comparison with implementation evidence; broader production claims remain separate."
@@ -164,7 +178,7 @@ export function expectedComparisonSummary(status, findings) {
   };
 }
 
-function validateLensTransitions(transitions, schemaVersion) {
+function validateLensTransitions(transitions, schemaVersion, comparisonVersion) {
   const lensCount = designQualityLensesFor(schemaVersion).length;
   if (!Array.isArray(transitions) || transitions.length !== lensCount) {
     throw new Error(`review comparison lensTransitions must contain ${lensCount} lenses for schemaVersion ${schemaVersion}`);
@@ -173,7 +187,9 @@ function validateLensTransitions(transitions, schemaVersion) {
     const field = `review comparison lensTransitions[${index}]`;
     exactKeys(transition, ["id", "before", "after", "change"], field);
     for (const key of ["id", "before", "after"]) text(transition[key], `${field}.${key}`);
-    if (!LENS_CHANGES.has(transition.change)) throw new Error(`${field}.change is unsupported`);
+    if (!LENS_CHANGES[comparisonVersion].has(transition.change)) {
+      throw new Error(`${field}.change is unsupported in review comparison v${comparisonVersion}`);
+    }
   });
 }
 
@@ -189,8 +205,9 @@ export function validateReviewComparison(comparison) {
     "kind", "schemaVersion", "status", "baseline", "candidate", "context",
     "lensTransitions", "findings", "summary", "approval", "boundary",
   ], "review comparison");
-  if (comparison.kind !== "design-ai-review-comparison" || comparison.schemaVersion !== 1) {
-    throw new Error("review comparison must be design-ai-review-comparison v1");
+  if (comparison.kind !== "design-ai-review-comparison" || !Object.hasOwn(LENS_CHANGES, comparison.schemaVersion)
+    || !Number.isInteger(comparison.schemaVersion)) {
+    throw new Error("review comparison must be design-ai-review-comparison v1 or v2");
   }
   if (!COMPARISON_STATUSES.has(comparison.status)) throw new Error("review comparison status is unsupported");
   validateSourceArtifact(comparison.baseline, "review comparison baseline", validateDesignQualityReport);
@@ -207,12 +224,12 @@ export function validateReviewComparison(comparison) {
   };
   if (!isDeepStrictEqual(comparison.context, expectedContext)) throw new Error("review comparison context drifted from the baseline report");
 
-  validateLensTransitions(comparison.lensTransitions, comparison.baseline.value.schemaVersion);
+  validateLensTransitions(comparison.lensTransitions, comparison.baseline.value.schemaVersion, comparison.schemaVersion);
   validateFindingChanges(comparison.findings);
-  const transitions = expectedLensTransitions(comparison.baseline.value, comparison.candidate.value);
+  const transitions = expectedLensTransitions(comparison.baseline.value, comparison.candidate.value, comparison.schemaVersion);
   const findings = expectedFindingChanges(comparison.baseline.value, comparison.candidate.value);
   const status = expectedComparisonStatus(transitions, findings);
-  const summary = expectedComparisonSummary(status, findings);
+  const summary = expectedComparisonSummary(status, findings, transitions);
   if (!isDeepStrictEqual(comparison.lensTransitions, transitions)) throw new Error("review comparison lens transitions drifted");
   if (!isDeepStrictEqual(comparison.findings, findings)) throw new Error("review comparison finding decisions drifted");
   if (comparison.status !== status) throw new Error("review comparison status drifted");

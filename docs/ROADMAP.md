@@ -17,6 +17,57 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 813 - Review comparison v2: an unconfirmed lens is not a regression (v5.3.0 post-release)
+
+- [x] New review comparisons are `design-ai-review-comparison` v2. A lens that
+  failed or warned in the baseline and is `unverified` in the candidate now
+  records `unconfirmed` instead of `evidence-lost`, and the comparison reads
+  `attention-required` instead of `regressed`. Losing a pass is still
+  `evidence-lost` and still `regressed`. An `unconfirmed` lens never lets a
+  comparison read `improved` or `unchanged`.
+- [x] Stored v1 comparisons keep their original derivation. The validator
+  derives lens changes by the comparison's own schema version, so a v1 that
+  says `evidence-lost` and `regressed` still validates, and a relabeled
+  version is rejected.
+- [x] Applied the same rule in the Website Console's comparison validator,
+  allowed comparison v1 or v2 in project snapshots, widened the SDK types, and
+  updated the comparison guides in English and Korean and the SDK reference.
+  The compact summary keeps its v1 shape and reports the full artifact as v2.
+- [x] Re-ran the Phase 812 case: the same 29-finding fix now reads
+  `attention-required`, with 29 `uncertain` findings and two `unconfirmed`
+  lenses.
+- [x] When the only open item is an `unconfirmed` lens, the next action asks
+  for runtime evidence for that lens instead of pointing at findings that do
+  not exist.
+- [x] An independent read-only review found no blocking defect. It ran 64
+  exhaustive and 2,400 randomized checks with no disagreement between the Node
+  contract and the Console copy.
+
+### Release note obligations
+
+- Readers older than this change reject comparison v2 and any project snapshot
+  that references one. The compact summary keeps `schemaVersion: 1`, but its
+  `lensTransitions[].change` can now be `unconfirmed` and
+  `representation.fullArtifactSchemaVersion` can be 2.
+
+### Known gaps, unchanged here
+
+- The Console copy rejects valid comparisons whose finding ids are built-in
+  object property names, or whose JSON keys were reordered. The Node contract
+  accepts both. Both gaps predate comparison v2.
+- A lens that moves from `unverified` to `fail` or `warning` with no finding
+  still reads `unchanged`. Static reports that fail always carry a confirmed
+  finding, which reads `regressed`.
+
+### Verified
+
+- Comparison, Website Console, and project-snapshot tests cover v2 derivation,
+  stored v1 validation, relabeling, and unsupported versions. Seven sabotage
+  runs across the Node contract and the Console copy each made a test fail.
+
+This changes the default comparison output. It ships in the next minor release
+with a release note; nothing is published here.
+
 ## Phase 812 - First P17F application: the review-to-snapshot chain on design-ai's own fix (v5.3.0 post-release)
 
 - [x] Ran the full chain with the shipped CLI against an isolated clone of this
@@ -45,7 +96,7 @@ integration guide.
   findings. The `accessibility` and `interface-copy` lenses never pass
   statically, so every fix to them reads this way. Changing the derivation would
   invalidate stored v1 comparisons, which project snapshots re-validate. It
-  needs a comparison schema version 2.
+  needs a comparison schema version 2, which Phase 813 adds.
 
 ### Verified
 

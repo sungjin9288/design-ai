@@ -3,9 +3,10 @@
 Use review comparison after a design change when the important question is not
 "did the code change?" but "what design evidence changed?"
 
-The operation compares two exact `design-ai-quality-report` v1 artifacts. It
-keeps the reports intact, verifies that they describe the same subject and review
-context, and derives a separate `design-ai-review-comparison` v1 artifact.
+The operation compares two exact `design-ai-quality-report` artifacts of the
+same schema version. It keeps the reports intact, verifies that they describe the
+same subject and review context, and derives a separate
+`design-ai-review-comparison` v2 artifact. Stored v1 comparisons still validate.
 
 ## Compare two reviews
 
@@ -53,8 +54,22 @@ The uncertain state prevents a missing static signal from being presented as a
 fix. For example, removing an accessible-name warning is not verified improvement
 if the accessibility lens still lacks the evidence needed to pass.
 
-Each lens of the shared schema version also records one transition: `unchanged`, `improved`,
-`regressed`, `evidence-gained`, or `evidence-lost`.
+Each lens of the shared schema version also records one transition:
+
+| Transition | Meaning |
+| --- | --- |
+| `unchanged` | The lens status is the same. |
+| `improved` / `regressed` | The lens moved between `pass`, `warning`, and `fail`. |
+| `evidence-gained` | The lens lacked evidence before and has a status now. |
+| `evidence-lost` | The lens passed before and lacks evidence now. |
+| `unconfirmed` | The lens failed or warned before and lacks evidence now. |
+
+`unconfirmed` is new in comparison v2. Static inspection never passes a lens, so
+a fix that removes every confirmed finding, for example in `accessibility` or
+`interface-copy`, leaves that lens `unverified`. Version 1 called that `evidence-lost` and read
+the fix as `regressed`. Version 2 reads it as `attention-required`: the issue is no
+longer confirmed, and runtime evidence is still needed to call it resolved. A
+stored v1 comparison keeps its original derivation, so it validates unchanged.
 
 Both reports must share a quality report schema version. A stored version 1
 report has eight lenses and a new version 2 report adds `interface-copy`, so the
@@ -65,8 +80,8 @@ new one.
 
 | Status | Meaning |
 | --- | --- |
-| `regressed` | A lens regressed, evidence was lost, or a confirmed finding was introduced. |
-| `attention-required` | Persistent, introduced, or uncertain findings remain without a confirmed regression. |
+| `regressed` | A lens regressed, lost a pass, or a confirmed finding was introduced. |
+| `attention-required` | Persistent, introduced, or uncertain findings, or an `unconfirmed` lens, remain without a confirmed regression. |
 | `improved` | At least one finding resolved and no unresolved comparison decision remains. |
 | `unchanged` | No verified finding change was established. |
 

@@ -3,9 +3,10 @@
 디자인 변경 뒤에는 코드가 달라졌는지보다 디자인 근거가 어떻게 달라졌는지가
 더 중요합니다. 리뷰 비교는 이 질문에 답하기 위한 읽기 전용 작업입니다.
 
-두 개의 정확한 `design-ai-quality-report` v1 산출물을 비교합니다. 원본 보고서를
-그대로 보존하고 같은 대상과 검토 맥락인지 확인한 뒤, 별도의
-`design-ai-review-comparison` v1 산출물을 만듭니다.
+schema version이 같은 두 개의 정확한 `design-ai-quality-report` 산출물을
+비교합니다. 원본 보고서를 그대로 보존하고 같은 대상과 검토 맥락인지 확인한 뒤,
+별도의 `design-ai-review-comparison` v2 산출물을 만듭니다. 저장된 v1 비교도
+그대로 검증됩니다.
 
 ## 두 리뷰 비교하기
 
@@ -53,8 +54,23 @@ design-ai review-compare baseline-quality-report.json \
 접근 가능한 이름 경고가 사라져도 접근성 lens가 통과할 근거가 없다면 개선이
 확정되지 않습니다.
 
-공유하는 schema version의 lens는 각각 `unchanged`, `improved`, `regressed`,
-`evidence-gained`, `evidence-lost` 가운데 하나의 변화를 기록합니다.
+공유하는 schema version의 lens는 각각 다음 가운데 하나의 변화를 기록합니다.
+
+| 변화 | 의미 |
+| --- | --- |
+| `unchanged` | lens 상태가 같습니다. |
+| `improved` / `regressed` | lens가 `pass`, `warning`, `fail` 사이에서 바뀌었습니다. |
+| `evidence-gained` | 이전에는 근거가 없었고 지금은 상태가 있습니다. |
+| `evidence-lost` | 이전에는 통과했고 지금은 근거가 없습니다. |
+| `unconfirmed` | 이전에는 실패 또는 경고였고 지금은 근거가 없습니다. |
+
+`unconfirmed`는 comparison v2에서 추가됐습니다. 정적 검사는 어떤 lens도
+통과시키지 않습니다. 그래서 `accessibility`나 `interface-copy`처럼 확인된
+finding을 모두 없앤 수정도 해당 lens를 `unverified`로 남깁니다. v1은 이를
+`evidence-lost`로 보고 수정을 `regressed`로 판정했습니다. v2는
+`attention-required`로 판정합니다. 문제는 더 이상 확인되지 않지만, 해결로
+보려면 runtime 근거가 필요하다는 뜻입니다. 저장된 v1 비교는 원래 판정 규칙을
+그대로 유지하므로 바뀌지 않고 검증됩니다.
 
 두 report는 같은 quality report schema version이어야 합니다. 저장된 version 1
 report는 lens가 여덟 개이고, 새 version 2 report는 `interface-copy`를 더합니다.
@@ -65,8 +81,8 @@ report는 lens가 여덟 개이고, 새 version 2 report는 `interface-copy`를 
 
 | 상태 | 의미 |
 | --- | --- |
-| `regressed` | lens가 악화되었거나 근거를 잃었거나 확인된 finding이 추가됐습니다. |
-| `attention-required` | 명확한 악화는 없지만 지속, 추가, 불확실 finding이 남았습니다. |
+| `regressed` | lens가 악화되었거나 통과 근거를 잃었거나 확인된 finding이 추가됐습니다. |
+| `attention-required` | 명확한 악화는 없지만 지속, 추가, 불확실 finding이나 `unconfirmed` lens가 남았습니다. |
 | `improved` | 하나 이상의 finding이 해결됐고 미해결 비교 판단이 없습니다. |
 | `unchanged` | 검증된 finding 변화가 없습니다. |
 

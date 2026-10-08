@@ -86,6 +86,7 @@ Phase 812 records. It used an isolated clone at the commit before the Website
 Console accessibility fix, the shipped CLI for every artifact, and a short
 script for the snapshots. The run produced a `scoped` snapshot and an
 `implemented` successor that verify, a linear chain, a read-only restore plan,
-and drift on any changed or removed artifact. It also showed that a comparison
-reads `regressed` when a lens that never passes statically goes from `fail` to
-`unverified`. That is dogfooding, not an independent pilot.
+and drift on any changed or removed artifact. It also showed that a v1
+comparison read `regressed` when a lens that never passes statically went from
+`fail` to `unverified`; comparison v2 records that lens as `unconfirmed` and
+reads `attention-required`. That is dogfooding, not an independent pilot.

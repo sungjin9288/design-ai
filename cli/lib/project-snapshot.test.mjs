@@ -184,6 +184,25 @@ test("a snapshot indexes the exact artifact bytes and derives its stage from wha
   }
 });
 
+test("a snapshot accepts review comparisons from either schema version", () => {
+  const { root, sources } = chain();
+  try {
+    assert.equal(snapshotAt(sources, "2026-07-16T00:00:00.000Z").artifacts.comparison.schemaVersion, 2);
+    const stored = { ...JSON.parse(sources.comparison.source), schemaVersion: 1 };
+    const v1 = snapshotAt({ ...sources, comparison: { reference: "review-comparison.json", source: JSON.stringify(stored) } },
+      "2026-07-16T00:00:00.000Z");
+    assert.equal(v1.artifacts.comparison.schemaVersion, 1);
+    const forged = structuredClone(v1);
+    forged.artifacts.comparison.schemaVersion = 3;
+    assert.throws(() => validateProjectSnapshot(forged), /comparison\.schemaVersion must be 1 or 2/);
+    forged.artifacts.comparison.schemaVersion = 1;
+    forged.artifacts.reviewWorkflow.schemaVersion = 2;
+    assert.throws(() => validateProjectSnapshot(forged), /reviewWorkflow\.schemaVersion must be 1$/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("artifacts from different work cannot be joined into one snapshot", () => {
   const { root, sources } = chain();
   const otherRoot = targetRepo();
