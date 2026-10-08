@@ -29,15 +29,26 @@ function lensChange(before, after) {
   return rank[after] < rank[before] ? "improved" : "regressed";
 }
 
+// Names each top-level field that differs, so a rejected pair says what to re-run.
+function differingFields(before, after, prefix) {
+  const keys = [...new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})])];
+  return keys
+    .filter((key) => !isDeepStrictEqual(before?.[key], after?.[key]))
+    .map((key) => ({ field: `${prefix}.${key}`, before: before?.[key], after: after?.[key] }));
+}
+
 export function assertComparableReports(baseline, candidate) {
   if (baseline.schemaVersion !== candidate.schemaVersion) {
     throw new Error(`review comparison reports must share a schemaVersion (baseline ${baseline.schemaVersion}, candidate ${candidate.schemaVersion}); re-run the baseline review so both carry the same lenses`);
   }
   if (!isDeepStrictEqual(baseline.subject, candidate.subject)) {
-    throw new Error("review comparison reports must describe the same subject");
+    const fields = differingFields(baseline.subject, candidate.subject, "subject")
+      .map(({ field, before, after }) => `${field} (baseline ${JSON.stringify(before)}, candidate ${JSON.stringify(after)})`);
+    throw new Error(`review comparison reports must describe the same subject; ${fields.join(", ")} differ`);
   }
   if (!isDeepStrictEqual(baseline.context, candidate.context)) {
-    throw new Error("review comparison reports must use the same brief, route, locale, and viewports");
+    const fields = differingFields(baseline.context, candidate.context, "context").map(({ field }) => field);
+    throw new Error(`review comparison reports must use the same brief, route, locale, and viewports; ${fields.join(", ")} differ`);
   }
   const baselineLenses = new Map(baseline.findings.map((finding) => [finding.id, finding.lens]));
   for (const finding of candidate.findings) {

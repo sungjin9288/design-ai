@@ -116,7 +116,16 @@ test("review comparison rejects context drift and finding lens drift", () => {
   changedContext.context.locale = "en-US";
   assert.throws(
     () => compareReviewReports(BASELINE_SOURCE, source(changedContext)),
-    /same brief, route, locale, and viewports/,
+    /same brief, route, locale, and viewports; context\.locale differ$/,
+  );
+
+  const renamedSource = candidateReport();
+  renamedSource.subject.source = "after.html";
+  assert.throws(
+    () => compareReviewReports(BASELINE_SOURCE, source(renamedSource)),
+    (error) => error.message.startsWith("review comparison reports must describe the same subject; subject.source (baseline ")
+      && error.message.endsWith(', candidate "after.html") differ'),
+    "the rejection names the subject field that differs",
   );
 
   const changedLens = candidateReport();

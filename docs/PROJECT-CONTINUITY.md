@@ -78,3 +78,14 @@ All three functions take file text and return values, and none of them touches
 the file system. `cli/lib/project-snapshot.test.mjs` builds a real chain against
 a temporary Git checkout, from review workflow through pilot evidence, and runs
 in `npm test`.
+
+## First application
+
+The chain was first run on design-ai's own repository, as [Roadmap](ROADMAP.md)
+Phase 812 records. It used an isolated clone at the commit before the Website
+Console accessibility fix, the shipped CLI for every artifact, and a short
+script for the snapshots. The run produced a `scoped` snapshot and an
+`implemented` successor that verify, a linear chain, a read-only restore plan,
+and drift on any changed or removed artifact. It also showed that a comparison
+reads `regressed` when a lens that never passes statically goes from `fail` to
+`unverified`. That is dogfooding, not an independent pilot.
