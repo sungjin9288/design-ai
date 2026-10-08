@@ -2,6 +2,88 @@
 
 User-facing release notes for design-ai. Versions follow semver.
 
+## v5.4.0 — Review comparison v2 and dogfooding fixes (2026-10)
+
+Review comparisons stop reading a fix as a regression when the fixed lens cannot
+pass from static inspection, and they move to schemaVersion 2. Stored version 1
+comparisons stay valid. This release also ships the fixes found by running
+design-ai's own lenses and its review-to-snapshot chain on its own consoles.
+Image Console release hardening shipped in v5.2.0 and is published behavior;
+this release only improves its required-field errors and completion message.
+The deterministic local mock loopback flow makes no Prompt Guide/provider-network call.
+Published registry smoke passed for v5.2.0, while a
+live Prompt Guide call and a real provider generation/edit remain unverified.
+Canonical receipt: [`docs/integrations/prompt-guide-image-prompts.md`](docs/integrations/prompt-guide-image-prompts.md).
+
+### Changed
+
+- **Review comparisons are now schemaVersion 2.** These all emit
+  `design-ai-review-comparison` v2:
+  - CLI `design-ai review-compare`;
+  - SDK `compareReviews()`;
+  - MCP `design_ai_compare_reviews`.
+
+  Static inspection never passes a lens, so a fix that removes every confirmed
+  finding leaves the lens `unverified`. Version 1 recorded that `fail` or
+  `warning` to `unverified` move as `evidence-lost` and read the comparison as
+  `regressed`. Version 2 records it as the new `unconfirmed` change and reads
+  `attention-required`. If an `unconfirmed` lens is the only open item, the next
+  action asks for runtime evidence for that lens. Losing a `pass` is still
+  `evidence-lost` and still `regressed`.
+- **Readers older than v5.4.0 reject comparison v2** and any project snapshot
+  that references one. Stored v1 comparisons keep their original derivation and
+  validate unchanged. **If you check the comparison `schemaVersion === 1`,
+  accept `2` as well, and handle the `unconfirmed` lens change.** The SDK types
+  declare `schemaVersion: 1 | 2` and add `"unconfirmed"` to
+  `ReviewComparisonLensChange`.
+- The compact comparison summary keeps `schemaVersion: 1`, but its
+  `lensTransitions[].change` can now be `unconfirmed`, and
+  `representation.fullArtifactSchemaVersion` can be 2.
+- A comparison refused for a different subject or context now names each field
+  that differs, such as `subject.source`, instead of only saying the reports
+  differ.
+
+### Fixed
+
+- Website Console: the Import JSON button's accessible name starts with its
+  visible label, the hidden file input is named and out of the tab order, and
+  37 Audit Checklist and MCP Readiness table controls are named by their row.
+- Website Console: the comparison validator accepts every comparison the Node
+  contract accepts, including finding ids such as `constructor` or `__proto__`
+  and files whose JSON keys were reordered.
+- Image Console: a missing required field now shows a persistent error that
+  names the field, marks only the empty fields `aria-invalid`, and says that no
+  provider job started. The completion message names the saved draft asset and
+  where to refine it.
+
+### Verified
+
+- All 8 audits passed for the v5.4.0 release candidate.
+- `npm run release:check` passed with 932/932 Node tests, 907 packaged files in
+  the local pack, 0/0 documentation-policy warnings, release self-tests, and
+  installed-bin plus one-shot `npm exec` smoke against the packed tarball.
+- All 14 stored version 1 artifacts under `evidence/` and `examples/benchmarks/`
+  still validate, including both stored review comparisons.
+- The review-to-snapshot chain ran end to end on design-ai's own Website Console
+  fix in an isolated clone: both snapshots verify, the chain is linear, and a
+  changed or removed artifact reports drift. With comparison v2 the same fix
+  reads `attention-required` instead of `regressed`.
+- Comparison v2 passed an independent review with no blocking finding, and its
+  derivation was checked with sabotage runs in the Node contract and the
+  Website Console copy.
+
+### Versions
+
+- `package.json` + `.claude-plugin/plugin.json`: 5.3.0 → 5.4.0.
+- `vscode-extension/package.json`: remains 0.4.1.
+
+### What this enables
+
+- A design fix reviewed with static evidence reads as open work that needs
+  runtime proof, not as a regression, so the comparison can gate a release.
+- Website Console users can import any comparison the CLI accepts, and its own
+  controls announce their purpose.
+
 ## v5.3.0 — Interface copy lens and P17 foundations (2026-09)
 
 Quality reports gain a ninth lens, `interface-copy`, and move to schemaVersion 2.
