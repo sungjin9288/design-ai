@@ -11,7 +11,7 @@ import {
   parseReviewComparisonArgs,
   summarizeReviewComparison,
 } from "./review-comparison.mjs";
-import { validateReviewComparison } from "./review-comparison-contract.mjs";
+import { expectedComparisonSummary, validateReviewComparison } from "./review-comparison-contract.mjs";
 import { PACKAGE_ROOT } from "./paths.mjs";
 
 const FIXTURE_PATH = path.join(
@@ -93,6 +93,55 @@ test("review comparison keeps an absent finding uncertain until its lens passes"
   assert.equal(comparison.status, "attention-required");
   assert.deepEqual(comparison.findings.uncertain.map(({ id }) => id), ["runtime-interaction-proof-missing"]);
   assert.equal(comparison.findings.uncertain[0].afterLensStatus, "unverified");
+});
+
+test("a fix to a lens that cannot pass statically reads unconfirmed, not regressed", () => {
+  const fixed = compareReviewReports(BASELINE_SOURCE, source(candidateReport({
+    removeFindingIds: ["missing-associated-label"],
+    lensStatuses: { accessibility: "unverified" },
+  })));
+  assert.equal(fixed.schemaVersion, 2);
+  assert.equal(fixed.lensTransitions.find(({ id }) => id === "accessibility").change, "unconfirmed");
+  assert.equal(fixed.status, "attention-required");
+  assert.deepEqual(fixed.findings.uncertain.map(({ id }) => id), ["missing-associated-label"]);
+  assert.equal(fixed.boundary.boundedImprovementEstablished, false);
+
+  const lostPass = compareReviewReports(BASELINE_SOURCE, source(candidateReport({
+    lensStatuses: { "purpose-frequency": "unverified" },
+  })));
+  assert.equal(lostPass.lensTransitions.find(({ id }) => id === "purpose-frequency").change, "evidence-lost");
+  assert.equal(lostPass.status, "regressed", "losing a pass is still a regression");
+
+  const noFindings = { removeFindingIds: ["missing-associated-label", "runtime-interaction-proof-missing"] };
+  const warned = source(candidateReport({ ...noFindings, lensStatuses: { accessibility: "pass", response: "warning" } }));
+  const quiet = compareReviewReports(warned, source(candidateReport({
+    ...noFindings, lensStatuses: { accessibility: "pass", response: "unverified" },
+  })));
+  assert.equal(quiet.lensTransitions.find(({ id }) => id === "response").change, "unconfirmed");
+  assert.deepEqual(Object.values(quiet.findings).map((items) => items.length), [0, 0, 0, 0]);
+  assert.equal(quiet.status, "attention-required", "an unconfirmed lens never reads as unchanged");
+  assert.match(quiet.summary.nextAction, /^Collect runtime evidence for unconfirmed lenses/);
+  assert.match(fixed.summary.nextAction, /collect evidence for uncertain findings\.$/);
+});
+
+test("stored v1 comparisons keep their original derivation", () => {
+  const v2 = compareReviewReports(BASELINE_SOURCE, source(candidateReport({
+    removeFindingIds: ["missing-associated-label"],
+    lensStatuses: { accessibility: "unverified" },
+  })));
+  const v1 = structuredClone(v2);
+  v1.schemaVersion = 1;
+  v1.lensTransitions = v1.lensTransitions.map((transition) => (transition.change === "unconfirmed"
+    ? { ...transition, change: "evidence-lost" } : transition));
+  v1.status = "regressed";
+  v1.summary = expectedComparisonSummary("regressed", v1.findings);
+  assert.equal(validateReviewComparison(v1).status, "regressed");
+
+  assert.throws(() => validateReviewComparison({ ...v2, schemaVersion: 1 }), /unsupported in review comparison v1/);
+  assert.throws(() => validateReviewComparison({ ...v1, schemaVersion: 2 }), /lens transitions drifted/);
+  for (const version of ["2", 3, true, [2]]) {
+    assert.throws(() => validateReviewComparison({ ...v2, schemaVersion: version }), /v1 or v2/);
+  }
 });
 
 test("review comparison marks a new confirmed finding as a regression", () => {

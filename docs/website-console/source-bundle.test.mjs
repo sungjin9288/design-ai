@@ -195,6 +195,46 @@ test("review-comparison classic script validates the shared full comparison cont
   assert.equal(comparisonApi.normalizeReviewComparison({ ...comparison, kind: "design-ai-review-comparison-summary" }), null);
 });
 
+test("review-comparison classic script derives v2 unconfirmed lenses and keeps stored v1 derivation", () => {
+  const baselineSource = readFileSync(path.join(PACKAGE_ROOT, "examples", "benchmarks", "korean-fintech-settings",
+    "quality-report.json"), "utf8");
+  const candidate = JSON.parse(baselineSource);
+  candidate.generatedAt = "2026-07-15T00:00:00.000Z";
+  candidate.findings = candidate.findings.filter((finding) => finding.id !== "missing-associated-label");
+  candidate.lenses.find((lens) => lens.id === "accessibility").status = "unverified";
+  candidate.summary = { ...candidate.summary, status: "unverified", confirmedFindings: 0, unverifiedFindings: 1, blockingFindings: 0 };
+  const v2 = compareReviewReports(baselineSource, `${JSON.stringify(candidate, null, 2)}\n`);
+  assert.equal(v2.status, "attention-required");
+  assert.equal(JSON.stringify(comparisonApi.normalizeReviewComparison(v2)), JSON.stringify(v2));
+
+  const v1 = structuredClone(v2);
+  v1.schemaVersion = 1;
+  v1.lensTransitions = v1.lensTransitions.map((transition) => (transition.change === "unconfirmed"
+    ? { ...transition, change: "evidence-lost" } : transition));
+  v1.status = "regressed";
+  v1.summary = { ...v1.summary, status: "regressed",
+    nextAction: "Review introduced findings and regressed or evidence-lost lenses before release approval." };
+  assert.equal(JSON.stringify(comparisonApi.normalizeReviewComparison(v1)), JSON.stringify(v1));
+  assert.equal(comparisonApi.normalizeReviewComparison({ ...v2, schemaVersion: 1 }), null);
+  assert.equal(comparisonApi.normalizeReviewComparison({ ...v1, schemaVersion: 2 }), null);
+  assert.equal(comparisonApi.normalizeReviewComparison({ ...v2, schemaVersion: 3 }), null);
+
+  const quietReport = (response) => {
+    const report = JSON.parse(baselineSource);
+    report.findings = [];
+    report.lenses.find((lens) => lens.id === "accessibility").status = "pass";
+    report.lenses.find((lens) => lens.id === "response").status = response;
+    report.summary = { ...report.summary, status: response === "warning" ? "warning" : "unverified",
+      confirmedFindings: 0, unverifiedFindings: 0, blockingFindings: 0 };
+    return `${JSON.stringify(report, null, 2)}\n`;
+  };
+  const quiet = compareReviewReports(quietReport("warning"), quietReport("unverified"));
+  assert.equal(quiet.status, "attention-required");
+  assert.match(quiet.summary.nextAction, /^Collect runtime evidence for unconfirmed lenses/);
+  assert.equal(JSON.stringify(comparisonApi.normalizeReviewComparison(quiet)), JSON.stringify(quiet),
+    "an unconfirmed lens without findings still requires attention");
+});
+
 test("Website Console loads, imports, renders, restores, and exports full review comparisons", () => {
   const indexSource = readFileSync(path.join(CONSOLE_ROOT, "index.html"), "utf8");
   const appSource = readConsoleSource();

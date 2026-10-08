@@ -16,6 +16,9 @@ export const SNAPSHOT_ARTIFACTS = Object.freeze({
   comparison: "design-ai-review-comparison",
   pilotEvidence: "design-ai-pilot-evidence",
 });
+// Schema versions each referenced artifact may carry. Review comparisons gained
+// v2; every other artifact is still v1.
+const ARTIFACT_SCHEMA_VERSIONS = Object.freeze({ comparison: [1, 2] });
 export const SNAPSHOT_STAGES = Object.freeze(["reviewed", "scoped", "implemented", "piloted"]);
 export const SNAPSHOT_DECISIONS = Object.freeze(["pending", "accepted", "revise", "rejected"]);
 export const SNAPSHOT_BOUNDARY = Object.freeze({
@@ -98,20 +101,20 @@ export function expectedLinks(artifacts) {
   return links;
 }
 
-function validateReference(reference, field, kind) {
+function validateReference(reference, field, kind, versions = [1]) {
   exactKeys(reference, ["reference", "sha256", "bytes", "kind", "schemaVersion"], field);
   text(reference.reference, `${field}.reference`);
   digest(reference.sha256, `${field}.sha256`);
   positive(reference.bytes, `${field}.bytes`);
   if (reference.kind !== kind) throw new Error(`${field}.kind must be ${kind}`);
-  if (reference.schemaVersion !== 1) throw new Error(`${field}.schemaVersion must be 1`);
+  if (!versions.includes(reference.schemaVersion)) throw new Error(`${field}.schemaVersion must be ${versions.join(" or ")}`);
 }
 
 function validateArtifacts(artifacts, field) {
   exactKeys(artifacts, Object.keys(SNAPSHOT_ARTIFACTS), field);
   for (const [name, kind] of Object.entries(SNAPSHOT_ARTIFACTS)) {
     if (artifacts[name] === null && name !== "reviewWorkflow") continue;
-    validateReference(artifacts[name], `${field}.${name}`, kind);
+    validateReference(artifacts[name], `${field}.${name}`, kind, ARTIFACT_SCHEMA_VERSIONS[name]);
   }
   if (artifacts.implementationEvidence && !artifacts.scopeApproval) {
     throw new Error(`${field}: implementation evidence requires the scope approval it implements`);
