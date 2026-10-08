@@ -17,6 +17,27 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 814 - Website Console comparison validator parity (v5.3.0 post-release)
+
+- [x] The Console's comparison validator now accepts exactly what the Node
+  contract accepts in two cases where it used to reject valid comparisons:
+  - finding ids that are built-in object property names, such as
+    `constructor`, `toString`, or `__proto__`, in either report or both. Its
+    id lookups no longer inherit from `Object.prototype`.
+  - comparisons whose object keys were reordered, for example by `jq -S`. Key
+    order no longer matters, and array order still does.
+- [x] Checked the scope, approval, and implementation-evidence validators
+  against real artifacts from the Phase 812 run. They already agree with Node:
+  both sides reject reordered keys, because those artifacts bind exact digests.
+  Pilot evidence was checked by reading only.
+
+### Verified
+
+- `node --test docs/website-console/*.test.mjs` passes 36/36. A new test
+  checks the special ids in the baseline only, the candidate only, and both,
+  and checks reordered keys and that a reordered transition array is still
+  rejected. Reverting either fix, or comparing keys unsorted, makes it fail.
+
 ## Phase 813 - Review comparison v2: an unconfirmed lens is not a regression (v5.3.0 post-release)
 
 - [x] New review comparisons are `design-ai-review-comparison` v2. A lens that
@@ -54,7 +75,7 @@ integration guide.
 
 - The Console copy rejects valid comparisons whose finding ids are built-in
   object property names, or whose JSON keys were reordered. The Node contract
-  accepts both. Both gaps predate comparison v2.
+  accepts both. Both gaps predate comparison v2, and Phase 814 closes them.
 - A lens that moves from `unverified` to `fail` or `warning` with no finding
   still reads `unchanged`. Static reports that fail always carry a confirmed
   finding, which reads `regressed`.

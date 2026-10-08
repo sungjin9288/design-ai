@@ -235,6 +235,37 @@ test("review-comparison classic script derives v2 unconfirmed lenses and keeps s
     "an unconfirmed lens without findings still requires attention");
 });
 
+test("review-comparison classic script accepts what the Node contract accepts", () => {
+  const baselineSource = readFileSync(path.join(PACKAGE_ROOT, "examples", "benchmarks", "korean-fintech-settings",
+    "quality-report.json"), "utf8");
+  const text = (report) => `${JSON.stringify(report, null, 2)}\n`;
+  const sameAsNode = (comparison, label) => assert.equal(
+    JSON.stringify(comparisonApi.normalizeReviewComparison(comparison)), JSON.stringify(comparison), label);
+
+  for (const id of ["constructor", "toString", "__proto__", "hasOwnProperty", "valueOf"]) {
+    const baseline = JSON.parse(baselineSource);
+    baseline.findings[1] = { ...baseline.findings[1], id };
+    const kept = structuredClone(baseline);
+    kept.generatedAt = "2026-07-15T00:00:00.000Z";
+    const dropped = structuredClone(kept);
+    dropped.findings = dropped.findings.filter((finding) => finding.id !== id);
+    dropped.summary = { ...dropped.summary, unverifiedFindings: 0 };
+    sameAsNode(compareReviewReports(text(baseline), text(kept)), `finding id ${id} in both reports`);
+    sameAsNode(compareReviewReports(text(baseline), text(dropped)), `finding id ${id} in the baseline only`);
+    sameAsNode(compareReviewReports(text(dropped), text(kept)), `finding id ${id} in the candidate only`);
+  }
+
+  const candidate = JSON.parse(baselineSource);
+  candidate.generatedAt = "2026-07-15T00:00:00.000Z";
+  const comparison = compareReviewReports(baselineSource, text(candidate));
+  const reversed = (value) => Object.fromEntries(Object.entries(value).reverse());
+  sameAsNode({ ...comparison, lensTransitions: comparison.lensTransitions.map(reversed) }, "reordered transition keys");
+  sameAsNode({ ...comparison, summary: reversed(comparison.summary), context: reversed(comparison.context) },
+    "reordered summary and context keys");
+  assert.equal(comparisonApi.normalizeReviewComparison({ ...comparison,
+    lensTransitions: [...comparison.lensTransitions].reverse() }), null, "array order still matters");
+});
+
 test("Website Console loads, imports, renders, restores, and exports full review comparisons", () => {
   const indexSource = readFileSync(path.join(CONSOLE_ROOT, "index.html"), "utf8");
   const appSource = readConsoleSource();
