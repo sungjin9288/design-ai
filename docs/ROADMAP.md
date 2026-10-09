@@ -29,6 +29,18 @@ integration guide.
   the comparison mismatch message, and the Website Console and Image Console
   dogfooding fixes. The entry calls out the comparison schema change and the
   older-reader rejection for consumers.
+- [x] Passed pull-request CI for the exact release candidate.
+- [x] Merged the reviewed candidate after owner approval:
+  [sungjin9288/design-ai#85](https://github.com/sungjin9288/design-ai/pull/85).
+- [x] Created and pushed the annotated v5.4.0 tag on `9e532b3` after approval.
+  npm `latest` is 5.4.0 with SLSA provenance, the GitHub Release is public, and
+  the publish run's post-publish registry smoke passed. See the
+  [external status](external-status.md).
+- [x] Retargeted the Homebrew formula to the v5.4.0 tag tarball. `ruby -c` and
+  `brew style` pass, and the temporary-tap `--build-from-source --without-node`
+  install and `brew test` both exited 0. Without Homebrew `node`, the
+  Node-gated assertions were covered by running the installed CLI with the
+  system Node, which reported 5.4.0 and emitted comparison v2.
 
 ### Verified
 
@@ -52,8 +64,6 @@ integration guide.
 
 ### What's still ahead
 
-- Owner approval to merge, tag, and publish v5.4.0, then the published registry
-  smoke, the Homebrew formula retarget, and the external status update.
 - Real-project runs for P17C and P17E, a live Prompt Guide and provider check,
   and external pilot participation.
 

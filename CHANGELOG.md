@@ -71,6 +71,10 @@ Canonical receipt: [`docs/integrations/prompt-guide-image-prompts.md`](docs/inte
 - Comparison v2 passed an independent review with no blocking finding, and its
   derivation was checked with sabotage runs in the Node contract and the
   Website Console copy.
+- Published as npm `latest` with SLSA provenance in publish run `37805118505`.
+  That run's post-publish registry smoke passed against `@design-ai/cli@5.4.0`,
+  and the published package emits comparison v2. A live Prompt Guide call and
+  real provider execution remain unverified.
 
 ### Versions
 

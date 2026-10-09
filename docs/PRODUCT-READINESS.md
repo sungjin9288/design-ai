@@ -5,10 +5,11 @@ architecture, current-source engineering checklist, and separate live,
 review/merge, publication, distribution, and external-pilot completion gates.
 Its local hardening does not change the published baseline below.
 
-Current status: **v5.3.0 is published.** npm `latest` and the GitHub Release
-identify v5.3.0, and the Homebrew formula targets its tag. It adds the ninth
-`interface-copy` quality lens (quality report schemaVersion 2) and the P17
-foundations on top of the v5.2.0 Image Console and the P6-P13 contracts. The
+Current status: **v5.4.0 is published.** npm `latest` and the GitHub Release
+identify v5.4.0, and the Homebrew formula targets its tag. It moves review
+comparisons to schemaVersion 2 and ships the Website Console and Image Console
+dogfooding fixes, on top of the v5.3.0 `interface-copy` lens and P17
+foundations, the v5.2.0 Image Console, and the P6-P13 contracts. The
 public contract has 29 MCP tools and 20 SDK exports. Model training is not part
 of the shipped product.
 
@@ -96,8 +97,8 @@ CLI `review-compare`, SDK `compareReviews()`, MCP
 quality reports for the same subject and context. They preserve source references,
 bytes, SHA-256 identities, every lens transition, and resolved, persistent,
 introduced, or uncertain finding decisions. A missing finding is not promoted to
-resolved unless its candidate lens passes. In the v5.4.0 release candidate, not
-yet published behavior, comparisons are schemaVersion 2: a lens that failed or
+resolved unless its candidate lens passes. Since v5.4.0, comparisons are
+schemaVersion 2: a lens that failed or
 warned and lacks evidence afterwards is `unconfirmed` and reads
 `attention-required` instead of `regressed`, while stored v1 comparisons keep
 validating. The comparison remains read-only and
@@ -190,13 +191,13 @@ These are valid future product ideas, but they are different from the current ar
 
 Distribution blockers are closed. Only adoption and future-scope decisions remain:
 
-- v5.3.0 distribution: complete for npm `latest` and the GitHub Release, with
+- v5.4.0 distribution: complete for npm `latest` and the GitHub Release, with
   SLSA provenance and a passing public registry smoke in publish run
-  `36386562069`. The Homebrew formula targets `v5.3.0` and passes `brew style`,
-  a temporary-tap source install, and `brew test`. v5.2.0 remains the previous published baseline.
-- Real-CI verification: complete. For v5.3.0, main Audit run `36386421008`,
-  GitHub Release run `36386562080`, and npm Trusted Publishing run `36386562069`
-  passed on 2026-09-28. The publish run's own post-publish registry smoke passed.
+  `37805118505`. The Homebrew formula targets `v5.4.0` and passes `brew style`,
+  a temporary-tap source install, and `brew test`. v5.3.0 remains the previous published baseline.
+- Real-CI verification: complete. For v5.4.0, main Audit run `37803679701`,
+  GitHub Release run `37805118474`, and npm Trusted Publishing run `37805118505`
+  passed on 2026-10-08. The publish run's own post-publish registry smoke passed.
   [External status](external-status.md) owns the full receipt.
 - External launch: package distribution is complete across npm, GitHub Release, Homebrew, VS Code Marketplace `sungjin.design-ai-vscode@0.4.1`, and GitHub Pages; the public announcement itself remains a maintainer decision.
 - Reference-link policy: decided — `refs/` source links moved behind generated reference pages. `tools/extractors/reference_pages.py` emits `docs/reference/{ant-design,mui,shadcn-ui,awesome-design-md}.md`, and corpus pages (`knowledge/components/INDEX.md`, `knowledge/patterns/brand-references.md`, `examples/*.md`) link to those pages instead of the gitignored `refs/` mirror. Plain-text `refs/` provenance mentions (frontmatter `source:`/`sources:`, link text) stay as-is, and the MkDocs refs-only warning baseline in `tools/audit/local-ci.py` is now 0.
