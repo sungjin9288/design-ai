@@ -26,9 +26,11 @@ integration guide.
   policy, which blocked nothing, used a fixed clock and time zone, and wrote
   evidence under a scratch `HOME`.
 - [x] The runtime probes reproduced #78 independently. On v5.3.0 the
-  accessibility probe found 27 unnamed controls and the keyboard probe found 3
-  unnamed Tab stops, among them the hidden file input. On `main` both found
-  none. Responsive, reduced-motion, and invalid-import error probes passed. The
+  accessibility probe found 27 unnamed controls, and 11 of the first 25 Tab
+  stops were table selects and textareas without a name. On `main` both found
+  none. The keyboard probe reads each stop's name from the browser's
+  accessibility tree; a first version read only `aria-label`, text, and value,
+  which miscounted label-wrapped fields, and its results were discarded. Responsive, reduced-motion, and invalid-import error probes passed. The
   static page has no loading or repeated-action requirement to observe, so those
   stay `unverified`, and the run reads `unverified` as the contract requires.
 - [x] Applied the visual evaluators to the captured artifacts:
@@ -39,10 +41,16 @@ integration guide.
     button border, and table controls that kept the browser's black text
     instead of `--text`.
 - [x] Fixed both: the danger border is the new `--danger-border` token, and
-  form controls inherit the text color. After the fix, brand-token drift passes
+  form controls inherit the text color. The Image Console loads the same
+  stylesheet, so the fix covers it too. After the fix, brand-token drift passes
   with 0 off-palette colors. The regression against `main` changes only the
   table control text, by at most 42 in one channel, the exact difference between
   black and `--text`.
+- [x] Ran the same adapter against the Image Console, served by the shipped
+  gateway with mock Prompt Guide and a deterministic local provider. Responsive,
+  keyboard, accessibility, reduced-motion, and the empty-required-field error
+  probes passed, and responsive overflow and brand-token drift passed with the
+  fix.
 
 ### Verified
 
@@ -50,7 +58,7 @@ integration guide.
   new test requires every color literal outside `:root` to equal a token value,
   and both fixes. Reverting either fix makes it fail.
 
-This is internal dogfooding on design-ai's own Console. The adapter and its
+This is internal dogfooding on design-ai's own consoles. The adapter and its
 evidence stay outside the repository. It does not count toward P17 promotion
 evidence.
 
