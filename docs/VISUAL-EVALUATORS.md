@@ -135,3 +135,13 @@ describes the shape, and `validateVisualEvaluation()` enforces these invariants:
   measurements;
 - deterministic output for identical input;
 - the schema enums matching the evaluator registry.
+
+## First application
+
+The evaluators were first run on artifacts from design-ai's own Website
+Console, as [Roadmap](ROADMAP.md) Phase 816 records. An approved scratch
+Playwright adapter captured screenshots, layout, and computed colors for the
+Audit Checklist of the v5.3.0 code and of `main`. Screenshot regression showed
+that the #78 accessibility fix changed no pixels. Brand-token drift found a
+hardcoded border color and form controls that ignored the text token, and it
+passed after the fix. This was dogfooding, not an independent pilot.

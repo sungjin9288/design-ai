@@ -985,3 +985,17 @@ test("Website Console names its table controls and import controls for assistive
   }
   assert.ok(appSource.includes('escapeAttr(label + " status")'), "MCP status controls are named by their row");
 });
+
+test("Website Console colors come from its tokens", () => {
+  const styles = readFileSync(path.join(CONSOLE_ROOT, "styles.css"), "utf8");
+  const root = styles.slice(styles.indexOf(":root {"), styles.indexOf("}", styles.indexOf(":root {")));
+  const tokenValues = new Set([...root.matchAll(/--[\w-]+:\s*(#[0-9a-f]{3,8})\b/gi)].map(([, value]) => value.toLowerCase()));
+  const outsideRoot = styles.replace(root, "");
+
+  // Found by the brand-token-drift evaluator on the rendered Console (P17E self-application).
+  for (const [literal] of outsideRoot.matchAll(/#[0-9a-f]{3,8}\b/gi)) {
+    assert.ok(tokenValues.has(literal.toLowerCase()), `${literal} is not a :root token value`);
+  }
+  assert.match(styles, /\.button--danger \{\s*border-color: var\(--danger-border\);/);
+  assert.match(styles, /\ninput,\nselect,\ntextarea \{\n  color: inherit;\n\}/, "table controls inherit --text instead of browser black");
+});
