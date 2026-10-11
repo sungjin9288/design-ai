@@ -17,6 +17,51 @@ browser-QA, and external-verification receipt is maintained once in the
 [Prompt Guide Image Console](integrations/prompt-guide-image-prompts.md)
 integration guide.
 
+## Phase 816 - First P17E application: browser evidence and visual evaluators on the Website Console (v5.4.0 post-release)
+
+- [x] Ran `design-ai verify-browser` with owner approval against the Audit
+  Checklist of two isolated clones served on loopback: current `main` and the
+  v5.3.0 code before the #78 fix. The adapter was a scratch Playwright script
+  that is not shipped and adds no dependency. It enforced the loopback network
+  policy, which blocked nothing, used a fixed clock and time zone, and wrote
+  evidence under a scratch `HOME`.
+- [x] The runtime probes reproduced #78 independently. On v5.3.0 the
+  accessibility probe found 27 unnamed controls, and 11 of the first 25 Tab
+  stops were table selects and textareas without a name. On `main` both found
+  none. The keyboard probe reads each stop's name from the browser's
+  accessibility tree; a first version read only `aria-label`, text, and value,
+  which miscounted label-wrapped fields, and its results were discarded. Responsive, reduced-motion, and invalid-import error probes passed. The
+  static page has no loading or repeated-action requirement to observe, so those
+  stay `unverified`, and the run reads `unverified` as the contract requires.
+- [x] Applied the visual evaluators to the captured artifacts:
+  - screenshot regression between v5.3.0 and `main` found 0 changed pixels at
+    both viewports, so #78 changed no rendering;
+  - responsive overflow found none;
+  - brand-token drift failed with 8 off-palette colors: a hardcoded danger
+    button border, and table controls that kept the browser's black text
+    instead of `--text`.
+- [x] Fixed both: the danger border is the new `--danger-border` token, and
+  form controls inherit the text color. The Image Console loads the same
+  stylesheet, so the fix covers it too. After the fix, brand-token drift passes
+  with 0 off-palette colors. The regression against `main` changes only the
+  table control text, by at most 42 in one channel, the exact difference between
+  black and `--text`.
+- [x] Ran the same adapter against the Image Console, served by the shipped
+  gateway with mock Prompt Guide and a deterministic local provider. Responsive,
+  keyboard, accessibility, reduced-motion, and the empty-required-field error
+  probes passed, and responsive overflow and brand-token drift passed with the
+  fix.
+
+### Verified
+
+- `node --test docs/website-console/source-bundle.test.mjs` passes 31/31. A
+  new test requires every color literal outside `:root` to equal a token value,
+  and both fixes. Reverting either fix makes it fail.
+
+This is internal dogfooding on design-ai's own consoles. The adapter and its
+evidence stay outside the repository. It does not count toward P17 promotion
+evidence.
+
 ## Phase 815 - Review comparison v2 and dogfooding fixes release candidate (v5.4.0)
 
 - [x] Chose a minor release. Review comparisons move to schemaVersion 2, which
