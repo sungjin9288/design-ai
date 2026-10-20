@@ -345,6 +345,7 @@ export const ROUTES = [
     agents: ["agents/a11y-reviewer.md"],
     knowledge: [
       "knowledge/patterns/dashboard-composition.md",
+      "knowledge/patterns/admin-console-pages.md",
       "knowledge/patterns/chart-types.md",
       "knowledge/patterns/chart-color-encoding.md",
       "knowledge/patterns/realtime-data.md",

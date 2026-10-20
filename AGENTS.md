@@ -46,6 +46,7 @@ Before producing any design artifact, consult the relevant `knowledge/` subdirec
 | Search UX (typeahead / filter / Korean IME) | `knowledge/patterns/search-ux.md` |
 | Settings page (single-page vs sidebar / save behaviors / destructive actions) | `knowledge/patterns/settings-page.md` |
 | Dashboard composition (KPI / charts / table / responsive) | `knowledge/patterns/dashboard-composition.md` |
+| Admin / back-office console pages (query table, detail, step / long forms, result, exception, console layout) | `knowledge/patterns/admin-console-pages.md` |
 | Chart color encoding (sequential / diverging / categorical) | `knowledge/patterns/chart-color-encoding.md` |
 | Real-time data UX (WebSocket / polling / optimistic / disconnection) | `knowledge/patterns/realtime-data.md` |
 | Design system QA (5-layer test pyramid: types/tokens/contract/a11y/visual) | `knowledge/patterns/design-system-qa.md` |
