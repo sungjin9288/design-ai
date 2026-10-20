@@ -10,7 +10,13 @@ Generated index of `refs/awesome-design-md/` sources cited by the knowledge corp
 - License: see the upstream repository's license file
 - Local mirror: `refs/awesome-design-md/` (refresh with `./tools/extractors/run-all.sh`)
 
-Entries: 71
+Entries: 84
+
+## 1win
+
+- Upstream: [`design-md/1win`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/1win)
+- Local mirror: `refs/awesome-design-md/design-md/1win/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/1win/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/1win/README.md)
 
 ## airbnb
 
@@ -23,6 +29,12 @@ Entries: 71
 - Upstream: [`design-md/airtable`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/airtable)
 - Local mirror: `refs/awesome-design-md/design-md/airtable/`
 - Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/airtable/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/airtable/README.md)
+
+## aljazeera
+
+- Upstream: [`design-md/aljazeera`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/aljazeera)
+- Local mirror: `refs/awesome-design-md/design-md/aljazeera/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/aljazeera/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/aljazeera/README.md)
 
 ## apple
 
@@ -102,6 +114,18 @@ Entries: 71
 - Local mirror: `refs/awesome-design-md/design-md/cursor/`
 - Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/cursor/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/cursor/README.md)
 
+## dell-1996
+
+- Upstream: [`design-md/dell-1996`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/dell-1996)
+- Local mirror: `refs/awesome-design-md/design-md/dell-1996/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/dell-1996/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/dell-1996/README.md)
+
+## dji
+
+- Upstream: [`design-md/dji`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/dji)
+- Local mirror: `refs/awesome-design-md/design-md/dji/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/dji/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/dji/README.md)
+
 ## elevenlabs
 
 - Upstream: [`design-md/elevenlabs`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/elevenlabs)
@@ -138,6 +162,12 @@ Entries: 71
 - Local mirror: `refs/awesome-design-md/design-md/hashicorp/`
 - Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/hashicorp/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/hashicorp/README.md)
 
+## hp
+
+- Upstream: [`design-md/hp`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/hp)
+- Local mirror: `refs/awesome-design-md/design-md/hp/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/hp/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/hp/README.md)
+
 ## ibm
 
 - Upstream: [`design-md/ibm`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/ibm)
@@ -149,6 +179,12 @@ Entries: 71
 - Upstream: [`design-md/intercom`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/intercom)
 - Local mirror: `refs/awesome-design-md/design-md/intercom/`
 - Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/intercom/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/intercom/README.md)
+
+## jobright
+
+- Upstream: [`design-md/jobright`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/jobright)
+- Local mirror: `refs/awesome-design-md/design-md/jobright/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/jobright/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/jobright/README.md)
 
 ## kraken
 
@@ -179,6 +215,12 @@ Entries: 71
 - Upstream: [`design-md/mastercard`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/mastercard)
 - Local mirror: `refs/awesome-design-md/design-md/mastercard/`
 - Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/mastercard/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/mastercard/README.md)
+
+## mercury
+
+- Upstream: [`design-md/mercury`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/mercury)
+- Local mirror: `refs/awesome-design-md/design-md/mercury/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/mercury/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/mercury/README.md)
 
 ## meta
 
@@ -216,11 +258,29 @@ Entries: 71
 - Local mirror: `refs/awesome-design-md/design-md/mongodb/`
 - Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/mongodb/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/mongodb/README.md)
 
+## mydealz
+
+- Upstream: [`design-md/mydealz`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/mydealz)
+- Local mirror: `refs/awesome-design-md/design-md/mydealz/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/mydealz/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/mydealz/README.md)
+
+## nerdwallet
+
+- Upstream: [`design-md/nerdwallet`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/nerdwallet)
+- Local mirror: `refs/awesome-design-md/design-md/nerdwallet/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/nerdwallet/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/nerdwallet/README.md)
+
 ## nike
 
 - Upstream: [`design-md/nike`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/nike)
 - Local mirror: `refs/awesome-design-md/design-md/nike/`
 - Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/nike/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/nike/README.md)
+
+## nintendo-2001
+
+- Upstream: [`design-md/nintendo-2001`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/nintendo-2001)
+- Local mirror: `refs/awesome-design-md/design-md/nintendo-2001/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/nintendo-2001/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/nintendo-2001/README.md)
 
 ## notion
 
@@ -245,6 +305,18 @@ Entries: 71
 - Upstream: [`design-md/opencode.ai`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/opencode.ai)
 - Local mirror: `refs/awesome-design-md/design-md/opencode.ai/`
 - Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/opencode.ai/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/opencode.ai/README.md)
+
+## oracle
+
+- Upstream: [`design-md/oracle`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/oracle)
+- Local mirror: `refs/awesome-design-md/design-md/oracle/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/oracle/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/oracle/README.md)
+
+## oura
+
+- Upstream: [`design-md/oura`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/oura)
+- Local mirror: `refs/awesome-design-md/design-md/oura/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/oura/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/oura/README.md)
 
 ## pinterest
 
@@ -305,6 +377,12 @@ Entries: 71
 - Upstream: [`design-md/sanity`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/sanity)
 - Local mirror: `refs/awesome-design-md/design-md/sanity/`
 - Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/sanity/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/sanity/README.md)
+
+## sap
+
+- Upstream: [`design-md/sap`](https://github.com/VoltAgent/awesome-design-md/tree/HEAD/design-md/sap)
+- Local mirror: `refs/awesome-design-md/design-md/sap/`
+- Files: [`DESIGN.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/sap/DESIGN.md), [`README.md`](https://github.com/VoltAgent/awesome-design-md/blob/HEAD/design-md/sap/README.md)
 
 ## sentry
 

@@ -2,7 +2,7 @@
 title: Curated font pairings
 source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/typography.csv
 upstream: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-extracted_at: 2026-05-19
+extracted_at: 2026-10-20
 applies_to: [google-fonts, web-typography]
 version: 1.0.0
 last_updated: 2026-05
@@ -34,7 +34,7 @@ Tested heading + body combinations grouped by mood. Pick by **best-for** and **m
 | 17 | **Brutalist Raw** | Mono + Mono | Space Mono | Space Mono | brutalist, raw, technical, monospace, minimal, stark | Brutalist designs, developer portfolios, experimental, tech art |
 | 18 | **Fashion Forward** | Sans + Sans | Syne | Manrope | fashion, avant-garde, creative, bold, artistic, edgy | Fashion brands, creative agencies, art galleries, design studios |
 | 19 | **Soft Rounded** | Sans + Sans | Varela Round | Nunito Sans | soft, rounded, friendly, approachable, warm, gentle | Children's products, pet apps, friendly brands, wellness, soft UI |
-| 20 | **Premium Sans** | Sans + Sans | Satoshi | General Sans | premium, modern, clean, sophisticated, versatile, balanced | Premium brands, modern agencies, SaaS, portfolios, startups |
+| 20 | **Premium Sans (DM Sans)** | Sans + Sans | DM Sans | DM Sans | premium, modern, clean, sophisticated, versatile, balanced | Premium brands, modern agencies, SaaS, portfolios, startups |
 | 21 | **Vietnamese Friendly** | Sans + Sans | Be Vietnam Pro | Noto Sans | vietnamese, international, readable, clean, multilingual, ac | Vietnamese sites, multilingual apps, international products |
 | 22 | **Japanese Elegant** | Serif + Sans | Noto Serif JP | Noto Sans JP | japanese, elegant, traditional, modern, multilingual, readab | Japanese sites, Japanese restaurants, cultural sites, anime/manga |
 | 23 | **Korean Modern** | Sans + Sans | Noto Sans KR | Noto Sans KR | korean, modern, clean, professional, multilingual, readable | Korean sites, K-beauty, K-pop, Korean businesses, multilingual |
@@ -53,7 +53,7 @@ Tested heading + body combinations grouped by mood. Pick by **best-for** and **m
 | 36 | **Crypto/Web3** | Sans + Sans | Orbitron | Exo 2 | crypto, web3, futuristic, tech, blockchain, digital | Crypto platforms, NFT, blockchain, web3, futuristic tech |
 | 37 | **Gaming Bold** | Display + Sans | Russo One | Chakra Petch | gaming, bold, action, esports, competitive, energetic | Gaming, esports, action games, competitive sports, entertainment |
 | 38 | **Indie/Craft** | Display + Sans | Amatic SC | Cabin | indie, craft, handmade, artisan, organic, creative | Craft brands, indie products, artisan, handmade, organic products |
-| 39 | **Startup Bold** | Sans + Sans | Clash Display | Satoshi | startup, bold, modern, innovative, confident, dynamic | Startups, pitch decks, product launches, bold brands |
+| 39 | **Startup Bold (Outfit + Rubik)** | Sans + Sans | Outfit | Rubik | startup, bold, modern, innovative, confident, dynamic | Startups, pitch decks, product launches, bold brands |
 | 40 | **E-commerce Clean** | Sans + Sans | Rubik | Nunito Sans | ecommerce, clean, shopping, product, retail, conversion | E-commerce, online stores, product pages, retail, shopping |
 | 41 | **Academic/Research** | Serif + Sans | Crimson Pro | Atkinson Hyperlegible | academic, research, scholarly, accessible, readable, educati | Universities, research papers, academic journals, educational |
 | 42 | **Dashboard Data** | Mono + Sans | Fira Code | Fira Sans | dashboard, data, analytics, code, technical, precise | Dashboards, analytics, data visualization, admin panels |
@@ -72,22 +72,23 @@ Tested heading + body combinations grouped by mood. Pick by **best-for** and **m
 | 55 | **Spatial Clear** | Sans + Sans | Inter | Inter | spatial, legible, glass, system, clean, neutral | Spatial computing, AR/VR, glassmorphism interfaces |
 | 56 | **Kinetic Motion** | Display + Mono | Syncopate | Space Mono | kinetic, motion, futuristic, speed, wide, tech | Music festivals, automotive, high-energy brands |
 | 57 | **Gen Z Brutal** | Display + Sans | Anton | Epilogue | brutal, loud, shouty, meme, internet, bold | Gen Z marketing, streetwear, viral campaigns |
-| 58 | **Minimalist Monochrome Editorial** | Serif + Serif + Mono (Triple Stack) | Playfair Display | Source Serif 4 | monochrome, editorial, austere, typographic, pocket manifest | Luxury fashion mobile apps, editorial publications, digital exhibitions, portfol |
-| 59 | **Modern Dark Cinema (Inter System)** | Sans + Mono | Inter | Inter | dark, cinematic, technical, precision, clean, premium, devel | Developer tools, fintech/trading, AI dashboards, streaming platforms, high-end p |
-| 60 | **SaaS Mobile Boutique (Calistoga + Inter)** | Display Serif + Sans + Mono | Calistoga | Inter | saas, boutique, electric, warm, editorial, bold, premium, fi | B2B SaaS mobile, fintech apps, analytics dashboards, marketing tools, operations |
-| 61 | **Terminal CLI Monospace** | Mono + Mono (Single Family) | JetBrains Mono | JetBrains Mono | terminal, cli, hacker, monospace, matrix, developer, retro-f | Developer tools, Web3/blockchain apps, hacker aesthetic, sci-fi games, ARG, secu |
-| 62 | **Kinetic Brutalism (Space Grotesk)** | Geometric Sans (Single Dominant) | Space Grotesk | Space Grotesk | kinetic, brutalist, aggressive, uppercase, oversized, displa | Music/culture apps, sports platforms, brand flagship mobile, performance dashboa |
-| 63 | **Flat Design Mobile (System Bold)** | Sans + Sans | Inter | Inter | flat, clean, system, bold, geometric, cross-platform, icon,  | Cross-platform apps, dashboards, system UI, onboarding, marketing pages, informa |
-| 64 | **Material You MD3 (Roboto System)** | Sans (System Default) | Roboto | Roboto | material design 3, md3, android, google, tonal, friendly, ro | Android apps, cross-platform tools, productivity software, data-heavy B2B dashbo |
-| 65 | **Neo Brutalism Mobile (Space Grotesk Heavy)** | Geometric Sans (Bold-Only) | Space Grotesk | Space Grotesk | neo brutalism, pop art, loud, bold, heavy, stickers, mechani | Creative tools, Gen-Z marketing, e-commerce for youth culture, content portfolio |
-| 66 | **Bold Typography Mobile (Inter-Tight Poster)** | Sans + Serif (Display) + Mono | Inter | Playfair Display | bold typography, editorial, poster, near-black, vermillion,  | Creative brand flagships, reading platforms, event apps, flash pages, luxury mob |
-| 67 | **Academia Mobile (Cormorant + Crimson + Cinzel)** | Serif + Book Serif + Engraved (Triple Stack) | Cormorant Garamond | Crimson Pro | academia, library, mahogany, parchment, brass, scholarly, pr | Knowledge management apps, scholarly reading tools, personal brand portfolios, R |
-| 68 | **Cyberpunk Mobile (Orbitron + JetBrains Mono)** | Tech Display + Mono | Orbitron | JetBrains Mono | cyberpunk, neon, glitch, hud, sci-fi, dark, matrix green, ma | Gaming companion apps, fintech/crypto, data visualization, dark brand apps, cybe |
-| 69 | **Web3 Bitcoin DeFi (Space Grotesk + Inter + Mono)** | Geometric Sans + Sans + Mono (Triple) | Space Grotesk | Inter | web3, bitcoin, defi, digital gold, fintech, crypto, trustles | DeFi protocols and wallets, NFT platforms, metaverse social apps, high-tech bran |
-| 70 | **Claymorphism Mobile (Nunito + DM Sans)** | Display Rounded + Geometric Sans | Nunito | DM Sans | claymorphism, clay, rounded, playful, candy, bubbly, soft, 3 | Children education apps, teen social, brand mascot apps, creative tools, fintech |
-| 71 | **Enterprise SaaS Mobile (Plus Jakarta Sans)** | Geometric Sans (Single Family) | Plus Jakarta Sans | Plus Jakarta Sans | enterprise, saas, b2b, professional, indigo, modern, approac | B2B SaaS apps, productivity tools, government and finance mobile apps, admin das |
-| 72 | **Sketch Hand-Drawn Mobile (Kalam + Patrick Hand)** | Handwritten + Handwritten (Dual) | Kalam | Patrick Hand | sketch, hand-drawn, handwriting, human, imperfect, organic,  | Journaling apps, prototype tools, children's picturebook apps, creative platform |
-| 73 | **Neumorphism Mobile (Plus Jakarta Sans + System)** | Geometric Sans (System Fallback) | Plus Jakarta Sans | Plus Jakarta Sans | neumorphism, soft ui, monochromatic, cool grey, minimal, phy | Smart home controls, minimal tools, aesthetic dashboards, health monitors, brand |
+| 58 | **Bauhaus Geometric** | Geometric Sans + Single Weight | Outfit | Outfit | bauhaus, geometric, constructivist, bold, uppercase, archite | Bauhaus mobile apps, bold editorial mobile, design-forward branding apps, art/cu |
+| 59 | **Minimalist Monochrome Editorial** | Serif + Serif + Mono (Triple Stack) | Playfair Display | Source Serif 4 | monochrome, editorial, austere, typographic, pocket manifest | Luxury fashion mobile apps, editorial publications, digital exhibitions, portfol |
+| 60 | **Modern Dark Cinema (Inter System)** | Sans + Mono | Inter | Inter | dark, cinematic, technical, precision, clean, premium, devel | Developer tools, fintech/trading, AI dashboards, streaming platforms, high-end p |
+| 61 | **SaaS Mobile Boutique (Calistoga + Inter)** | Display Serif + Sans + Mono | Calistoga | Inter | saas, boutique, electric, warm, editorial, bold, premium, fi | B2B SaaS mobile, fintech apps, analytics dashboards, marketing tools, operations |
+| 62 | **Terminal CLI Monospace** | Mono + Mono (Single Family) | JetBrains Mono | JetBrains Mono | terminal, cli, hacker, monospace, matrix, developer, retro-f | Developer tools, Web3/blockchain apps, hacker aesthetic, sci-fi games, ARG, secu |
+| 63 | **Kinetic Brutalism (Space Grotesk)** | Geometric Sans (Single Dominant) | Space Grotesk | Space Grotesk | kinetic, brutalist, aggressive, uppercase, oversized, displa | Music/culture apps, sports platforms, brand flagship mobile, performance dashboa |
+| 64 | **Flat Design Mobile (System Bold)** | Sans + Sans | Inter | Inter | flat, clean, system, bold, geometric, cross-platform, icon,  | Cross-platform apps, dashboards, system UI, onboarding, marketing pages, informa |
+| 65 | **Material You MD3 (Roboto System)** | Sans (System Default) | Roboto | Roboto | material design 3, md3, android, google, tonal, friendly, ro | Android apps, cross-platform tools, productivity software, data-heavy B2B dashbo |
+| 66 | **Neo Brutalism Mobile (Space Grotesk Bold)** | Geometric Sans (Bold-Only) | Space Grotesk | Space Grotesk | neo brutalism, pop art, loud, bold, heavy, stickers, mechani | Creative tools, Gen-Z marketing, e-commerce for youth culture, content portfolio |
+| 67 | **Bold Typography Mobile (Inter Poster)** | Sans + Serif (Display) + Mono | Inter | Playfair Display | bold typography, editorial, poster, near-black, vermillion,  | Creative brand flagships, reading platforms, event apps, flash pages, luxury mob |
+| 68 | **Academia Mobile (Cormorant + Crimson + Cinzel)** | Serif + Book Serif + Engraved (Triple Stack) | Cormorant Garamond | Crimson Pro | academia, library, mahogany, parchment, brass, scholarly, pr | Knowledge management apps, scholarly reading tools, personal brand portfolios, R |
+| 69 | **Cyberpunk Mobile (Orbitron + JetBrains Mono)** | Tech Display + Mono | Orbitron | JetBrains Mono | cyberpunk, neon, glitch, hud, sci-fi, dark, matrix green, ma | Gaming companion apps, fintech/crypto, data visualization, dark brand apps, cybe |
+| 70 | **Web3 Bitcoin DeFi (Space Grotesk + Inter + Mono)** | Geometric Sans + Sans + Mono (Triple) | Space Grotesk | Inter | web3, bitcoin, defi, digital gold, fintech, crypto, trustles | DeFi protocols and wallets, NFT platforms, metaverse social apps, high-tech bran |
+| 71 | **Claymorphism Mobile (Nunito + DM Sans)** | Display Rounded + Geometric Sans | Nunito | DM Sans | claymorphism, clay, rounded, playful, candy, bubbly, soft, 3 | Children education apps, teen social, brand mascot apps, creative tools, fintech |
+| 72 | **Enterprise SaaS Mobile (Plus Jakarta Sans)** | Geometric Sans (Single Family) | Plus Jakarta Sans | Plus Jakarta Sans | enterprise, saas, b2b, professional, indigo, modern, approac | B2B SaaS apps, productivity tools, government and finance mobile apps, admin das |
+| 73 | **Sketch Hand-Drawn Mobile (Kalam + Patrick Hand)** | Handwritten + Handwritten (Dual) | Kalam | Patrick Hand | sketch, hand-drawn, handwriting, human, imperfect, organic,  | Journaling apps, prototype tools, children's picturebook apps, creative platform |
+| 74 | **Neumorphism Mobile (Plus Jakarta Sans + System)** | Geometric Sans (System Fallback) | Plus Jakarta Sans | Plus Jakarta Sans | neumorphism, soft ui, monochromatic, cool grey, minimal, phy | Smart home controls, minimal tools, aesthetic dashboards, health monitors, brand |
 
 ## Implementation
 
@@ -319,13 +320,13 @@ Tested heading + body combinations grouped by mood. Pick by **best-for** and **m
 @import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;500;600;700&family=Varela+Round&display=swap');
 ```
 
-### Premium Sans
+### Premium Sans (DM Sans)
 
-- **Heading**: Satoshi
-- **Body**: General Sans
+- **Heading**: DM Sans
+- **Body**: DM Sans
 - **Mood**: premium, modern, clean, sophisticated, versatile, balanced
 - **Best for**: Premium brands, modern agencies, SaaS, portfolios, startups
-- _Notes_: Note: Satoshi/General Sans on Fontshare. DM Sans as Google alternative.
+- _Notes_: Single importable Google family with balanced weights for premium sans layouts.
 
 ```css
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');

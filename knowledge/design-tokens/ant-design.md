@@ -2,16 +2,16 @@
 title: Ant Design seed tokens
 source: refs/ant-design/components/theme/themes/seed.ts
 upstream: https://github.com/ant-design/ant-design/blob/master/components/theme/themes/seed.ts
-extracted_at: 2026-05-19
+extracted_at: 2026-10-20
 applies_to: [react, antd, design-system]
-version: 1.0.0
-last_updated: 2026-05
+version: 1.1.0
+last_updated: 2026-10
 stability: stable
 ---
 
 # Ant Design seed tokens
 
-Ant Design uses a layered token model: **seed tokens** (raw inputs) → **map tokens** (derived scales) → **alias tokens** (semantic names). This file documents the seed layer — the inputs you change to retheme the entire system.
+Ant Design uses a layered token model: **seed tokens** (raw inputs) → **map tokens** (derived scales) → **alias tokens** (semantic names). This file documents the seed layer — the inputs you change to retheme the entire system. For the derived surfaces, elevation, radius, and component rules, see [Beyond the seed layer](#beyond-the-seed-layer) below, which summarizes Ant's own `DESIGN.md`.
 
 ## Color seeds
 
@@ -52,8 +52,8 @@ Ant Design ships 12 preset color families. Each anchor below is the "primary" hu
 
 | Token | Value |
 | --- | --- |
-| `fontFamily` | ``-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial` |
-| `fontFamilyCode` | ``'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace`` |
+| `fontFamily` | `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'` |
+| `fontFamilyCode` | `'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace` |
 | `fontSize` | `14` |
 
 
@@ -98,6 +98,28 @@ Ant Design ships 12 preset color families. Each anchor below is the "primary" hu
 | `lineWidth` | `1` |
 | `lineType` | `'solid'` |
 
+
+## Focus
+
+| Token | Value |
+| --- | --- |
+| `focusOutline` | `true` |
+
+
+`focusOutline` (added in 6.6.0) turns the visible focus outline on or off. The alias `lineWidthFocus` follows it: `0` when `focusOutline` is `false`, otherwise `lineWidth * 3` (`refs/ant-design/components/theme/util/alias.ts`). Keep it `true` — turning it off removes the keyboard focus indicator WCAG 2.4.7 requires.
+
+## Beyond the seed layer
+
+Source: `refs/ant-design/DESIGN.md` (Ant's own design summary for the v6 light theme, shipped since 6.5.0) and `refs/ant-design/components/theme/util/alias.ts`.
+
+- **Density first.** Base font size is 14 px, not 16, so a 1440 px window fits a sidebar, header, an eight-column table, and a detail pane. Only two weights appear in UI chrome: 400 and 600 (`fontWeightStrong`). Selected and active states use color and stroke, not weight.
+- **Neutral text is alpha black**, not flat grey: `rgba(0,0,0,0.88 / 0.65 / 0.45 / 0.25)` for primary, secondary, tertiary, and disabled text, so text keeps blending over tinted cells.
+- **Three surface layers:** `colorBgLayout` (`#F5F5F5`, page) → `colorBgContainer` (`#FFFFFF`, cards, tables, forms) → `colorBgElevated` (`#FFFFFF`, modals, dropdowns — told apart by shadow, not color). Read the token; never hard-code `#FFF` or `#FAFAFA`, or dark mode breaks.
+- **Flat-first elevation.** Borders and tone carry hierarchy; shadows only on floating surfaces. Tiers: `boxShadowTertiary` (raised; its alphas rose to 0.05 / 0.03 / 0.03 in 6.x), `boxShadow` / `boxShadowSecondary` (popups), `boxShadowCard`, directional drawer and tab-overflow shadows, and `dropShadowPopover` (a `filter: drop-shadow` chain used by Tooltip and Popover styles; marked `@internal` in `theme/interface/alias.ts`, so do not depend on it).
+- **Radius by component class:** controls 6 px, surfaces (card, modal, drawer, notification) 8 px, tags and tooltips 4 px, full pill only for avatars, badges, and dots, 0 px for tables. Do not mix radii on adjacent elements.
+- **Color roles:** one `colorPrimary` action per screen; the 12 preset families are for tags, charts, and categories only, never for primary affordances.
+- **Contrast caveat (Ant's own note):** white text on `#1677FF` and primary text on pale selected backgrounds fall below WCAG AA 4.5:1 for small text. For strict targets, darken `colorPrimary` via `ConfigProvider` rather than one-off colors.
+- **New alias tokens in 6.x:** `fontHeight`, `fontHeightSM`, `fontHeightLG` = rounded `fontSize × lineHeight` for each size.
 
 ## Notes for designers
 

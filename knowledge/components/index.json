@@ -733,6 +733,12 @@
       "path": "refs/mui/packages/mui-material/src/ListSubheader"
     }
   },
+  "listy": {
+    "ant": {
+      "name": "listy",
+      "path": "refs/ant-design/components/listy"
+    }
+  },
   "locale": {
     "ant": {
       "name": "locale",

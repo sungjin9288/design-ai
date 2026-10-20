@@ -2,16 +2,18 @@
 title: Visual style catalog
 source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/styles.csv
 upstream: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-extracted_at: 2026-05-19
+extracted_at: 2026-10-20
 applies_to: [visual-design, art-direction]
-version: 1.0.0
-last_updated: 2026-05
+version: 1.1.0
+last_updated: 2026-10
 stability: stable
 ---
 
 # Visual style catalog
 
 A catalog of distinct visual languages. Use as **art-direction shorthand** — pick a style by best-for/avoid-for, then implement using its keywords, colors, and CSS hints.
+
+79 styles. 9 styles the upstream marks deprecated are omitted; the source CSV's `Replacement Domain` and `Replacement ID` columns name their successors.
 
 ## 1. Minimalism & Swiss Style
 
@@ -21,10 +23,10 @@ A catalog of distinct visual languages. Use as **art-direction shorthand** — p
 - **Effects**: Subtle hover (200-250ms), smooth transitions, sharp shadows if any, clear type hierarchy, fast loading
 - **Best for**: Enterprise apps, dashboards, documentation sites, SaaS platforms, professional tools
 - **Avoid for**: Creative portfolios, entertainment, playful brands, artistic experiments
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 1950s Swiss
 - **Complexity**: Low
 
@@ -39,7 +41,7 @@ display: grid, gap: 2rem, font-family: sans-serif, color: #000 or #FFF, max-widt
 - [ ] Grid-based layout 12-16 columns
 - [ ] Typography hierarchy clear
 - [ ] No unnecessary decorations
-- [ ] WCAG AAA contrast verified
+- [ ] text contrast measured against the chosen project target
 - [ ] Mobile responsive grid
 
 ## 2. Neumorphism
@@ -50,10 +52,10 @@ display: grid, gap: 2rem, font-family: sans-serif, color: #000 or #FFF, max-widt
 - **Effects**: Soft box-shadow (multiple: -5px -5px 15px, 5px 5px 15px), smooth press (150ms), inner subtle shadow
 - **Best for**: Health/wellness apps, meditation platforms, fitness trackers, minimal interaction UIs
 - **Avoid for**: Complex apps, critical accessibility, data-heavy dashboards, high-contrast required
-- **Light mode**: ✓ Full
-- **Dark mode**: ◐ Partial
-- **Performance**: ⚡ Good
-- **Accessibility**: ⚠ Low contrast
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:high|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -79,10 +81,10 @@ border-radius: 12-16px, box-shadow: -5px -5px 15px rgba(0,0,0,0.1), 5px 5px 15px
 - **Effects**: Backdrop blur (10-20px), subtle border (1px solid rgba white 0.2), light reflection, Z-depth
 - **Best for**: Modern SaaS, financial dashboards, high-end corporate, lifestyle apps, modal overlays, navigation
 - **Avoid for**: Low-contrast backgrounds, critical accessibility, performance-limited, dark text on dark
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Good
-- **Accessibility**: ⚠ Ensure 4.5:1
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -108,10 +110,10 @@ backdrop-filter: blur(15px), background: rgba(255, 255, 255, 0.15), border: 1px 
 - **Effects**: No smooth transitions (instant), sharp corners (0px), bold typography (700+), visible grid, large blocks
 - **Best for**: Design portfolios, artistic projects, counter-culture brands, editorial/media sites, tech blogs
 - **Avoid for**: Corporate environments, conservative industries, critical accessibility, customer-facing professional
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 1950s Brutalist
 - **Complexity**: Low
 
@@ -138,10 +140,10 @@ border-radius: 0px, transition: none or 0s, font-family: system-ui or monospace,
 - **Effects**: WebGL/Three.js 3D, realistic shadows (layers), physics lighting, parallax (3-5 layers), smooth 3D (300-400ms)
 - **Best for**: Gaming, product showcase, immersive experiences, high-end e-commerce, architectural viz, VR/AR
 - **Avoid for**: Low-end mobile, performance-limited, critical accessibility, data tables/forms
-- **Light mode**: ◐ Partial
-- **Dark mode**: ◐ Partial
-- **Performance**: ❌ Poor
-- **Accessibility**: ⚠ Not accessible
+- **Light mode**: conditional
+- **Dark mode**: conditional
+- **Performance**: cost:high|drivers:animation,large-images
+- **Accessibility**: risk:high|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: High
 
@@ -168,10 +170,10 @@ transform: translate3d, perspective: 1000px, WebGL canvas, Three.js/Babylon.js l
 - **Effects**: Large sections (48px+ gaps), animated patterns, bold hover (color shift), scroll-snap, large type (32px+), 200-300ms
 - **Best for**: Startups, creative agencies, gaming, social media, youth-focused, entertainment, consumer
 - **Avoid for**: Financial institutions, healthcare, formal business, government, conservative, elderly
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Good
-- **Accessibility**: ◐ Ensure WCAG
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -198,10 +200,10 @@ display: flex/grid with large gaps (48px+), font-size: 32px+, background: animat
 - **Effects**: Minimal glow (text-shadow: 0 0 10px), dark-to-light transitions, low white emission, high readability, visible focus
 - **Best for**: Night-mode apps, coding platforms, entertainment, eye-strain prevention, OLED devices, low-light
 - **Avoid for**: Print-first content, high-brightness outdoor, color-accuracy-critical
-- **Light mode**: ✗ No
-- **Dark mode**: ✓ Only
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
+- **Light mode**: not-recommended
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Low
 
@@ -222,20 +224,20 @@ background: #000000 or #121212, color: #FFFFFF or #E0E0E0, text-shadow: 0 0 10px
 
 ## 8. Accessible & Ethical
 
-- **Keywords**: High contrast, large text (16px+), keyboard navigation, screen reader friendly, WCAG compliant, focus state, semantic
-- **Primary colors**: WCAG AA/AAA (4.5:1 min), simple primary, clear secondary, high luminosity (7:1+)
+- **Keywords**: Accessible, inclusive interface, high contrast, large text (16px+), keyboard navigation, screen reader friendly, accessibility standards aware, focus state, semantic
+- **Primary colors**: Measured high-contrast pairs (4.5:1 normal-text baseline; 7:1 enhanced target), simple primary, clear secondary, high luminosity (7:1+)
 - **Secondary colors**: Symbol-based colors (not color-only), supporting patterns, inclusive combinations
 - **Effects**: Clear focus rings (3-4px), ARIA labels, skip links, responsive design, reduced motion, 44x44px touch targets
 - **Best for**: Government, healthcare, education, inclusive products, large audience, legal compliance, public
 - **Avoid for**: None - accessibility universal
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Universal
 - **Complexity**: Low
 
-**AI prompt**: Design with WCAG AAA compliance. Include: high contrast (7:1+), large text (16px+), keyboard navigation, screen reader compatibility, focus states visible (3-4px ring), semantic HTML, ARIA labels, skip links, reduced motion support (prefers-reduced-motion), 44x44px touch targets.
+**AI prompt**: Design toward enhanced accessibility criteria; verify complete-page conformance. Include: high contrast (7:1+), large text (16px+), keyboard navigation, screen reader compatibility, focus states visible (3-4px ring), semantic HTML, ARIA labels, skip links, reduced motion support (prefers-reduced-motion), 44x44px touch targets.
 
 ```css
 /* Accessible & Ethical hints */
@@ -243,7 +245,7 @@ color-contrast: 7:1+, font-size: 16px+, outline: 3-4px on :focus-visible, aria-l
 ```
 
 **Checklist**:
-- [ ] WCAG AAA verified
+- [ ] complete-page conformance tested against the chosen target
 - [ ] 7:1+ contrast checked
 - [ ] Keyboard navigation tested
 - [ ] Screen reader tested
@@ -259,10 +261,10 @@ color-contrast: 7:1+, font-size: 16px+, outline: 3-4px on :focus-visible, aria-l
 - **Effects**: Inner+outer shadows (subtle, no hard lines), soft press (200ms ease-out), fluffy elements, smooth transitions
 - **Best for**: Educational apps, children's apps, SaaS platforms, creative tools, fun-focused, onboarding, casual games
 - **Avoid for**: Formal corporate, professional services, data-critical, serious/medical, legal apps, finance
-- **Light mode**: ✓ Full
-- **Dark mode**: ◐ Partial
-- **Performance**: ⚡ Good
-- **Accessibility**: ⚠ Ensure 4.5:1
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -289,10 +291,10 @@ border-radius: 16-24px, border: 3-4px solid, box-shadow: inset -2px -2px 8px, 4p
 - **Effects**: Large flowing CSS/SVG gradients, subtle 8-12s animations, depth via color layering, smooth morph
 - **Best for**: Modern SaaS, creative agencies, branding, music platforms, lifestyle, premium products, hero sections
 - **Avoid for**: Data-heavy dashboards, critical accessibility, content-heavy where distraction issues
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Good
-- **Accessibility**: ⚠ Text contrast
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -319,10 +321,10 @@ background: conic-gradient or radial-gradient with multiple stops, animation: @k
 - **Effects**: CRT scanlines (::before overlay), neon glow (text-shadow+box-shadow), glitch effects (skew/offset keyframes)
 - **Best for**: Gaming, entertainment, music platforms, tech brands, artistic projects, nostalgic, cyberpunk
 - **Avoid for**: Conservative industries, critical accessibility, professional/corporate, elderly, legal/finance
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Dark focused
-- **Performance**: ⚠ Moderate
-- **Accessibility**: ⚠ High contrast/strain
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:high|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 1980s Retro
 - **Complexity**: Medium
 
@@ -350,10 +352,10 @@ color: neon colors (#0080FF, #FF006E, #00FFFF), text-shadow: 0 0 10px neon, back
 - **Effects**: No gradients/shadows, simple hover (color/opacity shift), fast loading, clean transitions (150-200ms ease), minimal icons
 - **Best for**: Web apps, mobile apps, cross-platform, startup MVPs, user-friendly, SaaS, dashboards, corporate
 - **Avoid for**: Complex 3D, premium/luxury, artistic portfolios, immersive experiences, high-detail
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2010s Modern
 - **Complexity**: Low
 
@@ -381,10 +383,10 @@ box-shadow: none, background: solid color, border-radius: 0-4px, color: solid (n
 - **Effects**: Realistic shadows (layers), depth (perspective), texture details (noise, grain), realistic animations (300-500ms)
 - **Best for**: Legacy apps, gaming, immersive storytelling, premium products, luxury, realistic simulations, education
 - **Avoid for**: Modern enterprise, critical accessibility, low-performance, web (use Flat/Modern)
-- **Light mode**: ◐ Partial
-- **Dark mode**: ◐ Partial
-- **Performance**: ❌ Poor
-- **Accessibility**: ⚠ Textures reduce readability
+- **Light mode**: conditional
+- **Dark mode**: conditional
+- **Performance**: cost:high|drivers:animation,large-images
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2007-2012 iOS
 - **Complexity**: High
 
@@ -405,33 +407,33 @@ background: complex gradient (8-12 stops), box-shadow: realistic multi-layer, ba
 
 ## 14. Liquid Glass
 
-- **Keywords**: Flowing glass, morphing, smooth transitions, fluid effects, translucent, animated blur, iridescent, chromatic aberration
-- **Primary colors**: Vibrant iridescent (rainbow spectrum), translucent base with opacity shifts, gradient fluidity
-- **Secondary colors**: Chromatic aberration (Red-Cyan), iridescent oil-spill, fluid gradient blends, holographic effects
-- **Effects**: Morphing elements (SVG/CSS), fluid animations (400-600ms curves), dynamic blur (backdrop-filter), color transitions
-- **Best for**: Premium SaaS, high-end e-commerce, creative platforms, branding experiences, luxury portfolios
-- **Avoid for**: Performance-limited, critical accessibility, complex data, budget projects
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Moderate-Poor
-- **Accessibility**: ⚠ Text contrast
-- **Era**: 2020s Modern
+- **Keywords**: dynamic material, optical glass, translucency, lensing, refraction, fluid morphing, system navigation
+- **Primary colors**: Adaptive translucent material derived from surrounding content; use color judiciously
+- **Secondary colors**: Semantic content and system tint colors; preserve legibility and hierarchy
+- **Effects**: Lensing and refraction, adaptive translucency, and fluid morph transitions aligned to Apple platform behavior
+- **Best for**: Apple-platform navigation, controls, and system-aligned app chrome
+- **Avoid for**: content layers, dense reading surfaces, or custom effects without accessibility fallbacks
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
+- **Era**: Apple platforms, 2025
 - **Complexity**: High
 
-**AI prompt**: Create a premium liquid glass effect with morphing shapes, flowing animations, chromatic aberration, iridescent gradients, smooth 400-600ms transitions. Use SVG morphing for shape changes, dynamic blur, smooth color transitions creating a fluid, premium feel.
+**AI prompt**: Apply Apple Liquid Glass sparingly to navigation and controls. Use dynamic translucent material, lensing, and fluid transitions while keeping content clear. Respect reduced transparency and reduced motion settings.
 
 ```css
 /* Liquid Glass hints */
-animation: morphing SVG paths (400-600ms), backdrop-filter: blur + saturate, filter: hue-rotate + brightness, blend-mode: screen, background: iridescent gradient
+platform material, adaptive translucency, lensing, refraction, reduced transparency, reduced motion
 ```
 
 **Checklist**:
-- [ ] Morphing animations 400-600ms
-- [ ] Chromatic aberration applied
-- [ ] Dynamic blur active
-- [ ] Iridescent gradients
-- [ ] Smooth color transitions
-- [ ] Premium feel achieved
+- [ ] Use for navigation and controls
+- [ ] Keep content on a separate layer
+- [ ] Apply color judiciously
+- [ ] Test reduced transparency
+- [ ] Test reduced motion
+- [ ] Verify text and control contrast
 
 ## 15. Motion-Driven
 
@@ -441,10 +443,10 @@ animation: morphing SVG paths (400-600ms), backdrop-filter: blur + saturate, fil
 - **Effects**: Scroll anim (Intersection Observer), hover (300-400ms), entrance, parallax (3-5 layers), page transitions
 - **Best for**: Portfolio sites, storytelling platforms, interactive experiences, entertainment apps, creative, SaaS
 - **Avoid for**: Data dashboards, critical accessibility, low-power devices, content-heavy, motion-sensitive
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Good
-- **Accessibility**: ⚠ Prefers-reduced-motion
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: High
 
@@ -471,10 +473,10 @@ animation: @keyframes scroll-reveal, transform: translateY/X, Intersection Obser
 - **Effects**: Small hover (50-100ms), loading spinners, success/error state anim, gesture-triggered (swipe/pinch), haptic
 - **Best for**: Mobile apps, touchscreen UIs, productivity tools, user-friendly, consumer apps, interactive components
 - **Avoid for**: Desktop-only, critical performance, accessibility-first (alternatives needed)
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ Good
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -495,20 +497,20 @@ animation: short 50-100ms, transition: hover states, @media (hover: hover) for d
 
 ## 17. Inclusive Design
 
-- **Keywords**: Accessible, color-blind friendly, high contrast, haptic feedback, voice interaction, screen reader, WCAG AAA, universal
-- **Primary colors**: WCAG AAA (7:1+ contrast), avoid red-green only, symbol-based indicators, high contrast primary
+- **Keywords**: Accessible, color-blind friendly, high contrast, haptic feedback, voice interaction, screen reader, enhanced contrast targets, universal
+- **Primary colors**: Measured contrast pairs targeting 7:1 for normal text, avoid red-green only, symbol-based indicators, high contrast primary
 - **Secondary colors**: Supporting patterns (stripes, dots, hatch), symbols, combinations, clear non-color indicators
 - **Effects**: Haptic feedback (vibration), voice guidance, focus indicators (4px+ ring), motion options, alt content, semantic
 - **Best for**: Public services, education, healthcare, finance, government, accessible consumer, inclusive
 - **Avoid for**: None - accessibility universal
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Universal
 - **Complexity**: Low
 
-**AI prompt**: Design for universal accessibility: high contrast (7:1+), large text (16px+), keyboard-only navigation, screen reader optimization, WCAG AAA compliance, symbol-based color indicators (not color-only), haptic feedback, voice interaction support, reduced motion options.
+**AI prompt**: Design for universal accessibility: high contrast (7:1+), large text (16px+), keyboard-only navigation, screen reader optimization, enhanced accessibility criteria with complete-page verification, symbol-based color indicators (not color-only), haptic feedback, voice interaction support, reduced motion options.
 
 ```css
 /* Inclusive Design hints */
@@ -516,7 +518,7 @@ aria-* attributes complete, role attributes semantic, focus-visible: 3-4px ring,
 ```
 
 **Checklist**:
-- [ ] WCAG AAA verified
+- [ ] complete-page conformance tested against the chosen target
 - [ ] 7:1+ contrast all text
 - [ ] Keyboard accessible (Tab/Enter)
 - [ ] Screen reader tested
@@ -532,10 +534,10 @@ aria-* attributes complete, role attributes semantic, focus-visible: 3-4px ring,
 - **Effects**: Voice recognition UI, gesture detection, AI predictions (smooth reveal), progressive disclosure, smart suggestions
 - **Best for**: Voice assistants, AI platforms, future-forward UX, smart home, contextual computing, ambient experiences
 - **Avoid for**: Complex workflows, data-entry heavy, traditional systems, legacy support, explicit control
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ Excellent
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s AI-Era
 - **Complexity**: Low
 
@@ -559,17 +561,17 @@ voice-commands: Web Speech API, gesture-detection: touch events, AI-predictions:
 - **Keywords**: Evolved soft UI, better contrast, modern aesthetics, subtle depth, accessibility-focused, improved shadows, hybrid
 - **Primary colors**: Improved contrast pastels: Soft Blue #87CEEB, Soft Pink #FFB6C1, Soft Green #90EE90, better hierarchy
 - **Secondary colors**: Better combinations, accessible secondary, supporting with improved contrast, modern accents
-- **Effects**: Improved shadows (softer than flat, clearer than neumorphism), modern (200-300ms), focus visible, WCAG AA/AAA
+- **Effects**: Improved shadows (softer than flat, clearer than neumorphism), modern (200-300ms), focus visible, measured contrast targets
 - **Best for**: Modern enterprise apps, SaaS platforms, health/wellness, modern business tools, professional, hybrid
 - **Avoid for**: Extreme minimalism, critical performance, systems without modern OS
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA+
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
-**AI prompt**: Design evolved neumorphism with improved contrast (WCAG AA+), modern aesthetics, subtle depth, accessibility focus. Use soft shadows (softer than flat but clearer than pure neumorphism), better color hierarchy, improved focus states, modern 200-300ms animations.
+**AI prompt**: Design evolved neumorphism with improved contrast (measured contrast targets), modern aesthetics, subtle depth, accessibility focus. Use soft shadows (softer than flat but clearer than pure neumorphism), better color hierarchy, improved focus states, modern 200-300ms animations.
 
 ```css
 /* Soft UI Evolution hints */
@@ -577,253 +579,12 @@ box-shadow: softer multi-layer (0 2px 4px), background: improved contrast pastel
 ```
 
 **Checklist**:
-- [ ] Improved contrast AA/AAA
+- [ ] Contrast measured against the chosen project target
 - [ ] Soft shadows modern
 - [ ] Border-radius 8-12px
 - [ ] Animations 200-300ms
 - [ ] Focus states visible
 - [ ] Color hierarchy clear
-
-## 20. Hero-Centric Design
-
-- **Keywords**: Large hero section, compelling headline, high-contrast CTA, product showcase, value proposition, hero image/video, dramatic visual
-- **Primary colors**: Brand primary color, white/light backgrounds for contrast, accent color for CTA
-- **Secondary colors**: Supporting colors for secondary CTAs, accent highlights, trust elements (testimonials, logos)
-- **Effects**: Smooth scroll reveal, fade-in animations on hero, subtle background parallax, CTA glow/pulse effect
-- **Best for**: SaaS landing pages, product launches, service landing pages, B2B platforms, tech companies
-- **Avoid for**: Complex navigation, multi-page experiences, data-heavy applications
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Good
-- **Accessibility**: ✓ WCAG AA
-- **Era**: 2020s Modern
-- **Complexity**: Medium
-
-**AI prompt**: Design a hero-centric landing page. Use: full-width hero section, compelling headline (60-80 chars), high-contrast CTA button, product screenshot or video, value proposition above fold, gradient or image background, clear visual hierarchy.
-
-```css
-/* Hero-Centric Design hints */
-min-height: 100vh, display: flex, align-items: center, background: linear-gradient or image, text-shadow for readability, max-width: 800px for text, button with hover scale (1.05)
-```
-
-**Checklist**:
-- [ ] Hero section full viewport height
-- [ ] Headline visible above fold
-- [ ] CTA button high contrast
-- [ ] Background image optimized (WebP)
-- [ ] Text readable on background
-- [ ] Mobile responsive layout
-
-## 21. Conversion-Optimized
-
-- **Keywords**: Form-focused, minimalist design, single CTA focus, high contrast, urgency elements, trust signals, social proof, clear value
-- **Primary colors**: Primary brand color, high-contrast white/light backgrounds, warning/urgency colors for time-limited offers
-- **Secondary colors**: Secondary CTA color (muted), trust element colors (testimonial highlights), accent for key benefits
-- **Effects**: Hover states on CTA (color shift, slight scale), form field focus animations, loading spinner, success feedback
-- **Best for**: E-commerce product pages, free trial signups, lead generation, SaaS pricing pages, limited-time offers
-- **Avoid for**: Complex feature explanations, multi-product showcases, technical documentation
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
-- **Era**: 2020s Modern
-- **Complexity**: Medium
-
-**AI prompt**: Design a conversion-optimized landing page. Use: single primary CTA, minimal distractions, trust badges, urgency elements (limited time), social proof (testimonials), clear value proposition, form above fold, progress indicators.
-
-```css
-/* Conversion-Optimized hints */
-form with focus states, input:focus ring, button: primary color high contrast, position: sticky for CTA, max-width: 600px for form, loading spinner, success/error states
-```
-
-**Checklist**:
-- [ ] Single primary CTA visible
-- [ ] Form fields minimal (3-5)
-- [ ] Trust badges present
-- [ ] Social proof above fold
-- [ ] Mobile form optimized
-- [ ] Loading states implemented
-- [ ] A/B test ready
-
-## 22. Feature-Rich Showcase
-
-- **Keywords**: Multiple feature sections, grid layout, benefit cards, visual feature demonstrations, interactive elements, problem-solution pairs
-- **Primary colors**: Primary brand, bright secondary colors for feature cards, contrasting accent for CTAs
-- **Secondary colors**: Supporting colors for: benefits (green), problems (red/orange), features (blue/purple), social proof (neutral)
-- **Effects**: Card hover effects (lift/scale), icon animations on scroll, feature toggle animations, smooth section transitions
-- **Best for**: Enterprise SaaS, software tools landing pages, platform services, complex product explanations, B2B products
-- **Avoid for**: Simple product pages, early-stage startups with few features, entertainment landing pages
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Good
-- **Accessibility**: ✓ WCAG AA
-- **Era**: 2020s Modern
-- **Complexity**: Medium
-
-**AI prompt**: Design a feature showcase landing page. Use: grid layout for features (3-4 columns), feature cards with icons, benefit-focused copy, alternating sections, comparison tables, interactive demos, problem-solution pairs.
-
-```css
-/* Feature-Rich Showcase hints */
-display: grid, grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)), gap: 2rem, card hover effects (translateY -4px), icon containers, alternating background colors
-```
-
-**Checklist**:
-- [ ] Feature grid responsive
-- [ ] Icons consistent style
-- [ ] Card hover effects smooth
-- [ ] Alternating sections contrast
-- [ ] Benefits clearly stated
-- [ ] Mobile stacks properly
-
-## 23. Minimal & Direct
-
-- **Keywords**: Minimal text, white space heavy, single column layout, direct messaging, clean typography, visual-centric, fast-loading
-- **Primary colors**: Monochromatic primary, white background, single accent color for CTA, black/dark grey text
-- **Secondary colors**: Minimal secondary colors, reserved for critical CTAs only, neutral supporting elements
-- **Effects**: Very subtle hover effects, minimal animations, fast page load (no heavy animations), smooth scroll
-- **Best for**: Simple service landing pages, indie products, consulting services, micro SaaS, freelancer portfolios
-- **Avoid for**: Feature-heavy products, complex explanations, multi-product showcases
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
-- **Era**: 2020s Modern
-- **Complexity**: Medium
-
-**AI prompt**: Design a minimal direct landing page. Use: single column layout, maximum white space, essential content only, one CTA, clean typography, no decorative elements, fast loading, direct messaging.
-
-```css
-/* Minimal & Direct hints */
-max-width: 680px, margin: 0 auto, padding: 4rem 2rem, font-size: 18-20px, line-height: 1.6, minimal animations, no box-shadow, clean borders only
-```
-
-**Checklist**:
-- [ ] Single column centered
-- [ ] White space generous
-- [ ] One primary CTA only
-- [ ] No decorative images
-- [ ] Page weight < 500KB
-- [ ] Load time < 2s
-
-## 24. Social Proof-Focused
-
-- **Keywords**: Testimonials prominent, client logos displayed, case studies sections, reviews/ratings, user avatars, success metrics, credibility markers
-- **Primary colors**: Primary brand, trust colors (blue), success/growth colors (green), neutral backgrounds
-- **Secondary colors**: Testimonial highlight colors, logo grid backgrounds (light grey), badge/achievement colors
-- **Effects**: Testimonial carousel animations, logo grid fade-in, stat counter animations (number count-up), review star ratings
-- **Best for**: B2B SaaS, professional services, premium products, e-commerce conversion pages, established brands
-- **Avoid for**: Startup MVPs, products without users, niche/experimental products
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Good
-- **Accessibility**: ✓ WCAG AA
-- **Era**: 2020s Modern
-- **Complexity**: Medium
-
-**AI prompt**: Design a social proof landing page. Use: testimonials with photos, client logos grid, case study cards, review ratings (stars), user count metrics, success stories, trust indicators, before/after comparisons.
-
-```css
-/* Social Proof-Focused hints */
-testimonial cards with avatar, logo grid (grayscale filter), star rating SVGs, counter animations (count-up), blockquote styling, carousel for testimonials, metric cards
-```
-
-**Checklist**:
-- [ ] Testimonials with real photos
-- [ ] Logo grid 6-12 logos
-- [ ] Star ratings accessible
-- [ ] Metrics animated on scroll
-- [ ] Case studies linked
-- [ ] Mobile carousel works
-
-## 25. Interactive Product Demo
-
-- **Keywords**: Embedded product mockup/video, interactive elements, product walkthrough, step-by-step guides, hover-to-reveal features, embedded demos
-- **Primary colors**: Primary brand, interface colors matching product, demo highlight colors for interactive elements
-- **Secondary colors**: Product UI colors, tutorial step colors (numbered progression), hover state indicators
-- **Effects**: Product animation playback, step progression animations, hover reveal effects, smooth zoom on interaction
-- **Best for**: SaaS platforms, tool/software products, productivity apps landing pages, developer tools, productivity software
-- **Avoid for**: Simple services, consulting, non-digital products, complexity-averse audiences
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Good (video/interactive)
-- **Accessibility**: ✓ WCAG AA
-- **Era**: 2020s Modern
-- **Complexity**: Medium
-
-**AI prompt**: Design an interactive demo landing page. Use: embedded product mockup, video walkthrough, step-by-step guide, hover-to-reveal features, live demo button, screenshot carousel, feature highlights on interaction.
-
-```css
-/* Interactive Product Demo hints */
-video element with controls, position: relative for overlays, hover reveal (opacity transition), step indicators, modal for full demo, screenshot lightbox, play button overlay
-```
-
-**Checklist**:
-- [ ] Demo video loads fast
-- [ ] Fallback for no-JS
-- [ ] Step indicators clear
-- [ ] Hover states obvious
-- [ ] Mobile touch friendly
-- [ ] Demo CTA prominent
-
-## 26. Trust & Authority
-
-- **Keywords**: Certificates/badges displayed, expert credentials, case studies with metrics, before/after comparisons, industry recognition, security badges
-- **Primary colors**: Professional colors (blue/grey), trust colors, certification badge colors (gold/silver accents)
-- **Secondary colors**: Certificate highlight colors, metric showcase colors, comparison highlight (success green)
-- **Effects**: Badge hover effects, metric pulse animations, certificate carousel, smooth stat reveal
-- **Best for**: Healthcare/medical landing pages, financial services, enterprise software, premium/luxury products, legal services
-- **Avoid for**: Casual products, entertainment, viral/social-first products
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
-- **Era**: 2020s Modern
-- **Complexity**: Medium
-
-**AI prompt**: Design a trust-focused landing page. Use: certification badges, security indicators, expert credentials, industry awards, case study metrics, compliance logos (GDPR, SOC2), guarantee badges, professional photography.
-
-```css
-/* Trust & Authority hints */
-badge grid layout, shield icons, lock icons for security, certificate styling, metric cards with icons, professional color scheme (blue/grey), subtle shadows for depth
-```
-
-**Checklist**:
-- [ ] Security badges visible
-- [ ] Certifications verified
-- [ ] Metrics with sources
-- [ ] Professional imagery
-- [ ] Guarantee clearly stated
-- [ ] Contact info accessible
-
-## 27. Storytelling-Driven
-
-- **Keywords**: Narrative flow, visual story progression, section transitions, consistent character/brand voice, emotional messaging, journey visualization
-- **Primary colors**: Brand primary, warm/emotional colors, varied accent colors per story section, high visual variety
-- **Secondary colors**: Story section color coding, emotional state colors (calm, excitement, success), transitional gradients
-- **Effects**: Section-to-section animations, scroll-triggered reveals, character/icon animations, morphing transitions, parallax narrative
-- **Best for**: Brand/startup stories, mission-driven products, premium/lifestyle brands, documentary-style products, educational
-- **Avoid for**: Technical/complex products (unless narrative-driven), traditional enterprise software
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Moderate (animations)
-- **Accessibility**: ✓ WCAG AA
-- **Era**: 2020s Modern
-- **Complexity**: Medium
-
-**AI prompt**: Design a storytelling landing page. Use: narrative flow sections, scroll-triggered reveals, chapter-like structure, emotional imagery, brand journey visualization, founder story, mission statement, timeline progression.
-
-```css
-/* Storytelling-Driven hints */
-scroll-snap sections, Intersection Observer for reveals, parallax backgrounds, section transitions, timeline CSS, narrative typography (varied sizes), image-text alternating
-```
-
-**Checklist**:
-- [ ] Story flows naturally
-- [ ] Scroll reveals smooth
-- [ ] Sections timed well
-- [ ] Emotional hooks present
-- [ ] Mobile story readable
-- [ ] Skip option available
 
 ## 28. Data-Dense Dashboard
 
@@ -833,10 +594,10 @@ scroll-snap sections, Intersection Observer for reveals, parallax backgrounds, s
 - **Effects**: Hover tooltips, chart zoom on click, row highlighting on hover, smooth filter animations, data loading spinners
 - **Best for**: Business intelligence dashboards, financial analytics, enterprise reporting, operational dashboards, data warehousing
 - **Avoid for**: Marketing dashboards, consumer-facing analytics, simple reporting
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -863,10 +624,10 @@ display: grid, grid-template-columns: repeat(12, 1fr), gap: 8px, padding: 12px, 
 - **Effects**: Color gradient transitions on data change, cell highlighting on hover, tooltip reveal on click, smooth color animation
 - **Best for**: Geographical analysis, performance matrices, correlation analysis, user behavior heatmaps, temperature/intensity data
 - **Avoid for**: Linear data representation, categorical comparisons (use bar charts), small datasets
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full (with adjustments)
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ⚠ Colorblind considerations
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -893,10 +654,10 @@ display: grid, background: linear-gradient for legend, cell hover states, toolti
 - **Effects**: KPI value animations (count-up), trend arrow direction animations, metric card hover lift, alert pulse effect
 - **Best for**: C-suite dashboards, business summary reports, decision-maker dashboards, strategic planning views
 - **Avoid for**: Detailed analyst dashboards, technical deep-dives, operational monitoring
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -923,10 +684,10 @@ display: flex for KPI row, large font-size (24-48px) for metrics, sparkline SVG 
 - **Effects**: Real-time chart animations, alert pulse/glow, status indicator blink animation, smooth data stream updates, loading effect
 - **Best for**: System monitoring dashboards, DevOps dashboards, real-time analytics, stock market dashboards, live event tracking
 - **Avoid for**: Historical analysis, long-term trend reports, archived data dashboards
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Good (real-time load)
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -953,10 +714,10 @@ animation: pulse for live, WebSocket for streaming, position: fixed for alerts, 
 - **Effects**: Drill-down expand animations, breadcrumb click transitions, smooth detail reveal, level change smooth, data reload animation
 - **Best for**: Sales analytics, product analytics, funnel analysis, multi-dimensional data exploration, business intelligence
 - **Avoid for**: Simple linear data, single-metric dashboards, streaming real-time dashboards
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Good
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -983,10 +744,10 @@ breadcrumb nav with separators, details/summary for expand, transition for drill
 - **Effects**: Comparison bar animations (grow to value), delta indicator animations (direction arrows), highlight on compare
 - **Best for**: Period-over-period reporting, A/B test dashboards, market comparison, competitive analysis, regional performance
 - **Avoid for**: Single metric dashboards, future projections (use forecasting), real-time only (no historical)
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -1013,10 +774,10 @@ display: flex for side-by-side, gap for comparison spacing, color coding (green 
 - **Effects**: Forecast line animation on draw, confidence band fade-in, anomaly pulse alert, smoothing function animations
 - **Best for**: Forecasting dashboards, anomaly detection systems, trend prediction dashboards, AI-powered analytics, budget planning
 - **Avoid for**: Historical-only dashboards, simple reporting, real-time operational dashboards
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Good (computation)
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -1043,10 +804,10 @@ stroke-dasharray for forecast lines, fill-opacity for confidence bands, anomaly 
 - **Effects**: Funnel animation (fill-down), flow diagram animations (connection draw), conversion pulse, engagement bar fill
 - **Best for**: Conversion funnel analysis, user journey tracking, engagement analytics, cohort analysis, retention tracking
 - **Avoid for**: Real-time operational metrics, technical system monitoring, financial transactions
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Good
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -1073,10 +834,10 @@ SVG funnel with gradients, Sankey diagram library, percentage labels, cohort gri
 - **Effects**: Number animations (count-up), trend direction indicators, percentage change animations, profit/loss color transitions
 - **Best for**: Financial reporting, accounting dashboards, portfolio tracking, budget monitoring, banking analytics
 - **Avoid for**: Simple business dashboards, entertainment/social metrics, non-financial data
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -1103,10 +864,10 @@ number formatting (Intl.NumberFormat), waterfall chart (positive/negative bars),
 - **Effects**: Deal movement animations, metric updates, leaderboard ranking changes, gauge needle movements, status change highlights
 - **Best for**: CRM dashboards, sales management, opportunity tracking, performance management, quota planning
 - **Avoid for**: Marketing analytics, customer support metrics, HR dashboards
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Good
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -1133,10 +894,10 @@ kanban columns (flex), gauge chart (SVG arc), leaderboard ranking styles, map in
 - **Effects**: box-shadow: 4px 4px 0 #000, border: 3px solid #000, no gradients, sharp corners (0px), bold typography
 - **Best for**: Gen Z brands, startups, creative agencies, Figma-style apps, Notion-style interfaces, tech blogs
 - **Avoid for**: Luxury brands, finance, healthcare, conservative industries (too playful)
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Low
 
@@ -1163,10 +924,10 @@ border: 3px solid black, box-shadow: 5px 5px 0px black, colors: #FFDB58 #FF6B6B 
 - **Effects**: grid-template with varied spans, rounded-xl (16px), subtle shadows, hover scale (1.02), smooth transitions
 - **Best for**: Dashboards, product pages, portfolios, Apple-style marketing, feature showcases, SaaS
 - **Avoid for**: Dense data tables, text-heavy content, real-time monitoring
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Apple
 - **Complexity**: Low
 
@@ -1193,10 +954,10 @@ display: grid, grid-template-columns: repeat(4, 1fr), grid-auto-rows: 200px, gap
 - **Effects**: linear-gradient metallic, glossy buttons, 3D chrome effects, glow animations, bubble shapes
 - **Best for**: Fashion brands, music platforms, Gen Z brands, nostalgia marketing, entertainment, youth-focused
 - **Avoid for**: B2B enterprise, healthcare, finance, conservative industries, elderly users
-- **Light mode**: ✓ Full
-- **Dark mode**: ◐ Partial
-- **Performance**: ⚠ Good
-- **Accessibility**: ⚠ Check contrast
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Y2K 2000s
 - **Complexity**: Medium
 
@@ -1223,10 +984,10 @@ background: linear-gradient(135deg, #FF69B4, #00FFFF), filter: drop-shadow for g
 - **Effects**: Neon glow (text-shadow), glitch animations (skew/offset), scanlines (::before overlay), terminal fonts
 - **Best for**: Gaming platforms, tech products, crypto apps, sci-fi applications, developer tools, entertainment
 - **Avoid for**: Corporate enterprise, healthcare, family apps, conservative brands, elderly users
-- **Light mode**: ✗ No
-- **Dark mode**: ✓ Only
-- **Performance**: ⚠ Moderate
-- **Accessibility**: ⚠ Limited (dark+neon)
+- **Light mode**: not-recommended
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Cyberpunk
 - **Complexity**: Medium
 
@@ -1253,10 +1014,10 @@ background: #0D0D0D, color: #00FF00 or #FF00FF, font-family: monospace, text-sha
 - **Effects**: Rounded corners (16-24px), organic curves (border-radius variations), natural shadows, flowing SVG shapes
 - **Best for**: Wellness apps, sustainability brands, eco products, health apps, meditation, organic food brands
 - **Avoid for**: Tech-focused products, gaming, industrial, urban brands
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Sustainable
 - **Complexity**: Low
 
@@ -1283,10 +1044,10 @@ border-radius: 16-24px (varied), background: earth tones, SVG organic shapes (bl
 - **Effects**: Typing indicators (3-dot pulse), streaming text animations, pulse animations, context cards, smooth reveals
 - **Best for**: AI products, chatbots, voice assistants, copilots, AI-powered tools, conversational interfaces
 - **Avoid for**: Traditional forms, data-heavy dashboards, print-first content
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s AI-Era
 - **Complexity**: Low
 
@@ -1313,10 +1074,10 @@ chat bubble layout (flex-direction: column), typing animation (3 dots pulse), st
 - **Effects**: transform: rotate(), clip-path: polygon(), mix-blend-mode, repeating patterns, bold shapes
 - **Best for**: Creative agencies, music sites, youth brands, event promotion, artistic portfolios, entertainment
 - **Avoid for**: Corporate finance, healthcare, legal, elderly users, conservative brands
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ⚠ Check contrast
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 1980s Postmodern
 - **Complexity**: Medium
 
@@ -1343,10 +1104,10 @@ clip-path: polygon() for shapes, background: repeating patterns, transform: rota
 - **Effects**: text-shadow glow, linear-gradient, filter: hue-rotate(), glitch animations, retro scan lines
 - **Best for**: Music platforms, gaming, creative portfolios, tech startups, entertainment, artistic projects
 - **Avoid for**: Business apps, e-commerce, education, healthcare, enterprise software
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Dark focused
-- **Performance**: ⚠ Moderate
-- **Accessibility**: ⚠ Poor (motion)
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:high|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 1980s-90s Retro
 - **Complexity**: Medium
 
@@ -1373,10 +1134,10 @@ background: linear-gradient(180deg, #FF71CE, #01CDFE, #B967FF), filter: hue-rota
 - **Effects**: z-index stacking, box-shadow elevation (4 levels), transform: translateZ(), backdrop-filter, parallax
 - **Best for**: Dashboards, card layouts, modals, navigation, product showcases, SaaS interfaces
 - **Avoid for**: Print-style layouts, simple blogs, low-end devices, flat design requirements
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Good
-- **Accessibility**: ⚠ Moderate (SR issues)
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:high|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Medium
 
@@ -1403,10 +1164,10 @@ z-index: 1-4 levels, box-shadow: elevation scale (sm/md/lg/xl), transform: trans
 - **Effects**: font-size: clamp(3rem 10vw 12rem), font-weight: 900, letter-spacing: -0.05em, massive whitespace
 - **Best for**: Fashion, architecture, portfolios, agency landing pages, luxury brands, editorial
 - **Avoid for**: E-commerce catalogs, dashboards, forms, data-heavy, elderly users, complex apps
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: Low
 
@@ -1433,10 +1194,10 @@ font-size: clamp(3rem, 10vw, 12rem), font-weight: 900, letter-spacing: -0.05em, 
 - **Effects**: @keyframes text animation, typing effect, background-clip: text, GSAP ScrollTrigger, split text
 - **Best for**: Hero sections, marketing sites, video platforms, storytelling, creative portfolios, landing pages
 - **Avoid for**: Long-form content, accessibility-critical, data interfaces, forms, elderly users
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Moderate
-- **Accessibility**: ❌ Poor (motion)
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:high|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: High
 
@@ -1463,10 +1224,10 @@ font-size: clamp(3rem, 10vw, 12rem), font-weight: 900, letter-spacing: -0.05em, 
 - **Effects**: transform: translateY(scroll), position: fixed/sticky, perspective: 1px, scroll-triggered animations
 - **Best for**: Brand storytelling, product launches, case studies, portfolios, annual reports, marketing campaigns
 - **Avoid for**: E-commerce, dashboards, mobile-first, SEO-critical, accessibility-required
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ❌ Poor
-- **Accessibility**: ❌ Poor (motion)
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:high|drivers:animation,large-images
+- **Accessibility**: risk:high|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Modern
 - **Complexity**: High
 
@@ -1493,10 +1254,10 @@ position: fixed/sticky, transform: translateY(calc()), perspective: 1px, z-index
 - **Effects**: display: grid, grid-template-columns: repeat(12 1fr), gap: 1rem, mathematical ratios, clear hierarchy
 - **Best for**: Corporate sites, architecture, editorial, SaaS, museums, professional services, documentation
 - **Avoid for**: Playful brands, children's sites, entertainment, gaming, emotional storytelling
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 1950s Swiss + 2020s
 - **Complexity**: Low
 
@@ -1523,10 +1284,10 @@ display: grid, grid-template-columns: repeat(12, 1fr), gap: 1rem (8px base unit)
 - **Effects**: Glow effects, scanning animations, ticker text, blinking markers, fine line drawing
 - **Best for**: Sci-fi games, space tech, cybersecurity, movie props, immersive dashboards
 - **Avoid for**: Standard corporate, reading heavy content, accessible public services
-- **Light mode**: ✓ Low
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Moderate (renders)
-- **Accessibility**: ⚠ Poor (thin lines)
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:high|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2010s Sci-Fi
 - **Complexity**: High
 
@@ -1553,10 +1314,10 @@ border: 1px solid rgba(0,255,255,0.5), color: #00FFFF, background: transparent o
 - **Effects**: Frame-by-frame sprite animation, blinking cursor, instant transitions, marquee text
 - **Best for**: Indie games, retro tools, creative portfolios, nostalgia marketing, Web3/NFT
 - **Avoid for**: Professional corporate, modern SaaS, high-res photography sites
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ Good (if contrast ok)
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 1980s Arcade
 - **Complexity**: Medium
 
@@ -1574,36 +1335,6 @@ font-family: 'Press Start 2P', image-rendering: pixelated, box-shadow: 4px 0 0 #
 - [ ] Retro palette
 - [ ] Blocky layout
 
-## 53. Bento Grids
-
-- **Keywords**: Apple-style, modular, cards, organized, clean, hierarchy, grid, rounded, soft
-- **Primary colors**: Off-white #F5F5F7, Clean White #FFFFFF, Text #1D1D1F
-- **Secondary colors**: Subtle accents, soft shadows, blurred backdrops
-- **Effects**: Hover scale (1.02), soft shadow expansion, smooth layout shifts, content reveal
-- **Best for**: Product features, dashboards, personal sites, marketing summaries, galleries
-- **Avoid for**: Long-form reading, data tables, complex forms
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
-- **Era**: 2020s Apple/Linear
-- **Complexity**: Low
-
-**AI prompt**: Design a Bento Grid layout. Use: modular grid system, rounded corners (16-24px), different card sizes (1x1, 2x1, 2x2), card-based hierarchy, soft backgrounds (#F5F5F7), subtle borders, content-first, Apple-style aesthetic.
-
-```css
-/* Bento Grids hints */
-display: grid, grid-template-columns: repeat(auto-fit, minmax(...)), gap: 1rem, border-radius: 20px, background: #FFF, box-shadow: subtle
-```
-
-**Checklist**:
-- [ ] Grid layout (CSS Grid)
-- [ ] Rounded corners 16-24px
-- [ ] Varied card spans
-- [ ] Content fits card size
-- [ ] Responsive re-flow
-- [ ] Apple-like aesthetic
-
 ## 55. Spatial UI (VisionOS)
 
 - **Keywords**: Glass, depth, immersion, spatial, translucent, gaze, gesture, apple, vision-pro
@@ -1612,10 +1343,10 @@ display: grid, grid-template-columns: repeat(auto-fit, minmax(...)), gap: 1rem, 
 - **Effects**: Parallax depth, dynamic lighting response, gaze-hover effects, smooth scale on focus
 - **Best for**: Spatial computing apps, VR/AR interfaces, immersive media, futuristic dashboards
 - **Avoid for**: Text-heavy documents, high-contrast requirements, non-3D capable devices
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Moderate (blur cost)
-- **Accessibility**: ⚠ Contrast risks
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2024 Spatial Era
 - **Complexity**: High
 
@@ -1642,10 +1373,10 @@ backdrop-filter: blur(40px) saturate(180%), background: rgba(255,255,255,0.2), b
 - **Effects**: No motion blur, distinct page turns, grain/noise texture, sharp transitions (no fade)
 - **Best for**: Reading apps, digital newspapers, minimal journals, distraction-free writing, slow-living brands
 - **Avoid for**: Gaming, video platforms, high-energy marketing, dark mode dependent apps
-- **Light mode**: ✓ Full
-- **Dark mode**: ✗ Low (inverted only)
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
+- **Light mode**: supported
+- **Dark mode**: not-recommended
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Digital Well-being
 - **Complexity**: Low
 
@@ -1672,10 +1403,10 @@ background: #FDFBF7 (paper white), color: #1A1A1A, transition: none, font-family
 - **Effects**: Marquee scrolls, jitter, sticker layering, GIF overload, random placement, drag-and-drop
 - **Best for**: Gen Z lifestyle brands, music artists, creative portfolios, viral marketing, fashion
 - **Avoid for**: Corporate, government, healthcare, banking, serious tools
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Poor (heavy assets)
-- **Accessibility**: ❌ Poor
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:high|drivers:animation,large-images
+- **Accessibility**: risk:high|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2023+ Internet Core
 - **Complexity**: High
 
@@ -1702,10 +1433,10 @@ mix-blend-mode: multiply/screen, transform: rotate(random), animation: jitter, m
 - **Effects**: Breathing animations, fluid morphing, generative growth, physics-based movement
 - **Best for**: Sustainability tech, biotech, advanced health, meditation, generative art platforms
 - **Avoid for**: Standard SaaS, data grids, strict corporate, accounting
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Moderate
-- **Accessibility**: ✓ Good
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2024+ Generative
 - **Complexity**: High
 
@@ -1732,10 +1463,10 @@ SVG morphing (SMIL or GSAP), canvas for generative, animation: breathing (scale 
 - **Effects**: No smooth transitions, hand-drawn animations, paper texture overlays, jitter effects, sketch reveal
 - **Best for**: Creative portfolios, artist sites, indie brands, handmade products, authentic storytelling, editorial
 - **Avoid for**: Corporate enterprise, fintech, healthcare, government, polished SaaS
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2025+ Anti-Digital
 - **Complexity**: Low
 
@@ -1762,10 +1493,10 @@ background: url(paper-texture.png), filter: grayscale() contrast(), border: hand
 - **Effects**: Press deformation (scale + squish), bounce-back (cubic-bezier), material response, haptic-like feedback, spring physics
 - **Best for**: Modern mobile apps, playful brands, entertainment, gaming UI, consumer products, interactive demos
 - **Avoid for**: Enterprise software, data dashboards, accessibility-critical, professional tools
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Good
-- **Accessibility**: ⚠ Motion sensitive
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2025+ Tactile Era
 - **Complexity**: Medium
 
@@ -1792,10 +1523,10 @@ transform: scale(0.95) on active, animation: bounce (cubic-bezier(0.34, 1.56, 0.
 - **Effects**: Subtle parallax, natural easing (ease-out), texture overlays, grain effects, soft shadows
 - **Best for**: Wellness brands, sustainable products, artisan goods, organic food, spa/beauty, home decor
 - **Avoid for**: Tech startups, gaming, nightlife, corporate finance, high-energy brands
-- **Light mode**: ✓ Full
-- **Dark mode**: ◐ Partial
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2025+ Handmade Warmth
 - **Complexity**: Low
 
@@ -1822,10 +1553,10 @@ background: warm earth tones, color: #C67B5C #D4C4A8 #6B7B3C, border-radius: org
 - **Effects**: Cursor scale on hover, magnetic pull to elements, cursor morphing, trail effects, blend mode cursors, click feedback
 - **Best for**: Creative portfolios, interactive experiences, agency sites, product showcases, gaming, entertainment
 - **Avoid for**: Mobile-first (no cursor), accessibility-critical, data-heavy dashboards, forms
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Good
-- **Accessibility**: ⚠ Not for touch/SR
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:high|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2025+ Interactive
 - **Complexity**: Medium
 
@@ -1852,10 +1583,10 @@ cursor: none (custom), position: fixed for cursor element, mix-blend-mode: diffe
 - **Effects**: Voice waveform visualization, listening pulse, processing spinner, speak animation, smooth transitions
 - **Best for**: Voice assistants, accessibility apps, hands-free tools, smart home, automotive UI, cooking apps
 - **Avoid for**: Visual-heavy content, data entry, complex forms, noisy environments
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ Excellent
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2025+ Voice Era
 - **Complexity**: Medium
 
@@ -1882,10 +1613,10 @@ Web Speech API integration, canvas for waveform, animation: pulse for listening,
 - **Effects**: Drag-to-rotate, pinch-to-zoom, spin animation, AR placement, material switching, smooth orbit controls
 - **Best for**: E-commerce, furniture, fashion, automotive, electronics, jewelry, product configurators
 - **Avoid for**: Content-heavy sites, blogs, dashboards, low-bandwidth, accessibility-critical
-- **Light mode**: ◐ Partial
-- **Dark mode**: ◐ Partial
-- **Performance**: ❌ Poor (3D rendering)
-- **Accessibility**: ⚠ Alt content needed
+- **Light mode**: conditional
+- **Dark mode**: conditional
+- **Performance**: cost:high|drivers:animation,large-images
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2025+ E-commerce 3D
 - **Complexity**: High
 
@@ -1912,10 +1643,10 @@ Three.js or model-viewer, OrbitControls, touch events for rotation, WebXR for AR
 - **Effects**: CSS mesh-gradient (experimental), SVG gradients, canvas gradients, smooth color morphing, flowing animation
 - **Best for**: Hero sections, backgrounds, creative brands, music platforms, fashion, lifestyle, premium products
 - **Avoid for**: Data interfaces, text-heavy content, accessibility-critical, conservative brands
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Good
-- **Accessibility**: ⚠ Text contrast
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2025+ Gradient Evolution
 - **Complexity**: Medium
 
@@ -1942,10 +1673,10 @@ background: conic-gradient or mesh (SVG), animation: gradient flow (background-p
 - **Effects**: Smooth scroll, reveal on scroll, parallax images, text animations, page-flip transitions
 - **Best for**: News sites, blogs, magazines, editorial content, long-form articles, journalism, publishing
 - **Avoid for**: Dashboards, apps, e-commerce catalogs, real-time data, short-form content
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Editorial Digital
 - **Complexity**: Low
 
@@ -1972,10 +1703,10 @@ display: grid with named areas, column-count for text, ::first-letter for drop c
 - **Effects**: RGB offset animation, glitch timing, scan line movement, noise flicker, distortion on hover
 - **Best for**: Music platforms, gaming, tech brands, creative portfolios, nightlife, entertainment, video platforms
 - **Avoid for**: Corporate, healthcare, finance, accessibility-critical, elderly users
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Dark preferred
-- **Performance**: ⚠ Good
-- **Accessibility**: ⚠ Can cause strain
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:high|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Retro-Tech
 - **Complexity**: Medium
 
@@ -2002,10 +1733,10 @@ filter: drop-shadow with offset colors, text-shadow: RGB offset (-2px 0 red, 2px
 - **Effects**: Film grain overlay, VHS tracking effect, polaroid shake, fade-in transitions, light leak animations
 - **Best for**: Photography portfolios, music/vinyl brands, vintage fashion, nostalgia marketing, film industry, cafes
 - **Avoid for**: Modern tech, SaaS, healthcare, children's apps, corporate enterprise
-- **Light mode**: ✓ Full
-- **Dark mode**: ◐ Partial
-- **Performance**: ⚡ Good
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 1970s-90s Analog Revival
 - **Complexity**: Medium
 
@@ -2032,14 +1763,14 @@ filter: sepia() contrast() saturate(0.8), background: noise texture overlay, ani
 - **Effects**: Hard offset shadows (4px 4px 0px black), mechanical press active:translate, no smooth hover — instant 0ms transitions, dot grid pattern on sections, slide-over transitions
 - **Best for**: Mobile-first apps needing high personality, onboarding flows, branding-forward product screens, artisan/design brands, editorial mobile experiences
 - **Avoid for**: Enterprise dashboards, accessibility-critical contexts (requires extra a11y work), data-heavy screens, conservative industries
-- **Light mode**: ✓ Full
-- **Dark mode**: ◐ Partial (primary palette only)
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ⚠ WCAG AA (high contrast primaries; verify yellow text separately)
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 1919 Bauhaus Movement
 - **Complexity**: Medium
 
-**AI prompt**: Design a Bauhaus mobile app. Use strict geometric shapes (circles and squares only), primary color blocking (Red #D02020, Blue #1040C0, Yellow #F0C020), hard 4px offset black shadows, OFF-WHITE canvas (#F0F0F0), massive bold uppercase headlines (Outfit Black 900), rectangular full-width buttons with mechanical press animation. No gradients. No rounded cards. No soft transitions.
+**AI prompt**: Design a Bauhaus (包豪斯) mobile interface using bauhaus, geometric, constructivist, primary colors, hard shadow, bold, tactile, functional. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Bauhaus (包豪斯) hints */
@@ -2066,14 +1797,14 @@ border-radius: 0px (cards/inputs) or 9999px (buttons/FAB), box-shadow: 4px 4px 0
 - **Effects**: Instant inversion active state (tap → bg-black text-white, zero transition-none), no shadows (strictly 2D), full-bleed horizontal rules (4px black section dividers), subtle paper noise texture (opacity: 0.03), slide-in page transitions with hard edge
 - **Best for**: Luxury fashion e-commerce mobile, editorial publications, high-end portfolio apps, experimental/avant-garde brands, digital exhibitions
 - **Avoid for**: Entertainment, colorful brands, friendly consumer apps, anything requiring visual warmth or gradient
-- **Light mode**: ✓ Full (Light Mode Enforced)
-- **Dark mode**: ◐ Dark by section only (inverted sections)
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AAA (pure black/white)
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Editorial Mobile
 - **Complexity**: Medium
 
-**AI prompt**: Design a minimalist monochrome mobile app. Use ONLY black (#000000) and white (#FFFFFF). Zero border-radius on every element. No shadows — depth is created by 1–4px black borders and color inversion only. Typography is the primary visual: Playfair Display for heroes (text-5xl–text-6xl, tracking-tighter, leading-[0.9]), Source Serif 4 for body, JetBrains Mono for labels/tags. Tap states instantly invert (bg-black text-white). Full-width horizontal rules separate sections. Use the word 'MENU' instead of hamburger icon.
+**AI prompt**: Design a Minimalist Monochrome mobile interface using monochrome, black white, editorial, austere, typographic, sharp, zero radius, high contrast. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Minimalist Monochrome hints */
@@ -2100,14 +1831,14 @@ border-radius: 0px (ALL elements including modals), box-shadow: none, active:bg-
 - **Effects**: Expo.out Bezier(0.16,1,0.3,1) easing; spring modals (damping:20 stiffness:90); haptic-linked press (Impact Light/Medium); animated ambient light blobs (Reanimated translateX/Y slow oscillation); BlurView glassmorphism headers/nav (intensity 20); scale press 0.97 → 1.0; avoid pure #000000 (OLED smear)
 - **Best for**: Developer tools, pro productivity apps, fintech/trading dashboards, media/streaming platforms, AI tool interfaces, high-end gaming companion apps
 - **Avoid for**: Consumer apps needing warmth, children's apps, health/medical contexts where dark feels harsh, high-accessibility contexts needing maximum contrast
-- **Light mode**: ✓ Light mode only as exception
-- **Dark mode**: ✓ Dark Mode Primary
-- **Performance**: ⚠ Good (blur effects require native driver)
-- **Accessibility**: ⚠ WCAG AA (requires careful accent contrast check)
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Cinematic Mobile
 - **Complexity**: High
 
-**AI prompt**: Design a cinematic dark mobile app. Background: LinearGradient from #0a0a0f (top) to #020203 (bottom). Add 2–3 absolute animated 'blob' views: circular, blurRadius 30–50, opacity 0.08–0.12, slow Reanimated oscillation. Cards: borderRadius 16, border rgba(255,255,255,0.08) hairline, subtle top-edge shine gradient. Primary button: #5E6AD2, scale press 0.97, haptic on press. BlurView (intensity 20, tint dark) for tab bar and headers. Typography: Inter 700 for headers, 400 for body. Never use pure #000000. Accent glow: rgba(94,106,210,0.2) behind primary actions.
+**AI prompt**: Design a Modern Dark (Cinema Mobile) mobile interface using dark mode, cinematic, ambient light, glassmorphism, deep black, indigo, glow, blur. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Modern Dark (Cinema Mobile) hints */
@@ -2138,14 +1869,14 @@ borderRadius: 16 (cards/buttons), background: LinearGradient #0a0a0f→#020203, 
 - **Effects**: Spring animations (mass:1 damping:15 stiffness:120); gradient buttons (0052FF→4D7CFF); scale press 0.96→1.0 with haptics; floating FAB with gentle bobbing (Reanimated); glassmorphism BlurView navigation bars; staggered fade-in entrance (Y:20→0 + opacity:0→1); pulsing status dot on section badges; layout transitions (LayoutAnimation or Reanimated entering)
 - **Best for**: B2B SaaS mobile dashboards, fintech apps, developer tool mobile companions, marketing analytics apps, HR/operations apps, modern business productivity
 - **Avoid for**: Pure consumer entertainment, children's apps, highly decorative lifestyle apps, contexts where Electric Blue feels too corporate
-- **Light mode**: ✓ Full
-- **Dark mode**: ◐ Partial
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s SaaS Mobile
 - **Complexity**: Medium
 
-**AI prompt**: Design a high-tech boutique SaaS mobile app. Primary canvas: #FAFAFA (warm off-white). Cards: #FFFFFF with 1pt Slate-200 border, iOS shadow (shadowOpacity:0.1, shadowRadius:10, offset y:4), Android elevation:4, padding 24px, borderRadius 16. Buttons: LinearGradient #0052FF→#4D7CFF, height 56px, borderRadius 16, scale press 0.96 + haptic. Section badges: rounded pill with rgba(0,82,255,0.05) bg and rgba(0,82,255,0.2) border + PulseDot + JetBrains Mono text. Typography: Calistoga for heroes (36–42pt), Inter for body (16–18pt), JetBrains Mono for data labels. All screen transitions: spring (mass:1 damping:15 stiffness:120). Always include SafeAreaView.
+**AI prompt**: Design a SaaS Mobile (High-Tech Boutique) mobile interface using saas, electric blue, gradient, fintech, spring animation, dual font, glassmorphism, boutique. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* SaaS Mobile (High-Tech Boutique) hints */
@@ -2172,14 +1903,14 @@ borderRadius: 16 (buttons/cards), LinearGradient colors={['#0052FF','#4D7CFF']},
 - **Effects**: Blinking cursor (500ms opacity loop), typewriter text reveal hook, scanline overlay (repeating lines 0.05 opacity), ASCII art headers, instant color inversion on press (bg-green text-black), haptic on every keystroke, boot sequence splash on launch
 - **Best for**: Developer tools, Web3/blockchain apps, geek-culture apps, ARG games, sci-fi/noir gaming companions, hacker/security tools, creative studio portfolios
 - **Avoid for**: Consumer products, health apps, anything requiring approachability or warmth, children's apps, standard enterprise contexts
-- **Light mode**: ✗ No
-- **Dark mode**: ✓ OLED Dark Only
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ High contrast (green on black ≫4.5:1 ratio)
+- **Light mode**: not-recommended
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Retro-Future 1980s–2020s
 - **Complexity**: Medium
 
-**AI prompt**: Design a Mobile Terminal CLI app. Background: #050505 OLED black. ALL text in Matrix Green #33FF00. Font: JetBrains Mono or SpaceMono ONLY — zero border-radius everywhere. ASCII borders using +, -, |, * characters instead of standard containers. Buttons displayed as [ EXECUTE ] or > PROCEED. On press: instantly inverts to green bg + black text + haptic. Cursor: blinking View opacity 0→1 at 500ms. Show boot sequence on launch (fake log scroll). Progress bars as [#####-----] text. Status bar footer: [BATTERY:88%] [NET:CONNECTED]. Scanline overlay: absolute View with repeating 1px horizontal lines at opacity 0.05. Typewriter effect on new data.
+**AI prompt**: Design a Terminal CLI (Mobile) mobile interface using terminal, cli, matrix green, monospace, hacker, ascii, command line, developer. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Terminal CLI (Mobile) hints */
@@ -2206,14 +1937,14 @@ borderRadius: 0 (ALL elements), borderWidth: 1, borderColor: '#33FF00', backgrou
 - **Effects**: Infinite marquee (Reanimated, Linear easing, 5s loop, hard clip), hero parallax (scale 1.0→1.3 + fade), sticky section header push, card flood inversion on press (bg→#DFE104, text→#000000), haptic Medium on every press, scroll-triggered interpolate transforms, 0px radius, 2px borders, 100ms color transitions
 - **Best for**: Immersive storytelling apps, brand flagship mobile, music/culture platforms, sports apps, underground zines, limited-edition product drops, performance dashboards
 - **Avoid for**: Calm informational apps, healthcare, finance contexts needing trust, children's, any context where aggressive typography feels inappropriate
-- **Light mode**: ✓ Dark Primary
-- **Dark mode**: ◐ Dark only (inverted sections)
-- **Performance**: ⚡ Excellent (native driver required)
-- **Accessibility**: ⚠ WCAG AA (verify zinc body text on dark bg)
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Mobile Brutalism
 - **Complexity**: High
 
-**AI prompt**: Design a Kinetic Brutalism mobile app. Canvas: #09090B. Primary accent: Acid Yellow #DFE104 (text: #000000). Typography: Space Grotesk BOLD. Display text: 60–120pt, uppercase, letterSpacing -1, lineHeight 0.9–1.1x. Body: 18–20pt. Labels: 12pt uppercase letterSpacing +2. Add infinite marquee rows (Reanimated, no easing, hard edge clip). Hero text parallax on scroll (Interpolate: scale 1.0→1.3, opacity 1→0). Card press: instantly flood to #DFE104 + flip text to #000. Haptic Medium on every press. 0px radius. 2px solid borders. NO shadows. No gradients. Scale all fonts by (windowWidth / 375 * size) for responsiveness.
+**AI prompt**: Design a Kinetic Brutalism (Mobile) mobile interface using kinetic, brutalism, motion, marquee, acid yellow, uppercase, oversized, aggressive typography. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Kinetic Brutalism (Mobile) hints */
@@ -2241,14 +1972,14 @@ borderRadius: 0, borderWidth: 2, borderColor: '#3F3F46', backgroundColor: '#0909
 - **Effects**: Immediate press feedback (scale 0.97, no delay), color section blocking (full-width contrasting View), zero elevation/shadow, solid icon containers (colored squares/circles), geometric low-opacity shape overlays, bottom tabs solid fill (no floating)
 - **Best for**: Cross-platform apps (iOS+Android parity), information-dense dashboards, system UI, brand illustration, onboarding flows, marketing pages, icon design
 - **Avoid for**: Ultra-premium contexts needing depth/shadow, dark-mode-first products, contexts where flat design reads as unfinished or sterile
-- **Light mode**: ✓ Full
-- **Dark mode**: ◐ Partial (Dark mode via color swap only)
-- **Performance**: ⚡ Excellent (no GPU effects)
-- **Accessibility**: ✓ WCAG AA (large bold type helps)
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2010s–2020s Flat Mobile
 - **Complexity**: Low
 
-**AI prompt**: Design a Flat Mobile app. NO shadows (shadowOpacity: 0, elevation: 0). Color creates all hierarchy. Sections: full-width View blocks alternating contrasting bg colors (Blue Hero → White Content → Gray Block). Buttons: solid #3B82F6, borderRadius 8, height 56. Cards: backgroundColor #FFFFFF (on gray bg) or #DBEAFE (blue tint) — no shadow. Text: fontWeight 800 letterSpacing -0.5 (heads), 600 (sub), 400 (body). Inputs: #F3F4F6 bg, focused: borderWidth 2 borderColor #3B82F6. Icons: Lucide strokeWidth 2.5 inside solid colored square/circle. Press feedback: scale 0.97 Pressable. Use position absolute low-opacity geometric shapes (circles, rotated squares) as background decoration.
+**AI prompt**: Design a Flat Design Mobile (Touch-First) mobile interface using flat, 2D, no shadow, color blocking, geometric, bold, poster, icon. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Flat Design Mobile (Touch-First) hints */
@@ -2267,25 +1998,25 @@ shadowOpacity: 0, elevation: 0, borderRadius: 6/12/999, height: 48 minimum touch
 - [ ] Primary headlines much larger than body
 - [ ] 4pt spacing system throughout
 
-## 76. Material You (MD3 Mobile)
+## 76. Material 3 Expressive (Mobile)
 
-- **Keywords**: material design 3, md3, tonal surfaces, pills, soft curves, android, md3 easing, state layers, haptic, fab, google
+- **Keywords**: material 3 expressive, vibrant color, spring motion, adaptive components, flexible typography, contrasting shapes, android
 - **Primary colors**: Primary Violet #6750A4, Secondary Container #E8DEF8, Tertiary #7D5260
 - **Secondary colors**: Surface #FFFBFE, On Surface #1C1B1F, Surface Container #F3EDF7, Outline #79747E
 - **Effects**: Tonal elevation (overlay colors instead of strong shadows), pill-shaped buttons and chips (borderRadius 999), emphasized easing Easing.bezier(0.2,0,0,1), state layers (pressed overlays 10–15% opacity), Reanimated-filled label float for inputs, HapticFeedback on FAB/toggles
-- **Best for**: Android ecosystem apps, cross-platform productivity tools, MD3-based admin panels, data-heavy back-office UI with Material UI
+- **Best for**: Android, Wear OS, and Pixel-aligned products using Material 3 components
 - **Avoid for**: Ultra-minimal brutalist brands, terminal/hacker aesthetics, monochrome editorial apps
-- **Light mode**: ✓ Full
-- **Dark mode**: ✓ Full
-- **Performance**: ⚠ Good (requires gradients and overlays)
-- **Accessibility**: ✓ WCAG AA (with MD3 token checks)
-- **Era**: Material Design 3
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
+- **Era**: Google Material Design 3
 - **Complexity**: Medium
 
-**AI prompt**: Design a Material You (MD3) mobile app. Use #FFFBFE background, #6750A4 primary, #E8DEF8 secondary container, #F3EDF7 surface container. All interactive elements are pill-shaped (borderRadius: 999). Buttons use Pressable with scale: 0.95 on press and state-layer overlays (black 10% or primary 12%). Inputs use filled M3 style: background #E7E0EC with floating label animation on focus. Elevation is tonal (layering containers) plus light shadow/elevation on Android. Animations use emphasized easing (0.2,0,0,1) at 100–400ms. FABs are tertiary-colored rounded squares/circles with level 3 elevation.
+**AI prompt**: Design a Material 3 Expressive mobile interface with vibrant semantic color, contrasting shapes, flexible typography, adaptive components, spring motion, and reduced-motion alternatives.
 
 ```css
-/* Material You (MD3 Mobile) hints */
+/* Material 3 Expressive (Mobile) hints */
 borderRadius: 999 (buttons/chips), containerRadius: 16–28, backgroundColor: '#FFFBFE', colorPrimary: '#6750A4', colorSecondaryContainer: '#E8DEF8', colorSurfaceContainer: '#F3EDF7', outlineColor: '#79747E', Pressable state-layer overlay (opacity 0.1–0.15), Easing.bezier(0.2,0,0,1), HapticFeedback.impactMedium on FAB, floating label using Reanimated translateY/scale
 ```
 
@@ -2308,22 +2039,32 @@ borderRadius: 999 (buttons/chips), containerRadius: 16–28, backgroundColor: '#
 - **Effects**: Thick 4px black borders on all major elements, hard offset shadows (4–8px, no blur), mechanical press: translateX/Y equal to shadow offset, slightly rotated cards/badges (-2deg/2deg), high-saturation color blocking, spring/linear animations only
 - **Best for**: Creative tools, collab platforms, Gen Z marketing & e-commerce, portfolio sites, sticker-book style content apps
 - **Avoid for**: Serious enterprise apps, conservative industries, sober fintech, accessibility-first contexts (must tune contrast)
-- **Light mode**: ✓ Light-first
-- **Dark mode**: ✗ Dark
-- **Performance**: ⚠ Moderate (shadows + transforms)
-- **Accessibility**: ⚠ Requires careful contrast tuning
+- **Light mode**: supported
+- **Dark mode**: not-recommended
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: 2020s Neo-Brutalism
 - **Complexity**: High
 
-**AI prompt**: Design a Mobile Neo-Brutalist app. Background: Cream #FFFDF5. All content blocks: white or violet with borderWidth 4 borderColor #000. Shadows are solid offset blocks (no blur) using an extra View behind offset by 4px or 8px. Typography: Space Grotesk Bold/Black only (700–900). Buttons: 56px tall, 4px border, 0 radius; press animation translates button to cover the shadow. Cards slightly rotated (-1deg, 2deg). Colors: Hot Red #FF6B6B for primary, Yellow #FFD93D for focus/badges, Soft Violet #C4B5FD as tertiary. Animation: spring/linear only, no ease-out luxury motion.
+**AI prompt**: Design a Neo Brutalism (Mobile) mobile interface using neo brutalism, pop art, stickers, thick borders, cream background, hot red, vivid yellow, soft violet. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Neo Brutalism (Mobile) hints */
-borderWidth: 4 (primary), 2 (secondary), borderRadius: 0 or 999 (badges only), backgroundColor: '#FFFDF5', shadow implemented as offset View, transform: [{translateX:4},{translateY:4}] on PressIn, fontFamily: 'SpaceGrotesk-Bold', fontWeight: '700/900', transform: [{ rotate: '-1deg' }] on cards, padding: 20,☐ 4px borders on major elements
+borderWidth: 4 (primary), 2 (secondary), borderRadius: 0 or 999 (badges only), backgroundColor: '#FFFDF5', shadow implemented as offset View, transform: [{translateX:4},{translateY:4}] on PressIn, fontFamily: 'SpaceGrotesk-Bold', fontWeight: '700/900', transform: [{ rotate: '-1deg' }] on cards, padding: 20
 ```
 
 **Checklist**:
+- [ ] 4px borders on major elements
 - [ ] Hard offset shadow implemented via extra View
+- [ ] Mechanical press hides shadow
+- [ ] Cream canvas background
+- [ ] Pop-art color palette used
+- [ ] Cards/badges slightly rotated
+- [ ] No gradients or soft shadows
+- [ ] Only bold/black type weights
+- [ ] Badges slapped with absolute positioning
+- [ ] Anti-patterns (no subtle gray
+- [ ] no blur) avoided
 
 ## 78. Bold Typography (Mobile Poster)
 
@@ -2333,14 +2074,14 @@ borderWidth: 4 (primary), 2 (secondary), borderRadius: 0 or 999 (badges only), b
 - **Effects**: Hero headlines 48–72px (5:1 vs body size), tight tracking (-1.5px), edge-to-edge type, massive vertical spacing (60px+), underline CTAs (2–3px accent line), instant 200ms transitions (no bounce), strictly 0px radius containers, color shifts for active state instead of elevation
 - **Best for**: Creative brand heroes, reading-focused apps, event/exhibition pages, editorial mobile experiences, landing hero sections
 - **Avoid for**: Utility dashboards, kids apps, playful consumer products, contexts needing many icons or heavy imagery
-- **Light mode**: ✓ Dark Mode Primary
-- **Dark mode**: ◐ Light sections optional
-- **Performance**: ⚡ Excellent
-- **Accessibility**: ✓ Contrast 18:1 achievable
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Editorial 2020s
 - **Complexity**: Medium
 
-**AI prompt**: Design a Bold Typography mobile screen. Background #0A0A0A, text #FAFAFA, accent #FF3D00. Use Inter Tight/Inter 600+ for all type; JetBrains Mono for labels. Headline: 56–72px, tracking -1.5, lineHeight 1.1, full-bleed width with slight bleed off-screen. Body: 16–18px, leading 1.6. Buttons: underline CTA (accent text + 2px underline block), or inverted box with 0 radius. No shadows, no rounded corners. Layout: single column, paddingHorizontal 24, vertical gaps 64 between sections. Animation: 200ms, Easing.bezier(0.25,0,0,1), slight slide-up 10px + fade on mount.
+**AI prompt**: Design a Bold Typography (Mobile Poster) mobile interface using bold typography, editorial, poster, broadsheet, vermillion, negative space, edge-to-edge type, underline CTA. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Bold Typography (Mobile Poster) hints */
@@ -2367,14 +2108,14 @@ backgroundColor: '#0A0A0A', color: '#FAFAFA', accent: '#FF3D00', borderColor: '#
 - **Effects**: Deep mahogany backgrounds, oak surface cards, brass accented CTAs, arch-top hero/imagery, heavy vignette overlays, sepia-tinted images, drop caps with brass Cinzel, Roman numeral volume headings, slow timing-based animations (Easing.out poly(4)), zero neon or modern tech cues
 - **Best for**: Knowledge management apps, deep reading tools, ritual-heavy personal brands, lore-heavy RPG/roleplay apps, culture-specific community platforms
 - **Avoid for**: Hyper-modern tech dashboards, neon/glassmorphism, playful Gen Z branding
-- **Light mode**: ✓ Dark Rich
-- **Dark mode**: ◐ Light parchment sections
-- **Performance**: ⚠ Moderate (vignette + shadows)
-- **Accessibility**: ✓ Legible (serif optimized)
+- **Light mode**: supported
+- **Dark mode**: conditional
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Timeless Scholarly
 - **Complexity**: High
 
-**AI prompt**: Design a Scholarly Academia mobile app. Background #1C1714 (mahogany), alt surfaces #251E19 (oak), text #E8DFD4 (parchment). Accent brass #C9A962 for CTAs + borders; crimson #8B2635 for wax seals. Typography: Cormorant Garamond (headings), Crimson Pro (body), Cinzel (labels/overlines). Use arch-top hero containers (borderTopRadius 100). Cards: oak bg, 1px wood-grain border. Inputs: worn-leather background, brass focus border. Global vignette overlay and ornate brass dividers (Unicode glyph + gradient line). Animations: no spring, only Timing with Easing.out(Easing.poly(4)).
+**AI prompt**: Design a Academia (Scholarly Mobile) mobile interface using academia, library, mahogany, parchment, brass, crimson, serif, drop cap. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Academia (Scholarly Mobile) hints */
@@ -2401,14 +2142,14 @@ backgroundColor: '#1C1714', altSurface: '#251E19', textColor: '#E8DFD4', mutedBg
 - **Effects**: Deep void background with neon radiance, chamfered 45° corners via SVG/Skia, scanline overlay, CRT flicker opacity oscillation, glitch animations (translateX ±2), neon pulses around buttons, HUD corner brackets, terminal prompt text inputs, heavy use of blurView holographic panels
 - **Best for**: Gaming dashboards, crypto/cyberpunk apps, sci-fi companion tools, hacker OS skins, data-heavy monitoring HUDs
 - **Avoid for**: Serious enterprise, health/finance requiring calm trust, minimal editorial apps
-- **Light mode**: ✗ Light
-- **Dark mode**: ✓ Dark-only
-- **Performance**: ⚠ Moderate–Heavy (Skia/blur/animations)
-- **Accessibility**: ⚠ Requires careful reduced-motion handling
+- **Light mode**: not-recommended
+- **Dark mode**: supported
+- **Performance**: cost:high|drivers:animation,large-images
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Cyber-Noir
 - **Complexity**: High
 
-**AI prompt**: Design a Cyberpunk mobile HUD. Background #0A0A0F, card #12121A. Accents: #00FF88 (primary), #FF00FF, #00D4FF. Typography: Orbitron for headings, JetBrains Mono for data. All shapes use chamfered corners via SVG or Skia clipPath. Buttons: neon glow shadows, scale 0.98 + haptic on press, optional glitch jitter on active. Global scanline overlay (semi-transparent horizontal lines) and CRT flicker (root opacity 0.98–1). Inputs: prompt style with '>' in accent, custom blinking block cursor. HUD cards use corner brackets and subtle gradients.
+**AI prompt**: Design a Cyberpunk Mobile HUD mobile interface using cyberpunk, neon, glitch, chamfered, orbitron, jetbrains, scanlines, crt. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Cyberpunk Mobile HUD hints */
@@ -2435,14 +2176,14 @@ backgroundColor: '#0A0A0F', cardBg: '#12121A', accent: '#00FF88', accent2: '#FF0
 - **Effects**: Deep void + dark matter surfaces, Bitcoin orange/gold gradients for CTAs, pill buttons with glowing shadows, glassmorphic BlurView nav, monospace data rows, gradient text balances + masked orange-gold, pulsing status indicators and vertical ledger timelines, ultra-thin borders, high-precision typography
 - **Best for**: DeFi dashboards, wallets, NFT marketplaces, Web3 social, metaverse utilities, high-tech fintech brands
 - **Avoid for**: Playful casual apps, low-tech brands, ultra-minimal editorial apps
-- **Light mode**: ✗ Light
-- **Dark mode**: ✓ Dark-only
-- **Performance**: ⚠ Moderate (gradients+blur)
-- **Accessibility**: ✓ WCAG AA with care
+- **Light mode**: not-recommended
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Fintech/Web3
 - **Complexity**: High
 
-**AI prompt**: Design a Bitcoin DeFi mobile app. Background #030304, cards #0F1115, text #FFFFFF, muted #94A3B8. Primary CTA: LinearGradient #EA580C→#F7931A with orange glow shadow. Typography: Space Grotesk Bold for headings, Inter for body, JetBrains Mono for prices/hashes. Use BlurView (intensity 20) for nav bars and floating panels. Cards as 'blocks' with hairline borders and light orange glow on active. Use grid background (low-opacity 50px grid). Gradient text for key balances via MaskedView and LinearGradient orange→gold. Status indicators pulse using Reanimated. Ledger timelines drawn as vertical gradient line with pulsing dots.
+**AI prompt**: Design a Bitcoin DeFi (Mobile) mobile interface using web3, bitcoin, defi, digital gold, fintech, wallet, orange, glassmorphism. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Bitcoin DeFi (Mobile) hints */
@@ -2469,14 +2210,14 @@ backgroundColor: '#030304', cardBg: '#0F1115', textColor: '#FFFFFF', mutedText: 
 - **Effects**: Multi-layer shadow stacks (nested View) to simulate clay depth, LinearGradient #A78BFA→#7C3AED buttons, borderRadius 40–50 outer / 32 cards / 20 buttons, Reanimated spring squish (scale 0.92 on press), BlurView glass-clay hybrid cards, floating blobs with slow ±20px drift, Haptics Light on every press
 - **Best for**: Children education apps, teen social products, crypto gamification, creative tools, brand mascot-led apps
 - **Avoid for**: Serious enterprise, high-density data, editorial reading apps, fintech trust signals
-- **Light mode**: ✓ Light
-- **Dark mode**: ⚠ Dark (adjusted)
-- **Performance**: ⚠ Moderate–Heavy (shadows+blur)
-- **Accessibility**: ✓ WCAG AA (careful)
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:high|drivers:animation,large-images
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Consumer/Education
 - **Complexity**: High
 
-**AI prompt**: Design a high-fidelity Claymorphism mobile app. Background #F4F1FA (cool lavender-white, never pure white). Primary CTA: LinearGradient #A78BFA to #7C3AED, borderRadius 20, height 56. Cards: borderRadius 32, backgroundColor rgba(255,255,255,0.7) with BlurView. Multi-layer shadow: outer offset(12,12) rgba(160,150,180,0.2) + highlight offset(-8,-8) white. Typography: Nunito Black 900 for headings (48px hero, 32px section, 22px card), DM Sans Medium 500 for body 16px. Spring animations: scale 0.92 on press, spring back damping 10. Background blobs drift ±20px over 8–10s. Bento 2-column grid with hero card spanning full width. Haptics.impactAsync Light on every button press.
+**AI prompt**: Design a Claymorphism (Mobile) mobile interface using claymorphism, clay, 3d, soft, bubbly, candy, playful, rounded. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Claymorphism (Mobile) hints */
@@ -2504,14 +2245,14 @@ backgroundColor: '#F4F1FA', cardBg: 'rgba(255,255,255,0.7)', textPrimary: '#332F
 - **Effects**: Indigo→Violet gradient primary CTAs + active tab highlights, colored card shadows rgba(79,70,229,0.08), pill buttons or 12pt radius, full-width CTA at screen bottom, spring press scale 0.97, floating label inputs with animated focus border, skeletal loading pulses (Indigo/Slate tint), Bottom Sheets with drag dismiss, swipe-to-action list cards, scroll-linked title collapse
 - **Best for**: B2B backend management, productivity tools, government and finance mobile apps, SaaS companion apps, enterprise dashboards
 - **Avoid for**: Pure consumer entertainment, Gen-Z youth apps, gaming UI, ultra-minimal editorial
-- **Light mode**: ✓ Light
-- **Dark mode**: ✓ Dark-ready (token inversion)
-- **Performance**: ✓ Performant
-- **Accessibility**: ✓ WCAG AA
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Enterprise/SaaS
 - **Complexity**: High
 
-**AI prompt**: Design a Modern Enterprise SaaS mobile app. Background #F8FAFC, surfaces #FFFFFF, primary #4F46E5 (Indigo), secondary #7C3AED (Violet). Typography: Plus Jakarta Sans, ExtraBold 800 for screen titles, Bold 700 for section headers, SemiBold 600 for buttons, Regular 400 for body. Line height 1.1–1.2 for titles, 1.4–1.5 for body. Primary button: full-width, LinearGradient Indigo→Violet, pill-shaped or radius 12, scale 0.95 on press with medium haptic. Cards: white bg, 16pt radius, hairline border, shadow rgba(79,70,229,0.08). Inputs: white bg, 8pt radius, floating label, Indigo border on focus. Bottom Tab Navigation (3–5 items), gradient active tab icon. Screen padding 16–20pt. Vertical rhythm 24pt between sections, 12pt between items. Shared Element Transition for hero cards opening to detail.
+**AI prompt**: Design a Enterprise SaaS (Mobile) mobile interface using enterprise, saas, b2b, professional, indigo, violet, gradient, polished. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Enterprise SaaS (Mobile) hints */
@@ -2538,14 +2279,14 @@ backgroundColor: '#F8FAFC', surfaceBg: '#FFFFFF', textPrimary: '#0F172A', textMu
 - **Effects**: Wobbly borderRadius (unique per corner: 15/25/20/10), borderWidth 2–3 solid/dashed, hard offset shadow via rear View (4px,4px) #2D2D2D, Kalam Bold headings, PatrickHand Regular body, slight rotation (-1deg/1deg) on cards, absolute SVG scribble overlays (arrows/tape/tacks), jiggle -2deg↔2deg on error, LayoutAnimation spring on layout changes, Haptics on press, paper texture repeating background
 - **Best for**: Low-fidelity prototyping, creative brands, children/picturebook apps, education tools, journaling apps, gamified puzzles
 - **Avoid for**: Enterprise dashboards, high-density data tables, fintech precision tools, medical or legal apps
-- **Light mode**: ✓ Light
-- **Dark mode**: ⚠ Dark (requires texture inversion)
-- **Performance**: ✓ Lightweight
-- **Accessibility**: ⚠ Moderate (small/muted text risk)
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:low|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Creative/Education
 - **Complexity**: Medium
 
-**AI prompt**: Design a Hand-Drawn (Sketch) mobile app. Background #FDFBF7 (warm paper texture). Typography: Kalam Bold for headings (high weight, felt-tip style), PatrickHand Regular for body (human but legible). Colors: Pencil Black #2D2D2D for all text and borders, Red Marker #FF4D4D for accents, Blue Ballpoint #2D5DA1for input focus. Cards: white background, wobbly corner radii (e.g., 15/25/20/10), borderWidth 3, rotate -1deg or +1deg. Hard offset shadow implemented as a second View behind the card offset 4px right and 4px down. Buttons: Post-it yellow #FFF9C4 for primary CTA, press state shifts the button (translateX 4, translateY 4) to cover the shadow. Inputs: PatrickHand font, wobbly border, focus changes to Blue Ballpoint. Add absolute SVG tape and tack decorations. Error: jiggle animation -2deg to +2deg. All touch targets minimum 48x48.
+**AI prompt**: Design a Sketch Hand-Drawn (Mobile) mobile interface using sketch, hand-drawn, handwriting, wobbly, imperfect, paper, kalam, organic. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Sketch Hand-Drawn (Mobile) hints */
@@ -2572,14 +2313,14 @@ backgroundColor: '#FDFBF7', cardBg: '#FFFFFF', textPrimary: '#2D2D2D', accentRed
 - **Effects**: Full-screen #E0E5EC base, dual-layer shadow via nested View (light top-left + dark bottom-right), extruded convex resting state, inset concave pressed/input state, Reanimated scale 0.97 on press, shadow opacity interpolates 1→0.4 on press, Haptics Light on every interaction, 8pt grid, no blur shadows (no shadowRadius blend), nested depth (extruded card contains inset icon slot)
 - **Best for**: Minimal hardware controls, smart home apps, aesthetic utility tools, health monitors, brand showcase pages
 - **Avoid for**: High-density data, bright multi-color apps, apps needing strong visual hierarchy via color, dark-mode-only products
-- **Light mode**: ✓ Light-only
-- **Dark mode**: ✗ Dark (breaks material metaphor)
-- **Performance**: ✓ Lightweight
-- **Accessibility**: ⚠ Moderate (low-contrast risk)
+- **Light mode**: supported
+- **Dark mode**: not-recommended
+- **Performance**: cost:low|drivers:none
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
 - **Era**: Tools/Lifestyle
 - **Complexity**: Medium
 
-**AI prompt**: Design a Neumorphism (Soft UI) mobile app. Entire background is a single color #E0E5EC (Cool Clay). No other background colors. Dual shadows: outer dark shadowColor rgba(163,177,198,0.7) offset(6,6) radius 10 + outer light #FFFFFF offset(-6,-6) radius 10 using nested View or react-native-shadow-2. Extruded (convex) for resting buttons and cards. Inset (concave) for inputs and pressed states. Buttons: height 56, borderRadius 16, scale 0.97 on press with shadow opacity→0.4, Haptics.impactAsync Light. Cards: padding 24, borderRadius 32, nested inner icon container uses inset style. Inputs: height 50, borderRadius 16, backgroundColor #E0E5EC (NOT white), inset depth effect, focus borderColor #6C63FF width 1.5. Typography: Plus Jakarta Sans Bold or System. Heading 24–32pt, body 16pt, caption 12pt, letterSpacing -0.5 for headings. Animation: 250ms Bezier(0.4,0,0.2,1). No black shadows, no pure white backgrounds.
+**AI prompt**: Design a Neumorphism (Mobile) mobile interface using neumorphism, soft ui, dual shadow, extruded, inset, clay surface, monochromatic, cool grey. Prioritize clear hierarchy, safe areas, touch targets, visible focus, and reduced-motion alternatives.
 
 ```css
 /* Neumorphism (Mobile) hints */
@@ -2597,3 +2338,119 @@ backgroundColor: '#E0E5EC', textPrimary: '#3D4852', textMuted: '#6B7280', accent
 - [ ] Nested depth pattern (extruded→inset)
 - [ ] Accent #6C63FF on active/focus only
 - [ ] 8pt grid spacing
+
+## 86. Fluent 2
+
+- **Keywords**: fluent 2, microsoft, enterprise, calm, rounded, tokenized, cross-platform, copilot
+- **Primary colors**: Fluent neutral palette with brand and status tokens
+- **Secondary colors**: System semantic tokens; product brand accents
+- **Effects**: Subtle depth, calm transitions, platform-adaptive motion
+- **Best for**: Microsoft 365, Windows, Copilot, and enterprise line-of-business tools
+- **Avoid for**: Products that should not inherit Microsoft platform conventions
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
+- **Era**: Microsoft Fluent 2, current
+- **Complexity**: Medium
+
+**AI prompt**: Design a Fluent 2 product surface using calm hierarchy, standardized corners, semantic tokens, subtle depth, and platform-aware components. Preserve Microsoft interaction patterns and accessible focus states.
+
+```css
+/* Fluent 2 hints */
+design tokens, semantic color, component states, focus-visible, reduced motion
+```
+
+**Checklist**:
+- [ ] Use official tokens and components; preserve platform conventions; test keyboard
+- [ ] contrast
+- [ ] zoom
+- [ ] motion preferences
+- [ ] and responsive behavior
+
+## 87. Shopify Polaris
+
+- **Keywords**: shopify polaris, merchant admin, commerce, checkout, web components, app home
+- **Primary colors**: Shopify admin semantic tokens and merchant brand accents
+- **Secondary colors**: System semantic tokens; product brand accents
+- **Effects**: Purposeful admin feedback and restrained transitions
+- **Best for**: Shopify admin apps, merchant tools, checkout, customer accounts, POS, and extensions
+- **Avoid for**: Generic marketing sites or products outside Shopify surfaces
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
+- **Era**: Shopify Polaris, current
+- **Complexity**: Medium
+
+**AI prompt**: Design a Shopify Polaris merchant workflow using official web components, admin-native hierarchy, clear actions, semantic status feedback, and consistent commerce patterns. Keep scope tied to Shopify surfaces.
+
+```css
+/* Shopify Polaris hints */
+design tokens, semantic color, component states, focus-visible, reduced motion
+```
+
+**Checklist**:
+- [ ] Use official tokens and components; preserve platform conventions; test keyboard
+- [ ] contrast
+- [ ] zoom
+- [ ] motion preferences
+- [ ] and responsive behavior
+
+## 88. Adobe Spectrum
+
+- **Keywords**: adobe spectrum, creative tools, enterprise, content creation, tokenized, cross-platform
+- **Primary colors**: Spectrum semantic colors with product-specific accents
+- **Secondary colors**: System semantic tokens; product brand accents
+- **Effects**: Layered depth and restrained professional motion
+- **Best for**: Creative tools, media workflows, document products, and Adobe-adjacent enterprise software
+- **Avoid for**: Consumer brands that do not need dense professional-tool conventions
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
+- **Era**: Adobe Spectrum
+- **Complexity**: Medium
+
+**AI prompt**: Design an Adobe Spectrum professional tool with tokenized color, precise hierarchy, dense but legible controls, strong focus states, and cross-platform component consistency.
+
+```css
+/* Adobe Spectrum hints */
+design tokens, semantic color, component states, focus-visible, reduced motion
+```
+
+**Checklist**:
+- [ ] Use official tokens and components; preserve platform conventions; test keyboard
+- [ ] contrast
+- [ ] zoom
+- [ ] motion preferences
+- [ ] and responsive behavior
+
+## 89. Spectrum 2
+
+- **Keywords**: spectrum 2, adobe, expressive, approachable, adaptive, inclusive, creative tools
+- **Primary colors**: Spectrum 2 semantic themes with updated contrast and personalization
+- **Secondary colors**: System semantic tokens; product brand accents
+- **Effects**: Updated depth, expressive illustration, adaptive motion
+- **Best for**: New Adobe-style creative and document surfaces adopting Spectrum 2
+- **Avoid for**: Products not aligned with Adobe professional workflows
+- **Light mode**: supported
+- **Dark mode**: supported
+- **Performance**: cost:moderate|drivers:animation,blur
+- **Accessibility**: risk:conditional|requires:contrast-text-4.5,keyboard,visible-focus,reduced-motion
+- **Era**: Adobe Spectrum 2, 2023+
+- **Complexity**: Medium
+
+**AI prompt**: Design a Spectrum 2 professional surface with updated typography, approachable icons, layered depth, adaptive themes, and expressive but controlled visuals. Follow official Spectrum 2 tokens and component guidance.
+
+```css
+/* Spectrum 2 hints */
+design tokens, semantic color, component states, focus-visible, reduced motion
+```
+
+**Checklist**:
+- [ ] Use official tokens and components; preserve platform conventions; test keyboard
+- [ ] contrast
+- [ ] zoom
+- [ ] motion preferences
+- [ ] and responsive behavior
