@@ -2,7 +2,7 @@
 title: Landing page patterns
 source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/landing.csv
 upstream: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-extracted_at: 2026-05-19
+extracted_at: 2026-10-20
 applies_to: [marketing, landing-page, conversion]
 version: 1.0.0
 last_updated: 2026-05
@@ -19,11 +19,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: hero, hero-centric, hero-centric design, features, feature-rich, feature-rich showcase, cta, call-to-action
 
 **Section order**:
-- 1. Hero with headline/image
-- 2. Value prop
-- 3. Key features (3-5)
-- 4. CTA section
-- 5. Footer
+- Hero with headline/image > Value prop > Key features (3-5) > CTA section > Footer
 
 **Primary CTA placement**: Hero (sticky) + Bottom
 
@@ -31,19 +27,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Hero parallax, feature card hover lift, CTA glow on hover
 
-**Conversion notes**: Deep CTA placement. Use contrasting color (at least 7:1 contrast ratio). Sticky navbar CTA.
+**Conversion notes**: Deep CTA placement. For CTA label text, verify at least 4.5:1 against the button fill; use 7:1 only when the product explicitly targets AAA normal-text contrast. Keep focus and component boundaries independently visible. Disable hero parallax under reduced motion and render its static final state.
 
 
 ## 2. Hero + Testimonials + CTA
 
-**Keywords**: hero, testimonials, social-proof, social-proof-focused, social proof focused, trust, reviews, cta
+**Keywords**: hero, testimonials, social-proof, social-proof-focused, social proof focused, trust, reviews, cta, carousel accessibility, keyboard accessible carousel, pause auto rotation, reduced motion final state
 
 **Section order**:
-- 1. Hero
-- 2. Problem statement
-- 3. Solution overview
-- 4. Testimonials carousel
-- 5. CTA
+- Hero > Problem statement > Solution overview > Testimonials carousel > CTA
 
 **Primary CTA placement**: Hero (sticky) + Post-testimonials
 
@@ -51,7 +43,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Testimonial carousel slide animations, quote marks animations, avatar fade-in
 
-**Conversion notes**: Social proof before CTA. Use 3-5 testimonials. Include photo + name + role. CTA after social proof.
+**Conversion notes**: Social proof before CTA. Use a concise set of verified testimonials with photo, name, and role. CTA after social proof. Provide previous/next and pause controls; stop rotation on focus, hover, and reduced motion; announce slide position. Previous/next buttons and keyboard controls must expose every slide without dragging.
 
 
 ## 3. Product Demo + Features
@@ -59,11 +51,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: demo, product-demo, features, showcase, interactive, interactive-product-demo, interactive product demo
 
 **Section order**:
-- 1. Hero
-- 2. Product video/mockup (center)
-- 3. Feature breakdown per section
-- 4. Comparison (optional)
-- 5. CTA
+- Hero > Product video/mockup (center) > Feature breakdown per section > Comparison (optional) > CTA
 
 **Primary CTA placement**: Video center + CTA right/bottom
 
@@ -71,7 +59,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Video play button pulse, feature scroll reveals, demo interaction highlights
 
-**Conversion notes**: Embedded product demo increases engagement. Use interactive mockup if possible. Auto-play video muted.
+**Conversion notes**: Use an interactive demo only when it explains value better than static media. Provide captions, transcript, visible play/pause controls, and a non-video fallback; do not autoplay under reduced motion. Pause media when offscreen or hidden and keep the final product state available as static content.
 
 
 ## 4. Minimal Single Column
@@ -79,15 +67,11 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: minimal, simple, direct, minimal & direct, minimal-direct, single-column, clean
 
 **Section order**:
-- 1. Hero headline
-- 2. Short description
-- 3. Benefit bullets (3 max)
-- 4. CTA
-- 5. Footer
+- Hero headline > Short description > Benefit bullets (3 max) > CTA > Footer
 
 **Primary CTA placement**: Center, large CTA button
 
-**Color strategy**: Minimalist: Brand + white #FFFFFF + accent. Buttons: High contrast 7:1+. Text: Black/Dark grey
+**Color strategy**: Minimalist: Brand + white #FFFFFF + accent. Verify CTA label text against its button fill at 4.5:1 minimum; use 7:1 only for an explicit AAA normal-text target.
 
 **Recommended effects**: Minimal hover effects. Smooth scroll. CTA scale on hover (subtle)
 
@@ -99,11 +83,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: funnel, conversion, conversion-optimized, conversion optimized, steps, wizard, onboarding
 
 **Section order**:
-- 1. Hero
-- 2. Step 1 (problem)
-- 3. Step 2 (solution)
-- 4. Step 3 (action)
-- 5. CTA progression
+- Hero > Step 1 (problem) > Step 2 (solution) > Step 3 (action) > CTA progression
 
 **Primary CTA placement**: Each step: mini-CTA. Final: main CTA
 
@@ -119,11 +99,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: comparison, table, compare, versus, cta
 
 **Section order**:
-- 1. Hero
-- 2. Problem intro
-- 3. Comparison table (product vs competitors)
-- 4. Pricing (optional)
-- 5. CTA
+- Hero > Problem intro > Comparison table (product vs competitors) > Pricing (optional) > CTA
 
 **Primary CTA placement**: Table: Right column. CTA: Below table
 
@@ -139,12 +115,9 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: lead, form, signup, capture, email, magnet
 
 **Section order**:
-- 1. Hero (benefit headline)
-- 2. Lead magnet preview (ebook cover
+- Hero (benefit headline) > Lead magnet preview (ebook cover
 - checklist
-- etc)
-- 3. Form (minimal fields)
-- 4. CTA submit
+- etc) > Form (minimal fields) > CTA submit
 
 **Primary CTA placement**: Form CTA: Submit button
 
@@ -152,7 +125,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Form focus state animations, input validation animations, success confirmation animation
 
-**Conversion notes**: Form fields ≤ 3 for best conversion. Offer valuable lead magnet preview. Show form submission progress.
+**Conversion notes**: Ask only for information necessary to deliver the lead magnet. Preview its value and show submission progress.
 
 
 ## 8. Pricing Page + CTA
@@ -160,11 +133,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: pricing, plans, tiers, comparison, cta
 
 **Section order**:
-- 1. Hero (pricing headline)
-- 2. Price comparison cards
-- 3. Feature comparison table
-- 4. FAQ section
-- 5. Final CTA
+- Hero (pricing headline) > Price comparison cards > Feature comparison table > FAQ section > Final CTA
 
 **Primary CTA placement**: Each card: CTA button. Sticky CTA in nav
 
@@ -172,7 +141,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Price toggle animation (monthly/yearly), card comparison highlight, FAQ accordion open/close
 
-**Conversion notes**: Recommend starter plan (pre-select/highlight). Show annual discount (20-30%). Use FAQs to address concerns.
+**Conversion notes**: Highlight the plan that matches the intended audience and show actual annual savings transparently. Use FAQs to address concerns.
 
 
 ## 9. Video-First Hero
@@ -180,18 +149,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: video, hero, media, visual, engaging
 
 **Section order**:
-- 1. Hero with video background
-- 2. Key features overlay
-- 3. Benefits section
-- 4. CTA
+- Hero with video background > Key features overlay > Benefits section > CTA
 
 **Primary CTA placement**: Overlay on video (center/bottom) + Bottom section
 
-**Color strategy**: Dark overlay 60% on video. Brand accent for CTA. White text on dark.
+**Color strategy**: Use an overlay strong enough for text contrast. Brand accent for CTA. Light text only when the measured contrast passes.
 
 **Recommended effects**: Video autoplay muted, parallax scroll, text fade-in on scroll
 
-**Conversion notes**: 86% higher engagement with video. Add captions for accessibility. Compress video for performance.
+**Conversion notes**: Use video only when it demonstrates value better than static media. Add captions for accessibility. Compress video for performance. Provide captions and a visible pause control; use a static poster when reduced motion is requested. Pause video when offscreen or hidden; the reduced-motion poster must preserve the final message and CTA.
 
 
 ## 10. Scroll-Triggered Storytelling
@@ -199,11 +165,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: storytelling, scroll, narrative, story, immersive
 
 **Section order**:
-- 1. Intro hook
-- 2. Chapter 1 (problem)
-- 3. Chapter 2 (journey)
-- 4. Chapter 3 (solution)
-- 5. Climax CTA
+- Intro hook > Chapter 1 (problem) > Chapter 2 (journey) > Chapter 3 (solution) > Climax CTA
 
 **Primary CTA placement**: End of each chapter (mini) + Final climax CTA
 
@@ -211,7 +173,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: ScrollTrigger animations, parallax layers, progressive disclosure, chapter transitions
 
-**Conversion notes**: Narrative increases time-on-page 3x. Use progress indicator. Mobile: simplify animations.
+**Conversion notes**: Keep the narrative understandable without scroll-driven effects. Use progress indicator. Mobile: simplify animations. Keep DOM reading order complete; disable parallax and scroll-scrub under reduced motion. Pause scroll animation when offscreen or hidden and render each chapter in its final readable state under reduced motion.
 
 
 ## 11. AI Personalization Landing
@@ -219,10 +181,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: ai, personalization, smart, recommendation, dynamic
 
 **Section order**:
-- 1. Dynamic hero (personalized)
-- 2. Relevant features
-- 3. Tailored testimonials
-- 4. Smart CTA
+- Dynamic hero (personalized) > Relevant features > Tailored testimonials > Smart CTA
 
 **Primary CTA placement**: Context-aware placement based on user segment
 
@@ -230,18 +189,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Dynamic content swap, fade transitions, personalized product recommendations
 
-**Conversion notes**: 20%+ conversion with personalization. Requires analytics integration. Fallback for new users.
+**Conversion notes**: Validate personalization with consent-aware product analytics. Requires analytics integration. Fallback for new users.
 
 
 ## 12. Waitlist/Coming Soon
 
-**Keywords**: waitlist, coming-soon, launch, early-access, notify
+**Keywords**: waitlist, coming-soon, launch, early-access, notify, countdown accessibility, pause animation, reduced motion final state, verified waitlist count
 
 **Section order**:
-- 1. Hero with countdown
-- 2. Product teaser/preview
-- 3. Email capture form
-- 4. Social proof (waitlist count)
+- Hero with countdown > Product teaser/preview > Email capture form > Social proof (waitlist count)
 
 **Primary CTA placement**: Email form prominent (above fold) + Sticky form on scroll
 
@@ -249,7 +205,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Countdown timer animation, email validation feedback, success confetti, social share buttons
 
-**Conversion notes**: Scarcity + exclusivity. Show waitlist count. Early access benefits. Referral program.
+**Conversion notes**: Explain early-access benefits without fabricated scarcity. Show a waitlist count only when it is current, verified, and dated. Provide a static launch deadline, pause decorative countdown motion when offscreen/hidden, and render the final readable timer state under reduced motion. Email form and referral actions remain keyboard operable.
 
 
 ## 13. Comparison Table Focus
@@ -257,10 +213,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: comparison, table, versus, compare, features
 
 **Section order**:
-- 1. Hero (problem statement)
-- 2. Comparison matrix (you vs competitors)
-- 3. Feature deep-dive
-- 4. Winner CTA
+- Hero (problem statement) > Comparison matrix (you vs competitors) > Feature deep-dive > Winner CTA
 
 **Primary CTA placement**: After comparison table (highlighted row) + Bottom
 
@@ -268,7 +221,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Table row hover highlight, feature checkmark animations, sticky comparison header
 
-**Conversion notes**: Show value vs competitors. 35% higher conversion. Be factual. Include pricing if favorable.
+**Conversion notes**: Show value vs competitors. Measure comparison performance with product-specific analytics. Be factual. Include pricing if favorable.
 
 
 ## 14. Pricing-Focused Landing
@@ -276,11 +229,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: pricing, price, cost, plans, subscription
 
 **Section order**:
-- 1. Hero (value proposition)
-- 2. Pricing cards (3 tiers)
-- 3. Feature comparison
-- 4. FAQ
-- 5. Final CTA
+- Hero (value proposition) > Pricing cards (3 tiers) > Feature comparison > FAQ > Final CTA
 
 **Primary CTA placement**: Each pricing card + Sticky CTA in nav + Bottom
 
@@ -288,19 +237,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Price toggle monthly/annual animation, card hover lift, FAQ accordion smooth open
 
-**Conversion notes**: Annual discount 20-30%. Recommend mid-tier (most popular badge). Address objections in FAQ.
+**Conversion notes**: Show actual monthly and annual totals and savings transparently. Explain plan differences and address objections in the FAQ.
 
 
 ## 15. App Store Style Landing
 
-**Keywords**: app, mobile, download, store, install
+**Keywords**: app, mobile, download, store, install, carousel accessibility, keyboard accessible carousel, pause auto rotation, reduced motion final state, single pointer buttons
 
 **Section order**:
-- 1. Hero with device mockup
-- 2. Screenshots carousel
-- 3. Features with icons
-- 4. Reviews/ratings
-- 5. Download CTAs
+- Hero with device mockup > Screenshots carousel > Features with icons > Reviews/ratings > Download CTAs
 
 **Primary CTA placement**: Download buttons prominent (App Store + Play Store) throughout
 
@@ -308,7 +253,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Device mockup rotations, screenshot slider, star rating animations, download button pulse
 
-**Conversion notes**: Show real screenshots. Include ratings (4.5+ stars). QR code for mobile. Platform-specific CTAs.
+**Conversion notes**: Show real screenshots and only current verified ratings. Provide platform-specific CTAs, buttons and keyboard controls in addition to swipe, and pause any auto-rotation. Stop auto-rotation on focus, hover, offscreen/hidden, or reduced motion and render the selected screenshot as the static final state.
 
 
 ## 16. FAQ/Documentation Landing
@@ -316,10 +261,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: faq, documentation, help, support, questions, faq/documentation, knowledge base
 
 **Section order**:
-- 1. Hero with search bar
-- 2. Popular categories
-- 3. FAQ accordion
-- 4. Contact/support CTA
+- Hero with search bar > Popular categories > FAQ accordion > Contact/support CTA
 
 **Primary CTA placement**: Search bar prominent + Contact CTA for unresolved questions
 
@@ -335,10 +277,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: immersive, interactive, experience, 3d, animation, immersive/interactive experience
 
 **Section order**:
-- 1. Full-screen interactive element
-- 2. Guided product tour
-- 3. Key benefits revealed
-- 4. CTA after completion
+- Full-screen interactive element > Guided product tour > Key benefits revealed > CTA after completion
 
 **Primary CTA placement**: After interaction complete + Skip option for impatient users
 
@@ -346,19 +285,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: WebGL, 3D interactions, gamification elements, progress indicators, reward animations
 
-**Conversion notes**: 40% higher engagement. Performance trade-off. Provide skip option. Mobile fallback essential.
+**Conversion notes**: Measure engagement for the specific audience and device mix. Performance trade-off. Provide skip option. Mobile fallback essential. Provide skip, keyboard, reduced-motion, and non-3D fallback paths. Pause animation when offscreen/hidden and preserve the completed final state when reduced motion is enabled.
 
 
 ## 18. Event/Conference Landing
 
-**Keywords**: event, conference, meetup, registration, schedule, hero-centric design, hero-centric
+**Keywords**: event, conference, meetup, registration, schedule, hero-centric design, hero-centric, countdown accessibility, pause animation, reduced motion final state
 
 **Section order**:
-- 1. Hero (date/location/countdown)
-- 2. Speakers grid
-- 3. Agenda/schedule
-- 4. Sponsors
-- 5. Register CTA
+- Hero (date/location/countdown) > Speakers grid > Agenda/schedule > Sponsors > Register CTA
 
 **Primary CTA placement**: Register CTA sticky + After speakers + Bottom
 
@@ -366,7 +301,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Countdown timer, speaker hover cards with bio, agenda tabs, early bird countdown
 
-**Conversion notes**: Early bird pricing with deadline. Social proof (past attendees). Speaker credibility. Multi-ticket discounts.
+**Conversion notes**: Early bird pricing with deadline. Social proof (past attendees). Speaker credibility. Multi-ticket discounts. Expose the exact deadline as text; pause decorative countdown motion offscreen/hidden and show a static final state under reduced motion.
 
 
 ## 19. Product Review/Ratings Focused
@@ -374,10 +309,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: reviews, ratings, testimonials, social-proof, social-proof-focused, stars
 
 **Section order**:
-- 1. Hero (product + aggregate rating)
-- 2. Rating breakdown
-- 3. Individual reviews
-- 4. Buy/CTA
+- Hero (product + aggregate rating) > Rating breakdown > Individual reviews > Buy/CTA
 
 **Primary CTA placement**: After reviews summary + Buy button alongside reviews
 
@@ -390,13 +322,10 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 ## 20. Community/Forum Landing
 
-**Keywords**: community, forum, social, members, discussion
+**Keywords**: community, forum, social, members, discussion, verified member count, live update accessibility, pause updates, reduced motion final state
 
 **Section order**:
-- 1. Hero (community value prop)
-- 2. Popular topics/categories
-- 3. Active members showcase
-- 4. Join CTA
+- Hero (community value prop) > Popular topics/categories > Active members showcase > Join CTA
 
 **Primary CTA placement**: Join button prominent + After member showcase
 
@@ -404,18 +333,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Member avatars animation, activity feed live updates, topic hover previews, join success celebration
 
-**Conversion notes**: Show active community (member count, posts today). Highlight benefits. Preview content. Easy onboarding.
+**Conversion notes**: Preview real community value and simplify onboarding. Show member and activity counts only when current, verified, and dated; label activity as live only when backed by an active real-time source. Provide pause/update-frequency controls for moving feeds, stop work offscreen/hidden, and keep a static final state under reduced motion.
 
 
 ## 21. Before-After Transformation
 
-**Keywords**: before-after, transformation, results, comparison
+**Keywords**: before-after, transformation, results, comparison, accessible drag interaction, drag single pointer alternative, keyboard drag alternative
 
 **Section order**:
-- 1. Hero (problem state)
-- 2. Transformation slider/comparison
-- 3. How it works
-- 4. Results CTA
+- Hero (problem state) > Transformation slider/comparison > How it works > Results CTA
 
 **Primary CTA placement**: After transformation reveal + Bottom
 
@@ -423,19 +349,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Slider comparison interaction, before/after reveal animations, result counters, testimonial videos
 
-**Conversion notes**: Visual proof of value. 45% higher conversion. Real results. Specific metrics. Guarantee offer.
+**Conversion notes**: Visual proof of value. Measure the outcome with product-specific analytics. Real results. Specific metrics. Guarantee offer. Provide arrow buttons and keyboard steps so dragging is not required. Arrow buttons and keyboard steps expose the same final before/after positions; reduced motion removes reveal animation.
 
 
 ## 22. Marketplace / Directory
 
-**Keywords**: marketplace, directory, search, listing
+**Keywords**: marketplace, directory, search, listing, carousel accessibility, keyboard accessible carousel, pause auto rotation, reduced motion final state, marketplace carousel, keyboard carousel controls
 
 **Section order**:
-- 1. Hero (Search focused)
-- 2. Categories
-- 3. Featured Listings
-- 4. Trust/Safety
-- 5. CTA (Become a host/seller)
+- Hero (Search focused) > Categories > Featured Listings > Trust/Safety > CTA (Become a host/seller)
 
 **Primary CTA placement**: Hero Search Bar + Navbar 'List your item'
 
@@ -443,18 +365,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Search autocomplete animation, map hover pins, card carousel
 
-**Conversion notes**: Search bar is the CTA. Reduce friction to search. Popular searches suggestions.
+**Conversion notes**: Search is the primary CTA. Reduce friction with useful suggestions. For featured-listing carousels, provide previous/next and play/pause buttons, full keyboard access, and a single-pointer alternative to swiping; stop rotation on focus, hover, offscreen/hidden, or reduced motion and render the selected listing as the static final state.
 
 
 ## 23. Newsletter / Content First
 
-**Keywords**: newsletter, content, writer, blog, subscribe, minimal & direct, minimal-direct
+**Keywords**: newsletter, content, writer, blog, subscribe, minimal & direct, minimal-direct, verified subscriber count, dated social proof
 
 **Section order**:
-- 1. Hero (Value Prop + Form)
-- 2. Recent Issues/Archives
-- 3. Social Proof (Subscriber count)
-- 4. About Author
+- Hero (Value Prop + Form) > Recent Issues/Archives > Social Proof (Subscriber count) > About Author
 
 **Primary CTA placement**: Hero inline form + Sticky header form
 
@@ -462,19 +381,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Text highlight animations, typewriter effect, subtle fade-in
 
-**Conversion notes**: Single field form (Email only). Show 'Join X, 000 readers'. Read sample link.
+**Conversion notes**: Keep the form to the fields actually required and link to a sample issue. Show a subscriber count only when it is current, verified, and dated; otherwise use qualitative social proof.
 
 
 ## 24. Webinar Registration
 
-**Keywords**: webinar, registration, event, training, live
+**Keywords**: webinar, registration, event, training, live, webinar ticker accessibility, pause ticker, verified seat availability, verified live status, reduced motion final state
 
 **Section order**:
-- 1. Hero (Topic + Timer + Form)
-- 2. What you'll learn
-- 3. Speaker Bio
-- 4. Urgency/Bonuses
-- 5. Form (again)
+- Hero (Topic + Timer + Form) > What you'll learn > Speaker Bio > Urgency/Bonuses > Form (again)
 
 **Primary CTA placement**: Hero (Right side form) + Bottom anchor
 
@@ -482,19 +397,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Countdown timer, speaker avatar float, urgent ticker
 
-**Conversion notes**: Limited seats logic. 'Live' indicator. Auto-fill timezone.
+**Conversion notes**: State the event time and timezone in text. Claim limited seats or live status only when current capacity or stream state is verified and timestamped. Provide pause/hide controls for the urgency ticker, stop it offscreen/hidden, keep controls keyboard operable, and render a static final state under reduced motion.
 
 
 ## 25. Enterprise Gateway
 
-**Keywords**: enterprise, corporate, gateway, solutions, portal, trust, authority, trust & authority
+**Keywords**: enterprise, corporate, gateway, solutions, portal, trust, authority, trust & authority, carousel accessibility, keyboard accessible carousel, pause auto rotation, reduced motion final state
 
 **Section order**:
-- 1. Hero (Video/Mission)
-- 2. Solutions by Industry
-- 3. Solutions by Role
-- 4. Client Logos
-- 5. Contact Sales
+- Hero (Video/Mission) > Solutions by Industry > Solutions by Role > Client Logos > Contact Sales
 
 **Primary CTA placement**: Contact Sales (Primary) + Login (Secondary)
 
@@ -502,7 +413,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Slow video background, logo carousel, tab switching for industries
 
-**Conversion notes**: Path selection (I am a...). Mega menu navigation. Trust signals prominent.
+**Conversion notes**: Path selection (I am a...). Mega menu navigation. Trust signals prominent. Provide pause/stop for video and rotating logos; stop on focus and reduced motion. Logo carousel controls must be keyboard operable; pause moving media offscreen/hidden and render a static final state under reduced motion.
 
 
 ## 26. Portfolio Grid
@@ -510,10 +421,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: portfolio, grid, showcase, gallery, masonry, portfolio grid + visuals
 
 **Section order**:
-- 1. Hero (Name/Role)
-- 2. Project Grid (Masonry)
-- 3. About/Philosophy
-- 4. Contact
+- Hero (Name/Role) > Project Grid (Masonry) > About/Philosophy > Contact
 
 **Primary CTA placement**: Project Card Hover + Footer Contact
 
@@ -529,10 +437,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: horizontal, scroll, journey, gallery, storytelling, panoramic, storytelling-driven
 
 **Section order**:
-- 1. Intro (Vertical)
-- 2. The Journey (Horizontal Track)
-- 3. Detail Reveal
-- 4. Vertical Footer
+- Intro (Vertical) > The Journey (Horizontal Track) > Detail Reveal > Vertical Footer
 
 **Primary CTA placement**: Floating Sticky CTA or End of Horizontal Track
 
@@ -540,7 +445,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Scroll-jacking (careful), parallax layers, horizontal slide, progress indicator
 
-**Conversion notes**: Immersive product discovery. High engagement. Keep navigation visible.
+**Conversion notes**: Immersive product discovery. High engagement. Keep navigation visible. Preserve a normal vertical navigation path and disable scroll-jacking under reduced motion. Pause effects when offscreen/hidden and render every chapter in its final vertical reading state under reduced motion.
 
 
 ## 28. Bento Grid Showcase
@@ -548,11 +453,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: bento, grid, features, modular, apple-style, showcase, feature-rich showcase
 
 **Section order**:
-- 1. Hero
-- 2. Bento Grid (Key Features)
-- 3. Detail Cards
-- 4. Tech Specs
-- 5. CTA
+- Hero > Bento Grid (Key Features) > Detail Cards > Tech Specs > CTA
 
 **Primary CTA placement**: Floating Action Button or Bottom of Grid
 
@@ -560,18 +461,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Hover card scale (1.02), video inside cards, tilt effect, staggered reveal
 
-**Conversion notes**: Scannable value props. High information density without clutter. Mobile stack.
+**Conversion notes**: Scannable value props. High information density without clutter. Mobile stack. Keep cards usable without hover and suppress tilt/stagger/video motion under reduced motion. Pause card media offscreen/hidden and render cards in their final readable state under reduced motion.
 
 
 ## 29. Interactive 3D Configurator
 
-**Keywords**: 3d, configurator, customizer, interactive, product, interactive product demo
+**Keywords**: 3d, configurator, customizer, interactive, product, interactive product demo, accessible drag interaction, drag single pointer alternative, keyboard drag alternative
 
 **Section order**:
-- 1. Hero (Configurator)
-- 2. Feature Highlight (synced)
-- 3. Price/Specs
-- 4. Purchase
+- Hero (Configurator) > Feature Highlight (synced) > Price/Specs > Purchase
 
 **Primary CTA placement**: Inside Configurator UI + Sticky Bottom Bar
 
@@ -579,7 +477,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Real-time rendering, material swap animation, camera rotate/zoom, light reflection
 
-**Conversion notes**: Increases ownership feeling. 360 view reduces return rates. Direct add-to-cart.
+**Conversion notes**: Let users inspect product details before purchase. Provide buttons and keyboard controls for rotate/zoom plus a 2D/specification fallback. Named rotate/zoom buttons and keyboard controls replace drag gestures; pause rendering offscreen/hidden and preserve the chosen configuration as the reduced-motion final state.
 
 
 ## 30. AI-Driven Dynamic Landing
@@ -587,10 +485,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: ai, dynamic, personalized, adaptive, generative
 
 **Section order**:
-- 1. Prompt/Input Hero
-- 2. Generated Result Preview
-- 3. How it Works
-- 4. Value Prop
+- Prompt/Input Hero > Generated Result Preview > How it Works > Value Prop
 
 **Primary CTA placement**: Input Field (Hero) + 'Try it' Buttons
 
@@ -598,7 +493,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Typing text effects, shimmering generation loaders, morphing layouts
 
-**Conversion notes**: Immediate value demonstration. 'Show, don't tell'. Low friction start.
+**Conversion notes**: Immediate value demonstration. 'Show, don't tell'. Low friction start. Disable typing, shimmer, and morphing effects when reduced motion is requested. Pause loaders offscreen/hidden and render generated content in its final state under reduced motion.
 
 
 ## 31. Feature-Rich Showcase
@@ -606,11 +501,7 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: feature-rich, feature-rich showcase, features, showcase, product showcase
 
 **Section order**:
-- 1. Hero (value prop)
-- 2. Feature grid/cards (4-6)
-- 3. Use cases or benefits
-- 4. Social proof or logos
-- 5. CTA
+- Hero (value prop) > Feature grid/cards (4-6) > Use cases or benefits > Social proof or logos > CTA
 
 **Primary CTA placement**: Hero (sticky) + After features + Bottom
 
@@ -626,31 +517,25 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 **Keywords**: hero-centric, hero-centric design, hero-first, hero above fold
 
 **Section order**:
-- 1. Full-bleed Hero (headline + visual)
-- 2. Single value prop strip
-- 3. Key benefit or proof
-- 4. Primary CTA
+- Full-bleed Hero (headline + visual) > Single value prop strip > Key benefit or proof > Primary CTA
 
 **Primary CTA placement**: Hero dominant (center/bottom) + Sticky nav CTA
 
-**Color strategy**: Hero: High-impact visual. Minimal text. CTA 7:1 contrast.
+**Color strategy**: Hero: High-impact visual. Minimal text. Verify CTA label text against the button fill at 4.5:1 minimum; use 7:1 only for an explicit AAA normal-text target.
 
 **Recommended effects**: Hero parallax or video, CTA pulse on scroll, minimal chrome
 
-**Conversion notes**: One primary CTA. Hero is 60-80% above fold. Mobile: same hierarchy.
+**Conversion notes**: One primary CTA. Let the hero dominate the initial viewport without hiding the next content cue. Use a static hero and non-pulsing CTA when reduced motion is requested; provide video controls. Pause hero media offscreen/hidden and keep the final hero message and CTA static under reduced motion.
 
 
 ## 33. Trust & Authority + Conversion
 
-**Keywords**: trust & authority, trust, authority, conversion, credibility, enterprise
+**Keywords**: trust & authority, trust, authority, conversion, credibility, enterprise, carousel accessibility, keyboard accessible carousel, pause auto rotation, reduced motion final state
 
 **Section order**:
-- 1. Hero (mission/credibility)
-- 2. Proof (logos
+- Hero (mission/credibility) > Proof (logos
 - certs
-- stats)
-- 3. Solution overview
-- 4. Clear CTA path
+- stats) > Solution overview > Clear CTA path
 
 **Primary CTA placement**: Contact Sales / Get Quote (primary) + Nav
 
@@ -658,18 +543,15 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Logo carousel, stat counters, testimonial strip
 
-**Conversion notes**: Security badges. Case studies. Transparent pricing. Low-friction form.
+**Conversion notes**: Security badges. Case studies. Transparent pricing. Low-friction form. Provide pause/stop and stop the logo carousel on focus, hover, and reduced motion. Previous/next controls provide the keyboard equivalent; pause offscreen/hidden and render a static logo set under reduced motion.
 
 
 ## 34. Real-Time / Operations Landing
 
-**Keywords**: real-time, real-time monitor, operations, dashboard, telemetry, live data
+**Keywords**: real-time, real-time monitor, operations, dashboard, telemetry, live data, live ticker accessibility, pause live updates, verified live status, reduced motion final state
 
 **Section order**:
-- 1. Hero (product + live preview or status)
-- 2. Key metrics/indicators
-- 3. How it works
-- 4. CTA (Start trial / Contact)
+- Hero (product + live preview or status) > Key metrics/indicators > How it works > CTA (Start trial / Contact)
 
 **Primary CTA placement**: Primary CTA in nav + After metrics
 
@@ -677,5 +559,5 @@ Battle-tested section orders for landing pages, with conversion-optimization not
 
 **Recommended effects**: Live data ticker, status pulse, minimal decoration
 
-**Conversion notes**: For ops/security/iot products. Demo or sandbox link. Trust signals.
+**Conversion notes**: Offer a demo or sandbox and show trust signals. Label telemetry as live only when backed by a current source, with update time and stale state. Provide pause/hide or update-frequency controls for tickers and previews, stop offscreen/hidden work, support keyboard controls, and render a static final snapshot under reduced motion.
 

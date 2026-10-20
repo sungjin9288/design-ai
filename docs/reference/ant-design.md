@@ -10,7 +10,7 @@ Generated index of `refs/ant-design/` sources cited by the knowledge corpus. The
 - License: see the upstream repository's license file
 - Local mirror: `refs/ant-design/` (refresh with `./tools/extractors/run-all.sh`)
 
-Entries: 80
+Entries: 81
 
 ## affix
 
@@ -191,6 +191,11 @@ Entries: 80
 
 - Upstream: [`components/list`](https://github.com/ant-design/ant-design/tree/HEAD/components/list)
 - Local mirror: `refs/ant-design/components/list/`
+
+## listy
+
+- Upstream: [`components/listy`](https://github.com/ant-design/ant-design/tree/HEAD/components/listy)
+- Local mirror: `refs/ant-design/components/listy/`
 
 ## locale
 

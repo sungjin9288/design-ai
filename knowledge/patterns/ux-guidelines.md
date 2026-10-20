@@ -2,7 +2,7 @@
 title: UX guidelines
 source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/ux-guidelines.csv
 upstream: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-extracted_at: 2026-05-19
+extracted_at: 2026-10-20
 applies_to: [web, mobile, accessibility]
 version: 1.0.0
 last_updated: 2026-05
@@ -132,9 +132,9 @@ aria-label='Close menu'
 
 ### 🔴 Keyboard Navigation _(_Web_)_
 
-All functionality accessible via keyboard
+Web users need complete keyboard navigation with visible focus on every operable control
 
-**Do**: Tab order matches visual order
+**Do**: Keep tab order aligned with visual order and test every action without a pointer
 **Don't**: Keyboard traps or illogical tab order
 
 ```
@@ -204,7 +204,7 @@ Skip to main content link
 
 Parallax/Scroll-jacking causes nausea
 
-**Do**: Respect prefers-reduced-motion
+**Do**: Honor prefers-reduced-motion and present the final readable state without parallax or scroll-jacking
 **Don't**: Force scroll effects
 
 ```
@@ -212,6 +212,132 @@ Parallax/Scroll-jacking causes nausea
 @media (prefers-reduced-motion)
 // bad
 ScrollTrigger.create()
+```
+
+### 🔴 Focus Not Obscured (Minimum) _(_Web_)_
+
+WCAG 2.2 AA requires keyboard focus to remain at least partially visible
+
+**Do**: Offset sticky UI with scroll-padding and dismiss or move persistent overlays
+**Don't**: Let headers footers banners or chat widgets fully cover focus
+
+```
+// good
+scroll-padding-top: var(--header-height)
+// bad
+fixed overlay covers :focus
+```
+
+### 🟡 Focus Not Obscured (Enhanced) _(_Web_)_
+
+WCAG 2.2 AAA requires keyboard focus to remain fully visible
+
+**Do**: Keep the entire focused component unobscured by author-created content
+**Don't**: Present this enhanced AAA criterion as an AA requirement or allow persistent UI to hide any part of focus
+
+```
+// good
+close persistent overlay before focus moves behind it
+// bad
+sticky footer covers half the focused button
+```
+
+### 🟡 Focus Appearance _(_Web_)_
+
+WCAG 2.2 AAA defines minimum area and contrast for focus indicators
+
+**Do**: Use an indicator at least as large as a 2 CSS px perimeter with 3:1 state contrast
+**Don't**: Present this enhanced AAA criterion as an AA requirement or use a thin low-contrast outline
+
+```
+// good
+outline: 2px solid currentColor; outline-offset: 2px
+// bad
+box-shadow: 0 0 1px low-contrast
+```
+
+### 🔴 Dragging Movements _(_All_)_
+
+WCAG 2.2 AA requires a single-pointer alternative for author-controlled drag operations
+
+**Do**: Add buttons menus or tap-to-move controls and retain keyboard operation
+**Don't**: Make dragging the only way to reorder resize or select
+
+```
+// good
+Move up and Move down buttons beside drag handle
+// bad
+drag handle only
+```
+
+### 🔴 Target Size (Minimum) _(_Web_)_
+
+WCAG 2.2 AA requires 24 CSS px pointer targets or an applicable exception
+
+**Do**: Use at least 24 by 24 CSS px or verify spacing equivalent inline user-agent or essential exceptions
+**Don't**: Assume native 44pt or 48dp guidance defines web conformance
+
+```
+// good
+min-width: 24px; min-height: 24px
+// bad
+tiny adjacent icon buttons
+```
+
+### 🟡 Consistent Help _(_All_)_
+
+WCAG 2.2 A requires repeated help mechanisms to stay in the same relative order
+
+**Do**: Keep contact self-help and automated help in consistent locations
+**Don't**: Move help controls to different locations on each page
+
+```
+// good
+shared header help menu
+// bad
+page-specific help placement
+```
+
+### • Text Reflow and Spacing _(_Web_)_
+
+Text must remain available at narrow widths zoom and user spacing overrides
+
+**Do**: Use fluid sizes content-driven height and unitless line height
+**Don't**: Clip text in fixed-width or fixed-height boxes
+
+```
+// good
+.copy { inline-size: min(100%, 65ch); height: auto; line-height: 1.5; }
+// bad
+.copy { width: 900px; height: 40px; overflow: hidden; }
+```
+
+### • Compact Control Semantics _(_Web_)_
+
+Interactive chips need a native role accessible name state keyboard operation and visible focus
+
+**Do**: Prefer a button and expose pressed or selected state that matches the visible label
+**Don't**: Use a clickable div or reveal the only action on hover
+
+```
+// good
+<button aria-pressed='true'>Open now</button>
+// bad
+<div class='selected' onclick='toggle()'>Open now</div>
+```
+
+### 🔴 Contextual Live Badge Updates _(_Web_)_
+
+Async badge and count changes should announce a meaningful contextual status without moving focus
+
+**Do**: Use one appropriate atomic status message such as 3 items in cart
+**Don't**: Announce a bare number or make every badge a competing live region
+
+```
+// good
+<span role='status' aria-atomic='true'>3 items in cart</span>
+// bad
+<span aria-live='polite'>3</span>
 ```
 
 
@@ -233,16 +359,16 @@ animate-bounce on 5+ elements
 
 ### 🟡 Duration Timing _(_All_)_
 
-Animations should feel responsive not sluggish
+Motion duration depends on distance complexity platform and user context
 
-**Do**: Use 150-300ms for micro-interactions
-**Don't**: Use animations longer than 500ms for UI
+**Do**: Use shared motion tokens and test that feedback stays responsive
+**Don't**: Present 150-300ms or any cutoff as a universal requirement
 
 ```
 // good
-transition-all duration-200
+transition-colors duration-200
 // bad
-duration-1000
+One duration copied to every transition
 ```
 
 ### 🔴 Reduced Motion _(_All_)_
@@ -317,16 +443,44 @@ top: 10px animation
 
 ### 🟢 Easing Functions _(_All_)_
 
-Linear motion feels robotic
+Easing should match how an element changes speed and purpose
 
-**Do**: Use ease-out for entering ease-in for exiting
-**Don't**: Use linear for UI transitions
+**Do**: Use deceleration when arriving acceleration when leaving and linear for constant-rate progress
+**Don't**: Reject linear easing even for steady rotation or progress
 
 ```
 // good
-ease-out
+ease-out for entry; linear for spinner
 // bad
-linear
+ease-in-out for every motion
+```
+
+### 🔴 Auto-Rotating Content Controls _(_All_)_
+
+Auto-rotating content needs user control
+
+**Do**: Provide previous next and play/pause; stop on focus or hover and when reduced motion is requested
+**Don't**: Auto-advance slides without a stop control
+
+```
+// good
+button aria-label="Pause carousel"
+// bad
+timer-only carousel
+```
+
+### 🔴 Cancellable State Transitions _(_Web_)_
+
+Rapid compact-control changes can interrupt an in-flight transition
+
+**Do**: Cancel or replace prior motion; set the final semantic state directly and handle cancellation cleanup
+**Don't**: Depend on animationend or transitionend for required state correctness
+
+```
+// good
+previous?.cancel(); setSelected(next)
+// bad
+Enable the chip only inside transitionend
 ```
 
 
@@ -388,6 +542,48 @@ Real sample content
 Lorem ipsum
 ```
 
+### • Essential Text Truncation _(_All_)_
+
+Headings actions errors safety text and distinguishing names need complete access
+
+**Do**: Wrap stack resize or provide a visible full-detail path
+**Don't**: Clamp essential meaning only to make cards uniform
+
+```
+// good
+Action label wraps or opens full details
+// bad
+Primary action shown only as an unexplained ellipsis
+```
+
+### 🔴 Compact Label Semantics _(_All_)_
+
+Badges communicate state while chips or tags represent values or actions
+
+**Do**: Choose static or interactive markup from the label's meaning and ownership
+**Don't**: Make every pill clickable or encode status with color alone
+
+```
+// good
+<span class='status'>Pending</span>
+// bad
+<div class='pill' onclick='toggle()'>Pending</div>
+```
+
+### 🔴 Compact Label Overflow _(_All_)_
+
+A badge chip or pill label should stay whole on one line when practical and disclose unavoidable truncation
+
+**Do**: Bound only unpredictable values; use nowrap with a shrinkable label; expose full text to keyboard pointer and touch users
+**Don't**: Let one compact label wrap to a second line or use a hover-only tooltip
+
+```
+// good
+Flexible label with min-width 0 and an operable full-value disclosure
+// bad
+Fixed-width badge wraps to second line or clips with title-only recovery
+```
+
 
 ## Data Entry
 
@@ -410,16 +606,16 @@ Repeated actions per row
 
 ### 🔴 Loading Indicators _(_All_)_
 
-Show system status during waits
+Loading feedback should match the expected wait and avoid flashing for near-instant work
 
-**Do**: Show spinner/skeleton for operations > 300ms
-**Don't**: No feedback during loading
+**Do**: Follow platform and component guidance; preserve layout focus and accessible busy status
+**Don't**: Apply one timing threshold to every operation or leave long waits unexplained
 
 ```
 // good
-Skeleton or spinner
+Stable skeleton or progress with aria-busy
 // bad
-Frozen UI
+Flickering spinner or frozen UI
 ```
 
 ### 🟡 Empty States _(_All_)_
@@ -509,18 +705,18 @@ Every input needs a visible label
 placeholder='Email' only
 ```
 
-### 🟡 Error Placement _(_All_)_
+### 🔴 Error Placement _(_All_)_
 
-Errors should appear near the problem
+Each invalid field needs an inline error connected to that field
 
-**Do**: Show error below related input
-**Don't**: Single error message at top of form
+**Do**: Show a specific error below the input and reference it with aria-describedby
+**Don't**: Show only a top-level error without identifying each invalid field
 
 ```
 // good
-Error under each field
+<input aria-describedby="email-error"><p id="email-error">Enter an email address</p>
 // bad
-All errors at form top
+Red border or summary only
 ```
 
 ### 🟡 Inline Validation _(_All_)_
@@ -635,14 +831,45 @@ inputmode='numeric'
 Text keyboard for numbers
 ```
 
+### 🟡 Redundant Entry _(_All_)_
+
+WCAG 2.2 A avoids requiring the same information twice in one process
+
+**Do**: Auto-populate prior values or let users select previously entered information
+**Don't**: Ask users to retype the same address or account data without necessity
+
+```
+// good
+reuse confirmed shipping address
+// bad
+repeat full address form
+```
+
+
+## Forms / Accessibility
+
+### 🔴 Focusable Error Summary _(_Web_)_
+
+An error summary for failed validation complements inline field errors and must be easy to find by keyboard and screen reader users
+
+**Do**: Place it at the top of the form; move focus to its heading or container after failed submit; link each item to its invalid field; retain inline errors
+**Don't**: Replace inline errors with a visual-only summary or move focus on every blur
+
+```
+// good
+<div role="alert" tabindex="-1" aria-labelledby="error-title"><h2 id="error-title">There is a problem</h2><a href="#email">Enter an email address</a></div>
+// bad
+Toast only with no field links or focus target
+```
+
 
 ## Interaction
 
 ### 🔴 Focus States _(_All_)_
 
-Keyboard users need visible focus indicators
+Keyboard focus, including controls inside a modal, needs a visible indicator
 
-**Do**: Use visible focus rings on interactive elements
+**Do**: Use a visible focus ring on every interactive control, including modal controls
 **Don't**: Remove focus outline without replacement
 
 ```
@@ -811,16 +1038,16 @@ z-index: 9999 not working
 
 ### 🔴 Content Jumping _(_Web_)_
 
-Layout shift when content loads is jarring
+Images badges validation text and skeleton replacements can shift nearby content when they update
 
-**Do**: Reserve space for async content
-**Don't**: Let images/content push layout around
+**Do**: Reserve appropriate space or keep async states in a stable content-driven container
+**Don't**: Insert compact text or media without a layout strategy
 
 ```
 // good
-aspect-ratio or fixed height
+aspect-ratio for media; stable count slot for badges
 // bad
-No dimensions on images
+Badge insertion pushes toolbar actions
 ```
 
 ### 🟡 Viewport Units _(_Web_)_
@@ -849,6 +1076,34 @@ Content too wide is hard to read
 max-w-prose or max-w-3xl
 // bad
 Full width paragraphs
+```
+
+### 🔴 Long Token Wrapping _(_Web_)_
+
+URLs identifiers and user content must not force horizontal overflow
+
+**Do**: Use overflow-wrap anywhere and let flex or grid text children shrink
+**Don't**: Apply word-break break-all to all prose
+
+```
+// good
+.token { min-inline-size: 0; overflow-wrap: anywhere; }
+// bad
+.token { white-space: nowrap; }
+```
+
+### 🔴 Chip Collection Reflow _(_All_)_
+
+Filter chips and editable value collections must preserve labels when space or text size changes
+
+**Do**: Wrap the collection or use an operable +n disclosure for hidden overflow values
+**Don't**: Force all chips into one clipped row or hide overflow values
+
+```
+// good
+<div class='chip-list'>{chips}</div> with flex-wrap
+// bad
+<div class='chip-list' style='height:32px;overflow:hidden'>
 ```
 
 
@@ -1217,6 +1472,23 @@ No results found.
 ```
 
 
+## Security / Accessibility
+
+### • Accessible Authentication (Minimum) _(_All_)_
+
+WCAG 2.2 AA says authentication must not depend only on a cognitive function test unless an exception applies
+
+**Do**: Allow password managers and paste; offer passkeys OAuth or another non-cognitive method
+**Don't**: Block paste or require manual OTP transcription with no alternative
+
+```
+// good
+autocomplete="current-password" and paste allowed
+// bad
+onpaste preventDefault
+```
+
+
 ## Spatial UI
 
 ### 🔴 Gaze Hover _(_VisionOS_)_
@@ -1252,14 +1524,14 @@ bg-white
 
 ### 🟡 Auto-Play Video _(_Web_)_
 
-Video consumes massive data and energy
+Autoplaying media consumes data and creates motion barriers
 
-**Do**: Click-to-play or pause when off-screen
-**Don't**: Auto-play high-res video loops
+**Do**: Prefer click-to-play; provide pause and captions; stop off-screen and honor reduced motion
+**Don't**: Auto-play high-resolution loops without pause or captions
 
 ```
 // good
-playsInline muted preload='none'
+<video controls preload="none"><track kind="captions" /></video>
 // bad
 autoplay loop
 ```
@@ -1283,14 +1555,14 @@ Raw .obj files
 
 ### 🔴 Touch Target Size _(_Mobile_)_
 
-Small buttons are hard to tap accurately
+Touch target guidance depends on platform and web context
 
-**Do**: Minimum 44x44px touch targets
-**Don't**: Tiny clickable areas
+**Do**: Use 44pt on iOS and 48dp on Android; for web use the separate WCAG Target Size rule
+**Don't**: Treat one unit or minimum as universal across platforms
 
 ```
 // good
-min-h-[44px] min-w-[44px]
+iOS 44pt; Android 48dp; Web 24 CSS px plus WCAG exceptions
 // bad
 w-6 h-6 buttons
 ```
@@ -1450,5 +1722,19 @@ Headings should stand out from body
 Bold + larger size
 // bad
 Same size as body
+```
+
+### 🟡 Heading Line Balance _(_Web_)_
+
+Short multi-line headings may use balanced wrapping as a progressive visual heuristic
+
+**Do**: Bound the measure and test natural-wrap fallback across widths fonts and locales
+**Don't**: Promise an exact final line or insert blanket nonbreaking spaces or hardcoded br tags
+
+```
+// good
+.hero-title { max-inline-size: 20ch; text-wrap: balance; }
+// bad
+Heading copy rewritten with forced last-line breaks
 ```
 

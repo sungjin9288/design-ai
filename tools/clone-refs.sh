@@ -31,10 +31,13 @@ apply_sparse() {
 # Small, full clones
 clone_or_pull awesome-design-md https://github.com/VoltAgent/awesome-design-md.git
 clone_or_pull ui-ux-pro-max https://github.com/nextlevelbuilder/ui-ux-pro-max-skill.git
-clone_or_pull open-design https://github.com/nexu-io/open-design.git
 clone_or_pull material-design-lite https://github.com/google/material-design-lite.git
 
 # Sparse clones — only the parts we need
+# open-design is now a full app (3GB+); only its craft notes are design reference.
+clone_or_pull open-design https://github.com/nexu-io/open-design.git
+apply_sparse open-design craft
+
 clone_or_pull ant-design https://github.com/ant-design/ant-design.git
 apply_sparse ant-design components docs scripts
 

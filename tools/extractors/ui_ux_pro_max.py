@@ -172,20 +172,26 @@ Tested heading + body combinations grouped by mood. Pick by **best-for** and **m
 
 def render_styles(rows: list[dict[str, str]]) -> str:
     today = date.today().isoformat()
+    # Upstream marks retired styles with Status=deprecated and names a
+    # replacement; keep them out of the catalog so they are not recommended.
+    deprecated = [r for r in rows if r.get("Status", "").strip().lower() == "deprecated"]
+    rows = [r for r in rows if r not in deprecated]
     head = f"""---
 title: Visual style catalog
 source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/styles.csv
 upstream: {UPSTREAM}
 extracted_at: {today}
 applies_to: [visual-design, art-direction]
-version: 1.0.0
-last_updated: 2026-05
+version: 1.1.0
+last_updated: 2026-10
 stability: stable
 ---
 
 # Visual style catalog
 
 A catalog of distinct visual languages. Use as **art-direction shorthand** — pick a style by best-for/avoid-for, then implement using its keywords, colors, and CSS hints.
+
+{len(rows)} styles. {len(deprecated)} styles the upstream marks deprecated are omitted; the source CSV's `Replacement Domain` and `Replacement ID` columns name their successors.
 
 """
     blocks = []

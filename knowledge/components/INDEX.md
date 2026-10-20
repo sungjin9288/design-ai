@@ -4,7 +4,7 @@ sources:
   - refs/ant-design/components/
   - refs/mui/packages/mui-material/src/
   - refs/shadcn-ui/apps/v4/registry/new-york-v4/ui/
-extracted_at: 2026-07-03
+extracted_at: 2026-10-20
 applies_to: [react, design-system]
 version: 1.0.0
 last_updated: 2026-05
@@ -15,7 +15,7 @@ stability: stable
 
 Cross-reference of components across Ant Design, MUI, and shadcn-ui. Use this when picking a reference implementation for a new component, comparing API patterns, or filling gaps.
 
-**Coverage**: Ant Design 79, MUI 132, shadcn-ui 56, 200 canonical components.
+**Coverage**: Ant Design 80, MUI 132, shadcn-ui 56, 201 canonical components.
 
 | Component | Ant Design | MUI | shadcn-ui |
 | --- | --- | --- | --- |
@@ -120,6 +120,7 @@ Cross-reference of components across Ant Design, MUI, and shadcn-ui. Use this wh
 | **list-item-secondary-action** | — | [`ListItemSecondaryAction`](../../docs/reference/mui.md#list-item-secondary-action) | — |
 | **list-item-text** | — | [`ListItemText`](../../docs/reference/mui.md#list-item-text) | — |
 | **list-subheader** | — | [`ListSubheader`](../../docs/reference/mui.md#list-subheader) | — |
+| **listy** | [`listy`](../../docs/reference/ant-design.md#listy) | — | — |
 | **locale** | [`locale`](../../docs/reference/ant-design.md#locale) | [`locale`](../../docs/reference/mui.md#locale) | — |
 | **masonry** | [`masonry`](../../docs/reference/ant-design.md#masonry) | — | — |
 | **mentions** | [`mentions`](../../docs/reference/ant-design.md#mentions) | — | — |

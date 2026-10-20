@@ -2,7 +2,7 @@
 title: Curated icon sets
 source: refs/ui-ux-pro-max/src/ui-ux-pro-max/data/icons.csv
 upstream: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-extracted_at: 2026-05-19
+extracted_at: 2026-10-20
 applies_to: [icons, react, all-ui]
 version: 1.0.0
 last_updated: 2026-05
@@ -66,7 +66,7 @@ Common UI icons indexed by **library** and **category**. Pick a single library p
 | `chart-pie` | statistics distribution breakdown | Phosphor | Pie chart distribution |
 | `trend-up` | growth increase positive trend | Phosphor | Growth trend positive |
 | `trend-down` | decline decrease negative trend | Phosphor | Decline trend negative |
-| `activity` | pulse heartbeat monitor live | Phosphor | Activity monitor pulse |
+| `pulse` | activity heartbeat monitor live | Phosphor | Activity monitor pulse |
 | `database` | storage server data backend | Phosphor | Database storage |
 
 ### Development
@@ -100,7 +100,7 @@ Common UI icons indexed by **library** and **category**. Pick a single library p
 ### Guideline
 | Icon | Keywords | Library | Best for |
 | --- | --- | --- | --- |
-| `icon-fallback-rules` | icon fallback, phosphor, heroicons, any icon, extended set | Phosphor (primary) + Heroicons (fallback) | Icon library strategy and fallback rules |
+| `icon-context-accessibility` | decorative icon aria hidden, meaningful icon text alternativ | Phosphor (primary) + Heroicons (fallback) | Contextual icon semantics, icon accessibility, and library f |
 
 ### Layout
 | Icon | Keywords | Library | Best for |
@@ -116,7 +116,7 @@ Common UI icons indexed by **library** and **category**. Pick a single library p
 | Icon | Keywords | Library | Best for |
 | --- | --- | --- | --- |
 | `map-pin` | location marker place address | Phosphor | Location pin marker |
-| `map` | directions navigate geography location | Phosphor | Map directions |
+| `map-trifold` | map directions navigate geography location | Phosphor | Map directions |
 | `compass` | compass direction pointer arrow | Phosphor | Navigation compass |
 | `globe` | world international global web | Phosphor | Globe world |
 
