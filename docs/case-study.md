@@ -1,126 +1,64 @@
 # Case Study
 
-## 1. 배경
+> 기준일: 2026-10-20. 각 사례는 실제 PR과 산출물로 확인할 수 있습니다.
 
-- 이 프로젝트를 시작한 배경: 범용 AI coding agent가 제품 디자인, 접근성, 한국 시장 UX, 문서화 기준을 일관되게 적용하도록 돕기 위해 시작한 것으로 판단됩니다.
-- 해결하려는 사용자 문제: agent가 매번 다른 prompt와 암묵적 지식에 의존하면 산출물 품질과 검증 기준이 흔들립니다.
-- 이 문제가 중요한 이유: 디자인 시스템, UX audit, 문서화, handoff는 근거와 반복성이 중요합니다.
-- 현재 개발 진행 상태: CLI, knowledge base, skills, examples, Website Console, VS Code Extension, audit pipeline이 구현되어 있습니다. 로컬 release gate는 통과했지만 외부 public launch와 일부 자동화는 개발 중입니다.
+## 1. 배경과 문제
 
-## 2. 문제 정의
+AI 코딩 에이전트로 UI를 만들면 결과물은 빠르게 나옵니다. 하지만 두 가지가 비어 있습니다.
 
-### As-Is
+- **기준의 일관성**: 같은 요청에도 접근성, 반응형, 한국어 문구 기준이 매번 달라집니다.
+- **완료의 증거**: "고쳤다"는 주장을 재현 가능한 근거로 확인하기 어렵습니다. 근거 없이 `pass`가 붙거나, 확인하지 않은 상태가 완료로 보고됩니다.
 
-- 현재 사용자는 어떤 방식으로 문제를 해결하고 있는가? 매번 별도 prompt를 작성하거나, 디자인 시스템 문서를 수동으로 찾아 agent에게 전달합니다.
-- 기존 방식의 한계는 무엇인가? 요청 분류, 근거 파일, 품질 검증, handoff 형식이 매번 달라집니다.
+design-ai는 처음에 디자인 지식 코퍼스와 skill로 시작했습니다. 이후 범용 모델과 디자인 도구가 생성 능력을 빠르게 갖추면서, 차별점을 **검증 가능한 산출물 체인**으로 옮겼습니다.
 
-### Pain Points
+## 2. 설계 원칙
 
-- 불편 1: agent가 디자인 원칙과 접근성 기준을 놓칠 수 있습니다.
-- 불편 2: 산출물 검증이 수동이며 release gate와 연결되기 어렵습니다.
-- 불편 3: 웹사이트 개선처럼 여러 tool과 단계가 필요한 업무에서 handoff 증거가 흩어집니다.
+1. **미확인 상태를 완료로 올리지 않습니다.** 정적 검사는 어떤 lens도 `pass`로 판정하지 않습니다. 증거가 불완전한 브라우저 probe는 `unverified`입니다.
+2. **파생 값은 다시 계산해 정확히 일치해야 합니다.** 상태, 요약, 링크, 단계는 validator가 원본에서 다시 계산합니다. 손으로 고친 값은 거부합니다.
+3. **바이트로 연결합니다.** 각 산출물은 앞 단계 파일의 SHA-256과 크기를 기록합니다. 내용이 같아도 다시 포맷하면 다른 산출물입니다.
+4. **승인 경계를 분리합니다.** 파일 범위 승인은 commit, push, 배포 승인과 별개입니다. 대상 저장소를 읽거나 바꾸려면 사람의 승인 기록이 먼저 있어야 합니다.
 
-## 3. 목표
+## 3. 사례 A: 스스로 써 보며 찾은 결함을 증거로 고치기
 
-### MVP 목표
+내부 기능을 다 만든 뒤, design-ai의 lens와 체인을 **design-ai 자신의 UI**에 적용했습니다.
 
-- Markdown 기반 지식 베이스, skill, command, examples를 agent가 바로 사용할 수 있게 구성합니다.
-- CLI로 route, prompt, pack, check, audit, workspace, site workflow를 제공합니다.
+| 단계 | 발견 | 조치와 증거 |
+|---|---|---|
+| interface-copy lens (정적) | Website Console의 Import JSON 버튼 accessible name이 보이는 레이블을 포함하지 않았습니다(WCAG 2.5.3). 표 컨트롤 37개에는 이름이 없었습니다. | 행 이름으로 명명하고, 되돌리면 실패하는 회귀 테스트를 추가했습니다 ([#78](https://github.com/sungjin9288/design-ai/pull/78)) |
+| 계약 기준 리뷰 | Image Console이 필수 입력 누락을 금방 사라지는 브라우저 풍선으로만 알렸습니다. | 빠진 항목을 이름으로 알리는 지속 오류와 `aria-invalid`를 추가했습니다 ([#79](https://github.com/sungjin9288/design-ai/pull/79)) |
+| 체인 전체 실행 (P17F) | 결함 29개를 모두 없앤 수정이 비교 결과에서 **`regressed`로 판정**됐습니다. 정적 검사로는 pass할 수 없는 lens가 `fail → unverified`로 바뀌면서 이를 "증거 상실"로 셌기 때문입니다. | 판정 규칙의 설계 결함으로 보고 comparison v2를 도입했습니다. 저장된 v1은 원래 규칙으로 계속 검증합니다 ([#83](https://github.com/sungjin9288/design-ai/pull/83)) |
+| 브라우저 증거·시각 평가 (P17E) | 런타임 probe가 #78 결함을 독립적으로 재현했습니다(이름 없는 노드 27 → 0). 토큰 이탈 평가에서 팔레트 밖 색 8개를 찾았습니다. | 스크린샷 회귀로 #78이 **픽셀을 하나도 바꾸지 않았음**을 확인하고, 색상을 토큰으로 정리했습니다 ([#87](https://github.com/sungjin9288/design-ai/pull/87)) |
 
-### 기술 목표
+**검증 태도에 대한 기록**: 처음 작성한 브라우저 adapter는 키보드 이름을 휴리스틱으로 판정해 v5.3.0 결함 수를 3개로 잘못 셌습니다. 머지 전에 접근성 트리 기반으로 고쳐 다시 실행했고, 올바른 값(11개)으로 정정한 뒤 이전 결과를 폐기했습니다. 증거 도구도 검증 대상이라는 점을 그대로 남겼습니다.
 
-- Node.js CLI와 Python audit runner로 로컬에서 검증 가능한 구조를 만듭니다.
-- Website Console은 dependency 없는 static app으로 유지합니다.
+## 4. 사례 B: 하위 호환을 지키는 계약 변경
 
-### 사용자 목표
+comparison v2는 기본 출력을 바꾸는 변경이었습니다. 저장된 증거가 깨지지 않도록 다음처럼 처리했습니다.
 
-- 사용자가 brief를 입력하면 관련 workflow와 근거 파일을 빠르게 찾게 합니다.
-- target repo 작업 전후의 실행 근거와 검증 결과를 handoff 문서로 남기게 합니다.
+- validator가 **비교 산출물 자신의 schemaVersion**으로 파생 규칙을 고릅니다. v1은 `evidence-lost`, v2는 `unconfirmed`입니다.
+- 버전 표기만 바꾼 산출물은 파생 값이 맞지 않아 거부됩니다.
+- Node 계약과 브라우저용 Website Console 검증기가 같은 판단을 내리는지 독립 리뷰가 확인했습니다. 64개 전수 사례와 2,400개 무작위 사례에서 불일치는 0건이었습니다. 리뷰가 찾은 중간 등급 결함(다음 조치 문구 오류)도 고쳤습니다.
+- 저장된 v1 산출물 14개가 모두 그대로 검증되는 것을 확인한 뒤 v5.4.0으로 배포했습니다.
 
-### 학습 목표
+## 5. 사례 C: 릴리스 엔지니어링
 
-- agent workflow 설계, CLI 제품화, 문서 정보구조, release QA를 포트폴리오 근거로 축적합니다.
+- **게시 경로**: 태그 push가 GitHub Actions를 실행합니다. 장기 토큰 없이 OIDC Trusted Publishing으로 npm에 게시하고, SLSA provenance와 GitHub Release를 함께 만듭니다.
+- **게시 전 검증**: `npm run release:check`가 테스트, strict audit, 패키지 내용, release metadata, self-test, 실제 tarball의 설치 실행과 `npm exec` 1회 실행 smoke를 확인합니다.
+- **게시 후 검증**: registry smoke가 게시된 패키지를 다시 설치해 확인합니다. v5.2.0 때는 게시가 성공했는데도 registry 전파 지연(약 5분)으로 워크플로가 실패했습니다. 원인을 확인한 뒤 재시도 창을 113초에서 10분으로 넓혔습니다.
+- **문서의 진실성**: 태그 커밋은 "출시 후보" 문구를 유지하고, 게시를 확인한 뒤 별도 커밋으로 "공개됨"으로 전환합니다. 출시되지 않은 상태를 출시됐다고 쓰지 않습니다.
+- **flaky test**: 부하가 큰 머신에서 1/8 확률로 실패하던 timeout 테스트를 분석했습니다. 1초 timeout이 adapter의 Node 기동과 경쟁하는 것이 원인이었습니다. 준비 전에 종료된 경우에만 timeout을 늘려 재시도하고, 실제 종료 단언은 약화하지 않았습니다 ([#80](https://github.com/sungjin9288/design-ai/pull/80)).
 
-## 4. 해결 접근
+## 6. 결과와 한계
 
-- 어떤 기능으로 문제를 해결하려 했는가? route engine, prompt/pack generator, artifact checker, Website Console, local learning profile, VS Code tree view를 제공합니다.
-- AI/IT 기술을 어디에 적용했는가? 모델 호출이 아니라 agent가 읽을 수 있는 knowledge, prompt, skill orchestration에 적용했습니다.
-- 왜 이 기술스택을 선택했는가? Markdown은 agent와 사람이 모두 읽을 수 있고, Node.js CLI는 배포와 cross-platform 실행이 쉽습니다. Python audit은 문서 검증 스크립트 작성에 적합합니다.
-- 현재 구현된 접근과 향후 목표 접근:
-  - 현재: deterministic local CLI, static console, local JSON/localStorage 저장, docs site.
-  - 향후: real MCP connection checks, Playwright/Lighthouse/axe automation, VS Code Webview reuse.
+| 구분 | 내용 |
+|---|---|
+| 확인됨 | 공개 배포 5개 채널, 게시 후 registry smoke, 자기 적용으로 찾아 고친 결함 4건, 저장된 증거의 하위 호환 |
+| 확인되지 않음 | 외부 사용자와 채택(star 0, 외부 이슈 0, 파일럿 0), 실제 이미지 provider 연동, 독립 파일럿 |
+| 주의 | npm 다운로드(최근 30일 966회)에는 자체 smoke와 미러 트래픽이 섞여 있어 사용자 수로 쓰지 않습니다 |
 
-## 5. 구현 범위
+## 7. 판단과 배운 점
 
-### 구현 완료
-
-- `design-ai` CLI entrypoint와 dispatcher
-- 16개 공개 slash command 문서와 CLI canonical commands
-- 20개 skills와 92개 knowledge files
-- Website Improvement Console static app
-- local learning preference CLI
-- Python audit runner와 release scripts
-- VS Code Extension 명령 및 tree providers
-
-### 개발 중
-
-- public launch, registry smoke 이후 운영 안정화
-- Website Console 자동화 확장
-- 실제 MCP 연결 검증
-
-### 미구현 / 예정
-
-- backend API, database sync, auth, multi-user collaboration
-- model fine-tuning, private model training, embedding index
-- 자동 crawling, screenshot capture, Lighthouse/axe 실행
-
-### 이번 MVP에서 제외한 범위
-
-- 제외한 기능: 서버 저장소, 자동 외부 tool 실행, 모델 학습, target repo 직접 수정
-- 제외한 이유: 현재 제품은 agent workflow와 local handoff를 안정화하는 것이 핵심입니다.
-
-## 6. 시스템 설계
-
-- 전체 구조: `AGENTS.md` instructions -> `skills/commands/knowledge/examples` corpus -> `cli/` workflow -> docs site / Website Console / VS Code Extension
-- 데이터 흐름: brief, Markdown, JSON export를 입력받아 route result, prompt pack, audit report, handoff bundle로 변환합니다.
-- API 구조: HTTP API는 없습니다. CLI command와 static browser app이 사용 표면입니다.
-- AI/LLM 처리 흐름이 있다면 설명: external LLM에 보낼 prompt와 context를 생성합니다. repo 내부에서 LLM API를 호출하지 않습니다.
-- 예외 처리: CLI argument parsing과 unknown option suggestion이 `cli/lib/*`에 구현되어 있습니다.
-- 보안/환경변수 처리: local learning은 `~/.design-ai/learning.json`에 저장됩니다. MCP auth token은 외부 agent 설정에 위임됩니다.
-- 배포 계획: npm package metadata, Homebrew formula, GitHub Pages docs config, VS Code Extension manifest가 존재합니다. 2026-06-22 기준 public npm registry, GitHub Pages URL, VS Code Marketplace listing은 확인되지 않았습니다.
-
-## 7. 나의 역할
-
-- 기획: design knowledge를 agent workflow로 전환하는 제품 구조를 설계한 것으로 설명 가능합니다. 개인 기여 범위는 확인 필요입니다.
-- 요구사항 정의: skill/playbook, route, readiness 문서로 요구사항을 구조화했습니다.
-- 프론트엔드: Website Console static UI와 VS Code Extension UI surface를 설명할 수 있습니다.
-- 백엔드: 해당 없음. backend는 미구현입니다.
-- AI/LLM: prompt routing, local context packing, skill orchestration을 설명할 수 있습니다.
-- 데이터 처리: local JSON profile, Website Console JSON export/import, release metadata checks를 설명할 수 있습니다.
-- 배포: npm/GitHub Pages/Homebrew/VS Code Extension 배포 준비 구조와 local release gate를 설명할 수 있습니다.
-- 문서화: README, docs, knowledge, examples, readiness 문서를 포트폴리오 근거로 활용할 수 있습니다.
-
-## 8. 결과
-
-- 구현 완료 기능: CLI, static console, extension surface, audit scripts, docs site config
-- 로컬 실행 가능 여부: `npm run release:check`가 통과해 package smoke까지 확인했습니다.
-- 테스트 여부: `npm test`, `npm run audit:strict`, `npm run release:check` 흐름이 검증되었습니다.
-- 배포 여부: public 배포 완료 상태는 아닙니다. npm registry는 `E404`, GitHub Pages URL은 HTTP 404, VS Code Marketplace listing은 없음으로 확인되었습니다.
-- 사용자 피드백: 현재 없음. 임의 생성 금지.
-- 수치 성과:
-  - 현재 없음. 임의 생성 금지.
-
-## 9. 배운 점
-
-- 기술적으로 배운 점: CLI product는 command parsing, output artifact, test, packaging이 함께 설계되어야 합니다.
-- 설계에서 배운 점: model training 없이도 corpus, route, check, handoff 구조로 agent 품질을 높일 수 있습니다.
-- 사용자 관점에서 배운 점: target repo를 직접 수정하지 않는 local-first boundary가 신뢰를 만듭니다.
-- 다음 프로젝트에 반영할 점: 구현 범위, 미구현 범위, 검증 evidence를 처음부터 문서와 release gate에 연결합니다.
-
-## 10. 이 프로젝트가 보여주는 역량
-
-- 개발 역량: Node.js CLI, TypeScript extension, Python audit tooling, static app 구현
-- 문제정의 역량: agent 디자인 작업을 route와 skill로 분해
-- 데이터/AI 활용 역량: LLM 호출보다 prompt/context orchestration과 local preference injection에 집중
-- 커뮤니케이션/문서화 역량: 사용자/개발자/agent가 읽는 문서를 같은 저장소에서 관리
-- 컨설팅형 사고: 문제 구조화, 범위 관리, handoff, 검증 기준, roadmap 분리
+- **확장을 멈춘 결정**: 외부 사용 근거가 0이라는 것을 측정하고, 생성 도구의 발전을 고려해 기능 개발을 동결했습니다. 남은 가치는 검증·증빙 영역이라고 보고, 실제 프로젝트 적용으로 수요를 먼저 확인하기로 했습니다.
+- **증거 도구도 틀릴 수 있습니다**: 계약이 맞아도 증거를 모으는 adapter의 휴리스틱이 틀리면 문서에 잘못된 수치가 들어갑니다.
+- **자기 적용이 가장 좋은 테스트였습니다**: 단위 테스트가 모두 통과한 상태에서, 실제 흐름을 끝까지 돌렸을 때 비교 판정의 설계 결함이 드러났습니다.
+- **AI 에이전트와 일하는 방식**: 범위, 승인, 검증 기준은 사람이 정하고, 에이전트 산출물은 독립 리뷰와 의도적으로 망가뜨리는 검증으로 검수했습니다. 리뷰는 단계마다 10~12건의 결함을 찾았습니다.
