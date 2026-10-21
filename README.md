@@ -19,6 +19,11 @@
 
 > 🇺🇸 English / [🇰🇷 한국어](https://github.com/sungjin9288/design-ai/blob/main/README.ko.md)
 
+> **Archived (2026-10).** This repository is read-only and no longer
+> maintained. The published v5.4.0 stays available on npm, Homebrew, and the
+> VS Code Marketplace as-is, and the documentation site stays online. The
+> [case study](docs/case-study.md) summarizes what was built and verified.
+
 > **Not a model. Not a fine-tune.** A structured corpus of design expertise + agent-ready instructions that turn a general-purpose LLM into an expert.
 
 **v5.4.0 is public.** npm Trusted Publishing, SLSA provenance, GitHub Release,

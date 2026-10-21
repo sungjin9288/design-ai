@@ -19,6 +19,11 @@
 
 > 🇰🇷 한국어 / [🇺🇸 English](https://github.com/sungjin9288/design-ai/blob/main/README.md)
 
+> **보관됨 (2026-10).** 이 저장소는 읽기 전용이며 더 이상 유지보수하지 않아요.
+> 이미 게시된 v5.4.0은 npm, Homebrew, VS Code Marketplace에 그대로 남고, 문서
+> 사이트도 계속 열려 있어요. 무엇을 만들고 어떻게 검증했는지는
+> [case study](docs/case-study.md)에 정리돼 있어요.
+
 > **모델이 아니에요. 파인튜닝도 아니에요.** 디자인 전문 지식을 구조화한 코퍼스 + 에이전트가 바로 실행할 수 있는 지시문이에요. 범용 LLM을 이번 세션에서만큼은 시니어 디자이너로 바꿔주는 셈이에요.
 
 **v5.4.0이 공개됐어요.** npm Trusted Publishing, SLSA provenance, GitHub
