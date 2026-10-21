@@ -3,74 +3,39 @@
 ## 프로젝트 정보
 
 - 프로젝트명: design-ai
-- 생성일: 2026-06-09
-- 현재 상태: 고도화 중인 model-agnostic design intelligence toolkit
-- 핵심 기술스택: Node.js ESM CLI, Markdown knowledge base, Python audit tooling, MkDocs Material, Vanilla JS static Website Console, TypeScript VS Code Extension
-- 이력서 반영 가능 여부: 가능
+- 용도: 커리어(채용·이력서·면접)용 포트폴리오
+- 갱신일: 2026-10-20 (이전 판: 2026-06-22, `_portfolio_export/archive-2026-06/`에 보관)
+- 현재 상태: v5.4.0 공개 배포 완료. 기능 개발은 동결하고 유지보수 전환을 검토 중입니다.
+- 핵심 기술: Node.js ESM CLI·SDK·MCP 서버, Python 검증 하네스, 의존성 없는 정적 Console, TypeScript VS Code 확장, GitHub Actions와 npm Trusted Publishing
 
-## 포함 파일
+## 패키지 구성 (`_portfolio_export/design_ai_portfolio_pack/`)
 
-- README.md
-- README.ko.md
-- DEV_LOG.md
-- links.md
-- portfolio_manifest.md
-- docs/project-card.md
-- docs/case-study.md
-- docs/resume-bullets.md
-- docs/interview-story.md
-- docs/roadmap.md
-  - repo 내부에서는 macOS case-insensitive 경로 충돌을 피하기 위해 `docs/project-roadmap.md`를 원본으로 유지하고, 압축 패키지 안에서 `docs/roadmap.md`로 복사함.
-- docs/readme-improvement.md
-- docs/implementation-evidence.md
-- docs/evidence-checklist.md
-- docs/evidence-gallery.md
-- docs/external-status.md
-- docs/DISTRIBUTION.md
-- docs/DISTRIBUTION.ko.md
-- docs/QUICKSTART.md
-- docs/QUICKSTART.ko.md
-- docs/USING.md
-- docs/USING.ko.md
-- docs/RELEASE-CHECKLIST.md
-- docs/integrations/vscode-walkthrough.md
-- docs/integrations/vscode-walkthrough.ko.md
-- evidence/evidence_manifest.md
-- evidence/cli-logs/
-  - `release-check.log`, `ci-local.log`, `git-diff-check.log`, `zip-integrity.log`, `zip-contents.log`, `secret-scan.log` 포함
-- evidence/output-artifacts/
-- evidence/screenshots/
-- evidence/architecture/
-- evidence/api-responses/
-- screenshots 폴더가 있으면 이미지 파일만 포함
+| 경로 | 내용 |
+|---|---|
+| `README.md`, `README.ko.md`, `links.md`, `portfolio_manifest.md` | 프로젝트 소개, 공개 링크, 이 manifest |
+| `docs/project-card.md` | 한 장 요약: 규모, 표면, 아키텍처, 결과와 한계 |
+| `docs/case-study.md` | 사례 3개: 자기 적용으로 찾은 결함, 하위 호환 계약 변경, 릴리스 엔지니어링 |
+| `docs/resume-bullets.md` | 이력서 bullet, 직무별 강조점, 쓰면 안 되는 표현 |
+| `docs/interview-story.md` | 1분 소개, STAR 사례 3개, 예상 질문 |
+| `docs/CHANGELOG-v5.4.0.md` | v5.4.0 릴리스 노트 |
+| `docs/external-status.md` | 공개 배포 채널별 증빙 |
+| `docs/REVIEW-COMPARISON.md`, `docs/VISUAL-EVALUATORS.md`, `docs/PROJECT-CONTINUITY.md` | 사례에서 인용하는 계약 문서 |
+| `evidence/release/` | npm 5.4.0 메타데이터(provenance 포함), GitHub Release 정보, 최신 `release:check` 요약 |
+| `evidence/screenshots/` | Website Console(Audit Checklist 데스크톱·모바일, Quality Review), Image Console 화면. 고정 시계로 로컬에서 캡처했습니다 |
 
-## 제외한 파일/폴더
+## 증빙의 출처와 한계
 
-아래 항목은 압축에서 제외했습니다.
+- 수치는 2026-10-20에 저장소, npm, GitHub에서 직접 확인했습니다.
+- 2026-10-11 P17E·P17F 실행의 원시 증거(브라우저 증거, 비교 산출물, 스냅샷, 수정 전후 crop)는 세션 임시 디렉터리에 있었는데 정리되면서 사라졌습니다. 결과 수치와 판단은 머지된 PR(#78, #83, #87)과 `docs/ROADMAP.md` Phase 810~816에 남아 있고, 패키지는 이를 인용합니다.
+- 외부 사용자, 실제 이미지 provider 연동, 독립 파일럿은 검증되지 않았으며 문서에 그렇게 적었습니다.
 
-- .env
-- API key
-- 비밀번호/토큰
-- node_modules/
-- venv/
-- .venv/
-- __pycache__/
-- dist/
-- build/
-- .git/
-- 개인정보가 들어간 데이터
-- 고객사/기관 내부자료
-- 기타 민감정보
+## 제외한 항목
+
+- `.env`, API key, 토큰, 비밀번호
+- `node_modules/`, `.git/`, 빌드 산출물
+- 개인정보와 고객·기관 내부 자료
+- 오래된 2026-06 증빙 로그: 당시 미배포 상태를 기록한 것이라 현재 사실과 충돌하므로 이전 판에만 남겼습니다
 
 ## 검증 결과
 
-- 민감정보 포함 여부: 실제 API key 형태 패턴 및 금지 파일명 사전 검사에서 발견되지 않음
-- 압축 파일 생성 여부: evidence 포함 버전으로 재생성 완료
-- 압축 파일 경로: `_portfolio_export/design_ai_portfolio_pack.zip`
-- 압축 파일명: `design_ai_portfolio_pack.zip`
-- SHA-256 checksum 파일: `_portfolio_export/design_ai_portfolio_pack.zip.sha256`
-- 압축 파일 크기: 약 2.8 MB
-- 압축 파일 항목 수: 81개
-- 압축 파일 내용 확인 여부: `zipinfo -1` 내부 목록 확인 및 `unzip -t` 무결성 검사 통과
-- 포함 evidence 확인 여부: CLI logs, release-check log, ci-local log, external status logs, zip integrity/content logs, secret scan log, screenshots, output artifacts, architecture notes, audit results, API not-applicable note 포함 확인
-- local CI 확인 여부: `npm run ci:local` 통과, VS Code Extension compile/unit test 및 MkDocs warning policy 포함 확인
+검증 결과는 패키지를 만든 뒤 `evidence/release/package-check.txt`에 기록합니다.

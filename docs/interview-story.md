@@ -1,69 +1,71 @@
 # Interview Story
 
-## 1. 1분 프로젝트 소개
+> 기준일: 2026-10-20. 답변의 모든 주장은 링크한 PR이나 파일로 확인할 수 있어야 합니다.
 
-이 프로젝트는 AI coding agent가 디자인 지식과 접근성 기준을 일관되게 적용하기 어려운 문제를 해결하기 위해 시작했습니다.
-저는 확인 필요 범위 내에서 Node.js CLI, Markdown knowledge base, Website Improvement Console, VS Code Extension을 중심으로 현재 구현된 design workflow toolkit을 개발했습니다.
-기술적으로는 Node.js ESM, Python audit tooling, MkDocs, TypeScript VS Code API, Vanilla JS static app을 사용했고, 현재는 local-first CLI와 documentation product가 고도화 단계까지 구현되었습니다.
-개발 과정에서 shipped scope와 future scope가 섞일 수 있는 문제가 있었고, 이를 Product Readiness, Roadmap, audit/release gate 문서로 분리해 관리했습니다.
-이 프로젝트를 통해 agent workflow 설계, CLI 제품화, 문서 정보구조, 검증 자동화 경험을 얻었고, 향후에는 real MCP probe와 Playwright/Lighthouse/axe 자동화로 고도화할 계획입니다.
+## 1. 1분 소개
 
-## 2. 3분 상세 설명
+design-ai는 AI 에이전트가 만든 UI가 실제로 나아졌는지를 증거로 확인하는 툴킷입니다.
+리뷰 결과, 사람의 승인 범위, 구현 증거, 전후 비교를 SHA-256으로 연결된 파일로 남기고, 근거가 없는 상태는 `pass`로 올리지 않도록 계약과 테스트로 강제합니다.
+1인 프로젝트로 Claude Code와 Codex를 활용해 구현했고, 저는 범위·승인·검증 기준과 릴리스를 맡았습니다.
+npm, Homebrew, VS Code Marketplace에 배포했고, 테스트 933개와 게시 후 registry smoke로 검증합니다.
+가장 의미 있었던 것은 이 도구를 자기 UI에 적용했을 때입니다. 실제 결함을 찾았고, 비교 판정 규칙의 설계 결함까지 드러나 하위 호환을 지키며 고쳤습니다.
+외부 사용 근거가 없다는 것을 측정한 뒤에는 기능 확장을 멈추고 수요 검증을 먼저 하기로 했습니다.
 
-- 프로젝트 배경: 범용 LLM agent에게 디자인 전문가 역할을 맡기려면 prompt만으로는 부족하고, 구조화된 knowledge, workflow, examples, verification이 필요했습니다.
-- 문제정의: 사용자의 brief를 적절한 디자인 작업 유형으로 분류하고, 필요한 근거 파일과 검증 기준을 함께 제공해야 했습니다.
-- 기술 선택 이유: Markdown은 agent와 사람이 함께 읽을 수 있고, Node.js CLI는 npm 배포와 cross-platform 실행에 적합합니다. Python은 audit script 작성에 효율적입니다.
-- 핵심 구현: `runCommand` dispatcher, `ROUTES` 기반 task routing, `learn` local profile, `site` Website Console artifact pipeline, VS Code tree provider입니다.
-- 현재 상태: core design consulting workflow는 locally release-ready로 문서화되어 있으며, external launch와 일부 자동화는 future work입니다.
-- 앞으로의 개선 방향: real MCP connection check, browser automation QA, backend 없는 local-first workflow의 artifact 품질 강화입니다.
-- 컨설팅 경험과의 자연스러운 연결: 문제정의, 요구사항 구조화, 사용자 흐름 설계, 실행 증거 정리, 개선 로드맵 제시 역량으로 설명합니다.
+## 2. STAR 사례
 
-## 3. 기술 면접 예상 질문 10개
+### 사례 1: 고친 것을 회귀로 판정한 비교 로직 ([#83](https://github.com/sungjin9288/design-ai/pull/83))
 
-| 예상 질문 | 답변 방향 | 코드 근거 | 보완 필요 지식 |
-|---|---|---|---|
-| CLI command는 어떻게 dispatch되나요? | `cli/bin/design-ai.mjs`가 command를 받고 `runCommand`가 handler map으로 위임한다고 설명합니다. | `cli/bin/design-ai.mjs`, `cli/lib/dispatch.mjs` | Node ESM module lifecycle |
-| route 추천은 어떤 방식인가요? | keyword 기반 deterministic route이며 LLM 호출 없이 command/skill/knowledge를 매핑한다고 설명합니다. | `cli/lib/route.mjs` | 검색 ranking, BM25, semantic routing |
-| Website Console은 어디에 상태를 저장하나요? | browser `localStorage`와 JSON export/import를 사용한다고 설명합니다. | `docs/website-console/app.js`, `docs/WEBSITE-IMPROVEMENT.md` | client-side persistence tradeoffs |
-| `learn`은 모델 학습인가요? | 아니며 local JSON preference profile과 prompt injection이라고 명확히 말합니다. | `cli/lib/learn.mjs`, `docs/AI-LEARNING.md` | privacy by design |
-| release quality는 어떻게 검증하나요? | npm scripts와 Python audit runner가 frontmatter/link/Korean copy/coverage/example QA 등을 실행한다고 설명합니다. | `package.json`, `tools/audit/run-all.py` | CI/CD quality gate design |
-| backend가 없는 이유는 무엇인가요? | MVP는 local-first artifact workflow에 집중했고 target repo mutation을 피했다고 설명합니다. | `docs/WEBSITE-IMPROVEMENT.md` | backend productization roadmap |
-| VS Code Extension은 무엇을 제공하나요? | skills, knowledge, examples, walkthroughs tree와 command palette를 제공한다고 설명합니다. | `vscode-extension/src/extension.ts`, `vscode-extension/src/commands.ts` | VS Code Extension API |
-| 보안상 주의한 부분은 무엇인가요? | local profile, redaction, no external telemetry, MCP auth 위임을 설명합니다. | `cli/lib/learn.mjs`, `docs/AI-LEARNING.md` | secret handling, threat modeling |
-| 테스트 구조는 어떻게 되어 있나요? | Node test, Python audit, package smoke, VS Code unit test가 분리되어 있다고 설명합니다. | `package.json`, `cli/lib/*.test.mjs`, `vscode-extension/test/lib.test.mjs` | integration test strategy |
-| 가장 복잡한 모듈은 무엇인가요? | `cli/lib/site.mjs`가 workspace validation, MCP readiness, bundle export/check를 담당한다고 설명합니다. | `cli/lib/site.mjs` | schema validation, artifact integrity |
+- **Situation**: 리뷰부터 스냅샷까지 체인 전체를 design-ai 자신의 접근성 수정(#78)에 처음 적용했습니다.
+- **Task**: 결함 29개를 없앤 수정이 비교에서 `regressed`로 나왔습니다. 버그인지 설계 문제인지 판단해야 했습니다.
+- **Action**:
+  - 정적 검사는 어떤 lens도 pass시키지 않습니다. 그래서 수정 뒤 lens가 `fail → unverified`가 되고, 이를 `pass → unverified`와 같은 "증거 상실"로 세고 있었습니다.
+  - 이 변화를 `unconfirmed`로 분리한 comparison v2를 설계했습니다.
+  - 저장된 v1 산출물은 자기 버전의 규칙으로 계속 검증되게 했습니다.
+  - Node 검증기와 브라우저 검증기를 같은 규칙으로 맞추고, 독립 리뷰를 받았습니다.
+- **Result**:
+  - 같은 수정이 `attention-required`(런타임 증거 필요)로 판정됩니다.
+  - 저장된 v1 산출물 14개는 모두 유지됐습니다.
+  - Node와 브라우저 검증기의 판단은 2,400개 무작위 사례에서 일치했습니다.
+  - v5.4.0으로 배포했습니다.
 
-## 4. 프로젝트 면접 예상 질문 10개
+### 사례 2: 증거 도구가 틀린 수치를 만들었을 때 ([#87](https://github.com/sungjin9288/design-ai/pull/87))
 
-| 예상 질문 | 답변 방향 | 근거 | 보완 필요 사항 |
-|---|---|---|---|
-| 이 프로젝트의 핵심 사용자는 누구인가요? | AI coding agent로 디자인 작업을 수행하는 개발자/디자이너/컨설턴트입니다. | `README.md`, `AGENTS.md` | 실제 사용자 인터뷰 |
-| 경쟁 도구와 차별점은 무엇인가요? | model이 아니라 agent-readable corpus와 workflow layer라는 점입니다. | `README.md`, `docs/ARCHITECTURE.md` | 경쟁 분석 |
-| 현재 가장 확실한 성과는 무엇인가요? | 구현된 CLI, static console, extension, audit pipeline입니다. | source files | 사용량 지표 |
-| 아직 부족한 점은 무엇인가요? | backend, real MCP probe, browser automation, external launch evidence입니다. | `docs/PRODUCT-READINESS.md` | 출시 체크리스트 |
-| 왜 Markdown 중심인가요? | 사람이 검토할 수 있고 여러 agent가 공통으로 읽을 수 있기 때문입니다. | `docs/ARCHITECTURE.md` | content governance |
-| README 개선 포인트는 무엇인가요? | 구현/미구현 범위와 demo evidence를 더 짧게 분리해야 합니다. | `docs/readme-improvement.md` | screenshot/GIF |
-| 수익화 가능한가요? | 현재는 개발 도구/오픈소스 성격이 강하며 수익화는 검증 필요입니다. | 저장소 근거 없음 | business model |
-| 왜 static Website Console인가요? | target repo를 직접 수정하지 않는 local-first planning tool이기 때문입니다. | `docs/WEBSITE-IMPROVEMENT.md` | web app scaling |
-| 팀 프로젝트인가요? | 저장소만으로는 개인/팀 기여 범위를 확정할 수 없습니다. | git metadata 추가 확인 필요 | contribution evidence |
-| 다음 우선순위는 무엇인가요? | README evidence 정리, demo, real CI/registry status 확인, automation prototype입니다. | `docs/roadmap.md` | 작업 계획 |
+- **Situation**: 브라우저 검증과 시각 평가기를 자기 Console에 처음 적용했습니다.
+- **Task**: 런타임 증거로 수정 전후를 비교하고, 수정이 화면을 바꾸지 않았음을 보여야 했습니다.
+- **Action**:
+  - 수정 전후 두 버전을 격리 환경에서 띄웠습니다.
+  - 시계와 시간대를 고정해 스크린샷을 결정적으로 만들었습니다.
+  - 토큰 이탈 평가에서 나온 색상 결함 2종을 고쳤습니다.
+  - Image Console에 같은 adapter를 적용하다가 adapter의 키보드 이름 판정이 휴리스틱이라 틀린다는 것을 발견했습니다. 접근성 트리 기반으로 고쳐 모두 다시 실행했습니다.
+- **Result**:
+  - #78 수정의 픽셀 변화는 0이었습니다.
+  - 팔레트 밖 색상은 0개가 됐습니다.
+  - PR의 잘못된 수치(3)를 머지 전에 11로 정정하고 이전 결과는 폐기했습니다.
 
-## 5. 컨설팅 경험과의 연결 질문 5개
+### 사례 3: 게시는 성공했는데 워크플로는 실패
 
-| 예상 질문 | 답변 방향 | 주의할 점 |
+- **Situation**: v5.2.0 게시 후 자동 registry smoke가 실패했습니다.
+- **Task**: 게시 자체가 실패했는지, 검증 도구가 실패했는지 구분해야 했습니다.
+- **Action**:
+  - `npm view`로 게시 성공을 먼저 확인했습니다.
+  - 타임라인을 비교해 npm 전파가 약 5분 걸렸다는 것을 확인했습니다.
+  - smoke의 재시도 창을 113초에서 10분으로 넓히고, 게시된 패키지로 smoke를 다시 실행했습니다.
+- **Result**: v5.3.0과 v5.4.0은 게시 워크플로의 smoke가 처음 시도에 통과했습니다.
+
+## 3. 예상 질문과 답변 방향
+
+| 질문 | 답변 방향 | 근거 |
 |---|---|---|
-| 컨설팅 경험이 개발에 어떻게 도움이 되었나요? | 문제를 구조화하고 요구사항을 문서와 workflow로 전환하는 데 도움이 되었다고 답합니다. | 과장된 도메인 연결을 피합니다. |
-| 사용자 관점은 어떻게 반영했나요? | agent 사용자의 입력 brief부터 handoff까지 흐름을 나눴다고 답합니다. | 실제 사용자 조사는 확인 필요라고 말합니다. |
-| 문서화 역량은 어디에 드러나나요? | `knowledge/`, `skills/`, `docs/`, `examples/` 구조를 근거로 설명합니다. | 문서 양보다 구조와 검증을 강조합니다. |
-| 개선안 도출은 어떻게 했나요? | roadmap과 readiness 문서에서 shipped/future scope를 분리했다고 답합니다. | 성과 수치를 만들지 않습니다. |
-| 기술과 비즈니스 연결은 무엇인가요? | 디자인 업무의 품질 기준과 handoff 비용을 줄이는 developer tool이라고 설명합니다. | 검증되지 않은 ROI를 말하지 않습니다. |
+| 왜 LLM 판정이 아니라 결정적 계약인가요? | 같은 입력에 같은 결과가 나와야 증거가 됩니다. 판단이 필요한 부분은 사람의 승인으로 분리했습니다 | `docs/DESIGN-QUALITY-CONTRACT.md` |
+| 위조된 산출물은 어떻게 막나요? | 파생 값을 다시 계산해 정확히 일치를 요구하고, 앞 단계 파일은 바이트 digest로 묶습니다 | `cli/lib/review-comparison-contract.mjs` |
+| 스키마를 바꿀 때 기존 데이터는요? | 산출물 자신의 schemaVersion으로 규칙을 고릅니다. 버전만 바꾼 파일은 거부합니다 | `docs/REVIEW-COMPARISON.md` |
+| AI가 짠 코드를 어떻게 믿었나요? | 범위·승인·완료 기준은 직접 정했습니다. 독립 리뷰 agent가 단계마다 10~12건을 찾았고, 일부러 망가뜨려 테스트가 잡는지 확인했습니다 | ROADMAP Phase 804~808, 813 |
+| flaky test는 어떻게 고쳤나요? | 부하 상황에서 기동 시간을 측정해 timeout 경쟁을 확인했습니다. 준비 전 종료일 때만 재시도하고 단언은 약화하지 않았습니다 | [#80](https://github.com/sungjin9288/design-ai/pull/80) |
+| 사용자는 몇 명인가요? | 외부 사용 근거는 없습니다. 다운로드 수에는 자체 smoke가 섞여 있어 쓰지 않습니다. 그래서 확장을 멈췄습니다 | `docs/case-study.md` 6절 |
+| 디자인 도구가 좋아지는데 왜 필요한가요? | 생성은 대체됐지만 "고쳐졌다는 증거"는 아직 비어 있습니다. 그 부분만 남기는 쪽으로 판단했습니다 | `docs/case-study.md` 7절 |
+| 다시 한다면 무엇을 바꾸겠나요? | 기능 확장 전에 실제 사용자 1명을 먼저 찾겠습니다. 검증 하네스(약 66,000줄)도 더 일찍 단순화하겠습니다 | 이 문서 |
 
-## 6. 내가 추가로 공부해야 할 부분
+## 4. 주의
 
-- 기술: Node.js CLI architecture, schema validation, package distribution
-- 아키텍처: plugin architecture, local-first app design, artifact integrity
-- 보안: local secret redaction, MCP auth boundary, supply-chain security
-- 배포: npm publish, Homebrew formula, VS Code Marketplace, GitHub Pages
-- 테스트: e2e browser automation, package smoke, fixture design
-- AI/LLM: prompt routing evaluation, retrieval architecture, preference injection limits
-- CS 기초: file system semantics, process spawning, deterministic hashing
+- 직접 작성한 코드 양을 과장하지 않습니다. AI 에이전트로 구현했고, 설계·결정·검증을 맡았다고 말합니다.
+- 외부 채택, 실제 provider 연동, 접근성 인증을 주장하지 않습니다.

@@ -1,75 +1,45 @@
 # Resume Bullets
 
-## 1. 이력서용 프로젝트 제목 후보
+> 기준일: 2026-10-20. 모든 수치는 저장소, npm, GitHub에서 확인한 값입니다. 수치를 바꾸면 근거도 다시 확인합니다.
 
-- Agent-ready Design Intelligence Toolkit 개발
-- AI Coding Agent용 Design Knowledge CLI 및 Workflow System 구축
-- Local-first Website Improvement Console 및 Design QA Pipeline 개발
+## 1. 프로젝트 제목 후보
 
-## 2. 한 줄 소개 후보
+- AI 에이전트 디자인 산출물 검증 툴킷 design-ai 개발 및 배포 (CLI·SDK·MCP)
+- 증거 기반 UI 품질 검증 체인 설계와 오픈소스 배포
 
-- AI coding agent가 디자인 지식, 접근성 기준, handoff 절차를 일관되게 적용하도록 돕는 Node.js CLI 기반 design workflow toolkit을 개발했습니다.
-- Markdown knowledge base, skill playbook, route engine, artifact checker를 결합해 agent 산출물 품질을 검증 가능한 구조로 만들었습니다.
-- Website Improvement Console과 CLI bundle export를 통해 웹사이트 개선 업무의 audit, prompt, handoff evidence 흐름을 구조화했습니다.
+## 2. 한 줄 소개
 
-## 3. 현재 이력서에 넣어도 되는 bullet
+- AI가 만든 UI가 실제로 나아졌는지를 digest로 연결된 리뷰·승인·구현 증거·전후 비교로 검증하는 Node.js 툴킷을 1인으로 설계·개발하고 npm, Homebrew, VS Code Marketplace에 배포했습니다.
 
-- AI coding agent의 디자인 작업 품질 편차 문제를 해결하기 위해 92개 knowledge file, 20개 skill, 16개 공개 slash command 문서를 구조화하고 Node.js CLI routing workflow와 연결했습니다.
-- 사용자의 brief를 workflow로 분류하는 deterministic route engine을 구현해 design review, website improvement, component spec, motion, document workflow 등으로 연결했습니다.
-- Website Improvement Console을 dependency 없는 static Web App으로 구현해 site profile, audit checklist, MCP readiness, refactor task, handoff evidence를 browser-local workflow로 관리했습니다.
-- `design-ai site` CLI를 통해 Website Console JSON export를 task, report, prompt, bundle artifact로 변환하는 local handoff pipeline을 구축했습니다.
-- Python audit runner와 npm release scripts를 구성해 frontmatter, link, Korean copy, raw hex, integration, freshness, coverage, example QA 검증을 release workflow에 포함했습니다.
-- VS Code Extension에서 skills, knowledge, examples, walkthroughs tree view와 quick-pick command를 제공해 agent design corpus 탐색 UX를 개선했습니다.
-- local learning preference를 model training이 아닌 explicit local JSON profile 방식으로 설계해 privacy boundary를 유지하면서 prompt personalization을 지원했습니다.
+## 3. 이력서 bullet (그대로 사용 가능)
 
-## 4. 구현 후 넣을 수 있는 bullet
+- **계약 설계**: quality report, scope 승인, 구현 증거, 전후 비교, 프로젝트 스냅샷을 SHA-256 digest로 잇는 산출물 체인을 설계했습니다. 파생 값을 다시 계산해 정확히 일치를 요구하는 validator로 위조와 드리프트를 차단했습니다.
+- **하위 호환 스키마 변경**: 실제 사용 중 발견한 비교 판정 결함(결함 29개를 고친 수정이 `regressed`로 판정됨)을 comparison v2로 고쳤습니다. 저장된 v1 산출물 14개를 모두 유지했고, Node와 브라우저 검증기의 판단이 2,400개 무작위 사례에서 일치함을 확인했습니다.
+- **런타임·시각 검증**: 승인 게이트를 둔 브라우저 검증 runner와 스크린샷 회귀, 가로 넘침, 브랜드 토큰 이탈 평가기를 구현했습니다. 자기 UI에 적용해 이름 없는 컨트롤 27개와 토큰 밖 색상 8개를 찾아 고쳤고, 접근성 수정이 픽셀을 바꾸지 않았음을 회귀 측정으로 증명했습니다.
+- **릴리스 엔지니어링**: OIDC Trusted Publishing과 SLSA provenance로 npm 버전 16개를 게시했습니다. 패키지 tarball 설치 smoke와 게시 후 registry smoke를 자동화했고, registry 전파 지연으로 인한 워크플로 실패를 분석해 재시도 창을 113초에서 10분으로 조정했습니다.
+- **검증 하네스**: Node 테스트 933개, strict audit 8종, mutation 검증, 독립 리뷰를 릴리스 게이트에 묶었습니다. 부하 상황에서만 실패하던 timeout 테스트는 원인(timeout과 프로세스 기동의 경쟁)을 측정해 단언을 약화하지 않고 고쳤습니다.
+- **멀티 표면 통합**: CLI 공개 명령 16개, SDK export 20개, MCP tool 29개, 의존성 없는 정적 Console 2종, VS Code 확장이 하나의 계약과 산출물 형식을 공유하도록 구성했습니다.
+- **AI 에이전트 활용 개발**: Claude Code와 Codex로 구현하면서 범위·승인·검증 기준은 직접 정의했습니다. 에이전트 산출물은 독립 리뷰와 sabotage 검증으로 검수했습니다(커밋 1,029개, 머지 PR 84개).
+- **제품 판단**: 외부 사용 지표(star, 외부 이슈, 파일럿 참여 모두 0)와 생성형 디자인 도구의 발전을 근거로 기능 확장을 동결하고, 수요 검증을 먼저 하도록 방향을 전환했습니다.
 
-- 구현 후 사용 가능: Playwright, Lighthouse, axe 자동화를 Website Console workflow와 연결해 audit evidence 수집을 자동화했습니다.
-- 구현 후 사용 가능: 실제 MCP connection probe를 도입해 GitHub, Figma, Browser, deploy readiness를 tool access 기준으로 검증했습니다.
-- 구현 후 사용 가능: backend sync와 auth를 추가해 multi-user Website Improvement workspace를 지원했습니다.
+## 4. 직무별 강조점
 
-## 5. 기술스택 한 줄
+| 직무 | 앞세울 bullet | 면접에서 보여줄 것 |
+|---|---|---|
+| AI 엔지니어 / AI 애플리케이션 개발 | 계약 설계, 런타임·시각 검증, AI 에이전트 활용 개발 | 미확인 상태를 `pass`로 올리지 않는 규칙과 그 테스트 |
+| 플랫폼 / DevEx / 릴리스 엔지니어 | 릴리스 엔지니어링, 검증 하네스, 멀티 표면 통합 | 게시 경로와 registry 전파 지연 대응, flaky test 분석 |
+| AI 솔루션 엔지니어 / 기술 컨설팅 | 하위 호환 스키마 변경, 제품 판단, 멀티 표면 통합 | 승인 경계 설계와 확장을 멈춘 의사결정 근거 |
 
-- 현재 사용 중: Node.js, JavaScript ESM, TypeScript, Python, MkDocs Material, HTML/CSS/Vanilla JS, VS Code Extension API, GitHub Actions, npm scripts
-- 예정 또는 미구현: Playwright, Lighthouse, axe, backend API, database, auth, real MCP probe integration
+## 5. 기술 스택 한 줄
 
-## 6. 지원 직무별 강조 포인트
+Node.js (ESM, 런타임 의존성 없음), TypeScript (SDK 타입, VS Code 확장), Python (audit·smoke 하네스), MCP, Playwright(검증용 adapter 스크립트, 패키지에는 미포함), GitHub Actions, npm Trusted Publishing, SLSA, Homebrew, MkDocs Material
 
-### AI/IT 개발자
+## 6. 쓰면 안 되는 표현
 
-- CLI architecture, deterministic routing, testable artifact pipeline, release gate 구축 경험을 강조합니다.
-
-### AI 서비스 기획
-
-- agent 사용자의 반복 업무를 route, skill, prompt, handoff workflow로 구조화한 점을 강조합니다.
-
-### AI 솔루션 엔지니어
-
-- 여러 agent 환경(Codex, Claude Code, Cursor, Aider, VS Code)에 같은 knowledge system을 적용한 통합 관점을 강조합니다.
-
-### DX/AI 컨설팅 주니어
-
-- 문제정의, 요구사항 정리, 사용자 workflow, 검증 evidence, roadmap 분리 역량을 강조합니다.
-
-## 7. 쓰면 위험한 표현
-
-- AI 모델을 학습시킨 서비스
-- RAG 검색 시스템
-- SaaS backend 운영
-- 자동 접근성/성능 진단 완료
-- 정량 성과 달성
-- 대규모 사용자 검증 완료
-
-## 8. 보완 후 쓸 수 있는 표현
-
-- 실제 npm publish 및 registry smoke 기록을 확인한 뒤 "public package 배포"라고 표현할 수 있습니다.
-- GitHub Actions green run을 확인한 뒤 "CI release gate 운영"이라고 표현할 수 있습니다.
-- Playwright/Lighthouse/axe 구현 후 "자동 visual/accessibility/performance QA"라고 표현할 수 있습니다.
-- 사용자 issue, star, download, 피드백 근거가 생긴 뒤 "사용자 피드백 기반 개선"이라고 표현할 수 있습니다.
-
-## 9. 최종 판단
-
-- 현재 이력서 반영 가능 여부: 가능
-- 이유: CLI, static app, extension, audit tooling, docs architecture가 코드 근거로 확인됩니다.
-- 이력서에 넣기 전 반드시 보완할 것: 개인 기여 범위, public publish/deploy 완료 여부, 주요 화면 스크린샷을 확인해야 합니다.
-- 가장 먼저 개선해야 할 것: `design-ai route`, `design-ai site`, Website Console, VS Code Extension 화면을 캡처해 설명 가능한 증거로 추가합니다.
+| 표현 | 이유 |
+|---|---|
+| "사용자 N명", "다운로드 N회 달성" | 외부 사용 근거가 없습니다. npm 다운로드에는 자체 smoke와 미러 트래픽이 섞여 있습니다 |
+| "모든 코드를 직접 작성" | AI 코딩 에이전트로 구현했습니다. 설계·결정·검증을 맡았다고 씁니다 |
+| "자동 접근성 진단 완료", "WCAG 준수 인증" | 정적 검사는 pass를 판정하지 않습니다. 런타임 검증은 자기 프로젝트에만 적용했습니다 |
+| "AI 모델 학습", "RAG 시스템" | 모델 학습은 범위에 없습니다. 임베딩은 선택적 로컬 rerank뿐입니다 |
+| "실제 이미지 생성 서비스" | live provider 연동은 검증되지 않았습니다. 결정적 mock 경로만 확인했습니다 |
